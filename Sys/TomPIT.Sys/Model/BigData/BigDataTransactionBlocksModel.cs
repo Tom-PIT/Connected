@@ -7,7 +7,7 @@ using TomPIT.Sys.Api.Database;
 
 namespace TomPIT.Sys.Model.BigData
 {
-	internal class BigDataTransactionBlocksModel
+	public class BigDataTransactionBlocksModel
 	{
 		public const string Queue = "bigdata";
 

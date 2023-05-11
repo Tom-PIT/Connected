@@ -35,33 +35,33 @@ namespace TomPIT.BigData
 				Authentication = AuthenticationType.SingleTenant
 			};
 
-			Instance.Initialize(InstanceType.BigData, services, e);
+			Instance.Initialize(InstanceFeatures.BigData, services, e);
 			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
 			Instance.InitializeShellServices();
 
 			RegisterTasks(services);
 
-            services.AddSignalR(o =>
-            {
-                o.EnableDetailedErrors = true;
-            }).AddNewtonsoftJsonProtocol();
+			services.AddSignalR(o =>
+			{
+				o.EnableDetailedErrors = true;
+			}).AddNewtonsoftJsonProtocol();
 
-        }
+		}
 
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
 			Instance.Configure(app, env, (f) =>
 			{
 				f.Builder.MapHub<TraceHub>("hubs/tracing");
-				BigData.Configuration.Routing.Register(f.Builder);				
-			}, 
-			(f)=>
+				BigData.Configuration.Routing.Register(f.Builder);
+			},
+			(f) =>
 			{
 				var traceHubContext = f.Builder.ApplicationServices.GetRequiredService<IHubContext<TraceHub>>();
 
 				var traceService = f.Builder.ApplicationServices.GetService<ITraceService>();
 
-				if(MiddlewareDescriptor.Current?.Tenant is ITenant tenant) 
+				if (MiddlewareDescriptor.Current?.Tenant is ITenant tenant)
 				{
 					tenant.RegisterService(typeof(ITraceService), traceService);
 				}

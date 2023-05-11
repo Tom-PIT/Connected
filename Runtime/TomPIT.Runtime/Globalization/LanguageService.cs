@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
 using TomPIT.Caching;
 using TomPIT.Collections;
 using TomPIT.Connectivity;
-using TomPIT.Middleware;
 
 namespace TomPIT.Globalization
 {
@@ -23,33 +21,27 @@ namespace TomPIT.Globalization
 
 		protected override void OnInitializing()
 		{
-			var u = Tenant.CreateUrl("Language", "Query");
-			var languages = Tenant.Get<List<Language>>(u).ToList<ILanguage>();
+			var languages = Instance.SysProxy.Languages.Query();
 
 			foreach (var language in languages)
-			{
 				Set(language.Token, language, TimeSpan.Zero);
-			}
 		}
 
 		protected override void OnInitialized()
-        {
-            ApplySupportedCultures();
-            ResetMappings();
+		{
+			ApplySupportedCultures();
+			ResetMappings();
 		}
 
 		protected override void OnInvalidate(Guid id)
 		{
 			Remove(id);
 
-			var u = Tenant.CreateUrl("Language", "Select")
-			.AddParameter("language", id);
+			var r = Instance.SysProxy.Languages.Select(id);
 
-			var r = Tenant.Get<Language>(u);
-
-			if (r != null)
+			if (r is not null)
 				Set(r.Token, r, TimeSpan.Zero);
-			
+
 			ApplySupportedCultures();
 
 			ResetMappings();
@@ -81,8 +73,8 @@ namespace TomPIT.Globalization
 		public void NotifyChanged(object sender, LanguageEventArgs e)
 		{
 			Refresh(e.Language);
-            ApplySupportedCultures();
-        }
+			ApplySupportedCultures();
+		}
 
 		public void NotifyRemoved(object sender, LanguageEventArgs e)
 		{
@@ -90,7 +82,7 @@ namespace TomPIT.Globalization
 			ApplySupportedCultures();
 		}
 
-		public void ApplySupportedCultures() 
+		public void ApplySupportedCultures()
 		{
 			if (Instance.RequestLocalizationOptions is null)
 				return;
@@ -137,14 +129,14 @@ namespace TomPIT.Globalization
 		{
 			Mappings.Clear();
 
-			foreach(var language in All())
+			foreach (var language in All())
 			{
 				if (string.IsNullOrWhiteSpace(language.Mappings) || language.Status == LanguageStatus.Hidden)
 					continue;
 
 				var tokens = language.Mappings.Split(',');
 
-				foreach(var token in tokens)
+				foreach (var token in tokens)
 				{
 					if (string.IsNullOrWhiteSpace(token))
 						continue;

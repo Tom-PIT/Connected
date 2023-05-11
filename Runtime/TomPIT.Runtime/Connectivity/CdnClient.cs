@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using Microsoft.AspNetCore.SignalR.Client;
+﻿using Microsoft.AspNetCore.SignalR.Client;
+using System.Collections.Generic;
 using TomPIT.Cdn;
 using TomPIT.Environment;
 using TomPIT.Middleware;
@@ -13,7 +13,7 @@ namespace TomPIT.Connectivity
 			Context = context;
 		}
 
-		protected override string Url => $"{Context.Services.Routing.GetServer(InstanceType.Cdn, InstanceVerbs.Get)}";
+		protected override string Url => $"{Context.Services.Routing.GetServer(InstanceFeatures.Cdn, InstanceVerbs.Get)}";
 		private IMiddlewareContext Context { get; }
 
 		protected override string HubName => "events";

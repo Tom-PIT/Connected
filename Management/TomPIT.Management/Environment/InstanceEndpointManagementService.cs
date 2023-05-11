@@ -1,5 +1,5 @@
-﻿using System;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using TomPIT.Connectivity;
 using TomPIT.Environment;
 using TomPIT.Middleware;
@@ -27,13 +27,13 @@ namespace TomPIT.Management.Environment
 				n.NotifyRemoved(this, new InstanceEndpointEventArgs(instance));
 		}
 
-		public Guid Insert(string name, InstanceType type, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs)
+		public Guid Insert(string name, InstanceFeatures features, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs)
 		{
 			var u = Tenant.CreateUrl("InstanceEndpointManagement", "Insert");
 			var e = new JObject
 			{
 				{"name", name },
-				{"type", type.ToString() },
+				{"type", features.ToString() },
 				{"url", url },
 				{"reverseProxyUrl", reverseProxyUrl },
 				{"status", status.ToString() },
@@ -48,14 +48,14 @@ namespace TomPIT.Management.Environment
 			return id;
 		}
 
-		public void Update(Guid instance, string name, InstanceType type, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs)
+		public void Update(Guid instance, string name, InstanceFeatures features, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs)
 		{
 			var u = Tenant.CreateUrl("InstanceEndpointManagement", "Update");
 			var e = new JObject
 			{
 				{"token", instance },
 				{ "name", name },
-				{"type", type.ToString() },
+				{"type", features.ToString() },
 				{"url", url },
 				{"reverseProxyUrl", reverseProxyUrl },
 				{"status", status.ToString() },

@@ -7,7 +7,7 @@ using TomPIT.Sys.Notifications;
 
 namespace TomPIT.Sys.Model.BigData
 {
-	internal class BigDataTimezonesModel : SynchronizedRepository<ITimeZone, Guid>
+	public class BigDataTimezonesModel : SynchronizedRepository<ITimeZone, Guid>
 	{
 		public BigDataTimezonesModel(IMemoryCache container) : base(container, "bigdatatimezones")
 		{

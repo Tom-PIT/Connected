@@ -7,7 +7,7 @@ using TomPIT.Sys.Api.Database;
 
 namespace TomPIT.Sys.Model.Components
 {
-	internal class DevelopmentStatesModel : SynchronizedRepository<IComponent, Guid>
+	public class DevelopmentStatesModel : SynchronizedRepository<IComponent, Guid>
 	{
 		public DevelopmentStatesModel(IMemoryCache container) : base(container, "developmentState")
 		{

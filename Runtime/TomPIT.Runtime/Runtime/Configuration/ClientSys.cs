@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
-using Newtonsoft.Json;
-using TomPIT.Reflection;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
+using TomPIT.Environment;
 using TomPIT.Serialization.Converters;
 
 namespace TomPIT.Runtime.Configuration
@@ -13,6 +13,9 @@ namespace TomPIT.Runtime.Configuration
 		private List<string> _resourceGroups = null;
 		private List<MiddlewareHealthMonitoringConfiguration> _healthMonitoredMiddleware = null;
 		private IDiagnosticsConfiguration _diagnosticsConfiguration = null;
+
+		[JsonProperty(PropertyName = "features")]
+		public InstanceFeatures Features { get; set; }
 
 		[JsonProperty(PropertyName = "connections")]
 		[JsonConverter(typeof(ClientConnectionConverter))]
@@ -98,5 +101,5 @@ namespace TomPIT.Runtime.Configuration
 
 		[JsonProperty(PropertyName = "healthMonitoredMiddleware")]
 		public List<MiddlewareHealthMonitoringConfiguration> HealthMonitoredMiddleware => _healthMonitoredMiddleware ??= new();
-    }
+	}
 }

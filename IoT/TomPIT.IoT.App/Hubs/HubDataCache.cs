@@ -1,25 +1,24 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
-using TomPIT.Middleware;
 
 namespace TomPIT.IoT.Hubs
 {
 	internal class HubDataCache : ClientRepository<List<IIoTFieldState>, Guid>
 	{
-		private Lazy<ConcurrentQueue<JObject>> _buffer = new Lazy<ConcurrentQueue<JObject>>();
-
 		public HubDataCache(ITenant tenant) : base(tenant, "hubdata")
 		{
-
+			Buffer = new();
 		}
+
+		private ConcurrentQueue<KeyValuePair<Guid, List<IIoTFieldStateModifier>>> Buffer { get; }
 
 		public JObject Update(Guid hub, List<IIoTFieldStateModifier> fields)
 		{
@@ -43,11 +42,11 @@ namespace TomPIT.IoT.Hubs
 					SynchronizeField(schema, i);
 
 					pendingFieldsArray.Add(new JObject
-				{
-					{"field", i.Field },
-					{"value", i.Value },
-					{"device", i.Device }
-				});
+					{
+						{"field", i.Field },
+						{"value", i.Value },
+						{"device", i.Device }
+					});
 
 					var deviceName = i.Device.Split('/')[^1];
 
@@ -62,7 +61,8 @@ namespace TomPIT.IoT.Hubs
 					props.Add(i.Field.ToCamelCase(), new JValue(i.RawValue));
 				}
 			}
-			Buffer.Enqueue(pending);
+
+			Buffer.Enqueue(new KeyValuePair<Guid, List<IIoTFieldStateModifier>>(hub, fields));
 
 			var hash = JsonConvert.SerializeObject(result);
 
@@ -96,22 +96,18 @@ namespace TomPIT.IoT.Hubs
 
 		public void Flush()
 		{
-			var u = Tenant.CreateUrl("IoT", "UpdateState");
-
 			while (!Buffer.IsEmpty)
 			{
-				if (!Buffer.TryDequeue(out JObject i))
+				if (!Buffer.TryDequeue(out KeyValuePair<Guid, List<IIoTFieldStateModifier>> i))
 					break;
 
-				Tenant.Post(u, i);
+				Instance.SysProxy.IoT.UpdateState(i.Key, i.Value);
 			}
 		}
 
-		private ConcurrentQueue<JObject> Buffer { get { return _buffer.Value; } }
-
 		private void SynchronizeField(List<IIoTFieldState> schema, IIoTFieldStateModifier modifier)
 		{
-			if (!(schema.FirstOrDefault(f => string.Compare(f.Device, modifier.Device, true) == 0 && string.Compare(f.Field, modifier.Field, true) == 0) is TomPIT.IoT.IoTFieldState field))
+			if (schema.FirstOrDefault(f => string.Compare(f.Device, modifier.Device, true) == 0 && string.Compare(f.Field, modifier.Field, true) == 0) is not IoTFieldState field)
 			{
 				schema.Add(new IoTFieldState
 				{

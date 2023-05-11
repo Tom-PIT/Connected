@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
 using TomPIT.Cdn;
 using TomPIT.Storage;
@@ -15,7 +15,7 @@ using TomPIT.SysDb.Events;
 
 namespace TomPIT.Sys.Model.Cdn
 {
-	internal class EventsModel : PersistentRepository<IEventDescriptor, Guid>
+	public class EventsModel : PersistentRepository<IEventDescriptor, Guid>
 	{
 		private const string Queue = "event";
 

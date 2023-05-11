@@ -9,7 +9,7 @@ using TomPIT.SysDb.Development;
 
 namespace TomPIT.Sys.Model.Components
 {
-	internal class MicroServiceStringsModel : SynchronizedRepository<IMicroServiceString, string>
+	public class MicroServiceStringsModel : SynchronizedRepository<IMicroServiceString, string>
 	{
 		public MicroServiceStringsModel(IMemoryCache container) : base(container, "microservicestrings")
 		{

@@ -9,7 +9,7 @@ using TomPIT.Threading;
 
 namespace TomPIT.Sys.Model.BigData
 {
-	internal class BigDataPartitionsModel : SynchronizedRepository<IPartition, Guid>
+	public class BigDataPartitionsModel : SynchronizedRepository<IPartition, Guid>
 	{
 		private const string MaintenanceQueue = "bigdatapartition";
 

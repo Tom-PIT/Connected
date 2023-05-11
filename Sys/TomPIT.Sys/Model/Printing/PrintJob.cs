@@ -3,7 +3,7 @@ using TomPIT.Cdn;
 
 namespace TomPIT.Sys.Model.Printing
 {
-	internal class PrintJob : IPrintJob
+	public class PrintJob : IPrintJob
 	{
 		public PrintJob()
 		{

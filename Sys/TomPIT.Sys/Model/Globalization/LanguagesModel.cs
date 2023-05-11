@@ -7,7 +7,7 @@ using TomPIT.Sys.Notifications;
 
 namespace TomPIT.Sys.Model.Globalization
 {
-	internal class LanguagesModel : SynchronizedRepository<ILanguage, Guid>
+	public class LanguagesModel : SynchronizedRepository<ILanguage, Guid>
 	{
 		public LanguagesModel(IMemoryCache container) : base(container, "language")
 		{

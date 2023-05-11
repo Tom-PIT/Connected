@@ -16,7 +16,7 @@ namespace TomPIT.Rest
 				Authentication = AuthenticationType.SingleTenant
 			};
 
-			Instance.Initialize(InstanceType.Rest, services, e);
+			Instance.Initialize(InstanceFeatures.Rest, services, e);
 			Instance.InitializeShellServices();
 		}
 

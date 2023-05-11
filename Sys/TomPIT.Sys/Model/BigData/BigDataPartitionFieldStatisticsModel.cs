@@ -7,7 +7,7 @@ using TomPIT.Sys.Notifications;
 
 namespace TomPIT.Sys.Model.BigData
 {
-	internal class BigDataPartitionFieldStatisticsModel : SynchronizedRepository<IPartitionFieldStatistics, string>
+	public class BigDataPartitionFieldStatisticsModel : SynchronizedRepository<IPartitionFieldStatistics, string>
 	{
 		public BigDataPartitionFieldStatisticsModel(IMemoryCache container) : base(container, "bigdatafieldstatistics")
 		{

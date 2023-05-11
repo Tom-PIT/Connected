@@ -1,7 +1,6 @@
 ﻿using System;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
-using TomPIT.Middleware;
 
 namespace TomPIT.ComponentModel
 {
@@ -15,10 +14,7 @@ namespace TomPIT.ComponentModel
 		{
 			return Get(microService, f =>
 			{
-				var u = Tenant.CreateUrl("MicroService", "SelectMeta")
-					.AddParameter("microService", microService);
-
-				return Tenant.Get<string>(u);
+				return Instance.SysProxy.MicroServices.SelectMeta(microService);
 			});
 		}
 	}

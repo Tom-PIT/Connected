@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Immutable;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Immutable;
 using TomPIT.Search;
 using TomPIT.Storage;
 using TomPIT.Sys.Api.Database;
 
 namespace TomPIT.Sys.Model.Search
 {
-	internal class SearchModel
+	public class SearchModel
 	{
 		private const string Queue = "search";
 

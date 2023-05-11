@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using TomPIT.ComponentModel;
+using TomPIT.Environment;
 using TomPIT.Exceptions;
 using TomPIT.IoT;
 
@@ -21,7 +22,7 @@ namespace TomPIT.Middleware.Services
 			{
 				if (_server == null)
 				{
-					_server = Context.Services.Routing.GetServer(Environment.InstanceType.IoT, Environment.InstanceVerbs.All);
+					_server = Context.Services.Routing.GetServer(InstanceFeatures.IoT, InstanceVerbs.All);
 
 					if (_server == null)
 						throw new RuntimeException(SR.ErrNoIoTServer);
@@ -67,7 +68,7 @@ namespace TomPIT.Middleware.Services
 
 		public void Transaction(IoTMiddlewareTransactionArgs e)
 		{
-			var iotServer = Context.Services.Routing.GetServer(Environment.InstanceType.IoT, Environment.InstanceVerbs.All);
+			var iotServer = Context.Services.Routing.GetServer(InstanceFeatures.IoT, InstanceVerbs.All);
 			var url = $"{iotServer}/transaction/{e.MicroService}/{e.Hub}/{e.Device}/{e.Transaction}";
 
 			Context.Tenant.Post(url, e.Arguments);

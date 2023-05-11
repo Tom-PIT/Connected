@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using TomPIT.Api.ComponentModel;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
@@ -14,7 +14,7 @@ using TomPIT.Sys.Notifications;
 
 namespace TomPIT.Sys.Model.Components
 {
-	internal class ComponentsModel : SynchronizedRepository<IComponent, Guid>
+	public class ComponentsModel : SynchronizedRepository<IComponent, Guid>
 	{
 		public ComponentsModel(IMemoryCache container) : base(container, "component")
 		{
@@ -79,7 +79,7 @@ namespace TomPIT.Sys.Model.Components
 					else
 					{
 						Refresh(component.Token);
-						CachingNotifications.ComponentChanged(component.MicroService, component.Folder, component.Token,  component.NameSpace, component.Category, component.Name);
+						CachingNotifications.ComponentChanged(component.MicroService, component.Folder, component.Token, component.NameSpace, component.Category, component.Name);
 					}
 				}
 
@@ -96,7 +96,7 @@ namespace TomPIT.Sys.Model.Components
 		public void NotifyChanged(IComponent component)
 		{
 			Refresh(component.Token);
-			CachingNotifications.ComponentChanged(component.MicroService, component.Folder, component.Token,  component.NameSpace, component.Category, component.Name);
+			CachingNotifications.ComponentChanged(component.MicroService, component.Folder, component.Token, component.NameSpace, component.Category, component.Name);
 		}
 
 		public IComponent Select(Guid token)
@@ -283,7 +283,7 @@ namespace TomPIT.Sys.Model.Components
 				if (string.IsNullOrWhiteSpace(j))
 					continue;
 
-				var ds = Where(f=> string.Compare(f.Category, j.Trim()) == 0);
+				var ds = Where(f => string.Compare(f.Category, j.Trim()) == 0);
 
 				if (ds.Any())
 					r.AddRange(ds);

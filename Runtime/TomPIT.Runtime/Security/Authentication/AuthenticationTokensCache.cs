@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
 using TomPIT.Environment;
@@ -65,41 +65,31 @@ namespace TomPIT.Security.Authentication
 			return Where(f => f.ResourceGroup == resourceGroup);
 		}
 
-		public IAuthenticationToken Select(InstanceType type)
+		public IAuthenticationToken Select(InstanceFeatures features)
 		{
 			var claim = AuthenticationTokenClaim.None;
 
-			switch (type)
-			{
-				case InstanceType.Application:
-					claim = AuthenticationTokenClaim.Application;
-					break;
-				case InstanceType.Worker:
-					claim = AuthenticationTokenClaim.Worker;
-					break;
-				case InstanceType.Cdn:
-					claim = AuthenticationTokenClaim.Cdn;
-					break;
-				case InstanceType.IoT:
-					claim = AuthenticationTokenClaim.IoT;
-					break;
-				case InstanceType.BigData:
-					claim = AuthenticationTokenClaim.BigData;
-					break;
-				case InstanceType.Search:
-					claim = AuthenticationTokenClaim.Search;
-					break;
-				case InstanceType.Rest:
-					claim = AuthenticationTokenClaim.Rest;
-					break;
-			}
+			if (features.HasFlag(InstanceFeatures.Application))
+				claim |= AuthenticationTokenClaim.Application;
+			else if (features.HasFlag(InstanceFeatures.Worker))
+				claim |= AuthenticationTokenClaim.Worker;
+			else if (features.HasFlag(InstanceFeatures.Cdn))
+				claim |= AuthenticationTokenClaim.Cdn;
+			else if (features.HasFlag(InstanceFeatures.IoT))
+				claim |= AuthenticationTokenClaim.IoT;
+			else if (features.HasFlag(InstanceFeatures.BigData))
+				claim |= AuthenticationTokenClaim.BigData;
+			else if (features.HasFlag(InstanceFeatures.Search))
+				claim |= AuthenticationTokenClaim.Search;
+			else if (features.HasFlag(InstanceFeatures.Rest))
+				claim |= AuthenticationTokenClaim.Rest;
 
 			if (claim == AuthenticationTokenClaim.None)
 				return null;
 
-			var candidates = Where(f => (f.Claims & claim) == claim);
+			var candidates = Where(f => f.Claims.HasFlag(claim));
 
-			if (candidates.Count == 0)
+			if (!candidates.Any())
 				return null;
 
 			foreach (var candidate in candidates)

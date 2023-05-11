@@ -4,7 +4,7 @@ using TomPIT.Data;
 
 namespace TomPIT.Sys.Model.BigData
 {
-	internal class PartitionBuffer : PrimaryKeyRecord, IPartitionBuffer
+	public class PartitionBuffer : PrimaryKeyRecord, IPartitionBuffer
 	{
 		public PartitionBuffer()
 		{

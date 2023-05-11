@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using Newtonsoft.Json.Linq;
+using System.Linq;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
 using TomPIT.Environment;
-using TomPIT.Middleware;
 using TomPIT.Runtime;
 
 namespace TomPIT.ComponentModel
@@ -18,23 +16,12 @@ namespace TomPIT.ComponentModel
 
 		protected override void OnInitializing()
 		{
-			List<Folder> ds = null;
+			ImmutableList<IFolder> ds;
 
 			if (Tenant.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)
-			{
-				var u = Tenant.CreateUrl("Folder", "Query");
-				ds = Tenant.Get<List<Folder>>(u);
-			}
+				ds = Instance.SysProxy.Folders.Query();
 			else
-			{
-				var u = Tenant.CreateUrl("Folder", "QueryForResourceGroups");
-				var e = new JArray();
-
-				foreach (var i in Tenant.GetService<IResourceGroupService>().Query())
-					e.Add(i.Name.ToString());
-
-				ds = Tenant.Post<List<Folder>>(u, e);
-			}
+				ds = Instance.SysProxy.Folders.Query(Tenant.GetService<IResourceGroupService>().Query().Select(f => f.Name).ToList());
 
 			foreach (var i in ds)
 				Set(i.Token, i, TimeSpan.Zero);
@@ -42,12 +29,9 @@ namespace TomPIT.ComponentModel
 
 		protected override void OnInvalidate(Guid id)
 		{
-			var u = Tenant.CreateUrl("Folder", "SelectByToken")
-				.AddParameter("token", id);
+			var d = Instance.SysProxy.Folders.Select(id);
 
-			var d = Tenant.Get<Folder>(u);
-
-			if (d == null)
+			if (d is null)
 				return;
 
 			Set(d.Token, d, TimeSpan.Zero);
@@ -88,13 +72,7 @@ namespace TomPIT.ComponentModel
 					Remove(i.Token);
 			}
 
-			var u = Tenant.CreateUrl("Folder", "QueryForMicroService");
-			var e = new JObject
-			{
-				{"microService", microService }
-			};
-
-			var items = Tenant.Post<List<Folder>>(u, e);
+			var items = Instance.SysProxy.Folders.Query(microService);
 
 			foreach (var i in items)
 				Set(i.Token, i, TimeSpan.Zero);

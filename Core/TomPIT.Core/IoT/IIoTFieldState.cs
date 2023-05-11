@@ -4,6 +4,6 @@ namespace TomPIT.IoT
 {
 	public interface IIoTFieldState : IIoTFieldStateModifier
 	{
-		DateTime Modified { get; }
+		DateTime Modified { get; set; }
 	}
 }

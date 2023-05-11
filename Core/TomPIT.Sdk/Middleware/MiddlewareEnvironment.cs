@@ -1,4 +1,5 @@
-﻿using TomPIT.Runtime;
+﻿using TomPIT.Environment;
+using TomPIT.Runtime;
 
 namespace TomPIT.Middleware
 {
@@ -10,7 +11,7 @@ namespace TomPIT.Middleware
 			{
 				var service = Shell.GetService<IRuntimeService>();
 
-				return service.Mode == EnvironmentMode.Runtime && (service.SupportsUI || service.Type == Environment.InstanceType.Rest);
+				return service.Mode == EnvironmentMode.Runtime && (service.SupportsUI || service.Features.HasFlag(InstanceFeatures.Rest));
 			}
 		}
 	}

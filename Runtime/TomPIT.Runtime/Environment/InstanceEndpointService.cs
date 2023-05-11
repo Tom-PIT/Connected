@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
 using TomPIT.Distributed;
-using TomPIT.Middleware;
 
 namespace TomPIT.Environment
 {
@@ -20,15 +18,14 @@ namespace TomPIT.Environment
 
 		protected override void OnInitializing()
 		{
-			var u = Tenant.CreateUrl("InstanceEndpoint", "Query");
-			var ds = Tenant.Get<List<InstanceEndpoint>>(u);
+			var ds = Instance.SysProxy.InstanceEndpoints.Query();
 
 			foreach (var i in ds)
 			{
 				Set(i.Token, i, TimeSpan.Zero);
 
 				if (i.Status == InstanceStatus.Enabled)
-					Register(i.Type, i.Verbs, i.Token);
+					Register(i.Features, i.Verbs, i.Token);
 			}
 		}
 
@@ -45,7 +42,7 @@ namespace TomPIT.Environment
 			}
 
 			if (d.Status == InstanceStatus.Enabled)
-				Register(d.Type, d.Verbs, d.Token);
+				Register(d.Features, d.Verbs, d.Token);
 
 			Set(id, d, TimeSpan.Zero);
 		}
@@ -55,9 +52,9 @@ namespace TomPIT.Environment
 			return All();
 		}
 
-		public ImmutableList<IInstanceEndpoint> Query(InstanceType type)
+		public ImmutableList<IInstanceEndpoint> Query(InstanceFeatures features)
 		{
-			return Where(f => f.Type == type);
+			return Where(f => f.Features.HasFlag(features));
 		}
 
 		public IInstanceEndpoint Select(Guid endpoint)
@@ -70,50 +67,53 @@ namespace TomPIT.Environment
 					var r = Load(endpoint);
 
 					if (r != null && r.Status == InstanceStatus.Enabled)
-						Register(r.Type, r.Verbs, r.Token);
+						Register(r.Features, r.Verbs, r.Token);
 
 					return r;
 				});
 		}
 
-		public IInstanceEndpoint Select(InstanceType type)
+		public IInstanceEndpoint Select(InstanceFeatures features)
 		{
-			return Next(type, InstanceVerbs.All);
+			return Next(features, InstanceVerbs.All);
 		}
 
 		private IInstanceEndpoint Load(Guid endpoint)
 		{
-			var u = Tenant.CreateUrl("InstanceEndpoint", "Select")
-				.AddParameter("endpoint", endpoint);
-
-			return Tenant.Get<InstanceEndpoint>(u);
+			return Instance.SysProxy.InstanceEndpoints.Select(endpoint);
 		}
 
-		public string Url(InstanceType type, InstanceVerbs verb)
+		public string Url(InstanceFeatures features, InstanceVerbs verb)
 		{
-			var r = Next(type, verb);
+			var r = Next(features, verb);
 
-			if (r == null)
+			if (r is null)
 				return null;
 
 			return r.Url;
 		}
 
-		private void Register(InstanceType type, InstanceVerbs verbs, Guid endpoint)
+		private void Register(InstanceFeatures features, InstanceVerbs verbs, Guid endpoint)
 		{
-			if ((InstanceVerbs.Get & verbs) == InstanceVerbs.Get)
-				Register(CreateRobinKey(type, InstanceVerbs.Get), endpoint);
+			foreach (var value in Enum.GetValues<InstanceFeatures>())
+			{
+				if (value == InstanceFeatures.Unknown || !features.HasFlag(value))
+					continue;
 
-			if ((InstanceVerbs.Post & verbs) == InstanceVerbs.Post)
-				Register(CreateRobinKey(type, InstanceVerbs.Post), endpoint);
+				if ((InstanceVerbs.Get & verbs) == InstanceVerbs.Get)
+					Register(CreateRobinKey(value, InstanceVerbs.Get), endpoint);
 
-			if (verbs == InstanceVerbs.All)
-				Register(CreateRobinKey(type, InstanceVerbs.All), endpoint);
+				if ((InstanceVerbs.Post & verbs) == InstanceVerbs.Post)
+					Register(CreateRobinKey(value, InstanceVerbs.Post), endpoint);
+
+				if (verbs == InstanceVerbs.All)
+					Register(CreateRobinKey(value, InstanceVerbs.All), endpoint);
+			}
 		}
 
 		private void Register(string key, Guid endpoint)
 		{
-			RoundRobin robin = null;
+			RoundRobin robin;
 
 			if (_rr.ContainsKey(key))
 				robin = _rr[key];
@@ -133,26 +133,26 @@ namespace TomPIT.Environment
 				_rr[i].Remove(endpoint);
 		}
 
-		private string CreateRobinKey(InstanceType type, InstanceVerbs verbs)
+		private static string CreateRobinKey(InstanceFeatures features, InstanceVerbs verbs)
 		{
-			return string.Format("{0}.{1}", type, verbs);
+			return $"{features}.{verbs}";
 		}
 
-		public IInstanceEndpoint Next(InstanceType type, InstanceVerbs verb)
+		public IInstanceEndpoint Next(InstanceFeatures features, InstanceVerbs verb)
 		{
 			Initialize();
 
-			var key = CreateRobinKey(type, verb);
+			var key = CreateRobinKey(features, verb);
 
 			if (!_rr.ContainsKey(key))
 			{
 				if (verb == InstanceVerbs.All)
 				{
-					key = CreateRobinKey(type, InstanceVerbs.Get);
+					key = CreateRobinKey(features, InstanceVerbs.Get);
 
 					if (!_rr.ContainsKey(key))
 					{
-						key = CreateRobinKey(type, InstanceVerbs.Post);
+						key = CreateRobinKey(features, InstanceVerbs.Post);
 
 						if (!_rr.ContainsKey(key))
 							return null;
@@ -160,7 +160,7 @@ namespace TomPIT.Environment
 				}
 				else
 				{
-					key = CreateRobinKey(type, InstanceVerbs.All);
+					key = CreateRobinKey(features, InstanceVerbs.All);
 
 					if (!_rr.ContainsKey(key))
 						return null;

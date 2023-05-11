@@ -10,7 +10,7 @@ using TomPIT.Sys.Notifications;
 
 namespace TomPIT.Sys.Model.Components
 {
-	internal class MicroServicesModel : SynchronizedRepository<IMicroService, Guid>
+	public class MicroServicesModel : SynchronizedRepository<IMicroService, Guid>
 	{
 		public MicroServicesModel(IMemoryCache container) : base(container, "microservice")
 		{

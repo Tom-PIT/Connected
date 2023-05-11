@@ -177,16 +177,7 @@ namespace TomPIT.Ide.Environment.Providers
 
 		private void ResolveValue(Guid id, Property value, string propertyName, object val)
 		{
-			if (value.IsLocalizable && Environment.Globalization.LanguageToken != Guid.Empty)
-			{
-				var ss = Shell.GetService<IMicroServiceService>().SelectString(Element.MicroService(), Environment.Globalization.LanguageToken, id, propertyName);
-
-				if (ss != null)
-					value.Value = ss;
-			}
-
-			if (value.Value == null)
-				value.Value = val;
+			value.Value ??= val;
 		}
 
 		private void DiscoverProperty(object instance, Property val, PropertyInfo property)

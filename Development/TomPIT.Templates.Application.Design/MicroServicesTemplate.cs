@@ -1,16 +1,15 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Routing;
 using TomPIT.ComponentModel;
 using TomPIT.Design.Ide;
 using TomPIT.Design.Ide.Dom;
 using TomPIT.Ide.Collections;
 using TomPIT.Ide.ComponentModel;
-using TomPIT.MicroServices.Apis;
 using TomPIT.MicroServices.Cdn;
 using TomPIT.MicroServices.Configuration;
 using TomPIT.MicroServices.Data;
@@ -44,7 +43,7 @@ namespace TomPIT.MicroServices.Design
 				{ ComponentCategories.Connection,      new ItemDescriptor("Connection",       ComponentCategories.Connection,        typeof(Connection))                          { Glyph = "fal fa-server",             Category = "Data" ,           Ordinal=10} },
 				{ ComponentCategories.Model,             new ItemDescriptor("Model",              ComponentCategories.Model,               typeof(Model))                                 { Glyph = "fal fa-file-code",    Category = "Data" ,     Ordinal=20} },
 
-				{ ComponentCategories.Api,             new ItemDescriptor("Api",              ComponentCategories.Api,               typeof(Api))                                 { Glyph = "fal fa-broadcast-tower",    Category = "Middleware" ,     Ordinal=110} },
+				{ ComponentCategories.Api,             new ItemDescriptor("Api",              ComponentCategories.Api,               typeof(Apis.Api))                                 { Glyph = "fal fa-broadcast-tower",    Category = "Middleware" ,     Ordinal=110} },
 				{ ComponentCategories.Script,          new ItemDescriptor("Script",           ComponentCategories.Script,            typeof(Scripting.Script))                    { Glyph = "fal fa-file-code",          Category = "Middleware" ,     Ordinal=120} },
 				{ ComponentCategories.DistributedEvent,new ItemDescriptor("Distributed events",ComponentCategories.DistributedEvent,  typeof(DistributedEvents))                    { Glyph = "fal fa-chart-network",      Category = "Middleware" ,    Ordinal=130} },
 				{ ComponentCategories.HostedWorker,    new ItemDescriptor("Hosted worker",    ComponentCategories.HostedWorker,      typeof(HostedWorker))                        { Glyph = "fal fa-cog",                Category = "Middleware" ,    Ordinal=140} },

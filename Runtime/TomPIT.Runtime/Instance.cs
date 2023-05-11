@@ -26,6 +26,9 @@ using TomPIT.Environment;
 using TomPIT.Globalization;
 using TomPIT.HealthMonitoring;
 using TomPIT.Middleware;
+using TomPIT.Proxy;
+using TomPIT.Proxy.Local;
+using TomPIT.Proxy.Remote;
 using TomPIT.Reflection;
 using TomPIT.Runtime;
 using TomPIT.Runtime.Configuration;
@@ -61,16 +64,26 @@ namespace TomPIT
 
 		private static bool CorsEnabled { get; set; }
 
-		internal static InstanceType InstanceType { get; set; }
+		internal static InstanceFeatures Features { get; set; }
 		private static IServiceCollection Services { get; set; }
 
-		public static bool SupportsDesign => InstanceType == InstanceType.Management || InstanceType == InstanceType.Development || InstanceType == InstanceType.Application;
+		public static ISysProxy SysProxy { get; private set; }
+		public static bool SupportsDesign => Features.HasFlag(InstanceFeatures.Management) || Features.HasFlag(InstanceFeatures.Development) || Features.HasFlag(InstanceFeatures.Application);
 
-		public static void Initialize(InstanceType type, IServiceCollection services, ServicesConfigurationArgs e)
+		public static void Boot()
+		{
+			Shell.RegisterConfigurationType(typeof(ClientSys));
+
+			if (Shell.GetConfiguration<ClientSys>().Features.HasFlag(InstanceFeatures.Sys))
+				SysProxy = new LocalProxy();
+			else
+				SysProxy = new RemoteProxy();
+		}
+
+		public static void Initialize(InstanceFeatures features, IServiceCollection services, ServicesConfigurationArgs e)
 		{
 			Services = services;
-			InstanceType = type;
-			Shell.RegisterConfigurationType(typeof(ClientSys));
+			Features = features;
 
 			InitializeServices(services, e);
 

@@ -8,7 +8,7 @@ using TomPIT.SysDb.Environment;
 
 namespace TomPIT.Sys.Model.Components
 {
-	internal class ResourceGroupsModel : SynchronizedRepository<IServerResourceGroup, Guid>
+	public class ResourceGroupsModel : SynchronizedRepository<IServerResourceGroup, Guid>
 	{
 		public static readonly Guid DefaultResourceGroup = new Guid("E14372D117CD48D6BC29D57C397AF87C");
 

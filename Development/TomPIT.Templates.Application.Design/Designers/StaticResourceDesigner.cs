@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.IO;
-using Newtonsoft.Json.Linq;
 using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;

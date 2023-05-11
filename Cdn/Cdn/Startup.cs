@@ -31,7 +31,7 @@ namespace TomPIT.Cdn
 				CorsEnabled = true
 			};
 
-			Instance.Initialize(InstanceType.Cdn, services, e);
+			Instance.Initialize(InstanceFeatures.Cdn, services, e);
 			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
 			Instance.InitializeShellServices();
 

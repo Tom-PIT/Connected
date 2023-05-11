@@ -4,7 +4,7 @@ using TomPIT.Sys.Api.Database;
 
 namespace TomPIT.Sys.Model.Components
 {
-	internal class MicroServicesMetaModel : CacheRepository<MicroServiceMeta, Guid>
+	public class MicroServicesMetaModel : CacheRepository<MicroServiceMeta, Guid>
 	{
 		public MicroServicesMetaModel(IMemoryCache container) : base(container, "microservicemeta")
 		{

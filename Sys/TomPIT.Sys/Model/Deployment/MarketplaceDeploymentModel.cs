@@ -43,7 +43,7 @@ namespace TomPIT.Sys.Model.Deployment
 				Password = password;
 
 				var setting = DataModel.Settings.Select("marketplaceCredentials", null, null, null);
-				var value = Shell.GetService<ICryptographyService>().Encrypt(this, string.Format("{0} {1}", user, password));
+				var value = Shell.GetService<ISysCryptographyService>().Encrypt(this, string.Format("{0} {1}", user, password));
 				DataModel.Settings.Update("marketplaceCredentials", null, null, null, value);
 
 				LoadAccountProfile();
@@ -78,7 +78,7 @@ namespace TomPIT.Sys.Model.Deployment
 			if (loginInfo == null || string.IsNullOrWhiteSpace(loginInfo.Value))
 				return;
 
-			var decrypted = Shell.GetService<ICryptographyService>().Decrypt(this, loginInfo.Value);
+			var decrypted = Shell.GetService<ISysCryptographyService>().Decrypt(this, loginInfo.Value);
 			var tokens = decrypted.Split(new char[] { ' ' }, 2);
 
 			try

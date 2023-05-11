@@ -3,7 +3,7 @@ using TomPIT.Caching;
 
 namespace TomPIT.Sys.Caching
 {
-	internal class IdentityRepository<T, K> : PersistentRepository<T, K> where T : class
+	public class IdentityRepository<T, K> : PersistentRepository<T, K> where T : class
 	{
 		private long _identity = 0L;
 		public IdentityRepository(IMemoryCache container, string key) : base(container, key)

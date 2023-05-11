@@ -8,7 +8,7 @@ using TomPIT.Sys.Model.Data;
 
 namespace TomPIT.Sys.Model.Development
 {
-	internal class VersionControlModel
+	public class VersionControlModel
 	{
 		public void DeleteCommit(Guid token)
 		{

@@ -6,7 +6,7 @@ using TomPIT.Sys.Api.Database;
 
 namespace TomPIT.Sys.Model.Analytics
 {
-	internal class MrusModel
+	public class MrusModel
 	{
 		public void Modify(int type, string primaryKey, AnalyticsEntity entity, string entityPrimaryKey, List<string> tags, int capacity)
 		{

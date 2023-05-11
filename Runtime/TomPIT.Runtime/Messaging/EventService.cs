@@ -1,5 +1,4 @@
 ﻿using System;
-using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Distributed;
 using TomPIT.Connectivity;
@@ -20,33 +19,29 @@ namespace TomPIT.Messaging
 
 		public Guid Trigger<T>(IDistributedEvent ev, IMiddlewareCallback callback, T e)
 		{
-			var u = Tenant.CreateUrl("Event", "Trigger");
-			JObject args;
+			var ms = Guid.Empty;
+			var name = string.Empty;
+			var cb = string.Empty;
+			var args = string.Empty;
 
-			if (ev != null)
+			if (ev is not null)
 			{
-				args = new JObject
-				{
-					{"microService", ev.Configuration().MicroService() },
-					{"name", $"{ev.Configuration().ComponentName()}/{ev.Name}" }
-				};
+				ms = ev.Configuration().MicroService();
+				name = $"{ev.Configuration().ComponentName()}/{ev.Name}";
 			}
 			else
 			{
-				args = new JObject
-				{
-					{"microService", callback.MicroService.ToString() },
-					{"name", "$" }
-				};
+				ms = callback.MicroService;
+				name = "$";
 			}
 
-			if (callback != null)
-				args.Add("callback", $"{callback.MicroService}/{callback.Component}/{callback.Element}");
+			if (callback is not null)
+				cb = $"{callback.MicroService}/{callback.Component}/{callback.Element}";
 
-			if (e != null)
-				args.Add("arguments", Serializer.Serialize(e));
+			if (e is not null)
+				args = Serializer.Serialize(e);
 
-			return Tenant.Post<Guid>(u, args);
+			return Instance.SysProxy.Events.Trigger(ms, name, cb, args);
 		}
 	}
 }

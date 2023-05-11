@@ -9,7 +9,7 @@ using TomPIT.Sys.Caching;
 
 namespace TomPIT.Sys.Model.BigData
 {
-	internal class PartitionBufferingModel : IdentityRepository<PartitionBuffer, Guid>
+	public class PartitionBufferingModel : IdentityRepository<PartitionBuffer, Guid>
 	{
 		private readonly object _sync = new object();
 		public PartitionBufferingModel(IMemoryCache container) : base(container, "bigdatabuffers")
@@ -33,7 +33,7 @@ namespace TomPIT.Sys.Model.BigData
 		{
 			var result = new List<PartitionBuffer>();
 
-			foreach (var item in All().OrderBy(f=>f.NextVisible))
+			foreach (var item in All().OrderBy(f => f.NextVisible))
 			{
 				if (item.NextVisible > DateTime.UtcNow)
 					continue;

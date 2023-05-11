@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28803.352
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32922.545
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{BA4B5CE4-951B-4D6F-A95C-B673861C3DDF}"
 EndProject
@@ -118,6 +118,16 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SaaSClients", "SaaSClients", "{8D753552-D0E8-4378-9E18-0AC94D7DE88F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connected.SaaS.Clients", "..\Saas\Clients\Connected.SaaS.Clients\Connected.SaaS.Clients\Connected.SaaS.Clients.csproj", "{04EB760D-55BC-4DE3-BB0A-2942659C1395}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Proxy.Local", "..\TomPIT.Proxy.Local\TomPIT.Proxy.Local.csproj", "{0D16FD96-225B-4970-9C55-F88D07D5E8DF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Proxy", "Proxy", "{51BDC363-5A06-4CB6-A5EF-7EE7216DFE00}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Connected", "Connected", "{BD99AEE6-AB21-48A5-8E0A-4E823DFEE08C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Connected", "..\TomPIT.Connected\TomPIT.Connected.csproj", "{09ED0851-E115-4522-BA8E-81FF733C2731}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TomPIT.Proxy.Remote", "..\TomPIT.Proxy.Remote\TomPIT.Proxy.Remote.csproj", "{9CFF8D45-7BCD-476D-9852-CC5470E399FE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -293,6 +303,18 @@ Global
 		{04EB760D-55BC-4DE3-BB0A-2942659C1395}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{04EB760D-55BC-4DE3-BB0A-2942659C1395}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{04EB760D-55BC-4DE3-BB0A-2942659C1395}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D16FD96-225B-4970-9C55-F88D07D5E8DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D16FD96-225B-4970-9C55-F88D07D5E8DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D16FD96-225B-4970-9C55-F88D07D5E8DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D16FD96-225B-4970-9C55-F88D07D5E8DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09ED0851-E115-4522-BA8E-81FF733C2731}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09ED0851-E115-4522-BA8E-81FF733C2731}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09ED0851-E115-4522-BA8E-81FF733C2731}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09ED0851-E115-4522-BA8E-81FF733C2731}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CFF8D45-7BCD-476D-9852-CC5470E399FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CFF8D45-7BCD-476D-9852-CC5470E399FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CFF8D45-7BCD-476D-9852-CC5470E399FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CFF8D45-7BCD-476D-9852-CC5470E399FE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -340,6 +362,9 @@ Global
 		{8A925065-C5C6-417F-BD1D-D68C6B774970} = {A07322A8-3CCD-4185-8FE0-1600FE6099EA}
 		{D51BB735-186E-48C9-BFB2-B667F9566762} = {8D753552-D0E8-4378-9E18-0AC94D7DE88F}
 		{04EB760D-55BC-4DE3-BB0A-2942659C1395} = {8D753552-D0E8-4378-9E18-0AC94D7DE88F}
+		{0D16FD96-225B-4970-9C55-F88D07D5E8DF} = {51BDC363-5A06-4CB6-A5EF-7EE7216DFE00}
+		{09ED0851-E115-4522-BA8E-81FF733C2731} = {BD99AEE6-AB21-48A5-8E0A-4E823DFEE08C}
+		{9CFF8D45-7BCD-476D-9852-CC5470E399FE} = {51BDC363-5A06-4CB6-A5EF-7EE7216DFE00}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {56CEBC0B-257E-403D-8CF9-1F6B50358F86}

@@ -9,7 +9,7 @@ namespace TomPIT.SysDb.Sql.Environment
 		public string Url { get; set; }
 		public InstanceStatus Status { get; set; }
 		public string Name { get; set; }
-		public InstanceType Type { get; set; }
+		public InstanceFeatures Features { get; set; }
 		public Guid Token { get; set; }
 		public InstanceVerbs Verbs { get; set; }
 		public string ReverseProxyUrl { get; set; }
@@ -21,7 +21,7 @@ namespace TomPIT.SysDb.Sql.Environment
 			Url = GetString("url");
 			Status = GetValue("status", InstanceStatus.Disabled);
 			Name = GetString("name");
-			Type = GetValue("type", InstanceType.Unknown);
+			Features = GetValue("type", InstanceFeatures.Unknown);
 			Token = GetGuid("token");
 			Verbs = GetValue("verbs", InstanceVerbs.Get);
 			ReverseProxyUrl = GetString("reverse_proxy_url");

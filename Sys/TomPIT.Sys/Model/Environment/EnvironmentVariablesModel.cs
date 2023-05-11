@@ -5,7 +5,7 @@ using TomPIT.SysDb.Environment;
 
 namespace TomPIT.Sys.Model.Environment
 {
-	internal class EnvironmentVariablesModel : SynchronizedRepository<IEnvironmentVariable, string>
+	public class EnvironmentVariablesModel : SynchronizedRepository<IEnvironmentVariable, string>
 	{
 		public EnvironmentVariablesModel(IMemoryCache container) : base(container, "environmentvars")
 		{

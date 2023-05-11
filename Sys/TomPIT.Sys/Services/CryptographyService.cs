@@ -6,7 +6,7 @@ using TomPIT.Security;
 
 namespace TomPIT.Sys.Services
 {
-	internal class CryptographyService : ICryptographyService
+	internal class CryptographyService : ISysCryptographyService
 	{
 		private const string PassPhrase = "p7sfecd2t9l09mn9030j3ekl9i4rt6gt";
 		private const string SaltValue = "l0stwqhjbf53ipss776189007sbgtww2";

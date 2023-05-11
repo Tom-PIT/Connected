@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Routing;
+using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Routing;
 using TomPIT.Environment;
 using TomPIT.Navigation;
 using TomPIT.Routing;
@@ -11,7 +11,7 @@ namespace TomPIT.Middleware.Services
 {
 	public interface IMiddlewareRoutingService
 	{
-		string GetServer(InstanceType type, InstanceVerbs verbs);
+		string GetServer(InstanceFeatures features, InstanceVerbs verbs);
 		string ApplicationUrl(string route);
 		string RestUrl(string route);
 		string IoTUrl(string route);

@@ -13,58 +13,58 @@ using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.Development
 {
-    public class Startup
-    {
-        public void ConfigureServices(IServiceCollection services)
-        {
-            var e = new ServicesConfigurationArgs
-            {
-                Authentication = AuthenticationType.MultiTenant
-            };
+   public class Startup
+   {
+      public void ConfigureServices(IServiceCollection services)
+      {
+         var e = new ServicesConfigurationArgs
+         {
+            Authentication = AuthenticationType.MultiTenant
+         };
 
-            Instance.Initialize(InstanceType.Development, services, e);
-            Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
-            DevelopmentBootstrapper.Run();
-            IdeBootstrapper.Run();
-            Instance.InitializeShellServices();
+         Instance.Initialize(InstanceFeatures.Development, services, e);
+         Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
+         DevelopmentBootstrapper.Run();
+         IdeBootstrapper.Run();
+         Instance.InitializeShellServices();
 
-            services.AddHostedService<ToolsRunner>();
-            services.AddHostedService<AutoFixRunner>();
-            services.AddHostedService<ComponentAnalysisRunner>();
-        }
+         services.AddHostedService<ToolsRunner>();
+         services.AddHostedService<AutoFixRunner>();
+         services.AddHostedService<ComponentAnalysisRunner>();
+      }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-        {
-            Instance.Configure(app, env, (f) =>
-                {
-                    RegisterDesignersRouting(f.Builder);
+      public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+      {
+         Instance.Configure(app, env, (f) =>
+             {
+                RegisterDesignersRouting(f.Builder);
 
-                    Configuration.Routing.Register(f.Builder);
-                    IdeRouting.Register(f.Builder, "Ide", "ide/{microservice}");
-                }
-            );
+                Configuration.Routing.Register(f.Builder);
+                IdeRouting.Register(f.Builder, "Ide", "ide/{microservice}");
+             }
+         );
 
-            Instance.Run(app, env);
-        }
+         Instance.Run(app, env);
+      }
 
-        private void OnTenantInitialize(object sender, TenantArgs e)
-        {
-            e.Tenant.RegisterService(typeof(IAutoFixService), typeof(AutoFixService));
-        }
+      private void OnTenantInitialize(object sender, TenantArgs e)
+      {
+         e.Tenant.RegisterService(typeof(IAutoFixService), typeof(AutoFixService));
+      }
 
-        private void RegisterDesignersRouting(IEndpointRouteBuilder builder)
-        {
-            foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
-            {
-                var t = TypeExtensions.GetType(i);
+      private void RegisterDesignersRouting(IEndpointRouteBuilder builder)
+      {
+         foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
+         {
+            var t = TypeExtensions.GetType(i);
 
-                if (t == null)
-                    continue;
+            if (t == null)
+               continue;
 
-                var template = t.CreateInstance<IMicroServiceTemplate>();
+            var template = t.CreateInstance<IMicroServiceTemplate>();
 
-                template.RegisterRoutes(builder);
-            }
-        }
-    }
+            template.RegisterRoutes(builder);
+         }
+      }
+   }
 }

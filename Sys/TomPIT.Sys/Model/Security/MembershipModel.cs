@@ -7,7 +7,7 @@ using TomPIT.Sys.Notifications;
 
 namespace TomPIT.Sys.Model.Security
 {
-	internal class MembershipModel : SynchronizedRepository<IMembership, string>
+	public class MembershipModel : SynchronizedRepository<IMembership, string>
 	{
 		public MembershipModel(IMemoryCache container) : base(container, "membership")
 		{

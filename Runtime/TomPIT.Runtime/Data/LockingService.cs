@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using TomPIT.Connectivity;
 using TomPIT.Exceptions;
-using TomPIT.Middleware;
 
 namespace TomPIT.Data
 {
@@ -16,13 +15,9 @@ namespace TomPIT.Data
 		{
 			for (var i = 0; i < retryCount; i++)
 			{
-				var result = Tenant.Post<Lock>(CreateUrl("Lock"), new
-				{
-					Entity = entity,
-					Timeout = timeout
-				});
+				var result = Instance.SysProxy.Locking.Lock(entity, timeout);
 
-				if (result != null)
+				if (result is not null)
 					return result;
 
 				Task.Delay(250).Wait();
@@ -33,24 +28,12 @@ namespace TomPIT.Data
 
 		public void Ping(Guid unlockKey, TimeSpan timeout)
 		{
-			Tenant.Post<Lock>(CreateUrl("Ping"), new
-			{
-				UnlockKey = unlockKey,
-				Timeout = timeout
-			});
+			Instance.SysProxy.Locking.Ping(unlockKey, timeout);
 		}
 
 		public void Unlock(Guid unlockKey)
 		{
-			Tenant.Post(CreateUrl("Unlock"), new
-			{
-				UnlockKey = unlockKey
-			});
-		}
-
-		private string CreateUrl(string action)
-		{
-			return Tenant.CreateUrl("Locking", action);
+			Instance.SysProxy.Locking.Unlock(unlockKey);
 		}
 	}
 }

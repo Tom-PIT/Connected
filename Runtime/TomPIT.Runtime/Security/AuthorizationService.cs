@@ -340,7 +340,7 @@ namespace TomPIT.Security
 
 		public void RegisterAuthenticationProvider(string id, IAuthenticationProvider provider)
 		{
-			AuthenticationProviders.AddOrUpdate(id, provider, (s, p)=>
+			AuthenticationProviders.AddOrUpdate(id, provider, (s, p) =>
 			{
 				return provider;
 			});
@@ -522,9 +522,9 @@ namespace TomPIT.Security
 				throw firstFail;
 		}
 
-		public string RequestToken(InstanceType type)
+		public string RequestToken(InstanceFeatures features)
 		{
-			return DefaultAuthenticationProvider.RequestToken(type);
+			return DefaultAuthenticationProvider.RequestToken(features);
 		}
 
 		private ServerUrl CreateUrl(string action)

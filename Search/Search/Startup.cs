@@ -27,12 +27,12 @@ namespace TomPIT.Search
 				Authentication = AuthenticationType.SingleTenant
 			};
 
-			Instance.Initialize(InstanceType.Search, services, e);
-			
+			Instance.Initialize(InstanceFeatures.Search, services, e);
+
 			InitializeConfiguration();
 
 			Instance.InitializeShellServices();
-			
+
 			RegisterTasks(services);
 		}
 

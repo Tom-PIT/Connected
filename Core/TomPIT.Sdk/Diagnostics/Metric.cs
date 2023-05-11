@@ -7,7 +7,7 @@ namespace TomPIT.Diagnostics
 	{
 		public DateTime Start { get; set; }
 		public DateTime End { get; set; }
-		public InstanceType Instance { get; set; }
+		public InstanceFeatures Features { get; set; }
 		public string IP { get; set; }
 		public Guid Component { get; set; }
 		public Guid Element { get; set; }

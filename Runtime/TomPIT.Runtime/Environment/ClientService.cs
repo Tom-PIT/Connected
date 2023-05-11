@@ -1,7 +1,6 @@
 ﻿using TomPIT.Caching;
 using TomPIT.Connectivity;
 using TomPIT.Exceptions;
-using TomPIT.Middleware;
 using TomPIT.Security;
 
 namespace TomPIT.Environment
@@ -15,37 +14,29 @@ namespace TomPIT.Environment
 
 		public void Delete(string token)
 		{
-			Tenant.Post(CreateUrl("Delete"), new
-			{
-				token
-			});
+			Instance.SysProxy.Clients.Delete(token);
 
 			Remove(token);
 		}
 
 		public string Insert(string name, ClientStatus status, string type)
 		{
-			return Tenant.Post<string>(CreateUrl("Insert"), new
-			{
-				name,
-				status,
-				type
-			});
+			return Instance.SysProxy.Clients.Insert(name, status, type);
 		}
 
 		public void Notify(string token, string method, object arguments)
 		{
-			var cdn = Tenant.GetService<IInstanceEndpointService>().Select(InstanceType.Cdn);
+			var cdn = Tenant.GetService<IInstanceEndpointService>().Select(InstanceFeatures.Cdn);
 
 			if (cdn == null)
-				throw new NotFoundException($"{SR.ErrInstanceEndpointNotFound} ({InstanceType.Cdn})");
+				throw new NotFoundException($"{SR.ErrInstanceEndpointNotFound} ({InstanceFeatures.Cdn})");
 
 			var url = $"{cdn.Url}/sys/clients/notify";
 			var provider = Tenant.GetService<IAuthorizationService>() as IAuthenticationTokenProvider;
 			var authToken = string.Empty;
 
 			if (provider != null)
-				authToken = provider.RequestToken(InstanceType.Cdn);
+				authToken = provider.RequestToken(InstanceFeatures.Cdn);
 
 			Tenant.Post(url, new
 			{
@@ -64,27 +55,13 @@ namespace TomPIT.Environment
 		{
 			return Get(token, (f) =>
 			{
-				return Tenant.Post<Client>(CreateUrl("Select"), new
-				{
-					token
-				});
+				return Instance.SysProxy.Clients.Select(token);
 			});
 		}
 
 		public void Update(string token, string name, ClientStatus status, string type)
 		{
-			Tenant.Post(CreateUrl("Update"), new
-			{
-				token,
-				name,
-				status,
-				type
-			});
-		}
-
-		private ServerUrl CreateUrl(string method)
-		{
-			return Tenant.CreateUrl("Client", method);
+			Instance.SysProxy.Clients.Update(token, name, status, type);
 		}
 	}
 }

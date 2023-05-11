@@ -15,6 +15,7 @@
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
+    <OutputType>Library</OutputType>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="lz4net" Version="1.0.15.93" />

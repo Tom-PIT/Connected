@@ -23,7 +23,7 @@ namespace TomPIT.Management.Dom
 
 		public override bool Commit(object component, string property, string attribute)
 		{
-			Environment.Context.Tenant.GetService<IInstanceEndpointManagementService>().Update(Endpoint.Token, Endpoint.Name, Endpoint.Type, Endpoint.Url, Endpoint.ReverseProxyUrl, Endpoint.Status, Endpoint.Verbs);
+			Environment.Context.Tenant.GetService<IInstanceEndpointManagementService>().Update(Endpoint.Token, Endpoint.Name, Endpoint.Features, Endpoint.Url, Endpoint.ReverseProxyUrl, Endpoint.Status, Endpoint.Verbs);
 
 			return true;
 		}

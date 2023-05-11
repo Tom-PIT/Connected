@@ -7,7 +7,7 @@ using TomPIT.SysDb.Messaging;
 
 namespace TomPIT.Sys.Model.Cdn
 {
-	internal class MessageSubscribersModel : IdentityRepository<ISubscriber, string>
+	public class MessageSubscribersModel : IdentityRepository<ISubscriber, string>
 	{
 		public MessageSubscribersModel(IMemoryCache container) : base(container, "messagesubscriber")
 		{

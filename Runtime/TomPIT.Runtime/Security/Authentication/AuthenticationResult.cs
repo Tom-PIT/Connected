@@ -2,7 +2,7 @@
 
 namespace TomPIT.Security.Authentication
 {
-	public class AuthenticationResult : IClientAuthenticationResult
+	internal class AuthenticationResult : IClientAuthenticationResult
 	{
 		public string Token { get; set; }
 		public bool Success { get; set; }

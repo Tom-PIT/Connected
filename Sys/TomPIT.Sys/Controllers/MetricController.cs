@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
 using TomPIT.Diagnostics;
 using TomPIT.Environment;
 using TomPIT.Sys.Model;
@@ -33,7 +33,7 @@ namespace TomPIT.Sys.Controllers
 					ConsumptionIn = jo.Optional("consumptionId", 0L),
 					ConsumptionOut = jo.Optional("consumptionOut", 0L),
 					End = jo.Optional("end", DateTime.UtcNow),
-					Instance = jo.Optional("instance", InstanceType.Unknown),
+					Features = jo.Optional("instance", InstanceFeatures.Unknown),
 					IP = jo.Optional("ip", string.Empty),
 					Parent = jo.Optional("parent", Guid.Empty),
 					Component = jo.Required<Guid>("component"),

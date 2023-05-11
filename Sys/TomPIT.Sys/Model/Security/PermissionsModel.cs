@@ -10,7 +10,7 @@ using TomPIT.Sys.Notifications;
 
 namespace TomPIT.Sys.Model.Security
 {
-	internal class PermissionsModel : SynchronizedRepository<IPermission, string>
+	public class PermissionsModel : SynchronizedRepository<IPermission, string>
 	{
 		public PermissionsModel(IMemoryCache container) : base(container, "permission")
 		{

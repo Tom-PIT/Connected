@@ -20,7 +20,7 @@ using TomPIT.Sys.Model.Workers;
 
 namespace TomPIT.Sys.Model
 {
-	internal static class DataModel
+	public static class DataModel
 	{
 		private static readonly Lazy<MemoryCache> _cache = new Lazy<MemoryCache>();
 

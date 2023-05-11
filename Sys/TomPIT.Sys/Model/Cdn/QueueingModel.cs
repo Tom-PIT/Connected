@@ -11,7 +11,7 @@ using TomPIT.Sys.Caching;
 
 namespace TomPIT.Sys.Model.Cdn
 {
-   internal class QueueingModel : IdentityRepository<QueueMessage, long>
+   public class QueueingModel : IdentityRepository<QueueMessage, long>
    {
       public const string Queue = "queueworker";
 

@@ -1,5 +1,6 @@
 ﻿@using Newtonsoft.Json;
 @using Newtonsoft.Json.Linq;
+@using TomPIT
 @using TomPIT.Management;
 
 @model TomPIT.Management.Designers.MetricDesigner
@@ -114,7 +115,7 @@
 				</div>
 				<div class="col-sm-6">
 					<div>
-						@i.Instance.ToString()
+						@i.Features.ToString()
 					</div>
 					@i.IP
 				</div>

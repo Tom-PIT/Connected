@@ -8,7 +8,7 @@ using TomPIT.SysDb.BigData;
 
 namespace TomPIT.Sys.Model.BigData
 {
-	internal class BigDataTransactionsModel : SynchronizedRepository<IServerTransaction, Guid>
+	public class BigDataTransactionsModel : SynchronizedRepository<IServerTransaction, Guid>
 	{
 		public BigDataTransactionsModel(IMemoryCache container) : base(container, "bigdatatransactions")
 		{

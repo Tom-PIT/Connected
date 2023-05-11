@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
-using TomPIT.Middleware;
 
 namespace TomPIT.ComponentModel
 {
@@ -23,8 +20,7 @@ namespace TomPIT.ComponentModel
 
 		protected override void OnInitializing()
 		{
-			var u = Tenant.CreateUrl("MicroService", "Query");
-			var ds = Tenant.Get<List<MicroService>>(u).ToList<IMicroService>();
+			var ds = Instance.SysProxy.MicroServices.Query();
 
 			foreach (var i in ds)
 				Set(i.Token, i, TimeSpan.Zero);
@@ -32,12 +28,9 @@ namespace TomPIT.ComponentModel
 
 		protected override void OnInvalidate(Guid id)
 		{
-			var u = Tenant.CreateUrl("MicroService", "SelectByToken")
-				.AddParameter("microService", id);
+			var r = Instance.SysProxy.MicroServices.Select(id);
 
-			var r = Tenant.Get<MicroService>(u);
-
-			if (r == null)
+			if (r is null)
 			{
 				Remove(id);
 				return;
@@ -61,15 +54,12 @@ namespace TomPIT.ComponentModel
 		{
 			var r = Get(microService);
 
-			if (r != null)
+			if (r is not null)
 				return r;
 
-			var u = Tenant.CreateUrl("MicroService", "SelectByToken")
-				.AddParameter("microService", microService);
+			r = Instance.SysProxy.MicroServices.Select(microService);
 
-			r = Tenant.Get<MicroService>(u);
-
-			if (r != null)
+			if (r is not null)
 				Set(microService, r);
 
 			return r;
@@ -80,15 +70,12 @@ namespace TomPIT.ComponentModel
 		{
 			var r = Get(f => string.Compare(f.Name, name, true) == 0);
 
-			if (r != null)
+			if (r is not null)
 				return r;
 
-			var u = Tenant.CreateUrl("MicroService", "Select")
-				.AddParameter("name", name);
+			r = Instance.SysProxy.MicroServices.Select(name);
 
-			r = Tenant.Get<MicroService>(u);
-
-			if (r != null)
+			if (r is not null)
 				Set(r.Token, r);
 
 			return r;
@@ -98,50 +85,21 @@ namespace TomPIT.ComponentModel
 		{
 			var r = Get(f => string.Compare(f.Url, url, true) == 0);
 
-			if (r != null)
+			if (r is not null)
 				return r;
 
-			var u = Tenant.CreateUrl("MicroService", "SelectByUrl")
-				.AddParameter("url", url);
+			r = Instance.SysProxy.MicroServices.SelectByUrl(url);
 
-			r = Tenant.Get<MicroService>(u);
-
-			if (r != null)
+			if (r is not null)
 				Set(r.Token, r);
 
 			return r;
-		}
-
-		public string SelectString(Guid microService, Guid language, Guid element, string property)
-		{
-			var key = GenerateKey(microService, language, "microservicestring");
-
-			if (!Container.Exists(key))
-			{
-				var u = Tenant.CreateUrl("MicroService", "QueryStrings")
-					.AddParameter("microService", microService)
-					.AddParameter("language", language);
-
-				var r = Tenant.Get<List<MicroServiceString>>(u).ToList<IMicroServiceString>();
-
-				foreach (var i in r)
-					Container.Set(key, GenerateKey(microService, language, element, property), i, TimeSpan.Zero);
-			}
-
-			return Container.Get<IMicroServiceString>(key, GenerateKey(microService, language, element, property))?.Value;
 		}
 
 		public void NotifyChanged(object sender, MicroServiceEventArgs e)
 		{
 			Refresh(e.MicroService);
 			MicroServiceChanged?.Invoke(sender, e);
-		}
-
-		public void NotifyMicroServiceStringChanged(object sender, MicroServiceStringEventArgs e)
-		{
-			var key = GenerateKey(e.MicroService, e.Language, "microservicestring");
-
-			Container.Clear(key);
 		}
 
 		public void NotifyMicroServiceInstalled(object sender, MicroServiceInstallEventArgs e)
@@ -158,18 +116,11 @@ namespace TomPIT.ComponentModel
 			MicroServiceRemoved?.Invoke(sender, e);
 		}
 
-		public void NotifyMicroServiceStringRemoved(object sender, MicroServiceStringEventArgs e)
-		{
-		}
-
 		public string SelectMeta(Guid microService)
 		{
 			return Meta.Select(microService);
 		}
 
-		public MicroServiceMetaCache Meta
-		{
-			get { return _meta; }
-		}
+		public MicroServiceMetaCache Meta => _meta;
 	}
 }

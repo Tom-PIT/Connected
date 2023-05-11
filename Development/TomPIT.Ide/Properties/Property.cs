@@ -28,6 +28,7 @@ namespace TomPIT.Ide.Properties
 		public string Text { get; set; }
 		public string Editor { get; set; }
 		public Type Type { get; set; }
+		[Obsolete]
 		public bool IsLocalizable { get; set; }
 		public bool SupportsTimezone { get; set; }
 		public string HelpLink { get; set; }

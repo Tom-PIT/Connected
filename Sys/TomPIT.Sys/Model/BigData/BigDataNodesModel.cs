@@ -7,7 +7,7 @@ using TomPIT.Sys.Notifications;
 
 namespace TomPIT.Sys.Model.BigData
 {
-	internal class BigDataNodesModel : SynchronizedRepository<INode, Guid>
+	public class BigDataNodesModel : SynchronizedRepository<INode, Guid>
 	{
 		public BigDataNodesModel(IMemoryCache container) : base(container, "bigdatanodes")
 		{

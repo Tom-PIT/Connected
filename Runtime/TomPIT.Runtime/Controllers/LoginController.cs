@@ -1,10 +1,11 @@
-﻿using System;
-using System.Text;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Text;
+using TomPIT.Environment;
 using TomPIT.Models;
 using TomPIT.Runtime;
 using TomPIT.Security;
@@ -29,7 +30,7 @@ namespace TomPIT.Controllers
 			if (Request.Cookies.ContainsKey(key))
 				Response.Cookies.Delete(key);
 
-			if (Shell.GetService<IRuntimeService>().Type == Environment.InstanceType.Application)
+			if (Shell.GetService<IRuntimeService>().Features.HasFlag(InstanceFeatures.Application))
 				return new RedirectResult("~/login");
 
 			return View(LoginView, CreateModel(this));

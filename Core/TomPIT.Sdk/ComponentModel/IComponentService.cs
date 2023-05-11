@@ -24,7 +24,7 @@ namespace TomPIT.ComponentModel
 		ImmutableList<IFolder> QueryFolders(Guid microService);
 
 		ImmutableList<IConfiguration> QueryConfigurations(ImmutableList<IComponent> components);
-		
+
 		ImmutableList<IConfiguration> QueryConfigurations(List<string> resourceGroups, string categories);
 		ImmutableList<IConfiguration> QueryConfigurations(List<Guid> microServices, string categories);
 		ImmutableList<IConfiguration> QueryConfigurations(params string[] categories);
@@ -41,10 +41,6 @@ namespace TomPIT.ComponentModel
 		ImmutableList<IComponent> QueryComponents(Guid microService, string category);
 		ImmutableList<IComponent> QueryComponents(Guid microService, Guid folder);
 		ImmutableList<IComponent> QueryComponents(Guid microService);
-		//ImmutableList<IComponent> QueryComponents(List<string> resourceGroups, string categories);
 		ImmutableList<IComponent> QueryComponents(params string[] categories);
-
-
-		string CreateName(Guid microService, string category, string prefix);
 	}
 }

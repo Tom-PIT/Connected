@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using TomPIT.Environment;
+using TomPIT.Proxy;
 
 namespace TomPIT.Runtime
 {
@@ -51,7 +52,7 @@ namespace TomPIT.Runtime
 		string WebRoot { get; }
 		RuntimeEnvironment Environment { get; }
 		bool SupportsUI { get; }
-		InstanceType Type { get; }
+		InstanceFeatures Features { get; }
 		EnvironmentStage Stage { get; }
 		EnvironmentMode Mode { get; }
 		Platform Platform { get; }

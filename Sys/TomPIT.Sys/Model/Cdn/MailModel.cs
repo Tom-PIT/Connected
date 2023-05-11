@@ -5,7 +5,7 @@ using TomPIT.Sys.Api.Database;
 
 namespace TomPIT.Sys.Model.Cdn
 {
-	internal class MailModel
+	public class MailModel
 	{
 		public const int MailDequeueMax = 10;
 

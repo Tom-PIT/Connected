@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
 using TomPIT.Cdn;
 using TomPIT.Serialization;
@@ -15,7 +15,7 @@ using TomPIT.Sys.Caching;
 
 namespace TomPIT.Sys.Model.Printing
 {
-	internal class PrintingModel : PersistentRepository<PrintJob, Guid>
+	public class PrintingModel : PersistentRepository<PrintJob, Guid>
 	{
 		private const string Queue = "printing";
 

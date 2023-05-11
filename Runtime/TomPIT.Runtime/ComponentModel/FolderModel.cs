@@ -35,7 +35,7 @@ namespace TomPIT.ComponentModel
 
 			foreach (var i in root)
 			{
-				var m = new FolderModel(ComponentModel.Folder.FromPackageFolder(microService, i));
+				var m = new FolderModel(FromPackageFolder(microService, i));
 
 				Create(microService, folders.Except(root).ToList(), m);
 
@@ -88,12 +88,24 @@ namespace TomPIT.ComponentModel
 
 			foreach (var i in children)
 			{
-				var m = new FolderModel(ComponentModel.Folder.FromPackageFolder(microService, i));
+				var m = new FolderModel(FromPackageFolder(microService, i));
 
 				Create(microService, folders.Except(children).ToList(), m);
 
 				parent.Items.Add(m);
 			}
 		}
+
+		private static IFolder FromPackageFolder(Guid microservice, IPackageFolder folder)
+		{
+			return new Folder
+			{
+				Name = folder.Name,
+				Parent = folder.Parent,
+				Token = folder.Token,
+				MicroService = microservice
+			};
+		}
+
 	}
 }

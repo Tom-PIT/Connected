@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Search;
@@ -44,10 +44,10 @@ namespace TomPIT.Search
 
 		public IClientSearchResults Search(ISearchOptions options)
 		{
-			var url = Tenant.GetService<IInstanceEndpointService>().Url(InstanceType.Search, InstanceVerbs.Post);
+			var url = Tenant.GetService<IInstanceEndpointService>().Url(InstanceFeatures.Search, InstanceVerbs.Post);
 
 			if (string.IsNullOrWhiteSpace(url))
-				throw new RuntimeException($"{SR.ErrNoServer} ({InstanceType.Search}, {InstanceVerbs.Post})");
+				throw new RuntimeException($"{SR.ErrNoServer} ({InstanceFeatures.Search}, {InstanceVerbs.Post})");
 
 			var u = ServerUrl.Create(url, "Search", "Search");
 

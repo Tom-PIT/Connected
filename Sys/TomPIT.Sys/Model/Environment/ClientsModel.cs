@@ -7,7 +7,7 @@ using TomPIT.Sys.Notifications;
 
 namespace TomPIT.Sys.Model.Environment
 {
-	internal class ClientsModel : SynchronizedRepository<IClient, string>
+	public class ClientsModel : SynchronizedRepository<IClient, string>
 	{
 		public ClientsModel(IMemoryCache container) : base(container, "client")
 		{

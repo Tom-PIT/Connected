@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Sys.Model;
 
@@ -54,7 +54,7 @@ namespace TomPIT.Sys.Controllers
 		public ImmutableList<IComponent> QueryByCategories()
 		{
 			var body = FromBody();
-			var categories = body.Optional<string>("categories", string.Empty);
+			var categories = body.Optional("categories", string.Empty);
 
 			return DataModel.Components.QueryByCategories(categories);
 		}

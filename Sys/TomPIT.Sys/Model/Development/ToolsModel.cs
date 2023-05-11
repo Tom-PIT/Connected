@@ -5,7 +5,7 @@ using TomPIT.Sys.Api.Database;
 
 namespace TomPIT.Sys.Model.Development
 {
-	internal class ToolsModel
+	public class ToolsModel
 	{
 		public List<ITool> Query()
 		{

@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
+using TomPIT.Environment;
 using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.Sys.Services
@@ -12,6 +13,9 @@ namespace TomPIT.Sys.Services
 
 		[JsonProperty(PropertyName = "database")]
 		public string Database { get; set; }
+
+		[JsonProperty(PropertyName = "features")]
+		public InstanceFeatures Features { get; set; }
 		[JsonProperty(PropertyName = "authentication")]
 		public IServerSysAuthentication Authentication
 		{

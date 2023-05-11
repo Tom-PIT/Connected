@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections;
 using System.Data.Common;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 using TomPIT.Connectivity;
 using TomPIT.Diagnostics;
 using TomPIT.Environment;
@@ -25,7 +25,7 @@ namespace TomPIT.DataProviders.BigData
 		private void GetData()
 		{
 			if (string.IsNullOrWhiteSpace(Command.Connection.DataSource))
-				throw new RuntimeException($"{SR.ErrNoServer} ({InstanceType.BigData}, {InstanceVerbs.Post})");
+				throw new RuntimeException($"{SR.ErrNoServer} ({InstanceFeatures.BigData}, {InstanceVerbs.Post})");
 
 			if (string.IsNullOrWhiteSpace(Command.CommandText))
 				throw new RuntimeException(nameof(BigDataCommand), SR.ErrCommandTextNull, LogCategories.BigData);
@@ -45,7 +45,7 @@ namespace TomPIT.DataProviders.BigData
 
 			HttpRequestArgs credentialArgs = null;
 
-            if (MiddlewareDescriptor.Current?.Identity?.IsAuthenticated ?? false) 
+			if (MiddlewareDescriptor.Current?.Identity?.IsAuthenticated ?? false)
 			{
 				credentialArgs = new HttpRequestArgs().WithCurrentCredentials(MiddlewareDescriptor.Current.User.AuthenticationToken);
 			}

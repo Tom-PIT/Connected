@@ -13,7 +13,7 @@ namespace TomPIT.Runtime
 		public string WebRoot { get; set; }
 		public RuntimeEnvironment Environment { get; set; } = RuntimeEnvironment.SingleTenant;
 		public bool SupportsUI { get; set; }
-		public InstanceType Type { get; set; }
+		public InstanceFeatures Features { get; set; }
 		public EnvironmentStage Stage { get; set; }
 		public EnvironmentMode Mode { get; set; } = EnvironmentMode.Runtime;
 
@@ -28,39 +28,17 @@ namespace TomPIT.Runtime
 
 		public RuntimeService()
 		{
-			Type = Instance.InstanceType;
+			Features = Instance.Features;
 
-			switch (Type)
+			if (Features.HasFlag(InstanceFeatures.Management | InstanceFeatures.Development))
 			{
-				case InstanceType.Unknown:
-					break;
-				case InstanceType.Management:
-					SupportsUI = true;
-					Environment = RuntimeEnvironment.MultiTenant;
-					break;
-				case InstanceType.Development:
-					SupportsUI = true;
-					Environment = RuntimeEnvironment.MultiTenant;
-					Mode = EnvironmentMode.Design;
-					break;
-				case InstanceType.Application:
-					SupportsUI = true;
-					break;
-				case InstanceType.Worker:
-					break;
-				case InstanceType.Cdn:
-					break;
-				case InstanceType.IoT:
-					break;
-				case InstanceType.BigData:
-					break;
-				case InstanceType.Search:
-					break;
-				case InstanceType.Rest:
-					break;
-				default:
-					break;
+				SupportsUI = true;
+				Environment = RuntimeEnvironment.MultiTenant;
 			}
+			else if (Features.HasFlag(InstanceFeatures.Development))
+				Mode = EnvironmentMode.Design;
+			else if (Features.HasFlag(InstanceFeatures.Application))
+				SupportsUI = true;
 
 			var sys = Shell.GetConfiguration<IClientSys>();
 

@@ -3,7 +3,7 @@ using TomPIT.Caching;
 
 namespace TomPIT.Sys.Caching
 {
-	internal abstract class PersistentRepository<T, K> : SynchronizedRepository<T, K> where T : class
+	public abstract class PersistentRepository<T, K> : SynchronizedRepository<T, K> where T : class
 	{
 		private bool _dirty = false;
 		public PersistentRepository(IMemoryCache container, string key) : base(container, key)

@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Data;
 using System.Data.Common;
 using System.Threading;
-using Newtonsoft.Json.Linq;
 using TomPIT.Diagnostics;
 using TomPIT.Environment;
 using TomPIT.Exceptions;
@@ -65,7 +65,7 @@ namespace TomPIT.DataProviders.BigData
 		public override int ExecuteNonQuery()
 		{
 			if (string.IsNullOrWhiteSpace(Connection.DataSource))
-				throw new RuntimeException($"{SR.ErrNoServer} ({InstanceType.BigData}, {InstanceVerbs.Post})");
+				throw new RuntimeException($"{SR.ErrNoServer} ({InstanceFeatures.BigData}, {InstanceVerbs.Post})");
 
 			if (string.IsNullOrWhiteSpace(CommandText))
 				throw new RuntimeException(nameof(BigDataCommand), SR.ErrCommandTextNull, LogCategories.BigData);

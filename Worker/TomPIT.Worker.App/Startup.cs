@@ -1,7 +1,4 @@
-﻿using Connected.SaaS.Clients.Authentication;
-using Connected.SaaS.Clients.HealthMonitoring.Rest;
-
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,7 +11,6 @@ using System.Linq;
 using TomPIT.Connectivity;
 using TomPIT.Environment;
 using TomPIT.HealthMonitoring;
-using TomPIT.Middleware;
 using TomPIT.Runtime;
 using TomPIT.Runtime.Configuration;
 using TomPIT.Worker.HostedServices;
@@ -39,7 +35,7 @@ namespace TomPIT.Worker
 				Authentication = AuthenticationType.SingleTenant
 			};
 
-			Instance.Initialize(InstanceType.Worker, services, e);
+			Instance.Initialize(InstanceFeatures.Worker, services, e);
 
 			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
 

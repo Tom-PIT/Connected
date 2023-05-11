@@ -8,7 +8,7 @@ using TomPIT.Sys.Notifications;
 
 namespace TomPIT.Sys.Model.Security
 {
-	internal class AliensModel : SynchronizedRepository<IAlien, Guid>
+	public class AliensModel : SynchronizedRepository<IAlien, Guid>
 	{
 		public AliensModel(IMemoryCache container) : base(container, "alien")
 		{

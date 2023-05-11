@@ -6,7 +6,7 @@ using TomPIT.SysDb.Messaging;
 
 namespace TomPIT.Sys.Model.Cdn
 {
-	internal class MessageTopicsModel : IdentityRepository<ITopic, string>
+	public class MessageTopicsModel : IdentityRepository<ITopic, string>
 	{
 
 		public MessageTopicsModel(IMemoryCache container) : base(container, "messagetopic")

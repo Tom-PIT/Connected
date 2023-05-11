@@ -17,6 +17,7 @@
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
+    <OutputType>Library</OutputType>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="UI\RouteParameter.cs" />

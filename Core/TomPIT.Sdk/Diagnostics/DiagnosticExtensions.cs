@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Diagnostics;
 using System.IO;
-using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json.Linq;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Diagnostics;
@@ -234,7 +234,7 @@ namespace TomPIT.Diagnostics
 				{
 					result.FileName = script.FileName;
 
-					var devUrl = context.Tenant.GetService<IInstanceEndpointService>().Url(InstanceType.Development, InstanceVerbs.All);
+					var devUrl = context.Tenant.GetService<IInstanceEndpointService>().Url(InstanceFeatures.Development, InstanceVerbs.All);
 
 					if (!string.IsNullOrWhiteSpace(devUrl))
 						result.Url = $"{devUrl}/ide/{ms.Url}?component={component.Token}&element={script.Id}";
@@ -254,7 +254,7 @@ namespace TomPIT.Diagnostics
 								result.SourceCodeLines.Add(index, line);
 
 							index++;
-							
+
 							if (result.SourceCodeLines.Count == 7)
 								break;
 						}

@@ -30,12 +30,12 @@ namespace TomPIT.SysDb.Sql.Environment
 			w.Execute();
 		}
 
-		public void InsertInstanceEndpoint(Guid token, InstanceType type, string name, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs)
+		public void InsertInstanceEndpoint(Guid token, InstanceFeatures features, string name, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs)
 		{
 			using var w = new Writer("tompit.instance_endpoint_ins");
 
 			w.CreateParameter("@token", token);
-			w.CreateParameter("@type", type);
+			w.CreateParameter("@type", features);
 			w.CreateParameter("@name", name);
 			w.CreateParameter("@url", url, true);
 			w.CreateParameter("@reverse_proxy_url", reverseProxyUrl, true);
@@ -61,7 +61,7 @@ namespace TomPIT.SysDb.Sql.Environment
 			return r.ExecuteSingleRow();
 		}
 
-		public void UpdateInstanceEndpoint(IInstanceEndpoint target, InstanceType type, string name, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs)
+		public void UpdateInstanceEndpoint(IInstanceEndpoint target, InstanceFeatures features, string name, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs)
 		{
 			using var w = new Writer("tompit.instance_endpoint_upd");
 
@@ -69,7 +69,7 @@ namespace TomPIT.SysDb.Sql.Environment
 			w.CreateParameter("@url", url, true);
 			w.CreateParameter("@status", status);
 			w.CreateParameter("@name", name);
-			w.CreateParameter("@type", type);
+			w.CreateParameter("@type", features);
 			w.CreateParameter("@verbs", verbs);
 			w.CreateParameter("@reverse_proxy_url", reverseProxyUrl, true);
 

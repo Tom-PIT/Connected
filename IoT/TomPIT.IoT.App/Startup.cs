@@ -29,7 +29,7 @@ namespace TomPIT.IoT
 				CorsEnabled = true
 			};
 
-			Instance.Initialize(InstanceType.IoT, services, e);
+			Instance.Initialize(InstanceFeatures.IoT, services, e);
 			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
 			Instance.InitializeShellServices();
 

@@ -4,6 +4,7 @@ using TomPIT.Deployment;
 
 namespace TomPIT.Ide.ComponentModel
 {
+	[Obsolete]
 	public interface IMicroServiceDevelopmentService
 	{
 		void UpdateString(Guid microService, Guid language, Guid element, string property, string value);

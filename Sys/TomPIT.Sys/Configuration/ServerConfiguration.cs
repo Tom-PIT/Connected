@@ -23,7 +23,7 @@ namespace TomPIT.Sys.Configuration
 			Shell.RegisterService(typeof(IDatabaseService), typeof(DatabaseService));
 			Shell.RegisterService(typeof(IStorageProviderService), typeof(StorageProviderService));
 			Shell.RegisterService(typeof(INamingService), typeof(NamingService));
-			Shell.RegisterService(typeof(ICryptographyService), typeof(CryptographyService));
+			Shell.RegisterService(typeof(ISysCryptographyService), typeof(CryptographyService));
 		}
 
 		private static void InitializeAuthentication()
