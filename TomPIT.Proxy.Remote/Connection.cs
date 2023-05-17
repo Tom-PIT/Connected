@@ -20,6 +20,11 @@ namespace TomPIT.Proxy.Remote
 			return MiddlewareDescriptor.Current.Tenant.Post<T>(url, args);
 		}
 
+		public static T Post<T>(string url)
+		{
+			return MiddlewareDescriptor.Current.Tenant.Post<T>(url);
+		}
+
 		public static T Get<T>(string url)
 		{
 			return MiddlewareDescriptor.Current.Tenant.Get<T>(url);

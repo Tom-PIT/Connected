@@ -1,14 +1,8 @@
 ﻿{
-  "connections": [
-    {
-      "name": "localhost",
-      "url": "http://sys-app/core/sys",
-      "authenticationToken": "defaultAuthenticationToken"
-    }
-  ],
+  "instanceName": "Default Instance",
   "features": "Application, Worker, Cdn, Rest, Search, BigData, Sys, IoT",
-  "platform": "onPrem",
-  "stage": "development",
+  "platform": "OnPrem",
+  "stage": "Development",
   "resourceGroups": [
     "Default"
   ],
@@ -19,6 +13,11 @@
       "validAudience": "tompit.net",
       "issuerSigningKey": "F221ECECDB704EFB9568A8756115EBEC"
     }
+  },
+  "sys": {
+    "name": "localhost",
+    "url": "http://localhost:44001",
+    "authenticationToken": "defaultAuthenticationToken"
   },
   "storageProviders": [
     "TomPIT.StorageProvider.Sql.SqlStorageProvider, TomPIT.StorageProvider.Sql"

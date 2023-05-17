@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
-using TomPIT.Middleware;
 
 namespace TomPIT.BigData.Partitions
 {
@@ -67,8 +65,7 @@ namespace TomPIT.BigData.Partitions
 		}
 		protected override void OnInitializing()
 		{
-			var u = Tenant.CreateUrl("BigDataManagement", "QueryFiles");
-			var files = Tenant.Get<List<PartitionFile>>(u);
+			var files = Instance.SysProxy.Management.BigData.QueryFiles();
 
 			foreach (var file in files)
 				Set(file.FileName, file, TimeSpan.Zero);
@@ -76,15 +73,9 @@ namespace TomPIT.BigData.Partitions
 
 		protected override void OnInvalidate(Guid id)
 		{
-			var u = Tenant.CreateUrl("BigDataManagement", "SelectFile");
-			var e = new JObject
-			{
-				{"token", id }
-			};
+			var file = Instance.SysProxy.Management.BigData.SelectFile(id);
 
-			var file = Tenant.Post<PartitionFile>(u, e);
-
-			if (file != null)
+			if (file is not null)
 				Set(file.FileName, file, TimeSpan.Zero);
 		}
 

@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 using TomPIT.Configuration;
 using TomPIT.Distributed;
+using TomPIT.Environment;
 using TomPIT.Middleware;
-using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.Cdn.Mail
 {
@@ -27,16 +27,16 @@ namespace TomPIT.Cdn.Mail
 
 			SetInterval();
 
-			MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().SettingChanged += OnSettingChanged;
+			Tenant.GetService<ISettingService>().SettingChanged += OnSettingChanged;
 
-			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-				Dispatchers.Add(new MailDispatcher(i));
+			foreach (var i in Tenant.GetService<IResourceGroupService>().QuerySupported())
+				Dispatchers.Add(new MailDispatcher(i.Name));
 
 			return true;
 		}
 		private void SetInterval()
 		{
-			var interval = MiddlewareDescriptor.Current.Tenant.GetService<ISettingService>().GetValue<int>("MailServiceTimer", null, null, null);
+			var interval = Tenant.GetService<ISettingService>().GetValue<int>("MailServiceTimer", null, null, null);
 
 			if (interval == 0)
 				interval = 5000;

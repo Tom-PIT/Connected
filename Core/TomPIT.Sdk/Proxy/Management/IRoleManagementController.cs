@@ -1,6 +1,11 @@
-﻿namespace TomPIT.Proxy.Management
+﻿using System;
+
+namespace TomPIT.Proxy.Management
 {
-	internal interface IRoleManagementController
+	public interface IRoleManagementController
 	{
+		Guid Insert(string name);
+		void Update(Guid token, string name);
+		void Delete(Guid token);
 	}
 }

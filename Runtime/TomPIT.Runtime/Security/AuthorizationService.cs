@@ -12,7 +12,6 @@ using TomPIT.Environment;
 using TomPIT.Middleware;
 using TomPIT.Navigation;
 using TomPIT.Runtime;
-using TomPIT.Runtime.Configuration;
 using TomPIT.Security.Authentication;
 using TomPIT.Security.AuthorizationProviders;
 
@@ -40,17 +39,14 @@ namespace TomPIT.Security
 		{
 			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)
 			{
-				var ds = Tenant.Get<ImmutableList<Permission>>(CreateUrl("QueryPermissions")).ToList<IPermission>();
+				var ds = Instance.SysProxy.Security.QueryPermissions();
 
 				foreach (var i in ds)
 					Set(GenerateRandomKey(), i, TimeSpan.Zero);
 			}
 			else
 			{
-				var ds = Tenant.Post<ImmutableList<Permission>>(CreateUrl("QueryPermissionsForResourceGroup"), new
-				{
-					Data = Shell.GetConfiguration<IClientSys>().ResourceGroups
-				}).ToList<IPermission>();
+				var ds = Instance.SysProxy.Security.QueryPermissions(Tenant.GetService<IResourceGroupService>().QuerySupported().Select(f => f.Name).ToList());
 
 				foreach (var i in ds)
 					Set(GenerateRandomKey(), i, TimeSpan.Zero);
@@ -307,16 +303,9 @@ namespace TomPIT.Security
 
 		private void LoadPermission(PermissionEventArgs e)
 		{
-			var u = Tenant.CreateUrl("Security", "SelectPermission")
-				.AddParameter("evidence", e.Evidence)
-				.AddParameter("schema", e.Schema)
-				.AddParameter("claim", e.Claim)
-				.AddParameter("primaryKey", e.PrimaryKey)
-				.AddParameter("descriptor", e.Descriptor);
+			var d = Instance.SysProxy.Security.SelectPermission(e.Evidence, e.Schema, e.Claim, e.PrimaryKey, e.Descriptor);
 
-			var d = Tenant.Get<Permission>(u);
-
-			if (d != null)
+			if (d is not null)
 				Set(GenerateRandomKey(), d, TimeSpan.Zero);
 		}
 

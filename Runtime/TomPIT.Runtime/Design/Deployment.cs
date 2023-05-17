@@ -2,7 +2,6 @@
 using System.IO;
 using TomPIT.Connectivity;
 using TomPIT.Diagnostics;
-using TomPIT.Runtime.Configuration;
 using TomPIT.Serialization;
 
 namespace TomPIT.Design
@@ -13,7 +12,12 @@ namespace TomPIT.Design
 
 		public Deployment(ITenant tenant) : base(tenant)
 		{
+			Configuration = new DeploymentConfiguration();
+
+			Initialize();
 		}
+
+		public IDeploymentConfiguration Configuration { get; }
 
 		public void Deploy(string remote, Guid repository, long branch, long commit, string authenticationToken)
 		{
@@ -61,13 +65,10 @@ namespace TomPIT.Design
 
 		public void Initialize()
 		{
-			var config = Shell.GetConfiguration<IClientSys>();
-			var path = config.Deployment?.FileSystem?.Path;
-
-			if (config.Deployment?.FileSystem?.Enabled != true || string.IsNullOrWhiteSpace(path) || !Directory.Exists(path))
+			if (!Configuration.FileSystem.Enabled || string.IsNullOrWhiteSpace(Configuration.FileSystem.Path) || !Directory.Exists(Configuration.FileSystem.Path))
 				return;
 
-			_watcher = new FileSystemWatcher(path)
+			_watcher = new FileSystemWatcher(Configuration.FileSystem.Path)
 			{
 				IncludeSubdirectories = false,
 				EnableRaisingEvents = true
@@ -79,7 +80,7 @@ namespace TomPIT.Design
 
 			_watcher.Created += OnPullRequest;
 
-			var files = Directory.GetFiles(path, "*.json");
+			var files = Directory.GetFiles(Configuration.FileSystem.Path, "*.json");
 
 			foreach (var file in files)
 				OnPullRequest(this, new FileSystemEventArgs(WatcherChangeTypes.Created, Path.GetDirectoryName(file), Path.GetFileName(file)));
@@ -90,7 +91,7 @@ namespace TomPIT.Design
 			if (e.ChangeType != WatcherChangeTypes.Created)
 				return;
 
-			if (string.Compare(Path.GetExtension(e.FullPath), ".json", true) == 0)
+			if (string.Equals(Path.GetExtension(e.FullPath), ".json", StringComparison.OrdinalIgnoreCase))
 			{
 				Deploy(e.FullPath);
 				File.Delete(e.FullPath);

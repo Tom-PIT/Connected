@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using System;
+using System.Text.Json;
 using TomPIT.Environment;
-using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.Runtime
 {
@@ -40,12 +41,17 @@ namespace TomPIT.Runtime
 			else if (Features.HasFlag(InstanceFeatures.Application))
 				SupportsUI = true;
 
-			var sys = Shell.GetConfiguration<IClientSys>();
+			if (Shell.Configuration.RootElement.TryGetProperty("stage", out JsonElement stageElement))
+				Stage = Enum.Parse<EnvironmentStage>(stageElement.GetString());
 
-			Stage = sys.Stage;
-			Connectivity = sys.Connectivity;
-			IOBehavior = sys.IOBehavior;
-			Platform = sys.Platform;
+			if (Shell.Configuration.RootElement.TryGetProperty("connectivity", out JsonElement connectivityElement))
+				Connectivity = Enum.Parse<EnvironmentConnectivity>(connectivityElement.GetString());
+
+			if (Shell.Configuration.RootElement.TryGetProperty("ioBehavior", out JsonElement ioElement))
+				IOBehavior = Enum.Parse<EnvironmentIOBehavior>(ioElement.GetString());
+
+			if (Shell.Configuration.RootElement.TryGetProperty("platform", out JsonElement platformElement))
+				Platform = Enum.Parse<Platform>(platformElement.GetString());
 		}
 
 		public void Initialize(IWebHostEnvironment environment)

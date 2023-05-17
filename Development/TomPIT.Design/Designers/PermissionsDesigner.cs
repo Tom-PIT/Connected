@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 using TomPIT.Design.Ide;
 using TomPIT.Design.Ide.Designers;
 using TomPIT.Design.Ide.Dom;
@@ -117,10 +117,7 @@ namespace TomPIT.Design.Designers
 					if (string.IsNullOrWhiteSpace(SelectedSchema))
 						return null;
 
-					var u = Environment.Context.Tenant.CreateUrl("Security", "SelectPermissions")
-						.AddParameter("primaryKey", Owner.PrimaryKey);
-
-					_permissions = Environment.Context.Tenant.Get<List<Permission>>(u).ToList<IPermission>();
+					_permissions = Instance.SysProxy.Security.SelectPermissions(Owner.PrimaryKey).ToList();
 				}
 
 				return _permissions;

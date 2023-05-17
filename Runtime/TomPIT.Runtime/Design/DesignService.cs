@@ -1,4 +1,7 @@
-﻿using TomPIT.Connectivity;
+﻿using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Text.Json;
+using TomPIT.Connectivity;
 
 namespace TomPIT.Design
 {
@@ -13,6 +16,16 @@ namespace TomPIT.Design
 
 		public DesignService(ITenant tenant) : base(tenant)
 		{
+			Designers = new();
+
+			InitializeConfiguration();
+		}
+
+		private List<string> Designers { get; }
+
+		public ImmutableList<string> QueryDesigners()
+		{
+			return Designers.ToImmutableList();
 		}
 
 		public IMicroServiceDesign MicroServices
@@ -84,6 +97,15 @@ namespace TomPIT.Design
 		public void Initialize()
 		{
 			((Deployment)Deployment).Initialize();
+		}
+
+		private void InitializeConfiguration()
+		{
+			if (!Shell.Configuration.RootElement.TryGetProperty("designers", out JsonElement element))
+				return;
+
+			foreach (var item in element.EnumerateArray())
+				Designers.Add(item.GetString());
 		}
 	}
 }

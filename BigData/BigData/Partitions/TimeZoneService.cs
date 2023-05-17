@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
-using TomPIT.Middleware;
 
 namespace TomPIT.BigData.Partitions
 {
@@ -30,13 +28,13 @@ namespace TomPIT.BigData.Partitions
 		}
 		protected override void OnInitializing()
 		{
-			foreach (var timezone in Tenant.Get<List<TimeZone>>(CreateUrl("QueryTimezones")))
+			foreach (var timezone in Instance.SysProxy.Management.BigData.QueryTimeZones())
 				Set(timezone.Token, timezone, TimeSpan.Zero);
 		}
 
 		protected override void OnInvalidate(Guid id)
 		{
-			if (Tenant.Post<TimeZone>(CreateUrl("SelectTimezone"), new { token = id }) is ITimeZone timezone)
+			if (Instance.SysProxy.Management.BigData.SelectTimeZone(id) is ITimeZone timezone)
 				Set(timezone.Token, timezone, TimeSpan.Zero);
 		}
 
@@ -48,11 +46,6 @@ namespace TomPIT.BigData.Partitions
 		public void NotifyRemoved(Guid token)
 		{
 			Remove(token);
-		}
-
-		private string CreateUrl(string action)
-		{
-			return Tenant.CreateUrl(DefaultController, action);
 		}
 	}
 }

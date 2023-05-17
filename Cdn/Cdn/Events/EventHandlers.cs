@@ -5,8 +5,8 @@ using System.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Messaging;
 using TomPIT.Connectivity;
+using TomPIT.Environment;
 using TomPIT.Middleware;
-using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.Cdn.Events
 {
@@ -16,17 +16,19 @@ namespace TomPIT.Cdn.Events
 
 		static EventHandlers()
 		{
-			var s = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>();
+			var tenant = MiddlewareDescriptor.Current.Tenant;
+			var s = tenant.GetService<IComponentService>();
 
 			s.ConfigurationChanged += OnConfigurationChanged;
 			s.ConfigurationAdded += OnConfigurationAdded;
 			s.ConfigurationRemoved += OnConfigurationRemoved;
 			s.ComponentChanged += OnComponentChanged;
 
-			MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
+			tenant.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
 
-
-			var configs = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().QueryConfigurations(Shell.GetConfiguration<IClientSys>().ResourceGroups, ComponentCategories.EventBinder);
+			var service = tenant.GetService<IComponentService>();
+			var resourceGroups = tenant.GetService<IResourceGroupService>().QuerySupported();
+			var configs = service.QueryConfigurations(resourceGroups.Select(f => f.Name).ToList(), ComponentCategories.EventBinder);
 
 			foreach (var i in configs)
 				AddConfiguration(i);

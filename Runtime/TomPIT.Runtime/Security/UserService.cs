@@ -1,29 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
 using TomPIT.Exceptions;
-using TomPIT.Middleware;
 using TomPIT.Storage;
 
 namespace TomPIT.Security
 {
 	internal class UserService : ClientRepository<IUser, Guid>, IUserService, IUserNotification
 	{
+		public event UserChangedHandler UserChanged;
 		public UserService(ITenant tenant) : base(tenant, "user")
 		{
 
 		}
 
-		public event UserChangedHandler UserChanged;
-
 		public List<IUser> Query()
 		{
-			var u = Tenant.CreateUrl("User", "Query");
-
-			return Tenant.Get<List<User>>(u).ToList<IUser>();
+			return Instance.SysProxy.Users.Query().ToList();
 		}
 
 		public IUser Select(string qualifier)
@@ -36,21 +31,18 @@ namespace TomPIT.Security
 			if (Guid.TryParse(qualifier, out var g))
 				r = Get(g);
 			else if (qualifier.Contains("@"))
-				r = Get(f => string.Compare(f.Email, qualifier, true) == 0);
+				r = Get(f => string.Equals(f.Email, qualifier, StringComparison.OrdinalIgnoreCase));
 			else
-				r = Get(f => string.Compare(f.LoginName, qualifier, true) == 0);
+				r = Get(f => string.Equals(f.LoginName, qualifier, StringComparison.OrdinalIgnoreCase));
 
-			if (r != null)
+			if (r is not null)
 				return r;
 
-			var u = Tenant.CreateUrl("User", "Select")
-				.AddParameter("qualifier", qualifier);
+			r = Instance.SysProxy.Users.Select(qualifier);
 
-			r = Tenant.Get<User>(u);
-
-			if (r != null)
+			if (r is not null)
 				Set(r.Token, r);
-		
+
 			return r;
 		}
 
@@ -58,15 +50,12 @@ namespace TomPIT.Security
 		{
 			var r = Get(f => f.AuthenticationToken == token);
 
-			if (r != null)
+			if (r is not null)
 				return r;
 
-			var u = Tenant.CreateUrl("User", "SelectByAuthenticationToken")
-				.AddParameter("token", token);
+			r = Instance.SysProxy.Users.SelectByAuthenticationToken(token);
 
-			r = Tenant.Get<User>(u);
-
-			if (r != null)
+			if (r is not null)
 				Set(r.Token, r);
 
 			return r;
@@ -77,17 +66,14 @@ namespace TomPIT.Security
 			if (string.IsNullOrWhiteSpace(securityCode))
 				return null;
 
-			var r = Get(f => string.Compare(f.SecurityCode, securityCode, false) == 0);
+			var r = Get(f => string.Equals(f.SecurityCode, securityCode, StringComparison.OrdinalIgnoreCase));
 
-			if (r != null)
+			if (r is not null)
 				return r;
 
-			r = Tenant.Post<User>(Tenant.CreateUrl("User", "SelectBySecurityCode"), new
-			{
-				securityCode
-			});
+			r = Instance.SysProxy.Users.SelectBySecurityCode(securityCode);
 
-			if (r != null)
+			if (r is not null)
 				Set(r.Token, r);
 
 			return r;
@@ -95,15 +81,7 @@ namespace TomPIT.Security
 
 		public void ChangePassword(Guid user, string existingPassword, string password)
 		{
-			var u = Tenant.CreateUrl("UserManagement", "ChangePassword");
-			var e = new JObject
-			{
-				{"user",user },
-				{"existingPassword",existingPassword },
-				{"newPassword",password }
-			};
-
-			Tenant.Post(u, e);
+			Instance.SysProxy.Management.Users.ChangePassword(user, existingPassword, password);
 		}
 
 		public void Logout(int user)
@@ -123,10 +101,10 @@ namespace TomPIT.Security
 			var usr = Select(user.ToString());
 			var avatarId = Guid.Empty;
 
-			if (usr == null)
+			if (usr is null)
 				throw new TomPITException(SR.ErrUserNotFound);
 
-			if (contentBytes == null)
+			if (contentBytes is null)
 			{
 				if (usr.Avatar == Guid.Empty)
 					return;
@@ -141,7 +119,7 @@ namespace TomPIT.Security
 					FileName = fileName,
 					PrimaryKey = user.ToString(),
 					ResourceGroup = Guid.Empty,
-					Size = contentBytes == null ? 0 : contentBytes.Length,
+					Size = contentBytes is null ? 0 : contentBytes.Length,
 					Type = BlobTypes.Avatar
 				};
 
@@ -151,14 +129,7 @@ namespace TomPIT.Security
 					return;
 			}
 
-			var u = Tenant.CreateUrl("UserManagement", "ChangeAvatar");
-			var e = new JObject
-			{
-				{"user", user},
-				{"avatar", avatarId }
-			};
-
-			Tenant.Post(u, e);
+			Instance.SysProxy.Management.Users.ChangeAvatar(user, avatarId);
 
 			NotifyChanged(this, new UserEventArgs(user));
 		}

@@ -1,9 +1,8 @@
-﻿using System;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
-using TomPIT.Middleware;
 using TomPIT.Security;
 
 namespace TomPIT.Design
@@ -16,15 +15,7 @@ namespace TomPIT.Design
 
 		public void Insert(Guid token, string name, Guid resourceGroup, Guid template, MicroServiceStatus status)
 		{
-			Tenant.Post(CreateUrl("Insert"), new
-			{
-				microService = token,
-				name,
-				resourceGroup,
-				template,
-				status,
-				meta = CreateMeta(token)
-			});
+			Instance.SysProxy.Management.MicroServices.Insert(token, name, resourceGroup, template, status, CreateMeta(token));
 		}
 
 		public void Delete(Guid token)
@@ -44,15 +35,8 @@ namespace TomPIT.Design
 			foreach (var i in folders)
 				DeleteFolder(i);
 
-			Tenant.Post(CreateUrl("Delete"), new
-			{
-				microService = token,
-			});
-
-			Tenant.Post(Tenant.CreateUrl("Storage", "Clean"), new
-			{
-				microService = token
-			});
+			Instance.SysProxy.Management.MicroServices.Delete(token);
+			Instance.SysProxy.Storage.Clean(token);
 
 			if (Tenant.GetService<IMicroServiceService>() is IMicroServiceNotification notification)
 				notification.NotifyRemoved(this, new MicroServiceEventArgs(token));
@@ -68,16 +52,9 @@ namespace TomPIT.Design
 
 		public void Update(Guid token, string name, Guid resourceGroup, Guid template, MicroServiceStatus status, UpdateStatus updateStatus, CommitStatus commitStatus)
 		{
-			Tenant.Post(CreateUrl("Update"), new
-			{
-				microService = token,
-				name,
-				resourceGroup,
-				template,
-				status,
-				updateStatus,
-				commitStatus
-			});
+			var ms = Tenant.GetService<IMicroServiceService>().Select(token);
+
+			Instance.SysProxy.Management.MicroServices.Update(token, name, resourceGroup, template, status, updateStatus, commitStatus, ms.Package, ms.Plan);
 
 			if (Tenant.GetService<IMicroServiceService>() is IMicroServiceNotification notification)
 				notification.NotifyChanged(this, new MicroServiceEventArgs(token));
@@ -95,11 +72,6 @@ namespace TomPIT.Design
 				};
 
 			return Tenant.GetService<ICryptographyService>().Encrypt(JsonConvert.SerializeObject(meta));
-		}
-
-		private ServerUrl CreateUrl(string action)
-		{
-			return Tenant.CreateUrl("MicroServiceManagement", action);
 		}
 	}
 }

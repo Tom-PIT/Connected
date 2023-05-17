@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Immutable;
+using System.Xml.Linq;
 
 namespace TomPIT.Proxy
 {
-	internal interface IXmlKeyController
+	public interface IXmlKeyController
 	{
+		ImmutableList<XElement> Query();
+		XElement Select(string namespaceName);
+		void Upsert(object element, string id, string friendlyName);
 	}
 }

@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TomPIT.Connectivity;
-using TomPIT.Environment;
 using TomPIT.IoT.Hubs;
 using TomPIT.IoT.Routing;
 using TomPIT.IoT.Services;
@@ -29,9 +28,8 @@ namespace TomPIT.IoT
 				CorsEnabled = true
 			};
 
-			Instance.Initialize(InstanceFeatures.IoT, services, e);
+			//Instance.Initialize(services, e);
 			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
-			Instance.InitializeShellServices();
 
 			services.AddSignalR((o) =>
 			{

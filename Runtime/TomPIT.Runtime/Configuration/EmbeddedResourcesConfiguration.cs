@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Runtime.Loader;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
-using TomPIT.Runtime.Configuration;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Runtime.Loader;
+using TomPIT.Design;
 
 namespace TomPIT.Configuration
 {
@@ -16,7 +16,7 @@ namespace TomPIT.Configuration
 		{
 			var assemblies = new List<Assembly>();
 
-			foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
+			foreach (var i in Tenant.GetService<IDesignService>().QueryDesigners())
 				RegisterAssembly(assemblies, i);
 
 			foreach (var i in Instance.Plugins)

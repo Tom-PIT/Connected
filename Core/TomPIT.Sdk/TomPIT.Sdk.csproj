@@ -23,7 +23,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Saas\Clients\Connected.SaaS.Clients\Connected.SaaS.Clients.HealthMonitoring\Connected.SaaS.Clients.HealthMonitoring.csproj" />
+    <ProjectReference Include="..\..\TomPIT.ServiceProviders.HealthMonitoring\TomPIT.ServiceProviders.HealthMonitoring.csproj" />
     <ProjectReference Include="..\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
     <ProjectReference Include="..\TomPIT.Core\TomPIT.Core.csproj" />
   </ItemGroup>

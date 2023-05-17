@@ -1,11 +1,10 @@
-﻿using System;
+﻿using Microsoft.IdentityModel.Tokens;
+using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.IdentityModel.Tokens;
 using TomPIT.Caching;
-using TomPIT.Middleware;
 using TomPIT.Runtime;
 
 namespace TomPIT.Connectivity
@@ -96,8 +95,7 @@ namespace TomPIT.Connectivity
 			{
 				if (_parameters == null)
 				{
-					var url = this.CreateUrl("Security", "SelectValidationParameters");
-					var p = Get<ValidationParameters>(url);
+					var p = Instance.SysProxy.Security.SelectValidationParameters();
 
 					_parameters = new TokenValidationParameters
 					{

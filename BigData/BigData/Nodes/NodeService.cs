@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
-using TomPIT.Middleware;
 
 namespace TomPIT.BigData.Nodes
 {
@@ -31,8 +28,7 @@ namespace TomPIT.BigData.Nodes
 
 		protected override void OnInitializing()
 		{
-			var u = Tenant.CreateUrl("BigDataManagement", "QueryNodes");
-			var ds = Tenant.Get<List<Node>>(u);
+			var ds = Instance.SysProxy.Management.BigData.QueryNodes();
 
 			foreach (var node in ds)
 				Set(node.Token, node, TimeSpan.Zero);
@@ -40,15 +36,9 @@ namespace TomPIT.BigData.Nodes
 
 		protected override void OnInvalidate(Guid id)
 		{
-			var u = Tenant.CreateUrl("BigDataManagement", "SelectNode");
-			var e = new JObject
-			{
-				{"token", id }
-			};
+			var node = Instance.SysProxy.Management.BigData.SelectNode(id);
 
-			var node = Tenant.Post<Node>(u, e);
-
-			if (node == null)
+			if (node is null)
 				return;
 
 			Set(node.Token, node, TimeSpan.Zero);

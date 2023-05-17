@@ -1,24 +1,24 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.Loader;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
-using TomPIT.Reflection;
+using System.Text.Json;
 using TomPIT.Runtime;
 using TomPIT.Runtime.Configuration;
-using TomPIT.Serialization;
 
 namespace TomPIT
 {
 	public static class Shell
 	{
+		public static event EventHandler ServiceRegistered;
+
 		private static ServiceContainer _sm = null;
-		private static ISys _sys = null;
-		private static Type _sysType = null;
+		private static JsonDocument _configuration = null;
 		private static IHttpContextAccessor _accessor = null;
 		private static Version _version = null;
 		private static bool _cleaned = false;
@@ -35,20 +35,20 @@ namespace TomPIT
 			};
 
 			AssemblyLoadContext.Default.Resolving += OnResolvingAssembly;
+
+			Initialize();
 		}
 
-		public static Version Version
-		{
-			get
-			{
-				if (_version == null)
-					_version = typeof(Shell).Assembly.GetName().Version;
-
-				return _version;
-			}
-		}
-
+		public static string InstanceName { get; private set; }
+		public static Version Version => _version ??= typeof(Shell).Assembly.GetName().Version;
 		public static HttpContext HttpContext { get { return _accessor?.HttpContext; } }
+		private static List<string> LoadedAssemblies => _loadedAssemblies.Value;
+
+		public static void Initialize()
+		{
+			if (Configuration.RootElement.TryGetProperty("instanceName", out JsonElement element))
+				InstanceName = element.GetString();
+		}
 
 		public static string ResolveAssemblyPath(string assemblyName)
 		{
@@ -58,9 +58,9 @@ namespace TomPIT
 			var appPath = Assembly.GetEntryAssembly().Location;
 			var target = Path.Combine(Path.GetDirectoryName(appPath), string.Format("{0}.dll", assemblyName));
 
-			if (Sys.Plugins != null && !string.IsNullOrWhiteSpace(Sys.Plugins.Location))
+			if (Plugins.Items is not null && !string.IsNullOrWhiteSpace(Plugins.Location))
 			{
-				var dirs = Directory.GetDirectories(Sys.Plugins.Location);
+				var dirs = Directory.GetDirectories(Plugins.Location);
 
 				foreach (var i in dirs)
 				{
@@ -102,7 +102,7 @@ namespace TomPIT
 			if (path == null)
 				return null;
 
-			if (Sys.Plugins != null && Sys.Plugins.ShadowCopy)
+			if (Plugins.Items is not null && Plugins.ShadowCopy)
 			{
 				var shadowCopyLocation = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "Plugins");
 
@@ -129,7 +129,6 @@ namespace TomPIT
 				{
 					LoadedAssemblies.Add(targetPath);
 
-					var bytes = File.ReadAllBytes(path);
 					File.Copy(path, targetPath, true);
 				}
 
@@ -149,59 +148,53 @@ namespace TomPIT
 		public static void RegisterService(Type contract, object instance)
 		{
 			_sm.Register(contract, instance);
+
+			ServiceRegistered?.Invoke(contract, EventArgs.Empty);
 		}
 
 		public static void RegisterService(Type contract, ServiceActivatorCallback callback)
 		{
 			_sm.Register(contract, callback);
+
+			ServiceRegistered?.Invoke(contract, EventArgs.Empty);
 		}
 
-		public static void RegisterConfigurationType(Type type)
-		{
-			_sysType = type;
-		}
-
-		public static T GetConfiguration<T>() where T : ISys
-		{
-			return (T)Sys;
-		}
-
-		private static ISys Sys
+		public static JsonDocument Configuration
 		{
 			get
 			{
-				if (_sys != null)
-					return _sys;
+				if (_configuration is not null)
+					return _configuration;
 
 				lock (_sm)
 				{
-					if (_sys != null)
-						return _sys;
+					if (_configuration is not null)
+						return _configuration;
 
 					var appPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-					var sys = Path.Combine(appPath, "sys.json");
+					var sysPath = Path.Combine(appPath, "sys.json");
 
 					while (!string.IsNullOrWhiteSpace(appPath))
 					{
-						if (File.Exists(sys))
+						if (File.Exists(sysPath))
 						{
-							_sys = Serializer.Deserialize(File.ReadAllText(sys), _sysType) as ISys;
+							_configuration = JsonDocument.Parse(File.ReadAllText(sysPath), new JsonDocumentOptions
+							{
+								AllowTrailingCommas = true
+							});
+
 							break;
 						}
 
-						if (!sys.Contains('\\'))
-						{
-							_sys = _sysType.CreateInstance() as ISys;
-							break;
-						}
+						if (!sysPath.Contains('\\'))
+							throw new NullReferenceException("Could not find sys.json configuration file.");
 
-						appPath = appPath.Substring(0, appPath.LastIndexOf('\\'));
-						sys = Path.Combine(appPath, "sys.json");
+						appPath = appPath[..appPath.LastIndexOf('\\')];
+						sysPath = Path.Combine(appPath, "sys.json");
 					}
-
 				}
 
-				return _sys;
+				return _configuration;
 			}
 		}
 
@@ -209,7 +202,5 @@ namespace TomPIT
 		{
 			_accessor = app.ApplicationServices.GetRequiredService<IHttpContextAccessor>();
 		}
-
-		private static List<string> LoadedAssemblies => _loadedAssemblies.Value;
 	}
 }

@@ -1,16 +1,16 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.IoT;
 using TomPIT.Connectivity;
+using TomPIT.Environment;
 using TomPIT.IoT.Hubs;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
-using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.IoT.Services
 {
@@ -23,7 +23,7 @@ namespace TomPIT.IoT.Services
 			Tenant.GetService<IComponentService>().ConfigurationRemoved += OnConfigurationRemoved;
 			Tenant.GetService<IComponentService>().ConfigurationAdded += OnConfigurationAdded;
 
-			var configurations = tenant.GetService<IComponentService>().QueryConfigurations(Shell.GetConfiguration<IClientSys>().ResourceGroups, ComponentCategories.IoTHub);
+			var configurations = Tenant.GetService<IComponentService>().QueryConfigurations(Tenant.GetService<IResourceGroupService>().QuerySupported().Select(f => f.Name).ToList(), ComponentCategories.IoTHub);
 
 			foreach (var i in configurations)
 			{

@@ -30,13 +30,13 @@ namespace TomPIT.BigData.Partitions
 
 		protected override void OnInitializing()
 		{
-			foreach (var partition in Tenant.Get<List<Partition>>(CreateUrl("QueryPartitions")))
+			foreach (var partition in Instance.SysProxy.Management.BigData.QueryPartitions())
 				Set(partition.Configuration, partition, TimeSpan.Zero);
 		}
 
 		protected override void OnInvalidate(Guid id)
 		{
-			if (Tenant.Post<Partition>(CreateUrl("SelectPartition"), new { configuration = id }) is IPartition partition)
+			if (Instance.SysProxy.Management.BigData.SelectPartition(id) is IPartition partition)
 				Set(id, partition, TimeSpan.Zero);
 		}
 		public ImmutableList<IPartition> Query()
@@ -53,14 +53,7 @@ namespace TomPIT.BigData.Partitions
 
 			var ms = Tenant.GetService<IMicroServiceService>().Select(((IConfiguration)configuration).MicroService());
 
-			Tenant.Post(CreateUrl("InsertPartition"), new
-			{
-				name = configuration.ComponentName(),
-				configuration = configuration.Component,
-				status = PartitionStatus.Active.ToString(),
-				resourceGroup = ms.ResourceGroup
-			});
-
+			Instance.SysProxy.Management.BigData.InsertPartition(configuration.Component, configuration.ComponentName(), PartitionStatus.Active, ms.ResourceGroup);
 			Refresh(configuration.Component);
 
 			return Get(f => f.Configuration == configuration.Component);
@@ -83,14 +76,7 @@ namespace TomPIT.BigData.Partitions
 
 		public Guid InsertFile(Guid partition, Guid node, Guid timezone, string key, DateTime timeStamp)
 		{
-			var id = Tenant.Post<Guid>(CreateUrl("InsertFile"), new
-			{
-				partition,
-				node,
-				key,
-				timeStamp,
-				timezone
-			});
+			var id = Instance.SysProxy.Management.BigData.InsertFile(partition, node, key, timeStamp, timezone);
 
 			Files.Notify(id);
 
@@ -119,49 +105,29 @@ namespace TomPIT.BigData.Partitions
 
 		public void UpdateFile(Guid file, DateTime startTimeStamp, DateTime endTimeStamp, int count, PartitionFileStatus status)
 		{
-			Tenant.Post(CreateUrl("UpdateFile"), new
-			{
-				token = file,
-				startTimeStamp,
-				endTimeStamp,
-				count,
-				status = status.ToString()
-			});
-
+			Instance.SysProxy.Management.BigData.UpdateFile(file, startTimeStamp, endTimeStamp, count, status);
 			Files.Notify(file);
 		}
 
 		public void DeleteFile(Guid file)
 		{
-			Tenant.Post(CreateUrl("BigDataManagement"), new { token = file });
-
+			Instance.SysProxy.Management.BigData.DeleteFile(file);
 			Files.Notify(file, true);
 		}
 
 		public Guid LockFile(Guid file)
 		{
-			return Tenant.Post<Guid>(CreateUrl("LockFile"), new { token = file });
+			return Instance.SysProxy.Management.BigData.LockFile(file);
 		}
 
 		public void ReleaseFile(Guid unlockKey)
 		{
-			Tenant.Post(CreateUrl("UnlockFile"), new { unlockKey });
+			Instance.SysProxy.Management.BigData.UnlockFile(unlockKey);
 		}
 
 		public void UpdateFileStatistics(Guid file, string fieldName, string startString, string endString, double startNumber, double endNumber, DateTime startDate, DateTime endDate)
 		{
-			Tenant.Post(CreateUrl("UpdateFieldStatistics"), new
-			{
-				file,
-				fieldName,
-				startString,
-				endString,
-				startNumber,
-				endNumber,
-				startDate,
-				endDate
-			});
-
+			Instance.SysProxy.Management.BigData.UpdateFieldStatistics(file, fieldName, startString, endString, startNumber, endNumber, startDate, endDate);
 			Fields.Notify(file, fieldName);
 		}
 
@@ -220,13 +186,7 @@ namespace TomPIT.BigData.Partitions
 
 		public void UpdatePartition(Guid token, string name, PartitionStatus status)
 		{
-			MiddlewareDescriptor.Current.Tenant.Post(CreateUrl("UpdatePartition"), new
-			{
-				configuration = token,
-				name,
-				status = status.ToString()
-			});
-
+			Instance.SysProxy.Management.BigData.UpdatePartition(token, name, status);
 			Refresh(token);
 		}
 
@@ -266,11 +226,6 @@ namespace TomPIT.BigData.Partitions
 				return ImmutableList<IPartitionFile>.Empty;
 
 			return Files.Where(fieldHits);
-		}
-
-		private string CreateUrl(string action)
-		{
-			return Tenant.CreateUrl(DefaultController, action);
 		}
 	}
 }

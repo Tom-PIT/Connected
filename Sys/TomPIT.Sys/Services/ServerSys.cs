@@ -1,61 +1,56 @@
-﻿using Newtonsoft.Json;
-using System.Collections.Generic;
-using TomPIT.Environment;
-using TomPIT.Runtime.Configuration;
-
-namespace TomPIT.Sys.Services
+﻿namespace TomPIT.Sys.Services
 {
-	internal class ServerSys : IServerSys
+	internal class ServerSys //: IServerSys
 	{
-		private IServerSysAuthentication _authentication = null;
-		private List<string> _storageProviders = null;
-		private IServerSysConnectionStrings _connectionStrings = null;
+		//private IAuthenticationConfiguration _authentication = null;
+		//private List<string> _storageProviders = null;
+		//private IConnectionStringsConfiguration _connectionStrings = null;
 
-		[JsonProperty(PropertyName = "database")]
-		public string Database { get; set; }
+		//[JsonProperty(PropertyName = "database")]
+		//public string Database { get; set; }
 
-		[JsonProperty(PropertyName = "features")]
-		public InstanceFeatures Features { get; set; }
-		[JsonProperty(PropertyName = "authentication")]
-		public IServerSysAuthentication Authentication
-		{
-			get
-			{
-				if (_authentication == null)
-					_authentication = new ServerSysAuthentication();
+		//[JsonProperty(PropertyName = "features")]
+		//public InstanceFeatures Features { get; set; }
+		//[JsonProperty(PropertyName = "authentication")]
+		//public IAuthenticationConfiguration Authentication
+		//{
+		//	get
+		//	{
+		//		if (_authentication == null)
+		//			_authentication = new ServerSysAuthentication();
 
-				return _authentication;
-			}
-		}
+		//		return _authentication;
+		//	}
+		//}
 
-		[JsonProperty(PropertyName = "storageProviders")]
-		public List<string> StorageProviders
-		{
-			get
-			{
-				if (_storageProviders == null)
-					_storageProviders = new List<string>();
+		//[JsonProperty(PropertyName = "storageProviders")]
+		//public List<string> StorageProviders
+		//{
+		//	get
+		//	{
+		//		if (_storageProviders == null)
+		//			_storageProviders = new List<string>();
 
-				return _storageProviders;
-			}
-		}
-		[JsonProperty(PropertyName = "connectionStrings")]
-		public IServerSysConnectionStrings ConnectionStrings
-		{
-			get
-			{
-				if (_connectionStrings == null)
-					_connectionStrings = new ServerSysConnectionStrings();
+		//		return _storageProviders;
+		//	}
+		//}
+		//[JsonProperty(PropertyName = "connectionStrings")]
+		//public IConnectionStringsConfiguration ConnectionStrings
+		//{
+		//	get
+		//	{
+		//		if (_connectionStrings == null)
+		//			_connectionStrings = new ServerSysConnectionStrings();
 
-				return _connectionStrings;
-			}
-		}
+		//		return _connectionStrings;
+		//	}
+		//}
 
-		[JsonProperty(PropertyName = "plugins")]
-		public PluginSet Plugins { get; set; }
+		//[JsonProperty(PropertyName = "plugins")]
+		//public Plugins Plugins { get; set; }
 
 
-		[JsonProperty(PropertyName = "healthMonitoring")]
-		public HealthMonitoringConfiguration HealthMonitoring { get; set; } = new HealthMonitoringConfiguration();
+		//[JsonProperty(PropertyName = "healthMonitoring")]
+		//public HealthMonitoringConfiguration HealthMonitoring { get; set; } = new HealthMonitoringConfiguration();
 	}
 }

@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 using TomPIT.Distributed;
+using TomPIT.Environment;
 using TomPIT.Middleware;
-using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.Search.Services
 {
@@ -17,8 +17,8 @@ namespace TomPIT.Search.Services
 		{
 			IntervalTimeout = TimeSpan.FromMilliseconds(490);
 
-			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-				Dispatchers.Add(new IndexingDispatcher(i));
+			foreach (var i in Tenant.GetService<IResourceGroupService>().QuerySupported())
+				Dispatchers.Add(new IndexingDispatcher(i.Name));
 		}
 
 		protected override bool OnInitialize(CancellationToken cancel)

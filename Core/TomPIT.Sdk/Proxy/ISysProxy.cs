@@ -2,6 +2,8 @@
 {
 	public interface ISysProxy
 	{
+		ISysManagementProxy Management { get; }
+		ISysDevelopmentProxy Development { get; }
 		IAlienController Alien { get; }
 		IAnalyticsController Analytics { get; }
 		IAuditController Audit { get; }
@@ -22,5 +24,15 @@
 		IMicroServiceController MicroServices { get; }
 		IPrintingController Printing { get; }
 		IQueueController Queue { get; }
+		IResourceGroupController ResourceGroups { get; }
+		IRoleController Roles { get; }
+		ISearchController Search { get; }
+		ISecurityController Security { get; }
+		ISettingController Settings { get; }
+		IStorageController Storage { get; }
+		ISubscriptionController Subscriptions { get; }
+		IUserController Users { get; }
+		IUserDataController UserData { get; }
+		IXmlKeyController XmlKeys { get; }
 	}
 }

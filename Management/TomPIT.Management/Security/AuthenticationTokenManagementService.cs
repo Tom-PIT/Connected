@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 using TomPIT.Connectivity;
 using TomPIT.Middleware;
 using TomPIT.Security;
@@ -59,24 +59,12 @@ namespace TomPIT.Management.Security
 
 		public List<IAuthenticationToken> Query(string resourceGroup)
 		{
-			var u = Tenant.CreateUrl("Security", "QueryAuthenticationTokens");
-			var a = new JArray();
-			var e = new JObject
-				{
-					{"data", a }
-				};
-
-			a.Add(resourceGroup);
-
-			return Tenant.Post<List<AuthenticationToken>>(u, e).ToList<IAuthenticationToken>();
+			return Instance.SysProxy.Security.QueryAuthenticationTokens(new List<string> { resourceGroup }).ToList();
 		}
 
 		public IAuthenticationToken Select(Guid token)
 		{
-			var u = Tenant.CreateUrl("Security", "SelectAuthenticationToken")
-				.AddParameter("token", token);
-
-			return Tenant.Get<AuthenticationToken>(u);
+			return Instance.SysProxy.Security.SelectAuthenticationToken(token);
 		}
 
 		public void Update(Guid token, Guid user, string name, string description, string key, AuthenticationTokenClaim claims, AuthenticationTokenStatus status, DateTime validFrom, DateTime validTo,

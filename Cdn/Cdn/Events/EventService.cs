@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using TomPIT.Distributed;
+using TomPIT.Environment;
 using TomPIT.Middleware;
-using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.Cdn.Events
 {
@@ -12,7 +12,7 @@ namespace TomPIT.Cdn.Events
 	{
 		private Lazy<List<EventDispatcher>> _dispatchers = new Lazy<List<EventDispatcher>>();
 
-		public static EventService ServiceInstance { get; private set; } 
+		public static EventService ServiceInstance { get; private set; }
 
 		public EventService()
 		{
@@ -25,8 +25,8 @@ namespace TomPIT.Cdn.Events
 			if (Instance.State == InstanceState.Initializing)
 				return false;
 
-			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-				Dispatchers.Add(new EventDispatcher(i));
+			foreach (var i in Tenant.GetService<IResourceGroupService>().QuerySupported())
+				Dispatchers.Add(new EventDispatcher(i.Name));
 
 			return true;
 		}
@@ -40,7 +40,7 @@ namespace TomPIT.Cdn.Events
 				if (cancel.IsCancellationRequested)
 					return;
 
-				if( MiddlewareDescriptor.Current.Tenant.Post<List<EventQueueMessage>>(MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Dequeue"), 
+				if (MiddlewareDescriptor.Current.Tenant.Post<List<EventQueueMessage>>(MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Dequeue"),
 					new
 					{
 						count = f.Available,

@@ -1,14 +1,12 @@
-﻿using System;
+﻿using LZ4;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using LZ4;
-using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
-using TomPIT.Middleware;
 
 namespace TomPIT.Storage
 {
@@ -19,14 +17,15 @@ namespace TomPIT.Storage
 		public event BlobChangedHandler BlobAdded;
 		public event BlobChangedHandler BlobCommitted;
 
-		private ConcurrentDictionary<Guid, HashSet<int>> _preloadCache;
-
 		public StorageService(ITenant tenant) : base(tenant, "blob")
 		{
 			BlobContent = new BlobContentCache(Tenant);
 			Tenant.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
-			_preloadCache = new ConcurrentDictionary<Guid, HashSet<int>>();
+			PreloadCache = new();
 		}
+
+		private BlobContentCache BlobContent { get; } = null;
+		private ConcurrentDictionary<Guid, HashSet<int>> PreloadCache { get; }
 
 		private void OnMicroServiceInstalled(object sender, MicroServiceEventArgs e)
 		{
@@ -44,26 +43,13 @@ namespace TomPIT.Storage
 
 		public void Commit(string draft, string primaryKey)
 		{
-			var u = Tenant.CreateUrl("Storage", "Commit");
-			var args = new JObject
-			{
-				{ "draft", draft },
-				{ "primaryKey", primaryKey }
-			};
-
-			Tenant.Post(u, args);
-			Remove(f => string.Compare(f.Draft, draft, true) == 0 && string.Compare(f.PrimaryKey, primaryKey, true) == 0);
+			Instance.SysProxy.Storage.Commit(draft, primaryKey);
+			Remove(f => string.Equals(f.Draft, draft, StringComparison.OrdinalIgnoreCase) && string.Equals(f.PrimaryKey, primaryKey, StringComparison.OrdinalIgnoreCase));
 		}
 
 		public void Delete(Guid blob)
 		{
-			var u = Tenant.CreateUrl("Storage", "Delete");
-			var args = new JObject
-			{
-				{ "blob", blob }
-			};
-
-			Tenant.Post(u, args);
+			Instance.SysProxy.Storage.Delete(blob);
 			Remove(blob);
 		}
 
@@ -74,7 +60,7 @@ namespace TomPIT.Storage
 
 			var b = Select(blob);
 
-			if (b == null)
+			if (b is null)
 				return null;
 
 			return BlobContent.Select(b);
@@ -82,13 +68,16 @@ namespace TomPIT.Storage
 
 		public IBlobContent Download(Guid microService, int type, Guid resourceGroup, string primaryKey, string topic)
 		{
-			var r = Get(f => f.MicroService == microService && f.Type == type && string.Compare(f.PrimaryKey, primaryKey, true) == 0 && string.Compare(f.Topic, topic, true) == 0);
+			var r = Get(f => f.MicroService == microService
+				&& f.Type == type
+				&& string.Equals(f.PrimaryKey, primaryKey, StringComparison.OrdinalIgnoreCase)
+				&& string.Equals(f.Topic, topic, StringComparison.OrdinalIgnoreCase));
 
-			if (r == null)
+			if (r is null)
 			{
 				var rs = Query(microService, type, resourceGroup, primaryKey, topic);
 
-				if (rs == null || rs.Count == 0)
+				if (rs is null || !rs.Any())
 					return null;
 
 				r = rs[0];
@@ -99,13 +88,13 @@ namespace TomPIT.Storage
 
 		public IBlobContent Download(Guid microService, int type, Guid resourceGroup, string primaryKey)
 		{
-			var r = Get(f => f.MicroService == microService && f.Type == type && string.Compare(f.PrimaryKey, primaryKey, true) == 0);
+			var r = Get(f => f.MicroService == microService && f.Type == type && string.Equals(f.PrimaryKey, primaryKey, StringComparison.OrdinalIgnoreCase));
 
-			if (r == null)
+			if (r is null)
 			{
 				var rs = Query(microService, type, resourceGroup, primaryKey);
 
-				if (rs == null || rs.Count == 0)
+				if (rs is null || !rs.Any())
 					return null;
 
 				r = rs[0];
@@ -121,41 +110,22 @@ namespace TomPIT.Storage
 
 		public List<IBlob> Query(Guid microService, int type, Guid resourceGroup, string primaryKey, string topic)
 		{
-			var u = Tenant.CreateUrl("Storage", "QueryByTopic")
-				.AddParameter("microService", microService)
-				.AddParameter("type", type)
-				.AddParameter("resourceGroup", resourceGroup)
-				.AddParameter("primaryKey", primaryKey)
-				.AddParameter("topic", topic);
-
-			return Tenant.Get<List<Blob>>(u).ToList<IBlob>();
+			return Instance.SysProxy.Storage.Query(microService, type, resourceGroup, primaryKey, topic).ToList();
 		}
 
 		public List<IBlob> Query(Guid microService, int type, Guid resourceGroup, string primaryKey)
 		{
-			var u = Tenant.CreateUrl("Storage", "Query")
-				.AddParameter("microService", microService)
-				.AddParameter("type", type)
-				.AddParameter("resourceGroup", resourceGroup)
-				.AddParameter("primaryKey", primaryKey);
-
-			return Tenant.Get<List<Blob>>(u).ToList<IBlob>();
+			return Instance.SysProxy.Storage.Query(microService, type, resourceGroup, primaryKey).ToList();
 		}
 
 		public List<IBlob> Query(Guid microService)
 		{
-			var u = Tenant.CreateUrl("Storage", "QueryByMicroService")
-				.AddParameter("microService", microService);
-
-			return Tenant.Get<List<Blob>>(u).ToList<IBlob>();
+			return Instance.SysProxy.Storage.Query(microService).ToList();
 		}
 
 		public List<IBlob> QueryDrafts(string draft)
 		{
-			var u = Tenant.CreateUrl("Storage", "QueryDrafts")
-				.AddParameter("draft", draft);
-
-			return Tenant.Get<List<Blob>>(u).ToList<IBlob>();
+			return Instance.SysProxy.Storage.QueryDrafts(draft).ToList();
 		}
 
 		public IBlob Select(Guid blob)
@@ -163,10 +133,7 @@ namespace TomPIT.Storage
 			return Get(blob,
 				(f) =>
 				{
-					var u = Tenant.CreateUrl("Storage", "Select")
-						.AddParameter("blob", blob);
-
-					return Tenant.Get<Blob>(u);
+					return Instance.SysProxy.Storage.Select(blob);
 				});
 		}
 
@@ -177,59 +144,23 @@ namespace TomPIT.Storage
 
 		public Guid Upload(IBlob blob, byte[] content, StoragePolicy policy, Guid token)
 		{
-			var compressed = content == null ? null : LZ4Codec.Wrap(content);
-
-			var u = Tenant.CreateUrl("Storage", "Upload");
-			var args = new JObject
-			{
-				{"resourceGroup", blob.ResourceGroup },
-				{"type", blob.Type },
-				{"primaryKey", blob.PrimaryKey },
-				{"microService", blob.MicroService },
-				{"topic", blob.Topic },
-				{"fileName", blob.FileName },
-				{"contentType", blob.ContentType },
-				{"draft", blob.Draft },
-				{"content", compressed },
-				{"policy", policy.ToString() },
-				{"token", token.ToString() }
-			};
-
-			var r = Tenant.Post<Guid>(u, args);
+			var compressed = content is null ? null : LZ4Codec.Wrap(content);
+			var r = Instance.SysProxy.Storage.Upload(blob, compressed, policy, token);
 
 			Remove(r);
 			BlobContent.Delete(r);
 
 			return r;
-
 		}
 
 		public void Restore(IBlob blob, byte[] content)
 		{
-			var compressed = content == null ? null : LZ4Codec.Wrap(content);
-
-			var u = Tenant.CreateUrl("Storage", "Deploy");
-			var args = new JObject
-			{
-				{"resourceGroup", blob.ResourceGroup },
-				{"type", blob.Type },
-				{"primaryKey", blob.PrimaryKey },
-				{"microService", blob.MicroService },
-				{"topic", blob.Topic },
-				{"fileName", blob.FileName },
-				{"contentType", blob.ContentType },
-				{"draft", blob.Draft },
-				{"content", compressed },
-				{"policy", StoragePolicy.Singleton.ToString() },
-				{"token", blob.Token.ToString() },
-				{"version", blob.Version }
-			};
-
-			var r = Tenant.Post<Guid>(u, args);
+			var compressed = content is null ? null : LZ4Codec.Wrap(content);
+			Instance.SysProxy.Storage.Restore(blob, compressed);
 
 			NotifyChanged(this, new BlobEventArgs
 			{
-				Blob = r,
+				Blob = blob.Token,
 				MicroService = blob.MicroService,
 				PrimaryKey = blob.PrimaryKey,
 				Type = blob.Type
@@ -274,7 +205,7 @@ namespace TomPIT.Storage
 					if (items.Contains(type))
 						return Query(type, microService);
 				}
-				
+
 				if (microService != Guid.Empty && PreloadCache.TryGetValue(microService, out items))
 				{
 					if (items.Contains(type))
@@ -288,11 +219,7 @@ namespace TomPIT.Storage
 					PreloadCache.TryAdd(microService, items);
 				}
 
-				var blobs = Tenant.Post<List<Blob>>(Tenant.CreateUrl("Storage", "QueryByType"), new
-				{
-					microService,
-					type
-				});
+				var blobs = Instance.SysProxy.Storage.Query(type, microService);
 
 				foreach (var blob in blobs)
 					Set(blob.Token, blob, TimeSpan.Zero);
@@ -321,8 +248,5 @@ namespace TomPIT.Storage
 			Remove(blob);
 			BlobContent.Delete(blob);
 		}
-
-		private BlobContentCache BlobContent { get; } = null;
-		private ConcurrentDictionary<Guid, HashSet<int>> PreloadCache => _preloadCache;
 	}
 }

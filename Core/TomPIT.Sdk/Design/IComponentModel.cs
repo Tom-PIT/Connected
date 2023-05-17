@@ -27,19 +27,9 @@ namespace TomPIT.Design
 		void DeleteFolder(Guid microService, Guid folder, bool deleteComponents);
 		void RestoreFolder(Guid microService, Guid token, string name, Guid parent);
 
-		[Obsolete("This feature is obsolete and will be replaced with Repositories.")]
-		void SaveRuntimeState(Guid microService);
-		[Obsolete("This feature is obsolete and will be replaced with Repositories.")]
-		void DropRuntimeState(Guid microService);
-		[Obsolete("This feature is obsolete and will be replaced with Repositories.")]
-		Dictionary<Guid, Guid> SelectRuntimeState(Guid microService);
-
 		IComponentImage CreateComponentImage(Guid component);
 		IComponentImage SelectComponentImage(Guid blob);
 		void RestoreComponent(IComponentImage image);
 		void RestoreComponent(Guid blob);
-
-		void InvalidateIndexes(List<IComponentIndexState> states);
-		void InvalidateAnalyzers(List<IComponentAnalyzerState> states);
 	}
 }

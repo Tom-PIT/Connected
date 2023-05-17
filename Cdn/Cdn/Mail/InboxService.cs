@@ -1,13 +1,14 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using TomPIT.Caching;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Cdn;
 using TomPIT.Connectivity;
+using TomPIT.Environment;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
-using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.Cdn.Mail
 {
@@ -22,8 +23,8 @@ namespace TomPIT.Cdn.Mail
 
 		protected override void OnInitializing()
 		{
-			var rgs = Shell.GetConfiguration<IClientSys>().ResourceGroups;
-			var configurations = Tenant.GetService<IComponentService>().QueryConfigurations(rgs, ComponentCategories.Inbox);
+			var rgs = Tenant.GetService<IResourceGroupService>().QuerySupported();
+			var configurations = Tenant.GetService<IComponentService>().QueryConfigurations(rgs.Select(f => f.Name).ToList(), ComponentCategories.Inbox);
 
 			foreach (var configuration in configurations)
 			{

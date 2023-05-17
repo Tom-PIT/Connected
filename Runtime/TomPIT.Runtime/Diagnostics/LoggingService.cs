@@ -1,5 +1,5 @@
-﻿using TomPIT.Connectivity;
-using TomPIT.Runtime.Configuration;
+﻿using System.Text.Json;
+using TomPIT.Connectivity;
 
 namespace TomPIT.Diagnostics
 {
@@ -9,10 +9,10 @@ namespace TomPIT.Diagnostics
 
 		public LoggingService(ITenant tenant) : base(tenant)
 		{
-			_dumpEnabled = Shell.GetConfiguration<IClientSys>().Diagnostics.DumpEnabled;
+			Initialize();
 		}
 
-		private bool DumpEnabled => _dumpEnabled;
+		public bool DumpEnabled { get; private set; }
 		public void Write(ILogEntry d)
 		{
 			Instance.SysProxy.Logging.Write(d);
@@ -29,6 +29,17 @@ namespace TomPIT.Diagnostics
 				return;
 
 			Instance.SysProxy.Logging.Dump(text);
+		}
+
+		private void Initialize()
+		{
+			if (!Shell.Configuration.RootElement.TryGetProperty("diagnostics", out JsonElement element))
+				return;
+
+			if (!element.TryGetProperty("dumpEnabled", out JsonElement dumpEnabled))
+				return;
+
+			DumpEnabled = dumpEnabled.GetBoolean();
 		}
 	}
 }

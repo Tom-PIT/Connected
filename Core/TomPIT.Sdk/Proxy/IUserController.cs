@@ -1,12 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Collections.Immutable;
+using TomPIT.Security;
 
 namespace TomPIT.Proxy
 {
-	internal interface IUserController
+	public interface IUserController
 	{
+		IMembership SelectMembership(Guid user, Guid role);
+		ImmutableList<IUser> Query();
+		IUser Select(string qualifier);
+		IUser SelectByAuthenticationToken(Guid token);
+		IUser SelectBySecurityCode(string securityCode);
 	}
 }

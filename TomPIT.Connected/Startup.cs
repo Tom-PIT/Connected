@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using TomPIT.App;
 using TomPIT.Environment;
 using TomPIT.Runtime;
-using TomPIT.Runtime.Configuration;
+using TomPIT.Sys;
 
 namespace TomPIT.Connected
 {
@@ -16,27 +16,33 @@ namespace TomPIT.Connected
 			Startups = new();
 
 			Instance.Boot();
-			Features = Shell.GetConfiguration<ISys>().Features;
 
-			if (Features.HasFlag(InstanceFeatures.Application))
+			if (Instance.Features.HasFlag(InstanceFeatures.Sys))
+				SysStartup = new SysStartup();
+
+			if (Instance.Features.HasFlag(InstanceFeatures.Application))
 				Startups.Add(new AppStartup());
 		}
 
+		private SysStartup? SysStartup { get; }
 		private List<IInstanceStartup> Startups { get; }
-		private InstanceFeatures Features { get; }
 
 		public void ConfigureServices(IServiceCollection services)
 		{
-			Instance.Initialize(Features, services, new ServicesConfigurationArgs
-			{
-				Authentication = AuthenticationType.SingleTenant,
-				CorsEnabled = true
-			});
+			if (SysStartup is not null)
+				SysStartup.ConfigureServices(services);
+
+			Instance.Initialize();
 
 			foreach (var startup in Startups)
 				startup.Initialize();
 
-			Instance.InitializeShellServices();
+			Instance.InitializeTenant();
+			Instance.InitializeServices(services, new ServicesConfigurationArgs
+			{
+				Authentication = AuthenticationType.SingleTenant,
+				CorsEnabled = true
+			});
 
 			foreach (var startup in Startups)
 				startup.ConfigureServices(services);
@@ -44,6 +50,9 @@ namespace TomPIT.Connected
 
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
+			if (SysStartup is not null)
+				SysStartup.Configure(app, env);
+
 			foreach (var startup in Startups)
 				startup.Configure(app, env);
 

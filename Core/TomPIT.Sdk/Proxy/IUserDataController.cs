@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Collections.Immutable;
+using TomPIT.Security;
 
 namespace TomPIT.Proxy
 {
-	internal interface IUserDataController
+	public interface IUserDataController
 	{
+		ImmutableList<IUserData> Query(Guid user);
+		void Update(Guid user, List<IUserData> data);
 	}
 }

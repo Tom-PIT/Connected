@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Data;
@@ -62,14 +61,7 @@ namespace TomPIT.Management.Deployment
 			}
 			finally
 			{
-				var u = Tenant.CreateUrl("NotificationDevelopment", "MicroServiceInstalled");
-				var e = new JObject
-					 {
-						  {"microService", Package.MicroService.Token },
-						  {"success", success }
-					 };
-
-				Tenant.Post(u, e);
+				Instance.SysProxy.Development.Notifications.MicroServiceInstalled(Package.MicroService.Token, success);
 
 				if (Tenant.GetService<IMicroServiceService>() is IMicroServiceNotification n)
 					n.NotifyMicroServiceInstalled(this, new MicroServiceInstallEventArgs(Package.MicroService.Token, success));

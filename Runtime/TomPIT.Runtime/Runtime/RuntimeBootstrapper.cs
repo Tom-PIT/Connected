@@ -22,7 +22,6 @@ using TomPIT.IoT;
 using TomPIT.Messaging;
 using TomPIT.Navigation;
 using TomPIT.Reflection;
-using TomPIT.Runtime.Configuration;
 using TomPIT.Search;
 using TomPIT.Security;
 using TomPIT.Storage;
@@ -59,7 +58,7 @@ namespace TomPIT.Runtime
 
       private static void OnTenantInitialized(object sender, TenantArgs e)
       {
-         foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
+         foreach (var i in Tenant.GetService<IDesignService>().QueryDesigners())
          {
             var t = TypeExtensions.GetType(i);
 

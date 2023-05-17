@@ -9,7 +9,6 @@ using TomPIT.Cdn.Mail;
 using TomPIT.Cdn.Printing;
 using TomPIT.Cdn.Routing;
 using TomPIT.Connectivity;
-using TomPIT.Environment;
 using TomPIT.Runtime;
 
 namespace TomPIT.Cdn
@@ -31,9 +30,8 @@ namespace TomPIT.Cdn
 				CorsEnabled = true
 			};
 
-			Instance.Initialize(InstanceFeatures.Cdn, services, e);
+			//Instance.Initialize(services, e);
 			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
-			Instance.InitializeShellServices();
 
 			services.AddSignalR(o =>
 			{

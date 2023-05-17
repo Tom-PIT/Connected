@@ -2,7 +2,6 @@
 using System.Linq;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
-using TomPIT.Middleware;
 
 namespace TomPIT.Configuration
 {
@@ -27,9 +26,7 @@ namespace TomPIT.Configuration
 
 		public List<ISetting> Query()
 		{
-			var u = Tenant.CreateUrl("Setting", "Query");
-
-			return Tenant.Get<List<Setting>>(u).ToList<ISetting>();
+			return Instance.SysProxy.Settings.Query().ToList();
 		}
 
 		public ISetting Select(string name, string nameSpace, string type, string primaryKey)
@@ -37,19 +34,12 @@ namespace TomPIT.Configuration
 			var key = GenerateKey(name, nameSpace, type, primaryKey);
 			var r = Get(key);
 
-			if (r != null)
+			if (r is not null)
 				return r;
 
-			r = Tenant.Post<Setting>(Tenant.CreateUrl("Setting", "Select"), new
-			{
-				Name = name,
-				Type = type,
-				NameSpace = nameSpace,
-				PrimaryKey = primaryKey
-			});
+			r = Instance.SysProxy.Settings.Select(name, nameSpace, type, primaryKey);
 
-			if (r == null)
-				r = new Setting();
+			r ??= new Setting();
 
 			Set(key, r);
 
@@ -70,15 +60,7 @@ namespace TomPIT.Configuration
 
 		public void Update(string name, string nameSpace, string type, string primaryKey, object value)
 		{
-			Tenant.Post(Tenant.CreateUrl("SettingManagement", "Update"), new
-			{
-				Name = name,
-				Type = type,
-				PrimaryKey = primaryKey,
-				Value = value,
-				NameSpace = nameSpace
-			});
-
+			Instance.SysProxy.Management.Settings.Update(name, nameSpace, type, primaryKey, value);
 			NotifyChanged(this, new SettingEventArgs(name, nameSpace, type, primaryKey));
 		}
 	}

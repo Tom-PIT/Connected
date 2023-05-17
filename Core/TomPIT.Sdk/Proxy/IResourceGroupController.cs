@@ -1,12 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Collections.Immutable;
+using TomPIT.Environment;
 
 namespace TomPIT.Proxy
 {
-	internal interface IResourceGroupController
+	public interface IResourceGroupController
 	{
+		ImmutableList<IResourceGroup> Query();
+		IResourceGroup Select(Guid resourceGroup);
+		IResourceGroup Select(string name);
 	}
 }

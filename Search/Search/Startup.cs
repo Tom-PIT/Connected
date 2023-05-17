@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TomPIT.Connectivity;
-using TomPIT.Environment;
 using TomPIT.Runtime;
 using TomPIT.Search.Routing;
 using TomPIT.Search.Services;
@@ -27,11 +26,9 @@ namespace TomPIT.Search
 				Authentication = AuthenticationType.SingleTenant
 			};
 
-			Instance.Initialize(InstanceFeatures.Search, services, e);
+			//Instance.Initialize(services, e);
 
 			InitializeConfiguration();
-
-			Instance.InitializeShellServices();
 
 			RegisterTasks(services);
 		}

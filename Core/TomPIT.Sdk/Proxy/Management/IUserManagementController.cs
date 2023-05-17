@@ -1,6 +1,10 @@
-﻿namespace TomPIT.Proxy.Management
+﻿using System;
+
+namespace TomPIT.Proxy.Management
 {
-	internal interface IUserManagementController
+	public interface IUserManagementController
 	{
+		void ChangeAvatar(Guid user, Guid avatar);
+		void ChangePassword(Guid user, string existingPassword, string password);
 	}
 }

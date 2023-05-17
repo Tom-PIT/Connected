@@ -13,7 +13,6 @@ using TomPIT.BigData.Transactions;
 using TomPIT.Connectivity;
 using TomPIT.Diagnostics;
 using TomPIT.Diagnostics.Tracing;
-using TomPIT.Environment;
 using TomPIT.Middleware;
 using TomPIT.Runtime;
 
@@ -35,9 +34,8 @@ namespace TomPIT.BigData
 				Authentication = AuthenticationType.SingleTenant
 			};
 
-			Instance.Initialize(InstanceFeatures.BigData, services, e);
+			//Instance.Initialize(services, e);
 			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
-			Instance.InitializeShellServices();
 
 			RegisterTasks(services);
 

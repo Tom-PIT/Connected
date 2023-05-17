@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Immutable;
+using TomPIT.Configuration;
 
 namespace TomPIT.Proxy
 {
-	internal interface ISettingController
+	public interface ISettingController
 	{
+		ImmutableList<ISetting> Query();
+		ISetting Select(string name, string nameSpace, string type, string primaryKey);
 	}
 }

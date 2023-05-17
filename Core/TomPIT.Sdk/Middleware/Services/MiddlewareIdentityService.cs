@@ -1,5 +1,5 @@
-﻿using System;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using TomPIT.Security;
 
 namespace TomPIT.Middleware.Services
@@ -129,16 +129,7 @@ namespace TomPIT.Middleware.Services
 			var id = Context.Tenant.Post<Guid>(u, e);
 
 			if (password is not null)
-			{
-				u = Context.Tenant.CreateUrl("UserManagement", "ChangePassword");
-				e = new JObject
-				{
-					{"user", id},
-					{"newPassword", password}
-				};
-
-				Context.Tenant.Post(u, e);
-			}
+				Context.Tenant.GetService<IUserService>().ChangePassword(id, null, password);
 
 			return id;
 		}

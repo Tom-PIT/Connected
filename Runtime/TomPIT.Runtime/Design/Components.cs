@@ -4,7 +4,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
-using Newtonsoft.Json.Linq;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
@@ -21,20 +20,13 @@ namespace TomPIT.Design
 {
 	internal class Components : TenantObject, IComponentModel
 	{
-		private const string Controller = "ComponentDevelopment";
-
 		public Components(ITenant tenant) : base(tenant)
 		{
 		}
 
 		public string CreateName(Guid microService, string category, string prefix)
 		{
-			var u = Tenant.CreateUrl("ComponentDevelopment", "CreateName")
-				 .AddParameter("microService", microService)
-				 .AddParameter("nameSpace", ComponentCategories.ResolveNamespace(category))
-				 .AddParameter("prefix", prefix);
-
-			return Tenant.Get<string>(u);
+			return Instance.SysProxy.Development.Components.CreateName(microService, ComponentCategories.ResolveNamespace(category), prefix);
 		}
 
 		public void Delete(Guid component)
@@ -69,48 +61,25 @@ namespace TomPIT.Design
 				Tenant.GetService<IDesignService>().VersionControl.DeleteHistory(component);
 			}
 
-			var u = Tenant.CreateUrl("ComponentDevelopment", "Delete");
-			var args = new JObject
-				{
-					 {"component", component },
-					 {"permanent", permanent },
-					 {"user", MiddlewareDescriptor.Current.UserToken }
-				};
-
-			Tenant.Post(u, args);
+			Instance.SysProxy.Development.Components.Delete(component, MiddlewareDescriptor.Current.UserToken, permanent);
 
 			if (Tenant.GetService<IComponentService>() is IComponentNotification svc)
 				svc.NotifyRemoved(this, new ComponentEventArgs(c.MicroService, c.Folder, component, c.NameSpace, c.Category, c.Name));
 
 			/*
-		 * remove configuration file
-		 */
+			 * remove configuration file
+			 */
 			if (permanent)
 			{
 				Tenant.GetService<IStorageService>().Delete(c.Token);
-
-				//if (c.RuntimeConfiguration != Guid.Empty)
-				//	Tenant.GetService<IStorageService>().Delete(c.RuntimeConfiguration);
-
 				Tenant.GetService<IDesignService>().Search.Delete(c.Token);
 			}
 
-			//DeleteManifest(c);
-
-			u = Tenant.CreateUrl("NotificationDevelopment", "ConfigurationRemoved");
-			args = new JObject
-				{
-					 { "configuration", c.Token},
-					 { "microService", c.MicroService},
-					 { "category", c.Category}
-				};
-
-			Tenant.Post(u, args);
+			Instance.SysProxy.Development.Notifications.ConfigurationRemoved(c.MicroService, c.Token, c.Category);
 		}
 
 		public void Restore(Guid microService, IPackageComponent component, IPackageBlob configuration)
 		{
-			var runtimeConfigurationId = component.RuntimeConfiguration;
 			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
 
 			var blob = new Blob
@@ -125,24 +94,7 @@ namespace TomPIT.Design
 			};
 
 			Tenant.GetService<IStorageService>().Upload(blob, Convert.FromBase64String(configuration.Content), StoragePolicy.Singleton, component.Token);
-
-			var u = Tenant.CreateUrl("ComponentDevelopment", "Insert");
-
-			var args = new JObject
-				{
-					 {"microService", microService },
-					 {"folder", component.Folder },
-					 {"name", component.Name },
-					 {"type", component.Type },
-					 {"category", component.Category },
-					 {"component", component.Token },
-					 {"nameSpace", ComponentCategories.ResolveNamespace( component.Category) }
-				};
-
-			if (runtimeConfigurationId != Guid.Empty)
-				args.Add("runtimeConfiguration", runtimeConfigurationId);
-
-			Tenant.Post(u, args);
+			Instance.SysProxy.Development.Components.Insert(microService, component.Folder, component.Token, ComponentCategories.ResolveNamespace(component.Category), component.Category, component.Name, component.Type);
 
 			if (Tenant.GetService<IComponentService>() is IComponentNotification notification)
 			{
@@ -156,9 +108,6 @@ namespace TomPIT.Design
 					NameSpace = ComponentCategories.ResolveNamespace(component.Category)
 				});
 			}
-
-			InvalidateIndexes(component.Token);
-			InvalidateAnalyzers(component.Token);
 		}
 
 		public void Restore(Guid microService, IPullRequestComponent component)
@@ -226,20 +175,7 @@ namespace TomPIT.Design
 
 			if (component.Verb == ComponentVerb.Add)
 			{
-				var u = Tenant.CreateUrl("ComponentDevelopment", "Insert");
-
-				var args = new JObject
-				{
-					 {"microService", microService },
-					 {"folder", component.Folder },
-					 {"name", component.Name },
-					 {"type", component.Type },
-					 {"category", component.Category },
-					 {"component", component.Token },
-					 {"nameSpace", ComponentCategories.ResolveNamespace( component.Category) }
-				};
-
-				Tenant.Post(u, args);
+				Instance.SysProxy.Development.Components.Insert(microService, component.Folder, component.Token, ComponentCategories.ResolveNamespace(component.Category), component.Category, component.Name, component.Type);
 
 				if (Tenant.GetService<IComponentService>() is IComponentNotification notification)
 				{
@@ -263,9 +199,6 @@ namespace TomPIT.Design
 			}
 			else
 				Update(component.Token, component.Name, component.Folder, false);
-
-			InvalidateIndexes(component.Token);
-			InvalidateAnalyzers(component.Token);
 		}
 
 		private void NotifyRemoted(Guid microService, IPullRequestComponent component)
@@ -375,7 +308,7 @@ namespace TomPIT.Design
 			if (s == null)
 				throw new NotFoundException(SR.ErrMicroServiceNotFound);
 
-			var t = Reflection.TypeExtensions.GetType(type);
+			var t = TypeExtensions.GetType(type);
 
 			if (t == null)
 				throw new TomPITException(string.Format("{0} ({1})", SR.ErrCannotCreateComponentInstance, type));
@@ -403,20 +336,7 @@ namespace TomPIT.Design
 			};
 
 			Tenant.GetService<IStorageService>().Upload(blob, content, StoragePolicy.Singleton, instance.Component);
-
-			var u = Tenant.CreateUrl("ComponentDevelopment", "Insert");
-			var args = new JObject
-				{
-					 {"microService", microService },
-					 {"folder", folder },
-					 {"name", name },
-					 {"type", type },
-					 {"category", category },
-					 {"component", instance.Component },
-					 {"nameSpace", ComponentCategories.ResolveNamespace(category) }
-				};
-
-			Tenant.Post(u, args);
+			Instance.SysProxy.Development.Components.Insert(microService, folder, instance.Component, ComponentCategories.ResolveNamespace(category), category, name, type);
 			Tenant.GetService<IStorageService>().Commit(blob.Draft, instance.Component.ToString());
 
 			if (Tenant.GetService<IComponentService>() is IComponentNotification notification)
@@ -432,16 +352,7 @@ namespace TomPIT.Design
 				});
 			}
 
-			InvalidateIndexes(instance.Component);
-			InvalidateAnalyzers(instance.Component);
-
-			u = Tenant.CreateUrl("NotificationDevelopment", "ConfigurationAdded");
-			args = new JObject
-				{
-					 { "configuration", instance.Component }
-				};
-
-			Tenant.Post(u, args);
+			Instance.SysProxy.Development.Notifications.ConfigurationAdded(microService, instance.Component, category);
 			Tenant.GetService<IDesignService>().VersionControl.Lock(instance.Component, Development.LockVerb.Add);
 
 			return instance.Component;
@@ -452,19 +363,12 @@ namespace TomPIT.Design
 			if (performLock)
 				Tenant.GetService<IDesignService>().VersionControl.Lock(component, Development.LockVerb.Edit);
 
-			//DeleteManifest(component);
-
 			var c = Tenant.GetService<IComponentService>().SelectComponent(component);
 
 			if (c == null)
 				throw new TomPITException(SR.ErrComponentNotFound);
 
-			Tenant.Post(CreateUrl("Update"), new
-			{
-				name,
-				component,
-				folder
-			});
+			Instance.SysProxy.Development.Components.Update(component, name, folder);
 
 			if (Tenant.GetService<IComponentService>() is IComponentNotification n)
 				n.NotifyChanged(this, new ConfigurationEventArgs(c.MicroService, component, c.Category));
@@ -497,8 +401,8 @@ namespace TomPIT.Design
 			if (s == null)
 				throw new TomPITException(SR.ErrMicroServiceNotFound);
 			/*
-		 * version control lock needs to be obtained only for design time
-		 */
+			 * version control lock needs to be obtained only for design time
+			 */
 			if (e.PerformLock)
 				Tenant.GetService<IDesignService>().VersionControl.Lock(c.Token, Development.LockVerb.Edit);
 
@@ -517,19 +421,10 @@ namespace TomPIT.Design
 
 			Tenant.GetService<IStorageService>().Upload(blob, content, StoragePolicy.Singleton);
 
-			InvalidateIndexes(configuration.Component);
-			InvalidateAnalyzers(configuration.Component);
-
 			if (Tenant.GetService<IComponentService>() is IComponentNotification n)
 				n.NotifyChanged(this, new ConfigurationEventArgs(c.MicroService, configuration.Component, c.Category));
 
-			var u = Tenant.CreateUrl("NotificationDevelopment", "ConfigurationChanged");
-			var args = new JObject
-				{
-					 { "configuration", c.Token }
-				};
-
-			Tenant.Post(u, args);
+			Instance.SysProxy.Development.Notifications.ConfigurationChanged(c.MicroService, c.Token, c.Category);
 		}
 
 		public void Update(IText text, string content)
@@ -560,9 +455,6 @@ namespace TomPIT.Design
 					text.TextBlob = blob;
 
 				Update(text.Configuration());
-
-				InvalidateIndexes(text);
-				InvalidateAnalyzers(text);
 			}
 		}
 
@@ -629,14 +521,7 @@ namespace TomPIT.Design
 					Update(component.Token, component.Name, Guid.Empty);
 			}
 
-			var u = Tenant.CreateUrl("FolderDevelopment", "Delete");
-			var args = new JObject
-				{
-					 {"microService", microService },
-					 { "token", folder }
-				};
-
-			Tenant.Post(u, args);
+			Instance.SysProxy.Development.Folders.Delete(microService, folder);
 
 			if (Tenant.GetService<IComponentService>() is IComponentNotification svc)
 				svc.NotifyFolderRemoved(this, new FolderEventArgs(microService, folder));
@@ -644,16 +529,7 @@ namespace TomPIT.Design
 
 		public void RestoreFolder(Guid microService, Guid token, string name, Guid parent)
 		{
-			var u = Tenant.CreateUrl("FolderDevelopment", "Restore");
-			var args = new JObject
-				{
-					 {"microService", microService },
-					 { "name", name },
-					 { "parent", parent },
-					 { "token", token }
-				};
-
-			Tenant.Post(u, args);
+			Instance.SysProxy.Development.Folders.Restore(microService, token, name, parent);
 
 			if (Tenant.GetService<IComponentService>() is IComponentNotification svc)
 				svc.NotifyFolderChanged(this, new FolderEventArgs(microService, token));
@@ -661,15 +537,7 @@ namespace TomPIT.Design
 
 		public Guid InsertFolder(Guid microService, string name, Guid parent)
 		{
-			var u = Tenant.CreateUrl("FolderDevelopment", "Insert");
-			var args = new JObject
-				{
-					 {"microService", microService },
-					 { "name", name },
-					 { "parent", parent }
-				};
-
-			var r = Tenant.Post<Guid>(u, args);
+			var r = Instance.SysProxy.Development.Folders.Insert(microService, name, parent);
 
 			if (Tenant.GetService<IComponentService>() is IComponentNotification svc)
 				svc.NotifyFolderChanged(this, new FolderEventArgs(microService, r));
@@ -679,16 +547,7 @@ namespace TomPIT.Design
 
 		public void UpdateFolder(Guid microService, Guid folder, string name, Guid parent)
 		{
-			var u = Tenant.CreateUrl("FolderDevelopment", "Update");
-			var args = new JObject
-				{
-					 {"microService", microService },
-					 { "token", folder },
-					 { "name", name },
-					 { "parent", parent }
-				};
-
-			Tenant.Post(u, args);
+			Instance.SysProxy.Development.Folders.Update(microService, folder, name, parent);
 
 			if (Tenant.GetService<IComponentService>() is IComponentNotification svc)
 				svc.NotifyFolderChanged(this, new FolderEventArgs(microService, folder));
@@ -758,8 +617,8 @@ namespace TomPIT.Design
 			var component = Tenant.GetService<IComponentService>().SelectComponent(image.Token);
 			var folder = image.Folder;
 			/*
-		 * if previous folder doesn't exist anymore we'll put component at root
-		 */
+			 * if previous folder doesn't exist anymore we'll put component at root
+			 */
 			if (folder != Guid.Empty)
 			{
 				var f = Tenant.GetService<IComponentService>().SelectFolder(image.Folder);
@@ -768,28 +627,15 @@ namespace TomPIT.Design
 					folder = Guid.Empty;
 			}
 			/*
-		 * if component doesn't exist it has probably been deleted so we must create
-		 * a new component with the same identifiers
-		 */
+			 * if component doesn't exist it has probably been deleted so we must create
+			 * a new component with the same identifiers
+			 */
 			if (component == null)
 			{
 				/*
-			* runtime configuration has been lost when deleting. it currently cannot be restored.
-			*/
-				var u = Tenant.CreateUrl("ComponentDevelopment", "Insert");
-
-				var args = new JObject
-					 {
-						  {"microService", image.MicroService },
-						  {"folder", folder },
-						  {"name", image.Name },
-						  {"type", image.Type },
-						  {"category", image.Category },
-						  {"component", image.Token },
-						  {"nameSpace", ComponentCategories.ResolveNamespace( image.Category) }
-					 };
-
-				Tenant.Post(u, args);
+				 * runtime configuration has been lost when deleting. it currently cannot be restored.
+				 */
+				Instance.SysProxy.Development.Components.Insert(image.MicroService, folder, image.Token, ComponentCategories.ResolveNamespace(image.Category), image.Category, image.Name, image.Type);
 
 				component = Tenant.GetService<IComponentService>().SelectComponent(image.Token);
 			}
@@ -798,9 +644,9 @@ namespace TomPIT.Design
 
 			var ms = Tenant.GetService<IMicroServiceService>().Select(component.MicroService);
 			/*
-		 * we need to find out if and blobs has been created. if so, delete it because we
-		 * are performing undo or rollback.
-		 */
+			 * we need to find out if and blobs has been created. if so, delete it because we
+			 * are performing undo or rollback.
+			 */
 			var config = Tenant.GetService<IComponentService>().SelectConfiguration(image.Token);
 			var deps = Tenant.GetService<IDiscoveryService>().Configuration.QueryDependencies(config);
 
@@ -811,8 +657,8 @@ namespace TomPIT.Design
 			}
 
 			/*
-		 * now restore configuration and all blobs
-		 */
+			 * now restore configuration and all blobs
+			 */
 			var imageConfig = Tenant.GetService<ISerializationService>().Deserialize(image.Configuration.Content, Type.GetType(image.Type)) as IConfiguration;
 
 			Update(imageConfig, new ComponentUpdateArgs(false));
@@ -831,14 +677,6 @@ namespace TomPIT.Design
 					Type = i.Type,
 					Version = i.Version
 				}, i.Content, StoragePolicy.Singleton);
-			}
-
-			var sources = Tenant.GetService<IDiscoveryService>().Configuration.Query<IText>(imageConfig);
-
-			foreach (var source in sources)
-			{
-				InvalidateIndexes(source);
-				InvalidateAnalyzers(source);
 			}
 
 			if (Tenant.GetService<IComponentService>() is IComponentNotification notification)
@@ -862,183 +700,12 @@ namespace TomPIT.Design
 
 		public List<IComponent> Query(Guid microService)
 		{
-			var u = Tenant.CreateUrl("Component", "QueryAll")
-				 .AddParameter("microService", microService);
-
-			return Tenant.Get<List<Component>>(u).ToList<IComponent>();
+			return Instance.SysProxy.Components.QueryAll(microService).ToList();
 		}
 
 		public List<IComponent> Query(Guid[] microServices)
 		{
-			var u = Tenant.CreateUrl("Component", "QueryForMicroServices");
-			var e = new JObject();
-			var a = new JArray();
-
-			e.Add("microServices", a);
-
-			foreach (var microService in microServices)
-				a.Add(microService);
-
-			return Tenant.Post<List<Component>>(u, e).ToList<IComponent>();
-		}
-
-		private void InvalidateIndexes(Guid component)
-		{
-			InvalidateIndexes(new List<IComponentIndexState>
-			{
-				new ComponentIndexState
-				{
-					Component = Tenant.GetService<IComponentService>().SelectComponent(component)
-				}
-			});
-		}
-
-		private void InvalidateAnalyzers(Guid component)
-		{
-			InvalidateAnalyzers(new List<IComponentAnalyzerState>
-			{
-				new ComponentAnalyzerState
-				{
-					Component = Tenant.GetService<IComponentService>().SelectComponent(component)
-				}
-			});
-		}
-
-		private void InvalidateIndexes(IText element)
-		{
-			InvalidateIndexes(new List<IComponentIndexState>
-			{
-				new ComponentIndexState
-				{
-					Component = Tenant.GetService<IComponentService>().SelectComponent(element.Configuration().Component),
-					Element = element.Id
-				}
-			});
-		}
-
-		private void InvalidateAnalyzers(IText element)
-		{
-			InvalidateAnalyzers(new List<IComponentAnalyzerState>
-			{
-				new ComponentAnalyzerState
-				{
-					Component = Tenant.GetService<IComponentService>().SelectComponent(element.Configuration().Component),
-					Element = element.Id
-				}
-			});
-		}
-
-		public void InvalidateIndexes(List<IComponentIndexState> states)
-		{
-
-			//if (Tenant.GetService<IRuntimeService>().Stage != EnvironmentStage.Development)
-			//	return;
-
-			//var items = new List<dynamic>();
-
-			//foreach (var state in states)
-			//{
-			//	items.Add(new
-			//	{
-			//		Timestamp = DateTime.UtcNow,
-			//		State = IndexState.Invalidated,
-			//		Component = state.Component.Token,
-			//		state.Element
-			//	});
-			//}
-
-			//Tenant.Post(CreateUrl("UpdateIndexStates"), new { items });
-		}
-
-		public void InvalidateAnalyzers(List<IComponentAnalyzerState> states)
-		{
-			//var items = new List<dynamic>();
-
-			//foreach (var state in states)
-			//{
-			//	items.Add(new
-			//	{
-			//		Component = state.Component.Token,
-			//		state.Element,
-			//		state = AnalyzerState.Pending,
-			//		timestamp = DateTime.UtcNow
-			//	});
-			//}
-
-			//Tenant.Post(CreateUrl("UpdateAnalyzerStates"), new { items });
-		}
-
-		private ServerUrl CreateUrl(string action)
-		{
-			return Tenant.CreateUrl(Controller, action);
-		}
-
-		public void SaveRuntimeState(Guid microService)
-		{
-			var state = new JObject
-				{
-					 {"microService", microService }
-				};
-
-			var rt = new JArray();
-
-			state.Add("runtimeConfigurations", rt);
-
-			var components = Tenant.GetService<IComponentService>().QueryComponents(microService);
-
-			foreach (var i in components)
-			{
-				if (i.RuntimeConfiguration != Guid.Empty)
-				{
-					rt.Add(new JObject
-								{
-									 {i.Token.ToString(), i.RuntimeConfiguration.ToString() }
-								});
-				}
-			}
-
-			if (rt.Count == 0)
-				return;
-
-			var u = Tenant.CreateUrl("ComponentDevelopment", "SaveRuntimeState");
-
-			Tenant.Post(u, state);
-		}
-
-		public Dictionary<Guid, Guid> SelectRuntimeState(Guid microService)
-		{
-			var u = Tenant.CreateUrl("ComponentDevelopment", "SelectRuntimeState");
-			var e = new JObject
-				{
-					 {"microService", microService }
-				};
-
-			var a = Tenant.Post<JArray>(u, e);
-
-			if (a == null)
-				return null;
-
-			var r = new Dictionary<Guid, Guid>();
-
-			foreach (JObject i in a)
-			{
-				var prop = i.First as JProperty;
-
-				r.Add(new Guid(prop.Name), new Guid(prop.Value.ToString()));
-			}
-
-			return r;
-		}
-
-		public void DropRuntimeState(Guid microService)
-		{
-			var u = Tenant.CreateUrl("ComponentDevelopment", "DropRuntimeState");
-			var e = new JObject
-				{
-					 {"microService", microService }
-				};
-
-			Tenant.Post(u, e);
+			return Instance.SysProxy.Components.QueryForMicroServices(microServices.ToList()).ToList();
 		}
 	}
 }

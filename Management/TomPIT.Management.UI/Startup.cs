@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using TomPIT.Environment;
 using TomPIT.Ide;
 using TomPIT.Management.Deployment;
 using TomPIT.Runtime;
@@ -17,12 +16,10 @@ namespace TomPIT.Management
             Authentication = AuthenticationType.MultiTenant
          };
 
-         Instance.Initialize(InstanceFeatures.Management, services, e);
+         //Instance.Initialize(services, e);
 
          IdeBootstrapper.Run();
          ManagementBootstrapper.Run();
-
-         Instance.InitializeShellServices();
 
          services.AddHostedService<InstallerService>();
          services.AddHostedService<UpdateService>();

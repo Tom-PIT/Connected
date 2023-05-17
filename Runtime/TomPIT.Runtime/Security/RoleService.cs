@@ -1,111 +1,82 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Immutable;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
-using TomPIT.Middleware;
 
 namespace TomPIT.Security
 {
-    internal class RoleService : SynchronizedClientRepository<IRole, Guid>, IRoleService, IRoleNotification
-    {
-        public RoleService(ITenant tenant) : base(tenant, "role")
-        {
+	internal class RoleService : SynchronizedClientRepository<IRole, Guid>, IRoleService, IRoleNotification
+	{
+		public RoleService(ITenant tenant) : base(tenant, "role")
+		{
 
-        }
+		}
 
-        protected override void OnInitializing()
-        {
-            var ds = Tenant.Get<ImmutableList<Role>>(CreateUrl("Query"));
+		protected override void OnInitializing()
+		{
+			var ds = Instance.SysProxy.Roles.Query();
 
-            Set(SecurityUtils.FullControlRole, new SystemRole(SecurityUtils.FullControlRole, "Full control", RoleBehavior.Explicit, RoleVisibility.Hidden), TimeSpan.Zero);
-            Set(SecurityUtils.AuthenticatedRole, new SystemRole(SecurityUtils.AuthenticatedRole, "Authenticated", RoleBehavior.Implicit, RoleVisibility.Hidden), TimeSpan.Zero);
-            Set(SecurityUtils.AnonymousRole, new SystemRole(SecurityUtils.AnonymousRole, "Anonymous", RoleBehavior.Implicit, RoleVisibility.Hidden), TimeSpan.Zero);
-            Set(SecurityUtils.EveryoneRole, new SystemRole(SecurityUtils.EveryoneRole, "Everyone", RoleBehavior.Implicit, RoleVisibility.Hidden), TimeSpan.Zero);
-            Set(SecurityUtils.DomainIdentityRole, new SystemRole(SecurityUtils.DomainIdentityRole, "Domain identity", RoleBehavior.Implicit, RoleVisibility.Hidden), TimeSpan.Zero);
-            Set(SecurityUtils.LocalIdentityRole, new SystemRole(SecurityUtils.LocalIdentityRole, "Local identity", RoleBehavior.Implicit, RoleVisibility.Hidden), TimeSpan.Zero);
-            Set(SecurityUtils.Development, new SystemRole(SecurityUtils.Development, "Development", RoleBehavior.Explicit, RoleVisibility.Hidden), TimeSpan.Zero);
-            Set(SecurityUtils.Management, new SystemRole(SecurityUtils.Management, "Management", RoleBehavior.Explicit, RoleVisibility.Hidden), TimeSpan.Zero);
+			Set(SecurityUtils.FullControlRole, new SystemRole(SecurityUtils.FullControlRole, "Full control", RoleBehavior.Explicit, RoleVisibility.Hidden), TimeSpan.Zero);
+			Set(SecurityUtils.AuthenticatedRole, new SystemRole(SecurityUtils.AuthenticatedRole, "Authenticated", RoleBehavior.Implicit, RoleVisibility.Hidden), TimeSpan.Zero);
+			Set(SecurityUtils.AnonymousRole, new SystemRole(SecurityUtils.AnonymousRole, "Anonymous", RoleBehavior.Implicit, RoleVisibility.Hidden), TimeSpan.Zero);
+			Set(SecurityUtils.EveryoneRole, new SystemRole(SecurityUtils.EveryoneRole, "Everyone", RoleBehavior.Implicit, RoleVisibility.Hidden), TimeSpan.Zero);
+			Set(SecurityUtils.DomainIdentityRole, new SystemRole(SecurityUtils.DomainIdentityRole, "Domain identity", RoleBehavior.Implicit, RoleVisibility.Hidden), TimeSpan.Zero);
+			Set(SecurityUtils.LocalIdentityRole, new SystemRole(SecurityUtils.LocalIdentityRole, "Local identity", RoleBehavior.Implicit, RoleVisibility.Hidden), TimeSpan.Zero);
+			Set(SecurityUtils.Development, new SystemRole(SecurityUtils.Development, "Development", RoleBehavior.Explicit, RoleVisibility.Hidden), TimeSpan.Zero);
+			Set(SecurityUtils.Management, new SystemRole(SecurityUtils.Management, "Management", RoleBehavior.Explicit, RoleVisibility.Hidden), TimeSpan.Zero);
 
-            foreach (var i in ds)
-                Set(i.Token, i, TimeSpan.Zero);
-        }
+			foreach (var i in ds)
+				Set(i.Token, i, TimeSpan.Zero);
+		}
 
-        public ImmutableList<IRole> Query()
-        {
-            return All();
-        }
+		public ImmutableList<IRole> Query()
+		{
+			return All();
+		}
 
-        public IRole Select(Guid token)
-        {
-            return Get(token);
-        }
+		public IRole Select(Guid token)
+		{
+			return Get(token);
+		}
 
-        public void NotifyChanged(object sender, RoleEventArgs e)
-        {
-            Remove(e.Role);
+		public void NotifyChanged(object sender, RoleEventArgs e)
+		{
+			Remove(e.Role);
 
-            var u = Tenant.CreateUrl("Role", "Select")
-                .AddParameter("token", e.Role);
+			var role = Instance.SysProxy.Roles.Select(e.Role);
 
-            var role = Tenant.Get<Role>(u);
+			if (role is not null)
+				Set(role.Token, role, TimeSpan.Zero);
+		}
 
-            if (role != null)
-                Set(role.Token, role, TimeSpan.Zero);
-        }
+		public IRole Select(string name)
+		{
+			return Get(f => string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase));
+		}
 
-        public IRole Select(string name)
-        {
-            return Get(f => string.Compare(f.Name, name, true) == 0);
-        }
+		public void Delete(Guid token)
+		{
+			Instance.SysProxy.Management.Roles.Delete(token);
 
-        private ServerUrl CreateUrl(string action)
-        {
-            return Tenant.CreateUrl("Role", action);
-        }
+			if (Tenant.GetService<IRoleService>() is IRoleNotification n)
+				n.NotifyChanged(this, new RoleEventArgs(token));
+		}
 
-        public void Delete(Guid token)
-        {
-            var u = Tenant.CreateUrl("RoleManagement", "Delete");
-            var e = new JObject
-            {
-                {"token", token}
-            };
+		public Guid Insert(string name)
+		{
+			var id = Instance.SysProxy.Management.Roles.Insert(name);
 
-            Tenant.Post<Guid>(u, e);
+			if (Tenant.GetService<IRoleService>() is IRoleNotification n)
+				n.NotifyChanged(this, new RoleEventArgs(id));
 
-            if (Tenant.GetService<IRoleService>() is IRoleNotification n)
-                n.NotifyChanged(this, new RoleEventArgs(token));
-        }
+			return id;
+		}
+		public void Update(Guid token, string name)
+		{
+			Instance.SysProxy.Management.Roles.Update(token, name);
 
-        public Guid Insert(string name)
-        {
-            var u = Tenant.CreateUrl("RoleManagement", "Insert");
-            var e = new JObject
-            {
-                {"name", name}
-            };
-
-            var id = Tenant.Post<Guid>(u, e);
-
-            if (Tenant.GetService<IRoleService>() is IRoleNotification n)
-                n.NotifyChanged(this, new RoleEventArgs(id));
-
-            return id;
-        }
-        public void Update(Guid token, string name)
-        {
-            var u = Tenant.CreateUrl("RoleManagement", "Update");
-            var e = new JObject
-            {
-                {"name", name},
-                {"token", token}
-            };
-
-            Tenant.Post(u, e);
-
-            if (Tenant.GetService<IRoleService>() is IRoleNotification n)
-                n.NotifyChanged(this, new RoleEventArgs(token));
-        }
-    }
+			if (Tenant.GetService<IRoleService>() is IRoleNotification n)
+				n.NotifyChanged(this, new RoleEventArgs(token));
+		}
+	}
 }

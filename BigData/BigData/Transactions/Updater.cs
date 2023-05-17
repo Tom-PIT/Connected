@@ -1,16 +1,13 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
-using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-
-using Newtonsoft.Json.Linq;
-
 using TomPIT.BigData.Data;
 using TomPIT.BigData.Partitions;
 using TomPIT.BigData.Persistence;
@@ -21,7 +18,6 @@ using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
-using TomPIT.Runtime.Configuration;
 using TomPIT.Serialization;
 using TomPIT.Storage;
 
@@ -442,7 +438,7 @@ namespace TomPIT.BigData.Transactions
 
       internal static string ToCsv(DataTable table)
       {
-         if (!Shell.GetConfiguration<IClientSys>().Diagnostics.DumpEnabled)
+         if (!MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().DumpEnabled)
             return string.Empty;
 
          using var ms = new MemoryStream();

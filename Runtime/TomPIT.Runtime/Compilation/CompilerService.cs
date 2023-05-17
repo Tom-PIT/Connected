@@ -1,6 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -303,17 +302,9 @@ namespace TomPIT.Compilation
 
       public void Invalidate(IMicroServiceContext context, Guid microService, Guid component, IText sourceCode)
       {
-         var u = context.Tenant.CreateUrl("NotificationDevelopment", "ScriptChanged");
          var id = sourceCode.ScriptId();
 
-         var args = new JObject
-            {
-                { "microService", microService },
-                { "container", component },
-                { "sourceCode", id }
-            };
-
-         Tenant.Post(u, args);
+         Instance.SysProxy.Development.Notifications.ScriptChanged(microService, component, id);
          RemoveScript(sourceCode.Id);
          InvalidateReferences(component, id);
 

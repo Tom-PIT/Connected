@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using TomPIT.Environment;
 using TomPIT.Rest.Routing;
 using TomPIT.Runtime;
 
@@ -16,8 +15,7 @@ namespace TomPIT.Rest
 				Authentication = AuthenticationType.SingleTenant
 			};
 
-			Instance.Initialize(InstanceFeatures.Rest, services, e);
-			Instance.InitializeShellServices();
+			//Instance.Initialize(services, e);
 		}
 
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

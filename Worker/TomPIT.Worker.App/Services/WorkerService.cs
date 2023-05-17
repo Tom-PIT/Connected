@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 using TomPIT.Distributed;
+using TomPIT.Environment;
 using TomPIT.Middleware;
-using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.Worker.Services
 {
@@ -60,8 +60,8 @@ namespace TomPIT.Worker.Services
 			if (Instance.State == InstanceState.Initializing)
 				return false;
 
-			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-				Dispatchers.Add(new WorkerDispatcher(i));
+			foreach (var i in Tenant.GetService<IResourceGroupService>().QuerySupported())
+				Dispatchers.Add(new WorkerDispatcher(i.Name));
 
 			return true;
 		}

@@ -25,6 +25,7 @@
     <ProjectReference Include="..\App\TomPIT.App.UI\App.csproj" />
     <ProjectReference Include="..\Sys\TomPIT.Sys\Sys.csproj" />
     <ProjectReference Include="..\TomPIT.Proxy.Local\TomPIT.Proxy.Local.csproj" />
+    <ProjectReference Include="..\TomPIT.ServiceProviders.HealthMonitoring\TomPIT.ServiceProviders.HealthMonitoring.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,6 @@
-﻿using System;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
+using System;
 using TomPIT.ComponentModel;
 using TomPIT.Configuration;
 using TomPIT.Environment;
@@ -13,7 +13,7 @@ using TomPIT.Sys.Model;
 
 namespace TomPIT.Sys.Notifications
 {
-	internal static class CachingNotifications
+	public static class CachingNotifications
 	{
 		internal static IHubContext<CacheHub> Cache { get; set; }
 

@@ -1,14 +1,10 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Collections.Immutable;
 using System.Linq;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
 using TomPIT.Environment;
-using TomPIT.Middleware;
 using TomPIT.Runtime;
-using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.Security.Authentication
 {
@@ -22,41 +18,22 @@ namespace TomPIT.Security.Authentication
 
 		protected override void OnInitializing()
 		{
+			ImmutableList<IAuthenticationToken> items;
+
 			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)
-			{
-				var u = Tenant.CreateUrl("Security", "QueryAllAuthenticationTokens");
-				var ds = Tenant.Post<List<AuthenticationToken>>(u).ToList<IAuthenticationToken>();
-
-				foreach (var i in ds)
-					Set(i.Token, i, TimeSpan.Zero);
-			}
+				items = Instance.SysProxy.Security.QueryAuthenticationTokens();
 			else
-			{
-				var u = Tenant.CreateUrl("Security", "QueryAuthenticationTokens");
-				var a = new JArray();
-				var e = new JObject
-				{
-					{"data", a }
-				};
+				items = Instance.SysProxy.Security.QueryAuthenticationTokens(Tenant.GetService<IResourceGroupService>().QuerySupported().Select(f => f.Name).ToList());
 
-				foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-					a.Add(i);
-
-				var ds = Tenant.Post<List<AuthenticationToken>>(u, e).ToList<IAuthenticationToken>();
-
-				foreach (var i in ds)
-					Set(i.Token, i, TimeSpan.Zero);
-			}
+			foreach (var i in items)
+				Set(i.Token, i, TimeSpan.Zero);
 		}
 
 		protected override void OnInvalidate(Guid token)
 		{
-			var u = Tenant.CreateUrl("Security", "SelectAuthenticationToken")
-				.AddParameter("token", token);
+			var d = Instance.SysProxy.Security.SelectAuthenticationToken(token);
 
-			var d = Tenant.Get<AuthenticationToken>(u);
-
-			if (d != null)
+			if (d is not null)
 				Set(d.Token, d, TimeSpan.Zero);
 		}
 
@@ -108,7 +85,7 @@ namespace TomPIT.Security.Authentication
 
 		public IAuthenticationToken Select(string key)
 		{
-			return Get(f => string.Compare(f.Key, key, false) == 0);
+			return Get(f => string.Equals(f.Key, key, StringComparison.OrdinalIgnoreCase));
 		}
 
 		public void NotifyChanged(Guid id)

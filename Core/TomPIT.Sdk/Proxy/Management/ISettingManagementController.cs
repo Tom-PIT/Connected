@@ -1,6 +1,7 @@
 ﻿namespace TomPIT.Proxy.Management
 {
-	internal interface ISettingManagementController
+	public interface ISettingManagementController
 	{
+		void Update(string name, string nameSpace, string type, string primaryKey, object value);
 	}
 }

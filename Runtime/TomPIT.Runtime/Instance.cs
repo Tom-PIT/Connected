@@ -1,30 +1,30 @@
-﻿using Connected.SaaS.Clients.HealthMonitoring.Rest;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
+using System.Text.Json;
 using System.Threading;
 using TomPIT.Configuration;
 using TomPIT.Connectivity;
-using TomPIT.Data.DataProviders;
 using TomPIT.Design;
 using TomPIT.Distributed;
 using TomPIT.Environment;
 using TomPIT.Globalization;
-using TomPIT.HealthMonitoring;
 using TomPIT.Middleware;
 using TomPIT.Proxy;
 using TomPIT.Proxy.Local;
@@ -34,6 +34,7 @@ using TomPIT.Runtime;
 using TomPIT.Runtime.Configuration;
 using TomPIT.Security;
 using TomPIT.Security.Authentication;
+using TomPIT.Sys.Exceptions;
 
 namespace TomPIT
 {
@@ -64,40 +65,53 @@ namespace TomPIT
 
 		private static bool CorsEnabled { get; set; }
 
-		internal static InstanceFeatures Features { get; set; }
-		private static IServiceCollection Services { get; set; }
-
+		public static InstanceFeatures Features { get; private set; }
 		public static ISysProxy SysProxy { get; private set; }
 		public static bool SupportsDesign => Features.HasFlag(InstanceFeatures.Management) || Features.HasFlag(InstanceFeatures.Development) || Features.HasFlag(InstanceFeatures.Application);
 
 		public static void Boot()
 		{
-			Shell.RegisterConfigurationType(typeof(ClientSys));
+			if (Shell.Configuration.RootElement.TryGetProperty("features", out JsonElement element))
+				Features = Enum.Parse<InstanceFeatures>(element.GetString());
 
-			if (Shell.GetConfiguration<ClientSys>().Features.HasFlag(InstanceFeatures.Sys))
+			if (Features.HasFlag(InstanceFeatures.Sys))
 				SysProxy = new LocalProxy();
 			else
 				SysProxy = new RemoteProxy();
 		}
 
-		public static void Initialize(InstanceFeatures features, IServiceCollection services, ServicesConfigurationArgs e)
+		public static void Initialize()
 		{
-			Services = services;
-			Features = features;
-
-			InitializeServices(services, e);
-
 			RuntimeBootstrapper.Run();
-
 			Shell.GetService<IConnectivityService>().TenantInitialized += OnTenantInitialized;
 		}
 
-		public static void InitializeShellServices()
+		public static void InitializeTenant()
 		{
-			foreach (var i in Shell.GetConfiguration<IClientSys>().Connections)
-				Shell.GetService<IConnectivityService>().InsertTenant(i.Name, i.Url, i.AuthenticationToken);
+			if (Features.HasFlag(InstanceFeatures.Sys))
+				Shell.GetService<IConnectivityService>().InsertTenant("Local", "inmemory://localTenant", null);
+			else
+			{
+				if (!Shell.Configuration.RootElement.TryGetProperty("sys", out JsonElement element))
+					throw new ConfigurationErrorsException("'sys' configuration element expected.");
+
+				var name = string.Empty;
+				var url = string.Empty;
+				var token = string.Empty;
+
+				if (element.TryGetProperty("name", out JsonElement nameElement))
+					name = nameElement.GetString();
+
+				if (element.TryGetProperty("url", out JsonElement urlElement))
+					url = urlElement.GetString();
+
+				if (element.TryGetProperty("token", out JsonElement tokenElement))
+					token = tokenElement.GetString();
+
+				Shell.GetService<IConnectivityService>().InsertTenant(name, url, token);
+			}
 		}
-		private static void InitializeServices(IServiceCollection services, ServicesConfigurationArgs e)
+		public static void InitializeServices(IServiceCollection services, ServicesConfigurationArgs e)
 		{
 			services.Configure<RequestLocalizationOptions>(o =>
 			{
@@ -115,43 +129,43 @@ namespace TomPIT
 				o.RequestCultureProviders.Insert(1, new IdentityCultureProvider());
 
 				var instances = o.RequestCultureProviders.Where(x => x.GetType() == typeof(AcceptLanguageHeaderRequestCultureProvider)).ToList();
+
 				instances.ForEach(obj => o.RequestCultureProviders.Remove(obj));
 
 				if (MiddlewareDescriptor.Current?.Tenant is ITenant tenant)
-				{
 					tenant.GetService<ILanguageService>().ApplySupportedCultures();
-				}
 			});
 
-			switch (e.Authentication)
+			//switch (e.Authentication)
+			//{
+			//	case AuthenticationType.MultiTenant:
+			//		services.AddAuthentication(options =>
+			//		{
+			//			options.DefaultAuthenticateScheme = "TomPIT";
+			//			options.DefaultChallengeScheme = "TomPIT";
+			//			options.DefaultScheme = "TomPIT";
+			//		}).AddScheme<MultiTenantAuthenticationOptions, MultiTenantAuthenticationHandler>("TomPIT", "Tom PIT", o =>
+			//		{
+
+			//		});
+			//		break;
+			//case AuthenticationType.SingleTenant:
+			services.AddAuthentication(options =>
 			{
-				case AuthenticationType.MultiTenant:
-					services.AddAuthentication(options =>
-					{
-						options.DefaultAuthenticateScheme = "TomPIT";
-						options.DefaultChallengeScheme = "TomPIT";
-						options.DefaultScheme = "TomPIT";
-					}).AddScheme<MultiTenantAuthenticationOptions, MultiTenantAuthenticationHandler>("TomPIT", "Tom PIT", o =>
-					{
+				options.DefaultAuthenticateScheme = "TomPIT";
+				options.DefaultChallengeScheme = "TomPIT";
+				options.DefaultScheme = "TomPIT";
+			}).AddScheme<SingleTenantAuthenticationOptions, SingleTenantAuthenticationHandler>("TomPIT", "Tom PIT", o =>
+			{
 
-					});
-					break;
-				case AuthenticationType.SingleTenant:
-					services.AddAuthentication(options =>
-					{
-						options.DefaultAuthenticateScheme = "TomPIT";
-						options.DefaultChallengeScheme = "TomPIT";
-						options.DefaultScheme = "TomPIT";
-					}).AddScheme<SingleTenantAuthenticationOptions, SingleTenantAuthenticationHandler>("TomPIT", "Tom PIT", o =>
-					{
-
-					});
-					break;
-			}
+			});
+			//		break;
+			//}
 
 			Mvc = services.AddMvc((o) =>
 			{
 				e.ConfigureMvc?.Invoke(o);
+				o.EnableEndpointRouting = false;
 			}).AddNewtonsoftJson()
 			.ConfigureApplicationPartManager((m) =>
 			{
@@ -159,18 +173,18 @@ namespace TomPIT
 
 				if (SupportsDesign)
 				{
-					foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
+					foreach (var i in Tenant.GetService<IDesignService>().QueryDesigners())
 					{
 						var t = Reflection.TypeExtensions.GetType(i);
 
-						if (t == null)
+						if (t is null)
 							continue;
 
 						var template = t.CreateInstance<IMicroServiceTemplate>();
 
 						var ds = template.GetApplicationParts();
 
-						if (ds != null && ds.Count > 0)
+						if (ds is not null && ds.Any())
 							pa.Parts.AddRange(ds);
 					}
 				}
@@ -183,18 +197,11 @@ namespace TomPIT
 				foreach (var i in pa.Parts)
 					ConfigurePlugins(m, i);
 
-				foreach (var i in Shell.GetConfiguration<IClientSys>().Plugins.Items)
+				foreach (var i in Plugins)
 				{
-					var t = Reflection.TypeExtensions.GetType(i);
+					var parts = i.GetApplicationParts(m);
 
-					if (t == null)
-						continue;
-
-					var plugin = t.CreateInstance<IPlugin>();
-
-					var parts = plugin.GetApplicationParts(m);
-
-					if (parts != null)
+					if (parts is not null)
 					{
 						foreach (var j in parts)
 							ConfigurePlugins(m, j);
@@ -230,6 +237,11 @@ namespace TomPIT
 				options.AddPolicy(Claims.ImplementMicroservice, policy => policy.RequireClaim(Claims.ImplementMicroservice));
 			});
 
+			services.AddSignalR(o =>
+			{
+				o.EnableDetailedErrors = true;
+				o.AddFilter<ExceptionHubFilter>();
+			});
 
 			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 			services.AddSingleton<IAuthorizationHandler, ClaimHandler>();
@@ -237,7 +249,6 @@ namespace TomPIT
 
 			services.AddScoped<RequestLocalizationCookiesMiddleware>();
 			services.AddHttpClient();
-			services.AddHostedService<HealthMonitoringHostedService>();
 
 			foreach (var plugin in Plugins)
 				plugin.ConfigureServices(services);
@@ -317,22 +328,7 @@ namespace TomPIT
 		}
 		private static void OnTenantInitialized(object sender, TenantArgs e)
 		{
-			foreach (var i in Shell.GetConfiguration<IClientSys>().DataProviders)
-			{
-				var t = Reflection.TypeExtensions.GetType(i);
-
-				if (t == null)
-					continue;
-
-				var provider = t.CreateInstance<IDataProvider>();
-
-				if (provider != null)
-					e.Tenant.GetService<IDataProviderService>().Register(provider);
-			}
-
 			e.Tenant.GetService<IDesignService>().Initialize();
-			e.Tenant.RegisterService(typeof(IHealthMonitoringClientFactory), new HealthMonitoringClientFactory());
-
 			/*
 			 * Attempt to access settings from Sys. These settings are required by CORS settings, and the instance cannot work 
 			 * properly if these are not set at startup. If sys is unavailable, shutdown and try again.
@@ -342,18 +338,15 @@ namespace TomPIT
 
 		public static void Run(IApplicationBuilder app, IWebHostEnvironment environment)
 		{
-			//foreach (var i in Shell.GetConfiguration<IClientSys>().Connections)
-			//	Shell.GetService<IConnectivityService>().InsertTenant(i.Name, i.Url, i.AuthenticationToken);
-
 			State = InstanceState.Running;
 
 			if (SupportsDesign)
 			{
-				foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
+				foreach (var i in Tenant.GetService<IDesignService>().QueryDesigners())
 				{
 					var t = Reflection.TypeExtensions.GetType(i);
 
-					if (t == null)
+					if (t is null)
 						continue;
 
 					var template = t.CreateInstance<IMicroServiceTemplate>();
@@ -378,9 +371,9 @@ namespace TomPIT
 
 			var groupInstance = resourceGroupService.Select(resourceGroup);
 
-			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
+			foreach (var i in Tenant.GetService<IResourceGroupService>().QuerySupported())
 			{
-				var rg = resourceGroupService.Select(i);
+				var rg = resourceGroupService.Select(i.Token);
 
 				if (rg == groupInstance)
 					return true;
@@ -393,20 +386,20 @@ namespace TomPIT
 		{
 			get
 			{
-				if (_plugins == null)
+				if (_plugins is null)
 				{
 					_plugins = new List<IPlugin>();
 
-					foreach (var i in Shell.GetConfiguration<IClientSys>().Plugins.Items)
+					foreach (var i in Runtime.Configuration.Plugins.Items)
 					{
 						var t = Reflection.TypeExtensions.GetType(i);
 
-						if (t == null)
+						if (t is null)
 							continue;
 
 						var plugin = t.CreateInstance<IPlugin>();
 
-						if (plugin != null)
+						if (plugin is not null)
 							_plugins.Add(plugin);
 					}
 				}
