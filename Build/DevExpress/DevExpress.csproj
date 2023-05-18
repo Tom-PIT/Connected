@@ -5,12 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DevExpress.AspNetCore.Reporting" Version="20.2.5" />
+    <PackageReference Include="DevExpress.AspNetCore.Reporting" Version="20.1.4" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.0" />
   </ItemGroup>
 
 	<ItemGroup>
-		<Items Include="$(NuGetPackageRoot)/dev*/20.2.5/lib/netstandard2.0/*.dll">
+		<Items Include="$(NuGetPackageRoot)/dev*/20.1.4/lib/netstandard2.0/*.dll">
 		</Items>
 	</ItemGroup>
 
