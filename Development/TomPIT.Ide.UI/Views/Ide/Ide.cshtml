@@ -35,6 +35,7 @@
 }
 
 @section head {
+        <partial name="~/Views/Shared/DevHeader.cshtml" />
     @{
         var templates = Model.Context.Tenant.GetService<IMicroServiceTemplateService>().Query();
 

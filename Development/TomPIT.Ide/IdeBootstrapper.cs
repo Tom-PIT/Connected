@@ -8,24 +8,19 @@ using TomPIT.UI.Theming;
 
 namespace TomPIT.Ide
 {
-	public static class IdeBootstrapper
-	{
-		public static void Run()
-		{
-			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
-		}
-
-		private static void OnTenantInitialize(object sender, TenantArgs e)
-		{
-			e.Tenant.RegisterService(typeof(IDesignerService), typeof(DesignerService));
-			e.Tenant.RegisterService(typeof(IMicroServiceDevelopmentService), typeof(MicroServiceDevelopmentService));
-			//e.Tenant.RegisterService(typeof(ICodeAnalyzerService), typeof(CodeAnalyzerService));
-			//e.Tenant.RegisterService(typeof(ICodeDiagnosticService), typeof(CodeDiagnosticService));
-			//e.Tenant.RegisterService(typeof(ICodeAnalysisService), typeof(CodeAnalysisService));
-			e.Tenant.RegisterService(typeof(IToolsService), typeof(ToolsService));
-			e.Tenant.RegisterService(typeof(ITextService), typeof(TextService));
-			e.Tenant.RegisterService(typeof(IStylesheetService), typeof(StylesheetService));
-			e.Tenant.RegisterService(typeof(IThemeService), typeof(ThemeService));
-		}
-	}
+    public static class IdeBootstrapper
+    {
+        public static void Initialize(object sender, TenantArgs e)
+        {
+            e.Tenant.RegisterService(typeof(IDesignerService), typeof(DesignerService), true);
+            e.Tenant.RegisterService(typeof(IMicroServiceDevelopmentService), typeof(MicroServiceDevelopmentService), true);
+            //e.Tenant.RegisterService(typeof(ICodeAnalyzerService), typeof(CodeAnalyzerService));
+            //e.Tenant.RegisterService(typeof(ICodeDiagnosticService), typeof(CodeDiagnosticService));
+            //e.Tenant.RegisterService(typeof(ICodeAnalysisService), typeof(CodeAnalysisService));
+            e.Tenant.RegisterService(typeof(IToolsService), typeof(ToolsService), true);
+            e.Tenant.RegisterService(typeof(ITextService), typeof(TextService), true);
+            e.Tenant.RegisterService(typeof(IStylesheetService), typeof(StylesheetService), true);
+            e.Tenant.RegisterService(typeof(IThemeService), typeof(ThemeService), true);
+        }
+    }
 }

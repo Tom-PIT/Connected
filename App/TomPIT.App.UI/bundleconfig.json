@@ -4,7 +4,7 @@
     "inputFiles": [
       "wwwroot/assets/fonts/opensans/opensans.css",
       "wwwroot/assets/styles/bootstrap/bootstrap.css",
-      "wwwroot/assets/styles/tompit.css"
+      "wwwroot/assets/styles/tompitapp.css"
     ],
     "minify": {
       "enabled": true,

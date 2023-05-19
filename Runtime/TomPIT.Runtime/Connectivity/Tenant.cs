@@ -9,107 +9,115 @@ using TomPIT.Runtime;
 
 namespace TomPIT.Connectivity
 {
-	public class Tenant : HttpConnection, ITenant, IDependencyInjector, IInstanceMetadataProvider
-	{
-		private TokenValidationParameters _parameters = null;
-		private CachingClient _cachingClient = null;
-		private ServiceContainer _serviceContainer = null;
-		private IMemoryCache _cache = null;
-		private Lazy<ConcurrentDictionary<string, object>> _items = new Lazy<ConcurrentDictionary<string, object>>();
-		public Tenant(string url, string authenticationToken) : base(authenticationToken)
-		{
-			Url = url;
+    public class Tenant : HttpConnection, ITenant, IDependencyInjector, IInstanceMetadataProvider
+    {
+        private TokenValidationParameters _parameters = null;
+        private CachingClient _cachingClient = null;
+        private ServiceContainer _serviceContainer = null;
+        private IMemoryCache _cache = null;
+        private Lazy<ConcurrentDictionary<string, object>> _items = new Lazy<ConcurrentDictionary<string, object>>();
+        public Tenant(string url, string authenticationToken) : base(authenticationToken)
+        {
+            Url = url;
 
-			Task.Run(() =>
-			{
-				CachingClient.Connect();
-			});
-		}
+            Task.Run(() =>
+            {
+                CachingClient.Connect();
+            });
+        }
 
-		public string Url { get; }
+        public string Url { get; }
 
-		public IMemoryCache Cache
-		{
-			get
-			{
-				if (_cache == null)
-					_cache = new MemoryCache(CacheScope.Shared);
+        public IMemoryCache Cache
+        {
+            get
+            {
+                if (_cache == null)
+                    _cache = new MemoryCache(CacheScope.Shared);
 
-				return _cache;
-			}
-		}
+                return _cache;
+            }
+        }
 
-		private CachingClient CachingClient
-		{
-			get
-			{
-				if (_cachingClient == null)
-					_cachingClient = new CachingClient(this, AuthenticationToken);
+        private CachingClient CachingClient
+        {
+            get
+            {
+                if (_cachingClient == null)
+                    _cachingClient = new CachingClient(this, AuthenticationToken);
 
-				return _cachingClient;
-			}
-		}
+                return _cachingClient;
+            }
+        }
 
-		private ServiceContainer Services
-		{
-			get
-			{
-				if (_serviceContainer == null)
-					_serviceContainer = new ServiceContainer(this);
+        private ServiceContainer Services
+        {
+            get
+            {
+                if (_serviceContainer == null)
+                    _serviceContainer = new ServiceContainer(this);
 
-				return _serviceContainer;
-			}
-		}
+                return _serviceContainer;
+            }
+        }
 
-		[DebuggerStepThrough]
-		public T GetService<T>()
-		{
-			var r = Services.Get<T>(false);
+        [DebuggerStepThrough]
+        public T GetService<T>()
+        {
+            var r = Services.Get<T>(false);
 
-			if (r == null)
-				return Shell.GetService<T>();
+            if (r == null)
+                return Shell.GetService<T>();
 
-			return r;
-		}
+            return r;
+        }
 
-		public void RegisterService(Type contract, object instance)
-		{
-			Services.Register(contract, instance);
-		}
+        public void RegisterService(Type contract, object instance, bool leaveExisting)
+        {
+            if (leaveExisting && Services.Exists(contract))
+                return;
 
-		public bool ResolveParameter(Type type, out object instance)
-		{
-			if (type == typeof(ITenant))
-			{
-				instance = this;
-				return true;
-			}
+            RegisterService(contract, instance);
+        }
 
-			instance = null;
-			return false;
-		}
+        public void RegisterService(Type contract, object instance)
+        {
+            Services.Register(contract, instance);
+        }
 
-		public TokenValidationParameters ValidationParameters
-		{
-			get
-			{
-				if (_parameters == null)
-				{
-					var p = Instance.SysProxy.Security.SelectValidationParameters();
+        public bool ResolveParameter(Type type, out object instance)
+        {
+            if (type == typeof(ITenant))
+            {
+                instance = this;
+                return true;
+            }
 
-					_parameters = new TokenValidationParameters
-					{
-						IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(p.IssuerSigningKey)),
-						ValidAudience = p.ValidAudience,
-						ValidIssuer = p.ValidIssuer
-					};
-				}
+            instance = null;
+            return false;
+        }
 
-				return _parameters;
-			}
-		}
+        public TokenValidationParameters ValidationParameters
+        {
+            get
+            {
+                if (_parameters == null)
+                {
+                    var p = Instance.SysProxy.Security.SelectValidationParameters();
 
-		public Guid InstanceId => Instance.Id;
-		public ConcurrentDictionary<string, object> Items { get { return _items.Value; } }
-	}
+                    _parameters = new TokenValidationParameters
+                    {
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(p.IssuerSigningKey)),
+                        ValidAudience = p.ValidAudience,
+                        ValidIssuer = p.ValidIssuer
+                    };
+                }
+
+                return _parameters;
+            }
+        }
+
+        public Guid InstanceId => Instance.Id;
+        public ConcurrentDictionary<string, object> Items { get { return _items.Value; } }
+    }
 }

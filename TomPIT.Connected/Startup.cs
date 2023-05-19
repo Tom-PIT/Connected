@@ -3,72 +3,77 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
 using TomPIT.App;
+using TomPIT.BigData;
+using TomPIT.Cdn;
+using TomPIT.Development;
 using TomPIT.Environment;
+using TomPIT.Management;
+using TomPIT.Rest;
 using TomPIT.Runtime;
+using TomPIT.Search;
+using TomPIT.Startup;
 using TomPIT.Sys;
+using TomPIT.Worker;
 
 namespace TomPIT.Connected
 {
-	internal class Startup
-	{
-		public Startup()
-		{
-			Startups = new();
+    internal class Startup
+    {
+        public Startup()
+        {
+            var startups = new List<IStartupClient>();
 
-			Instance.Boot();
+            if (Instance.Features.HasFlag(InstanceFeatures.Sys))
+                startups.Add(new SysStartup());
 
-			if (Instance.Features.HasFlag(InstanceFeatures.Sys))
-				SysStartup = new SysStartup();
+            if (Instance.Features.HasFlag(InstanceFeatures.Application))
+                startups.Add(new AppStartup());
 
-			if (Instance.Features.HasFlag(InstanceFeatures.Application))
-				Startups.Add(new AppStartup());
-		}
+            if (Instance.Features.HasFlag(InstanceFeatures.Development))
+                startups.Add(new DevStartup());
 
-		private SysStartup? SysStartup { get; }
-		private List<IInstanceStartup> Startups { get; }
+            if (Instance.Features.HasFlag(InstanceFeatures.BigData))
+                startups.Add(new BigDataStartup());
 
-		public void ConfigureServices(IServiceCollection services)
-		{
-			if (SysStartup is not null)
-				SysStartup.ConfigureServices(services);
+            if (Instance.Features.HasFlag(InstanceFeatures.Cdn))
+                startups.Add(new CdnStartup());
 
-			Instance.Initialize();
+            if (Instance.Features.HasFlag(InstanceFeatures.Management))
+                startups.Add(new ManagementStartup());
 
-			foreach (var startup in Startups)
-				startup.Initialize();
+            if (Instance.Features.HasFlag(InstanceFeatures.Rest))
+                startups.Add(new RestStartup());
 
-			Instance.InitializeTenant();
-			Instance.InitializeServices(services, new ServicesConfigurationArgs
-			{
-				Authentication = AuthenticationType.SingleTenant,
-				CorsEnabled = true
-			});
+            if (Instance.Features.HasFlag(InstanceFeatures.Search))
+                startups.Add(new SearchStartup());
 
-			foreach (var startup in Startups)
-				startup.ConfigureServices(services);
-		}
+            if (Instance.Features.HasFlag(InstanceFeatures.Worker))
+                startups.Add(new WorkerStartup());
 
-		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-		{
-			if (SysStartup is not null)
-				SysStartup.Configure(app, env);
+            Host = Instance.Start();
 
-			foreach (var startup in Startups)
-				startup.Configure(app, env);
+            Host.ConfiguringServices += OnConfiguringServices;
 
-			Instance.Configure(app, env,
-			(f) =>
-			{
-				foreach (var startup in Startups)
-					startup.ConfigureRouting(f);
-			},
-			(f) =>
-			{
-				foreach (var startup in Startups)
-					startup.ConfigureMiddleware(f);
-			});
+            foreach (var startup in startups)
+                startup.Initialize(Host);
+        }
 
-			Instance.Run(app, env);
-		}
-	}
+        private void OnConfiguringServices(object? sender, IServiceCollection e)
+        {
+            if (Tenant.GetService<IMicroServiceRuntimeService>() is IMicroServiceRuntimeService runtimeService)
+                runtimeService.Configure(e);
+        }
+
+        private IStartupHostProxy Host { get; }
+
+        public void ConfigureServices(IServiceCollection services)
+        {
+            Host.ConfigureServices(services);
+        }
+
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        {
+            Host.Configure(app, env);
+        }
+    }
 }

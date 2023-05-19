@@ -125,7 +125,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Proxy.Remote", "..\T
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ServiceProviders", "ServiceProviders", "{7D986563-636C-4243-BD56-65C98B2D62D8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TomPIT.ServiceProviders.HealthMonitoring", "..\TomPIT.ServiceProviders.HealthMonitoring\TomPIT.ServiceProviders.HealthMonitoring.csproj", "{4F1041BD-CB7F-4928-9E3C-0D91B31E28F4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.ServiceProviders.HealthMonitoring", "..\TomPIT.ServiceProviders.HealthMonitoring\TomPIT.ServiceProviders.HealthMonitoring.csproj", "{4F1041BD-CB7F-4928-9E3C-0D91B31E28F4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TomPIT.Startup", "..\TomPIT.Startup\TomPIT.Startup.csproj", "{EFF5B2DC-0B8A-4B82-99CB-1B3298C8EA82}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -309,6 +311,10 @@ Global
 		{4F1041BD-CB7F-4928-9E3C-0D91B31E28F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4F1041BD-CB7F-4928-9E3C-0D91B31E28F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4F1041BD-CB7F-4928-9E3C-0D91B31E28F4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EFF5B2DC-0B8A-4B82-99CB-1B3298C8EA82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EFF5B2DC-0B8A-4B82-99CB-1B3298C8EA82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EFF5B2DC-0B8A-4B82-99CB-1B3298C8EA82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EFF5B2DC-0B8A-4B82-99CB-1B3298C8EA82}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -358,6 +364,7 @@ Global
 		{09ED0851-E115-4522-BA8E-81FF733C2731} = {BD99AEE6-AB21-48A5-8E0A-4E823DFEE08C}
 		{9CFF8D45-7BCD-476D-9852-CC5470E399FE} = {51BDC363-5A06-4CB6-A5EF-7EE7216DFE00}
 		{4F1041BD-CB7F-4928-9E3C-0D91B31E28F4} = {7D986563-636C-4243-BD56-65C98B2D62D8}
+		{EFF5B2DC-0B8A-4B82-99CB-1B3298C8EA82} = {E6EBFB9C-C48F-4B43-9AB8-009AF42C6E58}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {56CEBC0B-257E-403D-8CF9-1F6B50358F86}

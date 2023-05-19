@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -15,100 +14,52 @@ using TomPIT.App.UI;
 using TomPIT.Connectivity;
 using TomPIT.Diagnostics;
 using TomPIT.Diagnostics.Tracing;
-using TomPIT.Middleware;
-using TomPIT.Runtime;
 using TomPIT.Security;
+using TomPIT.Startup;
 using TomPIT.UI;
 using TomPIT.UI.Theming;
 
 namespace TomPIT.App
 {
-	public class AppStartup : IInstanceStartup
+	public class AppStartup : IStartupClient
 	{
 		internal static IEndpointRouteBuilder RouteBuilder = null;
 
-		private IApplicationBuilder App { get; set; }
-		public void ConfigureServices(IServiceCollection services)
+		public void Initialize(IStartupHost host)
 		{
-			services.AddResponseCompression(o =>
-			{
-				o.EnableForHttps = true;
-				o.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
-						  new[] { "image/svg+xml", "image/png", "image/jpg", "image/jpeg" });
-			});
-
-			services.Configure<KeyManagementOptions>(opts =>
-			{
-				opts.XmlEncryptor = new XmlKeyEncryptor();
-				opts.XmlRepository = new XmlKeyRepository();
-			});
-
-			services.AddDataProtection();
-
-			services.AddAntiforgery(o =>
-			{
-				o.Cookie.Name = "TomPITAntiForgery";
-				o.FormFieldName = "TomPITAntiForgery";
-				o.HeaderName = "X-TP-AF";
-				o.SuppressXFrameOptionsHeader = false;
-			});
-
-			services.AddScoped<IViewEngine, ViewEngine>();
-			services.AddScoped<IMailTemplateViewEngine, MailTemplateViewEngine>();
-
-			services.AddSignalR(o =>
-			{
-				o.EnableDetailedErrors = true;
-			}).AddNewtonsoftJsonProtocol();
-
-			services.Configure<RazorViewEngineOptions>(opts =>
-				 {
-					 opts.ViewLocationExpanders.Add(new ViewLocationExpander());
-				 }
-			);
-
-			Instance.Mvc.AddRazorRuntimeCompilation(opts =>
-				 {
-					 opts.FileProviders.Add(new ViewProvider());
-				 }
-			);
-
-			services.AddSingleton<ITraceService, TraceService>();
-
-			if (MiddlewareDescriptor.Current?.Tenant?.GetService<IMicroServiceRuntimeService>() is IMicroServiceRuntimeService runtimeService)
-				runtimeService.Configure(services);
+			host.ConfiguringServices += OnConfigureServices;
+			host.ConfiguringSignalR += OnConfigureSignalR;
+			host.MvcConfigured += OnMvcConfigured;
+			host.ConfiguringRouting += OnConfiguringRouting;
+			host.Configuring += OnConfiguring;
+			host.Booting += OnBooting;
+			host.ConfigureEmbeddedStaticResources += OnConfigureEmbeddedStaticResources;
 		}
 
-		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+		private void OnConfigureEmbeddedStaticResources(object sender, System.Collections.Generic.List<System.Reflection.Assembly> e)
 		{
-			App = app;
-
-			app.UseResponseCompression();
+			e.Add(typeof(AppStartup).Assembly);
 		}
 
-		public void ConfigureRouting(ConfigureRoutingArgs e)
+		private void OnBooting(object sender, System.EventArgs e)
 		{
-			App.UseMiddleware<IgnoreRouteMiddleware>();
-
-			RouteBuilder = e.Builder;
-
-			e.Builder.MapHub<TraceHub>("hubs/tracing");
-
-			AppRouting.Register(e.Builder);
+			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
 		}
 
-		public void ConfigureMiddleware(ConfigureMiddlewareArgs e)
+		private void OnConfiguring(object sender, System.Tuple<IApplicationBuilder, IWebHostEnvironment> e)
 		{
-			var traceHubContext = e.Builder.ApplicationServices.GetRequiredService<IHubContext<TraceHub>>();
+			e.Item1.UseMiddleware<IgnoreRouteMiddleware>();
 
-			var traceService = e.Builder.ApplicationServices.GetService<ITraceService>();
+			var traceHubContext = e.Item1.ApplicationServices.GetRequiredService<IHubContext<TraceHub>>();
+
+			var traceService = e.Item1.ApplicationServices.GetService<ITraceService>();
 
 			traceService.TraceReceived += async (s, ea) => await TraceHub.Trace(traceHubContext, ea);
 
 			traceService.AddEndpoint("TomPIT.App.diagnostics", "IncomingRequest");
 			traceService.AddEndpoint("TomPIT.App.diagnostics", "LongLastingRequest");
 
-			e.Builder.Use(async (context, next) =>
+			e.Item1.Use(async (context, next) =>
 			{
 				var path = context.Request.Path;
 				var stopwatch = Stopwatch.StartNew();
@@ -122,12 +73,65 @@ namespace TomPIT.App
 					traceService.Trace("TomPIT.App.diagnostics", "LongLastingRequest", path);
 			});
 
-			AppRouting.RegisterRouteMiddleware(e.Builder);
+			AppRouting.RegisterRouteMiddleware(e.Item1);
 		}
 
-		public void Initialize()
+		private void OnConfiguringRouting(object sender, IEndpointRouteBuilder e)
 		{
-			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
+			e.MapHub<TraceHub>("hubs/tracing");
+
+			AppRouting.Register(e);
+		}
+
+		private void OnMvcConfigured(object sender, IMvcBuilder e)
+		{
+			e.AddRazorRuntimeCompilation(opts =>
+				{
+					opts.FileProviders.Add(new ViewProvider());
+				}
+			);
+		}
+
+		private void OnConfigureSignalR(object sender, HubOptions e)
+		{
+			e.EnableDetailedErrors = true;
+		}
+
+		private void OnConfigureServices(object sender, IServiceCollection e)
+		{
+			e.AddResponseCompression(o =>
+			{
+				o.EnableForHttps = true;
+				o.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+						  new[] { "image/svg+xml", "image/png", "image/jpg", "image/jpeg" });
+			});
+
+			//e.Configure<KeyManagementOptions>(opts =>
+			//{
+			//	opts.XmlEncryptor = new XmlKeyEncryptor();
+			//	opts.XmlRepository = new XmlKeyRepository();
+			//});
+
+			//e.AddDataProtection();
+
+			e.AddAntiforgery(o =>
+			{
+				o.Cookie.Name = "TomPITAntiForgery";
+				o.FormFieldName = "TomPITAntiForgery";
+				o.HeaderName = "X-TP-AF";
+				o.SuppressXFrameOptionsHeader = false;
+			});
+
+			e.AddScoped<IViewEngine, ViewEngine>();
+			e.AddScoped<IMailTemplateViewEngine, MailTemplateViewEngine>();
+
+			e.Configure<RazorViewEngineOptions>(opts =>
+				 {
+					 opts.ViewLocationExpanders.Add(new ViewLocationExpander());
+				 }
+			);
+
+			e.AddSingleton<ITraceService, TraceService>();
 		}
 
 		private void OnTenantInitialize(object sender, TenantArgs e)

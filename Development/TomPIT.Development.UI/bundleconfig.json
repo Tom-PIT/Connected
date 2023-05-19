@@ -1,6 +1,6 @@
 ﻿[
   {
-    "outputFileName": "wwwroot/assets/styles.min.css",
+    "outputFileName": "wwwroot/assets/devstyles.min.css",
     "inputFiles": [
       "wwwroot/assets/fonts/opensans/opensans.css",
       "wwwroot/assets/styles/bootstrap/bootstrap.css",
@@ -8,7 +8,7 @@
       //"wwwroot/assets/libraries/devextreme/Latest/dx.light.css",
       "wwwroot/assets/libraries/devextreme/Latest/dx.material.blue.light.css",
       "wwwroot/assets/styles/development.css",
-      "wwwroot/assets/styles/tompit.css",
+      "wwwroot/assets/styles/tompitdev.css",
       "wwwroot/assets/styles/designers.css"
     ],
     "minify": {
@@ -52,7 +52,7 @@
     "sourceMap": false
   },
   {
-    "outputFileName": "wwwroot/assets/scripts.min.js",
+    "outputFileName": "wwwroot/assets/devscripts.min.js",
     "inputFiles": [
       "wwwroot/assets/scripts/jquery.js",
       "wwwroot/assets/scripts/tether.js",
@@ -66,7 +66,7 @@
       "wwwroot/assets/scripts/ajax.js",
       "wwwroot/assets/scripts/progress.js",
       "wwwroot/assets/scripts/toastr.js",
-      "wwwroot/assets/scripts/tompit.js",
+      "wwwroot/assets/scripts/tompitdev.js",
       "wwwroot/assets/scripts/jquery.signalR-2.2.3.min.js",
       "wwwroot/assets/scripts/timer.js",
       "wwwroot/assets/scripts/moment.js",
@@ -92,7 +92,7 @@
     "sourceMap": false
   },
   {
-    "outputFileName": "wwwroot/assets/scripts.foot.min.js",
+    "outputFileName": "wwwroot/assets/scripts/foot.min.js",
     "inputFiles": [
       "wwwroot/assets/scripts/foot.js"
     ],

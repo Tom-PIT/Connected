@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Contrib.Highlighter": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:54529;http://localhost:54530"
+    }
+  }
+}

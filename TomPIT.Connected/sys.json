@@ -1,6 +1,6 @@
 ﻿{
   "instanceName": "Default Instance",
-  "features": "Application, Worker, Cdn, Rest, Search, BigData, Sys, IoT",
+  "features": "Application, Worker, Cdn, Rest, Search, BigData, Sys, IoT, Development",
   "platform": "OnPrem",
   "stage": "Development",
   "resourceGroups": [
@@ -23,7 +23,7 @@
     "TomPIT.StorageProvider.Sql.SqlStorageProvider, TomPIT.StorageProvider.Sql"
   ],
   "connectionStrings": {
-    "sys": "data source=pit-zbook\\sqlexpress; initial catalog=tp1;integrated security=true;"
+    "sys": "data source=pit-zbook\\sqlexpress; initial catalog=tp1;integrated security=true;TrustServerCertificate=true;"
   },
   "deployment": {
     "fileSystem": {

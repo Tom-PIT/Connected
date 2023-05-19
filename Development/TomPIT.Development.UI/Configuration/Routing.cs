@@ -1,6 +1,6 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
+using System.Threading.Tasks;
 using TomPIT.Development.Routing;
 using TomPIT.Routing;
 
@@ -10,7 +10,7 @@ namespace TomPIT.Development.Configuration
 	{
 		public static void Register(IEndpointRouteBuilder routes)
 		{
-			routes.MapControllerRoute("home", "", new { controller = "Home", action = "Index" });
+			routes.MapControllerRoute("sys.dev", "sys/dev", new { controller = "DevHome", action = "Index" });
 			routes.MapControllerRoute("home.tool", "sys/tool/{tool}", new { controller = "Home", action = "Tool" });
 			routes.MapControllerRoute("home.runtool", "sys/run-tool/{tool}", new { controller = "Home", action = "Action" });
 			routes.MapControllerRoute("home.data", "sys/get-data/{tool}", new { controller = "Home", action = "Data" });

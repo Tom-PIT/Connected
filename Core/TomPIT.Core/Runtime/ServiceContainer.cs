@@ -5,151 +5,156 @@ using System.Diagnostics;
 
 namespace TomPIT.Runtime
 {
-	public delegate object ServiceActivatorCallback(Type serviceType);
-	public class ServiceContainer
-	{
-		private ConcurrentDictionary<Type, ServiceInstance> _services = null;
+    public delegate object ServiceActivatorCallback(Type serviceType);
+    public class ServiceContainer
+    {
+        private ConcurrentDictionary<Type, ServiceInstance> _services = null;
 
-		public ServiceContainer(IDependencyInjector di)
-		{
-			DI = di;
-			_services = new ConcurrentDictionary<Type, ServiceInstance>();
-		}
+        public ServiceContainer(IDependencyInjector di)
+        {
+            DI = di;
+            _services = new ConcurrentDictionary<Type, ServiceInstance>();
+        }
 
-		private IDependencyInjector DI { get; }
+        private IDependencyInjector DI { get; }
 
-		public void Register(Type contract, object value)
-		{
-			if (value == null || contract == null)
-				return;
+        public bool Exists(Type contract)
+        {
+            return _services.TryGetValue(contract, out _);
+        }
 
-			var sc = new ServiceInstance
-			{
-				Value = value
-			};
+        public void Register(Type contract, object value)
+        {
+            if (value == null || contract == null)
+                return;
 
-			if (!_services.TryAdd(contract, sc))
-				throw new Exception(string.Format("{0} ({1})", SR.ServiceRegistered, contract.FullName));
-		}
+            var sc = new ServiceInstance
+            {
+                Value = value
+            };
 
-		[DebuggerStepThrough]
-		public T Get<T>()
-		{
-			return Get<T>(true);
-		}
+            if (!_services.TryAdd(contract, sc))
+                throw new Exception(string.Format("{0} ({1})", SR.ServiceRegistered, contract.FullName));
+        }
 
-		[DebuggerStepThrough]
-		public T Get<T>(bool throwException)
-		{
-			if (!_services.ContainsKey(typeof(T)))
-				return default(T);
+        [DebuggerStepThrough]
+        public T Get<T>()
+        {
+            return Get<T>(true);
+        }
 
-			var value = _services[typeof(T)];
+        [DebuggerStepThrough]
+        public T Get<T>(bool throwException)
+        {
+            if (!_services.ContainsKey(typeof(T)))
+                return default(T);
 
-			if (value.Value is ServiceActivatorCallback)
-			{
-				lock (value.SyncRoot)
-				{
-					if (value.Value is ServiceActivatorCallback)
-					{
-						var cb = value.Value as ServiceActivatorCallback;
+            var value = _services[typeof(T)];
 
-						T instance = (T)cb.Invoke(typeof(T));
+            if (value.Value is ServiceActivatorCallback)
+            {
+                lock (value.SyncRoot)
+                {
+                    if (value.Value is ServiceActivatorCallback)
+                    {
+                        var cb = value.Value as ServiceActivatorCallback;
 
-						value.Value = instance;
-					}
-				}
-			}
-			else if (value.Value is string)
-			{
-				lock (value.SyncRoot)
-				{
-					if (value.Value is string)
-					{
-						var t = Type.GetType(value.Value.ToString());
+                        T instance = (T)cb.Invoke(typeof(T));
 
-						if (t == null)
-						{
-							if (throwException)
-								throw new Exception(string.Format("{0} ({1})", SR.ServiceTypeNull, value.Value.ToString()));
-							else
-								return default(T);
-						}
+                        value.Value = instance;
+                    }
+                }
+            }
+            else if (value.Value is string)
+            {
+                lock (value.SyncRoot)
+                {
+                    if (value.Value is string)
+                    {
+                        var t = Type.GetType(value.Value.ToString());
 
-						object instance = CreateInstance(t);
+                        if (t == null)
+                        {
+                            if (throwException)
+                                throw new Exception(string.Format("{0} ({1})", SR.ServiceTypeNull, value.Value.ToString()));
+                            else
+                                return default(T);
+                        }
 
-						if (instance == null)
-						{
-							if (throwException)
-								throw new Exception(string.Format("{0} ({1})", SR.ServiceTypeNull, value.Value.ToString()));
-							else
-								return default(T);
-						}
+                        object instance = CreateInstance(t);
 
-						value.Value = instance;
-					}
-				}
-			}
-			else if (value.Value is Type)
-			{
-				lock (value.SyncRoot)
-				{
-					if (value.Value is Type)
-					{
-						var t = value.Value as Type;
-						object instance = CreateInstance(t);
+                        if (instance == null)
+                        {
+                            if (throwException)
+                                throw new Exception(string.Format("{0} ({1})", SR.ServiceTypeNull, value.Value.ToString()));
+                            else
+                                return default(T);
+                        }
 
-						if (instance == null)
-						{
-							if (throwException)
-								throw new Exception(string.Format("{0} ({1})", SR.ServiceTypeNull, value.Value.ToString()));
-							else
-								return default(T);
-						}
+                        value.Value = instance;
+                    }
+                }
+            }
+            else if (value.Value is Type)
+            {
+                lock (value.SyncRoot)
+                {
+                    if (value.Value is Type)
+                    {
+                        var t = value.Value as Type;
+                        object instance = CreateInstance(t);
 
-						value.Value = instance;
-					}
-				}
-			}
-			else if (value == null)
-				return default(T);
+                        if (instance == null)
+                        {
+                            if (throwException)
+                                throw new Exception(string.Format("{0} ({1})", SR.ServiceTypeNull, value.Value.ToString()));
+                            else
+                                return default(T);
+                        }
 
-			return (T)value.Value;
-		}
+                        value.Value = instance;
+                    }
+                }
+            }
+            else if (value == null)
+                return default(T);
 
-		private object CreateInstance(Type type)
-		{
-			if (DI == null)
-				return type.Assembly.CreateInstance(type.FullName);
+            return (T)value.Value;
+        }
 
-			var constructors = type.GetConstructors();
+        private object CreateInstance(Type type)
+        {
+            if (DI == null)
+                return type.Assembly.CreateInstance(type.FullName);
 
-			foreach (var i in constructors)
-			{
-				var pars = i.GetParameters();
+            var constructors = type.GetConstructors();
 
-				if (pars.Length == 0)
-					continue;
+            foreach (var i in constructors)
+            {
+                var pars = i.GetParameters();
 
-				var arguments = new List<object>();
-				bool success = true;
+                if (pars.Length == 0)
+                    continue;
 
-				foreach (var j in pars)
-				{
-					if (DI.ResolveParameter(j.ParameterType, out object r))
-						arguments.Add(r);
-					else
-					{
-						success = false;
-						break;
-					}
-				}
+                var arguments = new List<object>();
+                bool success = true;
 
-				if (success)
-					return type.Assembly.CreateInstance(type.FullName, false, System.Reflection.BindingFlags.Default, null, arguments.ToArray(), null, null);
-			}
+                foreach (var j in pars)
+                {
+                    if (DI.ResolveParameter(j.ParameterType, out object r))
+                        arguments.Add(r);
+                    else
+                    {
+                        success = false;
+                        break;
+                    }
+                }
 
-			return type.Assembly.CreateInstance(type.FullName);
-		}
-	}
+                if (success)
+                    return type.Assembly.CreateInstance(type.FullName, false, System.Reflection.BindingFlags.Default, null, arguments.ToArray(), null, null);
+            }
+
+            return type.Assembly.CreateInstance(type.FullName);
+        }
+    }
 }

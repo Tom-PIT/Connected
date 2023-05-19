@@ -31,11 +31,8 @@ namespace TomPIT.Runtime
 		{
 			Features = Instance.Features;
 
-			if (Features.HasFlag(InstanceFeatures.Management | InstanceFeatures.Development))
-			{
+			if (Features.HasFlag(InstanceFeatures.Management) || Features.HasFlag(InstanceFeatures.Development) || Features.HasFlag(InstanceFeatures.Application))
 				SupportsUI = true;
-				Environment = RuntimeEnvironment.MultiTenant;
-			}
 			else if (Features.HasFlag(InstanceFeatures.Development))
 				Mode = EnvironmentMode.Design;
 			else if (Features.HasFlag(InstanceFeatures.Application))

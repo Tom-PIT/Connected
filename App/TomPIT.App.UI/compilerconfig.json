@@ -4,8 +4,8 @@
     "inputFile": "wwwroot/Assets/Styles/bootstrap.less"
   },
   {
-    "outputFile": "wwwroot/Assets/Styles/tompit.css",
-    "inputFile": "wwwroot/Assets/Styles/tompit.less"
+    "outputFile": "wwwroot/Assets/Styles/tompitapp.css",
+    "inputFile": "wwwroot/Assets/Styles/tompitapp.less"
   },
   {
     "outputFile": "wwwroot/Assets/Styles/bootstrap/bootstrap.css",

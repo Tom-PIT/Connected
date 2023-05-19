@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Linq;
 using System.Reflection;
-using Newtonsoft.Json.Linq;
 using TomPIT.Annotations.Design;
 using TomPIT.Collections;
 using TomPIT.ComponentModel;
@@ -22,371 +22,370 @@ using TomPIT.Runtime;
 
 namespace TomPIT.Ide
 {
-	public static class IdeExtensions
-	{
-		public static void RemoveWhere<T>(this ListItems<T> source, Func<T, bool> predicate) where T : class
-		{
-			var where = source.Where(predicate);
+    public static class IdeExtensions
+    {
+        public static void RemoveWhere<T>(this ListItems<T> source, Func<T, bool> predicate) where T : class
+        {
+            var where = source.Where(predicate);
 
-			if (where.Count() == 0)
-				return;
+            if (where.Count() == 0)
+                return;
 
-			var arr = where.ToArray();
+            var arr = where.ToArray();
 
-			for (int i = 0; i < arr.Length; i++)
-				source.Remove(arr[i]);
-		}
+            for (int i = 0; i < arr.Length; i++)
+                source.Remove(arr[i]);
+        }
 
-		public static bool ChildrenBrowsable(this PropertyInfo pi)
-		{
-			if (pi == null)
-				return true;
+        public static bool ChildrenBrowsable(this PropertyInfo pi)
+        {
+            if (pi == null)
+                return true;
 
-			var browsable = pi.FindAttribute<ChildrenBrowsableAttribute>();
+            var browsable = pi.FindAttribute<ChildrenBrowsableAttribute>();
 
-			return browsable == null || browsable.Browsable;
-		}
+            return browsable == null || browsable.Browsable;
+        }
 
-		public static bool IsSuppressed(this Type type, PropertyInfo pi)
-		{
-			var suppresses = type.FindAttribute<SuppressPropertiesAttribute>();
-			string[] tokens = null;
+        public static bool IsSuppressed(this Type type, PropertyInfo pi)
+        {
+            var suppresses = type.FindAttribute<SuppressPropertiesAttribute>();
+            string[] tokens = null;
 
-			if (suppresses != null && !string.IsNullOrWhiteSpace(suppresses.Properties))
-			{
-				tokens = suppresses.Properties.Split(',');
+            if (suppresses != null && !string.IsNullOrWhiteSpace(suppresses.Properties))
+            {
+                tokens = suppresses.Properties.Split(',');
 
-				if (tokens.Contains(pi.Name))
-					return true;
-			}
+                if (tokens.Contains(pi.Name))
+                    return true;
+            }
 
-			return false;
-		}
+            return false;
+        }
 
-		public static bool Commit(this IEnvironment environment, object component, string property, string attribute)
-		{
-			if (environment.Selection.Transaction == null)
-				return false;
+        public static bool Commit(this IEnvironment environment, object component, string property, string attribute)
+        {
+            if (environment.Selection.Transaction == null)
+                return false;
 
-			var current = environment.Selection.Transaction;
-			var r = false;
+            var current = environment.Selection.Transaction;
+            var r = false;
 
-			while (!r)
-			{
-				if (current == null)
-					break;
+            while (!r)
+            {
+                if (current == null)
+                    break;
 
-				r = current.Commit(component, property, attribute);
+                r = current.Commit(component, property, attribute);
 
-				if (r)
-					break;
+                if (r)
+                    break;
 
-				current = ParentHandler(current);
-			}
+                current = ParentHandler(current);
+            }
 
-			return r;
-		}
+            return r;
+        }
 
-		private static ITransactionHandler ParentHandler(this ITransactionHandler handler)
-		{
-			var current = handler.Element.Parent;
+        private static ITransactionHandler ParentHandler(this ITransactionHandler handler)
+        {
+            var current = handler.Element.Parent;
 
-			while (current != null)
-			{
-				if (current.Transaction != null)
-					return current.Transaction;
+            while (current != null)
+            {
+                if (current.Transaction != null)
+                    return current.Transaction;
 
-				current = current.Parent;
-			}
+                current = current.Parent;
+            }
 
-			return null;
-		}
+            return null;
+        }
 
-		public static string SelectedPath(this IEnvironment environment)
-		{
-			if (environment.Dom is DomRoot)
-				return ((DomRoot)environment.Dom).SelectedPath;
+        public static string SelectedPath(this IEnvironment environment)
+        {
+            if (environment.Dom is DomRoot)
+                return ((DomRoot)environment.Dom).SelectedPath;
 
-			return null;
-		}
+            return null;
+        }
 
-		public static IDomElement Selected(this IEnvironment environment)
-		{
-			if (environment.Dom is DomRoot)
-				return ((DomRoot)environment.Dom).Selected;
+        public static IDomElement Selected(this IEnvironment environment)
+        {
+            if (environment.Dom is DomRoot)
+                return ((DomRoot)environment.Dom).Selected;
 
-			return null;
-		}
+            return null;
+        }
 
-		public static IDomElement GetDomElement(this IComponent component, IDomElement parent)
-		{
-			var type = Reflection.TypeExtensions.GetType(component.Type);
+        public static IDomElement GetDomElement(this IComponent component, IDomElement parent)
+        {
+            var type = Reflection.TypeExtensions.GetType(component.Type);
 
-			if (type == null)
-				return new TypeExceptionElement(parent, component);
+            if (type == null)
+                return new TypeExceptionElement(parent, component);
 
-			var att = type.FindAttribute<DomElementAttribute>();
+            var att = type.FindAttribute<DomElementAttribute>();
 
-			if (att == null)
-				return new ComponentElement(parent, component);
-			else
-				return new DomElementActivator(parent, component, att).CreateInstance();
-		}
+            if (att == null)
+                return new ComponentElement(parent, component);
+            else
+                return new DomElementActivator(parent, component, att).CreateInstance();
+        }
 
-		public static IDomDesigner SystemDesigner(this IDomElement sender, object instance)
-		{
-			if (instance == null)
-				return null;
+        public static IDomDesigner SystemDesigner(this IDomElement sender, object instance)
+        {
+            if (instance == null)
+                return null;
 
-			return SystemDesigner(sender, instance.GetType());
-		}
+            return SystemDesigner(sender, instance.GetType());
+        }
 
-		public static IDomDesigner SystemDesigner(this IDomElement sender, PropertyInfo property)
-		{
-			if (property == null)
-				return null;
+        public static IDomDesigner SystemDesigner(this IDomElement sender, PropertyInfo property)
+        {
+            if (property == null)
+                return null;
 
-			return SystemDesigner(sender, property.PropertyType);
-		}
+            return SystemDesigner(sender, property.PropertyType);
+        }
 
-		private static IDomDesigner SystemDesigner(this IDomElement sender, Type type)
-		{
-			if (type == null)
-				return null;
+        private static IDomDesigner SystemDesigner(this IDomElement sender, Type type)
+        {
+            if (type == null)
+                return null;
 
-			if (type.IsCollection())
-				return new CollectionDesigner<IDomElement>(sender);
-			else if (type.IsText())
-				return new TextDesigner(sender);
-			else
-			{
-				/*
+            if (type.IsCollection())
+                return new CollectionDesigner<IDomElement>(sender);
+            else if (type.IsText())
+                return new TextDesigner(sender);
+            else
+            {
+                /*
 				 * TODO: try to create instance provider
 				 */
-				return null;
-			}
-		}
+                return null;
+            }
+        }
 
-		public static string ResolvePath(this IEnvironment environment, Guid component, Guid element, out string eventName)
-		{
-			eventName = string.Empty;
+        public static string ResolvePath(this IEnvironment environment, Guid component, Guid element, out string eventName)
+        {
+            eventName = string.Empty;
 
-			var c = environment.Context.Tenant.GetService<IComponentService>().SelectComponent(component);
+            var c = environment.Context.Tenant.GetService<IComponentService>().SelectComponent(component);
 
-			if (c == null)
-				throw new TomPITException(SR.ErrComponentNotFound);
+            if (c == null)
+                throw new TomPITException(SR.ErrComponentNotFound);
 
-			var config = environment.Context.Tenant.GetService<IComponentService>().SelectConfiguration(c.Token);
+            var config = environment.Context.Tenant.GetService<IComponentService>().SelectConfiguration(c.Token);
 
-			if (config == null)
-				throw new TomPITException(string.Format("{0} ({1})", SR.ErrCannotFindConfiguration, c.Name));
+            if (config == null)
+                throw new TomPITException(string.Format("{0} ({1})", SR.ErrCannotFindConfiguration, c.Name));
 
-			var root = environment.Dom.Root();
+            var root = environment.Dom.Root();
 
-			if (root == null)
-				return null;
+            if (root == null)
+                return null;
 
-			var target = Traverse(element == Guid.Empty ? component : element, root);
+            var target = Traverse(element == Guid.Empty ? component : element, root);
 
-			if (target == null)
-				return null;
+            if (target == null)
+                return null;
 
-			if (target.IsEvent(element))
-				eventName = target.EventName(element);
+            if (target.IsEvent(element))
+                eventName = target.EventName(element);
 
-			return DomQuery.Path(target);
-		}
+            return DomQuery.Path(target);
+        }
 
-		private static IDomElement Traverse(Guid element, ListItems<IDomElement> elements)
-		{
-			if (elements == null || elements.Count == 0)
-				return null;
+        private static IDomElement Traverse(Guid element, ListItems<IDomElement> elements)
+        {
+            if (elements == null || elements.Count == 0)
+                return null;
 
-			var r = elements.FirstOrDefault(f => string.Compare(f.Id, element.ToString(), true) == 0);
+            var r = elements.FirstOrDefault(f => string.Compare(f.Id, element.ToString(), true) == 0);
 
-			if (r != null)
-				return r;
+            if (r != null)
+                return r;
 
-			foreach (var i in elements)
-			{
-				if (i.IsEvent(element))
-					return i;
+            foreach (var i in elements)
+            {
+                if (i.IsEvent(element))
+                    return i;
 
-				i.LoadChildren();
+                i.LoadChildren();
 
-				r = Traverse(element, i.Items);
+                r = Traverse(element, i.Items);
 
-				if (r != null)
-					return r;
-			}
+                if (r != null)
+                    return r;
+            }
 
-			return null;
-		}
+            return null;
+        }
 
-		public static string EventName(this IDomElement dom, Guid element)
-		{
-			if (dom.Value == null)
-				return null;
+        public static string EventName(this IDomElement dom, Guid element)
+        {
+            if (dom.Value == null)
+                return null;
 
-			var properties = dom.Value.GetType().GetProperties();
+            var properties = dom.Value.GetType().GetProperties();
 
-			foreach (var property in properties)
-			{
-				if (property.IsText())
-				{
-					var propertyValue = property.GetValue(dom.Value);
+            foreach (var property in properties)
+            {
+                if (property.IsText())
+                {
+                    var propertyValue = property.GetValue(dom.Value);
 
-					if (propertyValue is IElement el && el.Id == element)
-						return property.Name;
-				}
-			}
+                    if (propertyValue is IElement el && el.Id == element)
+                        return property.Name;
+                }
+            }
 
-			return null;
-		}
+            return null;
+        }
 
 
-		public static bool IsEvent(this IDomElement dom, Guid element)
-		{
-			if (dom.Value == null)
-				return false;
+        public static bool IsEvent(this IDomElement dom, Guid element)
+        {
+            if (dom.Value == null)
+                return false;
 
-			var properties = dom.Value.GetType().GetProperties();
+            var properties = dom.Value.GetType().GetProperties();
 
-			foreach (var property in properties)
-			{
-				if (!property.IsBrowsable() || property.IsIndexer())
-					continue;
+            foreach (var property in properties)
+            {
+                if (!property.IsBrowsable() || property.IsIndexer())
+                    continue;
 
-				if (property.IsText())
-				{
-					var propertyValue = property.GetValue(dom.Value);
+                if (property.IsText())
+                {
+                    var propertyValue = property.GetValue(dom.Value);
 
-					if (propertyValue is IElement el && el.Id == element)
-						return true;
-				}
-			}
+                    if (propertyValue is IElement el && el.Id == element)
+                        return true;
+                }
+            }
 
-			return false;
-		}
+            return false;
+        }
 
-		public static ITransactionResult WithData(this ITransactionResult result, JObject data)
-		{
-			if (result is TransactionResult r)
-				r.Data = data;
+        public static ITransactionResult WithData(this ITransactionResult result, JObject data)
+        {
+            if (result is TransactionResult r)
+                r.Data = data;
 
-			return result;
-		}
+            return result;
+        }
 
-		public static Guid MicroService(this IDomElement element)
-		{
-			var scope = DomQuery.Closest<IMicroServiceScope>(element);
+        public static Guid MicroService(this IDomElement element)
+        {
+            var scope = DomQuery.Closest<IMicroServiceScope>(element);
 
-			if (scope != null)
-				return scope.MicroService.Token;
+            if (scope != null)
+                return scope.MicroService.Token;
 
-			return element.Environment.Context.MicroService.Token;
-		}
+            return element.Environment.Context.MicroService.Token;
+        }
 
-		public static DomDesignerAttribute ResolveDesigner(this Type type)
-		{
-			var mode = Shell.GetService<IRuntimeService>().Mode;
-			var designers = type.FindAttributes<DomDesignerAttribute>();
+        public static DomDesignerAttribute ResolveDesigner(this Type type)
+        {
+            //var mode = Shell.GetService<IRuntimeService>().Mode;
+            var designers = type.FindAttributes<DomDesignerAttribute>();
 
-			if (designers.Count == 0)
-				return null;
+            if (designers.Count == 0)
+                return null;
 
-			foreach (var i in designers)
-			{
-				if ((i.Mode & mode) == mode)
-					return i;
-			}
+            foreach (var i in designers)
+            {
+                if ((i.Mode & EnvironmentMode.Design) == EnvironmentMode.Design)
+                    return i;
+            }
 
-			return null;
-		}
+            return null;
+        }
 
-		public static DomDesignerAttribute ResolveDesigner(this PropertyInfo property)
-		{
-			var mode = Shell.GetService<IRuntimeService>().Mode;
-			var designers = property.FindAttributes<DomDesignerAttribute>();
+        public static DomDesignerAttribute ResolveDesigner(this PropertyInfo property)
+        {
+            var designers = property.FindAttributes<DomDesignerAttribute>();
 
-			if (designers.Count == 0)
-				return null;
+            if (designers.Count == 0)
+                return null;
 
-			foreach (var i in designers)
-			{
-				if ((i.Mode & mode) == mode)
-					return i;
-			}
+            foreach (var i in designers)
+            {
+                if ((i.Mode & EnvironmentMode.Design) == EnvironmentMode.Design)
+                    return i;
+            }
 
-			return null;
-		}
+            return null;
+        }
 
-		public static string ToolboxItemHelper(this IItemDescriptor descriptor)
-		{
-			if (descriptor.Type == null)
-				return null;
+        public static string ToolboxItemHelper(this IItemDescriptor descriptor)
+        {
+            if (descriptor.Type == null)
+                return null;
 
-			var att = descriptor.Type.FindAttribute<ToolboxItemGlyphAttribute>();
+            var att = descriptor.Type.FindAttribute<ToolboxItemGlyphAttribute>();
 
-			if (att == null)
-				return null;
+            if (att == null)
+                return null;
 
-			return att.View;
-		}
+            return att.View;
+        }
 
-		public static void ProcessComponentCreating(IMiddlewareContext context, object instance)
-		{
-			var att = instance.GetType().FindAttribute<ComponentCreatingHandlerAttribute>();
+        public static void ProcessComponentCreating(IMiddlewareContext context, object instance)
+        {
+            var att = instance.GetType().FindAttribute<ComponentCreatingHandlerAttribute>();
 
-			if (att != null)
-			{
-				var handler = att.Type == null
-					? Reflection.TypeExtensions.GetType(att.TypeName).CreateInstance<IComponentCreateHandler>()
-					: att.Type.CreateInstance<IComponentCreateHandler>();
+            if (att != null)
+            {
+                var handler = att.Type == null
+                    ? Reflection.TypeExtensions.GetType(att.TypeName).CreateInstance<IComponentCreateHandler>()
+                    : att.Type.CreateInstance<IComponentCreateHandler>();
 
-				if (handler != null)
-					handler.InitializeNewComponent(context, instance);
-			}
-		}
+                if (handler != null)
+                    handler.InitializeNewComponent(context, instance);
+            }
+        }
 
-		public static void ProcessComponentCreated(IMiddlewareContext context, object instance)
-		{
-			var att = instance.GetType().FindAttribute<ComponentCreatedHandlerAttribute>();
+        public static void ProcessComponentCreated(IMiddlewareContext context, object instance)
+        {
+            var att = instance.GetType().FindAttribute<ComponentCreatedHandlerAttribute>();
 
-			if (att != null)
-			{
-				var handler = att.Type == null
-					? Reflection.TypeExtensions.GetType(att.TypeName).CreateInstance<IComponentCreateHandler>()
-					: att.Type.CreateInstance<IComponentCreateHandler>();
+            if (att != null)
+            {
+                var handler = att.Type == null
+                    ? Reflection.TypeExtensions.GetType(att.TypeName).CreateInstance<IComponentCreateHandler>()
+                    : att.Type.CreateInstance<IComponentCreateHandler>();
 
-				if (handler != null)
-					handler.InitializeNewComponent(context, instance);
-			}
-		}
+                if (handler != null)
+                    handler.InitializeNewComponent(context, instance);
+            }
+        }
 
-		public static string Glyph(this IComponent component, ITenant tenant)
-		{
-			var r = "fal fa-file";
-			var ms = tenant.GetService<IMicroServiceService>().Select(component.MicroService);
-			var template = tenant.GetService<IMicroServiceTemplateService>().Select(ms.Template);
+        public static string Glyph(this IComponent component, ITenant tenant)
+        {
+            var r = "fal fa-file";
+            var ms = tenant.GetService<IMicroServiceService>().Select(component.MicroService);
+            var template = tenant.GetService<IMicroServiceTemplateService>().Select(ms.Template);
 
-			var items = template.ProvideAddItems(null);
-			var item = items.FirstOrDefault(f => string.Compare(component.Type, f.Type.TypeName(), true) == 0);
+            var items = template.ProvideAddItems(null);
+            var item = items.FirstOrDefault(f => string.Compare(component.Type, f.Type.TypeName(), true) == 0);
 
-			if (item != null && !string.IsNullOrWhiteSpace(item.Glyph))
-				r = item.Glyph;
+            if (item != null && !string.IsNullOrWhiteSpace(item.Glyph))
+                r = item.Glyph;
 
-			return r;
-		}
+            return r;
+        }
 
-		public static void SetContext(this IMiddlewareObject target, IMiddlewareContext context)
-		{
-			var property = target.GetType().GetProperty("Context");
+        public static void SetContext(this IMiddlewareObject target, IMiddlewareContext context)
+        {
+            var property = target.GetType().GetProperty("Context");
 
-			if (property.SetMethod == null)
-				return;
+            if (property.SetMethod == null)
+                return;
 
-			property.SetMethod.Invoke(target, new object[] { context });
-		}
-	}
+            property.SetMethod.Invoke(target, new object[] { context });
+        }
+    }
 }

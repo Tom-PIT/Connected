@@ -1,8 +1,6 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using TomPIT.Connectivity;
 using TomPIT.Environment;
-using TomPIT.Middleware;
 using TomPIT.Runtime;
 
 namespace TomPIT.Security.Authentication
@@ -15,21 +13,30 @@ namespace TomPIT.Security.Authentication
 
 		public IClientAuthenticationResult Authenticate(string userName, string password)
 		{
-			var u = Tenant.CreateUrl("Authentication", "Authenticate");
-			var args = new JObject
-			{
-				{ "user", userName },
-				{"password", password }
-			};
-
-			var r = Tenant.Post<AuthenticationResult>(u, args);
+			var r = Instance.SysProxy.Authentication.Authenticate(userName, password);
 
 			if (r.Success)
 			{
 				var user = Tenant.GetService<IUserService>().Select(userName);
 
-				if (user != null)
-					r.Identity = new Identity(user, r.Token, Tenant.Url);
+				if (user is null)
+				{
+					return new AuthenticationResult
+					{
+						Success = false,
+						Reason = AuthenticationResultReason.Other
+					};
+				}
+				else
+				{
+					return new AuthenticationResult
+					{
+						Identity = new Identity(user),
+						Reason = AuthenticationResultReason.OK,
+						Success = true,
+						Token = r.Token
+					};
+				}
 			}
 
 			return r;

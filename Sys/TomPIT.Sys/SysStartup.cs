@@ -10,6 +10,7 @@ using System.Diagnostics;
 using TomPIT.Diagnostics;
 using TomPIT.Diagnostics.Tracing;
 using TomPIT.Serialization;
+using TomPIT.Startup;
 using TomPIT.Sys.Configuration;
 using TomPIT.Sys.Exceptions;
 using TomPIT.Sys.Model;
@@ -19,78 +20,58 @@ using TomPIT.Sys.Workers;
 
 namespace TomPIT.Sys
 {
-	public class SysStartup
+	public class SysStartup : IStartupClient
 	{
-		public void ConfigureServices(IServiceCollection services)
+		public void Initialize(IStartupHost host)
+		{
+			host.Booting += OnBooting;
+			host.ConfiguringMvc += OnConfiguringMvc;
+			host.ConfiguringSignalR += OnConfiguringSignalR;
+			host.ConfiguringRouting += OnConfiguringRouting;
+			host.ConfiguringMvcRouting += OnConfiguringMvcRouting;
+			host.Configuring += OnConfiguring;
+		}
+
+		private void OnBooting(object sender, System.EventArgs e)
 		{
 			ServerConfiguration.Initialize();
+		}
 
-			//services.AddMvc(o =>
-			//{
-			//	o.EnableEndpointRouting = false;
-			//}).AddNewtonsoftJson();
+		private void OnConfiguring(object sender, System.Tuple<IApplicationBuilder, IWebHostEnvironment> e)
+		{
+			RegisterTraceService(e.Item1);
+			DataModel.Initialized = true;
+		}
 
-			//services.AddAuthentication(options =>
-			//{
-			//	options.DefaultAuthenticateScheme = "TomPIT";
-			//	options.DefaultChallengeScheme = "TomPIT";
-			//	options.DefaultScheme = "TomPIT";
-			//}).AddTomPITAuthentication("TomPIT", "Tom PIT", o =>
-			//{
+		private void OnConfiguringMvcRouting(object sender, Microsoft.AspNetCore.Routing.IRouteBuilder e)
+		{
+			e.MapRoute("default", "{controller}/{action}");
+		}
 
-			//});
+		private void OnConfiguringRouting(object sender, Microsoft.AspNetCore.Routing.IEndpointRouteBuilder e)
+		{
+			e.MapHub<CacheHub>("/caching");
+			e.MapHub<IoTHub>("/iot");
+			e.MapHub<BigDataHub>("/bigdata");
+			e.MapHub<DataCacheHub>("/datacaching");
+			e.MapHub<TraceHub>("hubs/tracing");
+		}
 
-			//services.AddAuthorization();
+		private void OnConfiguringSignalR(object sender, HubOptions e)
+		{
+			e.AddFilter<ExceptionHubFilter>();
+		}
 
-			//services.AddSignalR(o =>
-			//{
-			//	o.EnableDetailedErrors = true;
-			//	o.AddFilter<ExceptionHubFilter>();
-			//});
+		private void OnConfiguringMvc(object sender, Microsoft.AspNetCore.Mvc.MvcOptions e)
+		{
+			e.EnableEndpointRouting = false;
+		}
 
+		public void ConfigureServices(IServiceCollection services)
+		{
 			services.AddSingleton<ExceptionHubFilter>();
 
 			RegisterTasks(services);
-
-			//services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-		}
-
-		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-		{
-			//if (env.IsDevelopment())
-			//{
-			//	app.UseDeveloperExceptionPage();
-			//	app.UseTomPITExceptionMiddleware();
-			//}
-			//else
-			//{
-			//	app.UseTomPITExceptionMiddleware();
-			//	//app.UseExceptionHandler();
-			//}
-
-			RegisterTraceService(app);
-
-			//app.UseStaticFiles();
-			app.UseRouting();
-			//app.UseAuthentication();
-			//app.UseAuthorization();
-
-			app.UseEndpoints(routes =>
-			{
-				routes.MapHub<CacheHub>("/caching");
-				routes.MapHub<IoTHub>("/iot");
-				routes.MapHub<BigDataHub>("/bigdata");
-				routes.MapHub<DataCacheHub>("/datacaching");
-				routes.MapHub<TraceHub>("hubs/tracing");
-			});
-
-			app.UseMvc(routes =>
-			{
-				routes.MapRoute("default", "{controller}/{action}");
-			});
-
-			Shell.Configure(app);
-			DataModel.Initialized = true;
 		}
 
 		private void RegisterTraceService(IApplicationBuilder app)

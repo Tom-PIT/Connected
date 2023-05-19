@@ -10,33 +10,23 @@ using TomPIT.Management.Security;
 
 namespace TomPIT.Management
 {
-	public static class ManagementBootstrapper
-	{
-		public static void Run()
-		{
-			RegisterServices();
-		}
-
-		private static void RegisterServices()
-		{
-			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
-		}
-
-		private static void OnTenantInitialize(object sender, TenantArgs e)
-		{
-			e.Tenant.RegisterService(typeof(ISettingManagementService), typeof(SettingManagementService));
-			e.Tenant.RegisterService(typeof(IUserManagementService), typeof(UserManagementService));
-			e.Tenant.RegisterService(typeof(IMembershipManagementService), typeof(MembershipManagementService));
-			e.Tenant.RegisterService(typeof(IRoleManagementService), typeof(RoleManagementService));
-			e.Tenant.RegisterService(typeof(ILoggingManagementService), typeof(LoggingManagementService));
-			e.Tenant.RegisterService(typeof(IResourceGroupManagementService), typeof(ResourceGroupManagementService));
-			e.Tenant.RegisterService(typeof(IMicroServiceManagementService), typeof(MicroServiceManagementService));
-			e.Tenant.RegisterService(typeof(IInstanceEndpointManagementService), typeof(InstanceEndpointManagementService));
-			e.Tenant.RegisterService(typeof(IAuthenticationTokenManagementService), typeof(AuthenticationTokenManagementService));
-			e.Tenant.RegisterService(typeof(IDeploymentService), typeof(DeploymentService));
-			e.Tenant.RegisterService(typeof(IMetricManagementService), typeof(MetricManagementService));
-			e.Tenant.RegisterService(typeof(IBigDataManagementService), typeof(BigDataManagementService));
-			e.Tenant.RegisterService(typeof(IGlobalizationManagementService), typeof(GlobalizationManagementService));
-		}
-	}
+    public static class ManagementBootstrapper
+    {
+        public static void Initialize(ITenant tenant)
+        {
+            tenant.RegisterService(typeof(ISettingManagementService), typeof(SettingManagementService));
+            tenant.RegisterService(typeof(IUserManagementService), typeof(UserManagementService));
+            tenant.RegisterService(typeof(IMembershipManagementService), typeof(MembershipManagementService));
+            tenant.RegisterService(typeof(IRoleManagementService), typeof(RoleManagementService));
+            tenant.RegisterService(typeof(ILoggingManagementService), typeof(LoggingManagementService));
+            tenant.RegisterService(typeof(IResourceGroupManagementService), typeof(ResourceGroupManagementService));
+            tenant.RegisterService(typeof(IMicroServiceManagementService), typeof(MicroServiceManagementService));
+            tenant.RegisterService(typeof(IInstanceEndpointManagementService), typeof(InstanceEndpointManagementService));
+            tenant.RegisterService(typeof(IAuthenticationTokenManagementService), typeof(AuthenticationTokenManagementService));
+            tenant.RegisterService(typeof(IDeploymentService), typeof(DeploymentService));
+            tenant.RegisterService(typeof(IMetricManagementService), typeof(MetricManagementService));
+            tenant.RegisterService(typeof(IBigDataManagementService), typeof(BigDataManagementService));
+            tenant.RegisterService(typeof(IGlobalizationManagementService), typeof(GlobalizationManagementService));
+        }
+    }
 }
