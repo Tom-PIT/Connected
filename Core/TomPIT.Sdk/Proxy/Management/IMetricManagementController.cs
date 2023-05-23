@@ -1,6 +1,12 @@
-﻿namespace TomPIT.Proxy.Management
+﻿using System;
+using System.Collections.Immutable;
+using TomPIT.Diagnostics;
+
+namespace TomPIT.Proxy.Management
 {
-	internal interface IMetricManagementController
-	{
-	}
+    public interface IMetricManagementController
+    {
+        void Clear(Guid component, Guid element);
+        ImmutableList<IMetric> Query(DateTime date, Guid component, Guid element);
+    }
 }

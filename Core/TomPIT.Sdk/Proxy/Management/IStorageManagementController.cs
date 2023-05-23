@@ -1,6 +1,11 @@
-﻿namespace TomPIT.Proxy.Management
+﻿using System.Collections.Immutable;
+using TomPIT.Storage;
+
+namespace TomPIT.Proxy.Management
 {
-	internal interface IStorageManagementController
-	{
-	}
+    public interface IStorageManagementController
+    {
+        ImmutableList<IBlob> QueryOrphanedDrafts();
+        ImmutableList<IClientStorageProvider> QueryStorageProviders();
+    }
 }

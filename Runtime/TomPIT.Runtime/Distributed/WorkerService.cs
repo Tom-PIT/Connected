@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TomPIT.Connectivity;
-using TomPIT.Middleware;
 
 namespace TomPIT.Distributed
 {
@@ -15,12 +10,21 @@ namespace TomPIT.Distributed
 
         }
 
+        public bool Exists(Guid configuration)
+        {
+            return Instance.SysProxy.Management.Workers.Select(configuration) is not null;
+        }
+
         public void Run(Guid worker)
         {
-            Tenant.Post(Tenant.CreateUrl("WorkerManagement", "Run"), new
-            {
-                worker
-            });
-		}
-	}
+            Instance.SysProxy.Management.Workers.Run(worker);
+        }
+
+        public void Update(Guid configuration, DateTime startTime, DateTime endTime, WorkerInterval interval, int intervalValue, DateTime startDate, DateTime endDate, int limit, int dayOfMonth, WorkerDayMode dayMode, WorkerMonthMode monthMode, WorkerYearMode yearMode, int monthNumber, WorkerEndMode endMode, WorkerCounter intervalCounter, WorkerMonthPart monthPart, WorkerWeekDays weekdays, WorkerKind kind, int disableTreshold, int retryInterval, WorkerStatus status, bool logging)
+        {
+            Instance.SysProxy.Management.Workers.UpdateConfiguration(configuration, startTime, endTime, interval, intervalValue, startDate, endDate, limit,
+                dayOfMonth, dayMode, monthMode, yearMode, monthNumber, endMode, intervalCounter, monthPart, weekdays, kind, disableTreshold, retryInterval);
+            Instance.SysProxy.Management.Workers.Update(configuration, status, logging);
+        }
+    }
 }

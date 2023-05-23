@@ -1,70 +1,53 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using TomPIT.Distributed;
 using TomPIT.Environment;
-using TomPIT.Middleware;
 
 namespace TomPIT.Search.Services
 {
-	internal class IndexingService : HostedService
-	{
-		private Lazy<List<IndexingDispatcher>> _dispatchers = new Lazy<List<IndexingDispatcher>>();
+    internal class IndexingService : HostedService
+    {
+        public IndexingService()
+        {
+            IntervalTimeout = TimeSpan.FromMilliseconds(490);
+        }
 
-		public IndexingService()
-		{
-			IntervalTimeout = TimeSpan.FromMilliseconds(490);
+        private IndexingDispatcher Dispatcher { get; set; }
 
-			foreach (var i in Tenant.GetService<IResourceGroupService>().QuerySupported())
-				Dispatchers.Add(new IndexingDispatcher(i.Name));
-		}
+        protected override bool OnInitialize(CancellationToken cancel)
+        {
+            if (Instance.State == InstanceState.Initializing)
+                return false;
 
-		protected override bool OnInitialize(CancellationToken cancel)
-		{
-			return Instance.State == InstanceState.Running;
-		}
+            Dispatcher = new IndexingDispatcher(Tenant.GetService<IResourceGroupService>().Default.Name);
 
-		protected override Task OnExecute(CancellationToken cancel)
-		{
-			Parallel.ForEach(Dispatchers, (f) =>
-			{
-				var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("SearchManagement", "Dequeue");
+            return true;
+        }
 
-				var e = new JObject
-				{
-					{ "count", f.Available },
-					{ "resourceGroup", f.ResourceGroup }
-				};
+        protected override async Task OnExecute(CancellationToken cancel)
+        {
+            var jobs = Instance.SysProxy.Management.Search.Dequeue(Dispatcher.Available);
 
-				var jobs = MiddlewareDescriptor.Current.Tenant.Post<List<QueueMessage>>(url, e);
+            if (jobs is null)
+                return;
 
-				if (jobs == null)
-					return;
+            foreach (var i in jobs)
+            {
+                if (cancel.IsCancellationRequested)
+                    return;
 
-				foreach (var i in jobs)
-				{
-					if (cancel.IsCancellationRequested)
-						return;
+                Dispatcher.Enqueue(i);
+            }
 
-					f.Enqueue(i);
-				}
-			});
+            await Task.CompletedTask;
+        }
 
-			return Task.CompletedTask;
-		}
+        public override void Dispose()
+        {
+            Dispatcher.Dispose();
 
-		private List<IndexingDispatcher> Dispatchers { get { return _dispatchers.Value; } }
-
-		public override void Dispose()
-		{
-			foreach (var dispatcher in Dispatchers)
-				dispatcher.Dispose();
-
-			Dispatchers.Clear();
-
-			base.Dispose();
-		}
-	}
+            base.Dispose();
+        }
+    }
 }

@@ -1,6 +1,12 @@
-﻿namespace TomPIT.Proxy.Management
+﻿using System;
+using TomPIT.Environment;
+
+namespace TomPIT.Proxy.Management
 {
-	internal interface IInstanceEndpointManagementController
-	{
-	}
+    public interface IInstanceEndpointManagementController
+    {
+        Guid Insert(InstanceFeatures type, string name, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs);
+        void Update(Guid token, InstanceFeatures type, string name, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs);
+        void Delete(Guid token);
+    }
 }

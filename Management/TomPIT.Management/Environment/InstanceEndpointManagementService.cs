@@ -6,66 +6,49 @@ using TomPIT.Middleware;
 
 namespace TomPIT.Management.Environment
 {
-	internal class InstanceEndpointManagementService : TenantObject, IInstanceEndpointManagementService
-	{
-		public InstanceEndpointManagementService(ITenant tenant) : base(tenant)
-		{
+    internal class InstanceEndpointManagementService : TenantObject, IInstanceEndpointManagementService
+    {
+        public InstanceEndpointManagementService(ITenant tenant) : base(tenant)
+        {
 
-		}
+        }
 
-		public void Delete(Guid instance)
-		{
-			var u = Tenant.CreateUrl("InstanceEndpointManagement", "Delete");
-			var e = new JObject
-			{
-				{"token", instance }
-			};
+        public void Delete(Guid instance)
+        {
+            Instance.SysProxy.Management.InstanceEndpoints.Delete(instance);
 
-			Tenant.Post(u, e);
+            if (Tenant.GetService<IInstanceEndpointService>() is IInstanceEndpointNotification n)
+                n.NotifyRemoved(this, new InstanceEndpointEventArgs(instance));
+        }
 
-			if (Tenant.GetService<IInstanceEndpointService>() is IInstanceEndpointNotification n)
-				n.NotifyRemoved(this, new InstanceEndpointEventArgs(instance));
-		}
+        public Guid Insert(string name, InstanceFeatures features, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs)
+        {
+            var id = Instance.SysProxy.Management.InstanceEndpoints.Insert(features, name, url, reverseProxyUrl, status, verbs);
 
-		public Guid Insert(string name, InstanceFeatures features, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs)
-		{
-			var u = Tenant.CreateUrl("InstanceEndpointManagement", "Insert");
-			var e = new JObject
-			{
-				{"name", name },
-				{"type", features.ToString() },
-				{"url", url },
-				{"reverseProxyUrl", reverseProxyUrl },
-				{"status", status.ToString() },
-				{"verbs", verbs.ToString() },
-			};
+            if (Tenant.GetService<IInstanceEndpointService>() is IInstanceEndpointNotification n)
+                n.NotifyChanged(this, new InstanceEndpointEventArgs(id));
 
-			var id = Tenant.Post<Guid>(u, e);
+            return id;
+        }
 
-			if (Tenant.GetService<IInstanceEndpointService>() is IInstanceEndpointNotification n)
-				n.NotifyChanged(this, new InstanceEndpointEventArgs(id));
+        public void Update(Guid instance, string name, InstanceFeatures features, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs)
+        {
+            var u = Tenant.CreateUrl("InstanceEndpointManagement", "Update");
+            var e = new JObject
+            {
+                {"token", instance },
+                { "name", name },
+                {"type", features.ToString() },
+                {"url", url },
+                {"reverseProxyUrl", reverseProxyUrl },
+                {"status", status.ToString() },
+                {"verbs", verbs.ToString() },
+            };
 
-			return id;
-		}
+            Tenant.Post(u, e);
 
-		public void Update(Guid instance, string name, InstanceFeatures features, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs)
-		{
-			var u = Tenant.CreateUrl("InstanceEndpointManagement", "Update");
-			var e = new JObject
-			{
-				{"token", instance },
-				{ "name", name },
-				{"type", features.ToString() },
-				{"url", url },
-				{"reverseProxyUrl", reverseProxyUrl },
-				{"status", status.ToString() },
-				{"verbs", verbs.ToString() },
-			};
-
-			Tenant.Post(u, e);
-
-			if (Tenant.GetService<IInstanceEndpointService>() is IInstanceEndpointNotification n)
-				n.NotifyChanged(this, new InstanceEndpointEventArgs(instance));
-		}
-	}
+            if (Tenant.GetService<IInstanceEndpointService>() is IInstanceEndpointNotification n)
+                n.NotifyChanged(this, new InstanceEndpointEventArgs(instance));
+        }
+    }
 }

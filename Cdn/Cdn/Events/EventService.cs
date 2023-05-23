@@ -1,75 +1,62 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TomPIT.Distributed;
 using TomPIT.Environment;
-using TomPIT.Middleware;
 
 namespace TomPIT.Cdn.Events
 {
-	internal class EventService : HostedService
-	{
-		private Lazy<List<EventDispatcher>> _dispatchers = new Lazy<List<EventDispatcher>>();
+    internal class EventService : HostedService
+    {
+        public EventService()
+        {
+            IntervalTimeout = TimeSpan.FromMilliseconds(490);
+            ServiceInstance = this;
+        }
 
-		public static EventService ServiceInstance { get; private set; }
+        public static EventService ServiceInstance { get; private set; }
+        private EventDispatcher Dispatcher { get; set; }
 
-		public EventService()
-		{
-			IntervalTimeout = TimeSpan.FromMilliseconds(490);
-			ServiceInstance = this;
-		}
+        protected override bool OnInitialize(CancellationToken cancel)
+        {
+            if (Instance.State == InstanceState.Initializing)
+                return false;
 
-		protected override bool OnInitialize(CancellationToken cancel)
-		{
-			if (Instance.State == InstanceState.Initializing)
-				return false;
 
-			foreach (var i in Tenant.GetService<IResourceGroupService>().QuerySupported())
-				Dispatchers.Add(new EventDispatcher(i.Name));
+            Dispatcher = new(Tenant.GetService<IResourceGroupService>().Default.Name);
 
-			return true;
-		}
-		protected override Task OnExecute(CancellationToken cancel)
-		{
-			Parallel.ForEach(Dispatchers, (f) =>
-			{
-				if (f.Available <= 0)
-					return;
+            return true;
+        }
+        protected override async Task OnExecute(CancellationToken cancel)
+        {
+            if (Dispatcher.Available <= 0)
+                return;
 
-				if (cancel.IsCancellationRequested)
-					return;
+            if (cancel.IsCancellationRequested)
+                return;
 
-				if (MiddlewareDescriptor.Current.Tenant.Post<List<EventQueueMessage>>(MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Dequeue"),
-					new
-					{
-						count = f.Available,
-						f.ResourceGroup
-					}) is not List<EventQueueMessage> jobs)
-					return;
+            var jobs = Instance.SysProxy.Management.Events.Dequeue(Dispatcher.Available);
 
-				foreach (var i in jobs)
-				{
-					if (cancel.IsCancellationRequested)
-						return;
+            if (!jobs.Any())
+                return;
 
-					f.Enqueue(i);
-				}
-			});
+            foreach (var i in jobs)
+            {
+                if (cancel.IsCancellationRequested)
+                    return;
 
-			return Task.CompletedTask;
-		}
+                Dispatcher.Enqueue(i);
+            }
 
-		public List<EventDispatcher> Dispatchers { get { return _dispatchers.Value; } }
+            await Task.CompletedTask;
+        }
 
-		public override void Dispose()
-		{
-			foreach (var dispatcher in Dispatchers)
-				dispatcher.Dispose();
+        public override void Dispose()
+        {
+            Dispatcher.Dispose();
 
-			Dispatchers.Clear();
-
-			base.Dispose();
-		}
-	}
+            base.Dispose();
+        }
+    }
 }

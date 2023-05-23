@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Newtonsoft.Json.Linq;
-
 using TomPIT.Diagnostics;
 using TomPIT.Distributed;
 using TomPIT.Middleware;
@@ -12,80 +10,73 @@ using TomPIT.Serialization;
 
 namespace TomPIT.Worker.Services
 {
-	internal class QueueWorkerService : HostedService
-	{
-		private Lazy<List<QueueWorkerDispatcher>> _dispatchers = new Lazy<List<QueueWorkerDispatcher>>();
+    internal class QueueWorkerService : HostedService
+    {
+        private Lazy<List<QueueWorkerDispatcher>> _dispatchers = new Lazy<List<QueueWorkerDispatcher>>();
 
-		private readonly IQueueMonitoringService _queueMonitoringService;
+        private readonly IQueueMonitoringService _queueMonitoringService;
 
-		public static QueueWorkerService ServiceInstance { get; private set; }
+        public static QueueWorkerService ServiceInstance { get; private set; }
 
-		public QueueWorkerService()
-		{
-			IntervalTimeout = TimeSpan.FromMilliseconds(490);
-			_queueMonitoringService = Tenant.GetService<IQueueMonitoringService>();
-			ServiceInstance = this;
-		}
+        public QueueWorkerService()
+        {
+            IntervalTimeout = TimeSpan.FromMilliseconds(490);
+            _queueMonitoringService = Tenant.GetService<IQueueMonitoringService>();
+            ServiceInstance = this;
+        }
 
-		protected override bool OnInitialize(CancellationToken cancel)
-		{
-			if (Instance.State == InstanceState.Initializing)
-				return false;
+        protected override bool OnInitialize(CancellationToken cancel)
+        {
+            if (Instance.State == InstanceState.Initializing)
+                return false;
 
-			Dispatchers.Add(new QueueWorkerDispatcher());
+            Dispatchers.Add(new QueueWorkerDispatcher());
 
-			return true;
-		}
-		protected override Task OnExecute(CancellationToken cancel)
-		{
-			Parallel.ForEach(Dispatchers, (f) =>
-			{
-				if (f.Available < 1)
-					return;
+            return true;
+        }
+        protected override Task OnExecute(CancellationToken cancel)
+        {
+            Parallel.ForEach(Dispatchers, (f) =>
+            {
+                if (f.Available < 1)
+                    return;
 
-				var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("QueueManagement", "Dequeue");
+                var jobs = Instance.SysProxy.Management.Queue.Dequeue(f.Available);
 
-				var e = new JObject
-				 {
-						  { "count", f.Available }
-				 };
+                _queueMonitoringService?.SignalEnqueued(jobs?.Count ?? 0);
 
-				var jobs = MiddlewareDescriptor.Current.Tenant.Post<List<QueueMessage>>(url, e);
+                var batch = Guid.NewGuid();
 
-				_queueMonitoringService?.SignalEnqueued(jobs?.Count ?? 0);
+                if (cancel.IsCancellationRequested)
+                    return;
 
-				var batch = Guid.NewGuid();
+                if (jobs is null)
+                    return;
 
-				if (cancel.IsCancellationRequested)
-					return;
+                foreach (var i in jobs)
+                {
+                    if (cancel.IsCancellationRequested)
+                        return;
 
-				if (jobs is null)
-					return;
+                    MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"{typeof(QueueWorkerService).FullName.PadRight(64)}| Batch {batch} => Enqueue {Serializer.Serialize(i)}");
 
-				foreach (var i in jobs)
-				{
-					if (cancel.IsCancellationRequested)
-						return;
+                    f.Enqueue(i);
+                }
+            });
 
-					MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"{typeof(QueueWorkerService).FullName.PadRight(64)}| Batch {batch} => Enqueue {Serializer.Serialize(i)}");
+            return Task.CompletedTask;
+        }
 
-					f.Enqueue(i);
-				}
-			});
+        public List<QueueWorkerDispatcher> Dispatchers { get { return _dispatchers.Value; } }
 
-			return Task.CompletedTask;
-		}
+        public override void Dispose()
+        {
+            foreach (var dispatcher in Dispatchers)
+                dispatcher.Dispose();
 
-		public List<QueueWorkerDispatcher> Dispatchers { get { return _dispatchers.Value; } }
+            Dispatchers.Clear();
 
-		public override void Dispose()
-		{
-			foreach (var dispatcher in Dispatchers)
-				dispatcher.Dispose();
-
-			Dispatchers.Clear();
-
-			base.Dispose();
-		}
-	}
+            base.Dispose();
+        }
+    }
 }

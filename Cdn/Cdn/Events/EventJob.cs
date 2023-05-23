@@ -1,12 +1,10 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Newtonsoft.Json.Linq;
 using TomPIT.Annotations;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
@@ -33,7 +31,7 @@ namespace TomPIT.Cdn.Events
         {
             var timeout = new TimeoutTask(() =>
             {
-                Delay(item.PopReceipt, TimeSpan.FromMinutes(5));
+                Delay(item.PopReceipt, 300);
 
                 return Task.CompletedTask;
             }, TimeSpan.FromMinutes(4), Cancel);
@@ -54,23 +52,16 @@ namespace TomPIT.Cdn.Events
 
             var sw = Stopwatch.StartNew();
 
-            MiddlewareDescriptor.Current.Tenant.Post(MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Complete"), new
-            {
-                item.PopReceipt
-            });
+            Instance.SysProxy.Management.Events.Complete(item.PopReceipt);
 
             sw.Stop();
 
             Debug.WriteLine($"{Event} took {sw.ElapsedMilliseconds} to send completed notification.");
         }
 
-        private static void Delay(Guid popReceipt, TimeSpan delay)
+        private static void Delay(Guid popReceipt, int delay)
         {
-            MiddlewareDescriptor.Current.Tenant.Post(MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Ping"), new
-            {
-                popReceipt,
-                NextVisible = delay
-            });
+            Instance.SysProxy.Management.Events.Ping(popReceipt, delay);
         }
 
         private bool Invoke(IEventQueueMessage message)
@@ -112,7 +103,7 @@ namespace TomPIT.Cdn.Events
                         case EventInvokingResult.Cancel:
                             return true;
                         case EventInvokingResult.Delay:
-                            Delay(message.PopReceipt, args.Delay == TimeSpan.Zero ? TimeSpan.FromMinutes(1) : args.Delay);
+                            Delay(message.PopReceipt, args.Delay == TimeSpan.Zero ? 60 : Convert.ToInt32(args.Delay.TotalSeconds));
                             return false;
                     }
 
@@ -133,7 +124,7 @@ namespace TomPIT.Cdn.Events
                             {
                                 if (string.Compare(eventName, i.Event, true) == 0)
                                 {
-                                    var result = Invoke(message, i);                   
+                                    var result = Invoke(message, i);
 
                                     if (result != null && result.Count > 0)
                                     {
@@ -253,13 +244,7 @@ namespace TomPIT.Cdn.Events
 
             TomPITException.Unwrap(this, ex).LogError(LogCategories.Cdn);
 
-            var urlComplete = MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Complete");
-            var descriptorComplete = new JObject
-                {
-                    {"popReceipt", message.PopReceipt }
-                };
-
-            MiddlewareDescriptor.Current.Tenant.Post(urlComplete, descriptorComplete);
+            Instance.SysProxy.Management.Events.Complete(message.PopReceipt);
         }
 
         private IDistributedEventMiddleware CreateEventInstance(IMicroServiceContext context, IEventQueueMessage message)
