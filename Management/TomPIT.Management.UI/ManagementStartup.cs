@@ -13,17 +13,22 @@ namespace TomPIT.Management
             host.ConfiguringServices += OnConfiguringServices;
             host.Booting += OnBooting;
             host.ConfiguringRouting += OnConfiguringRouting;
+            host.ConfigureEmbeddedStaticResources += OnConfigureEmbeddedStaticResources;
+        }
+
+        private void OnConfigureEmbeddedStaticResources(object sender, System.Collections.Generic.List<System.Reflection.Assembly> e)
+        {
+            e.Add(typeof(ManagementStartup).Assembly);
         }
 
         private void OnConfiguringRouting(object sender, Microsoft.AspNetCore.Routing.IEndpointRouteBuilder e)
         {
-            IdeRouting.Register(e, "Home", string.Empty);
+            IdeRouting.Register(e, "Management", "mng");
         }
 
         private void OnBooting(object sender, System.EventArgs e)
         {
             Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
-
         }
 
         private void OnTenantInitialize(object sender, TenantArgs e)

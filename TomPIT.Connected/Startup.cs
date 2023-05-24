@@ -26,9 +26,6 @@ namespace TomPIT.Connected
             if (Instance.Features.HasFlag(InstanceFeatures.Sys))
                 startups.Add(new SysStartup());
 
-            if (Instance.Features.HasFlag(InstanceFeatures.Application))
-                startups.Add(new AppStartup());
-
             if (Instance.Features.HasFlag(InstanceFeatures.Development))
                 startups.Add(new DevStartup());
 
@@ -49,6 +46,9 @@ namespace TomPIT.Connected
 
             if (Instance.Features.HasFlag(InstanceFeatures.Worker))
                 startups.Add(new WorkerStartup());
+
+            if (Instance.Features.HasFlag(InstanceFeatures.Application))
+                startups.Add(new AppStartup());
 
             Host = Instance.Start();
 

@@ -1,6 +1,6 @@
 ﻿{
   "instanceName": "Default Instance",
-  "features": "Application, Worker, Cdn, Rest, Search, BigData, Sys, IoT, Development",
+  "features": "Application, Worker, Cdn, Rest, Search, BigData, Sys, IoT, Development, Management",
   "platform": "OnPrem",
   "stage": "Development",
   "resourceGroups": [
