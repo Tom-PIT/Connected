@@ -1,4 +1,5 @@
 ﻿using System;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TomPIT.Controllers;
@@ -14,7 +15,10 @@ namespace TomPIT.Cdn.Controllers
 		{
 			var body = FromBody();
 			var id = body.Required<Guid>("id");
-			var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("PrintingManagement", "SelectSpooler");
+
+			Diagnostics.EventLog.WriteInfo($"Request for print job with id {id} came in.");
+
+         var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("PrintingManagement", "SelectSpooler");
 
 			var job = MiddlewareDescriptor.Current.Tenant.Post<PrintSpoolerJob>(url, new
 			{
@@ -26,7 +30,9 @@ namespace TomPIT.Cdn.Controllers
 
 			job.Identity ??= default;
 
-			return job;
+         Diagnostics.EventLog.WriteInfo($"Print job with id {id} returned.");
+
+         return job;
 		}
 	}
 }

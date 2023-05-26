@@ -56,7 +56,9 @@ namespace TomPIT.Sys.Model.Printing
 
 			DataModel.Queue.Enqueue(Queue, Serializer.Serialize(message), null, TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
 
-			return job.Token;
+         TomPIT.Diagnostics.EventLog.WriteInfo($"Inserted print job with token {job.Token}");
+
+         return job.Token;
 		}
 
 		public void Delete(Guid token)
@@ -98,7 +100,11 @@ namespace TomPIT.Sys.Model.Printing
 					continue;
 
 				if (Select(id) is IPrintJob pj)
+				{
 					result.Add(new PrintQueueMessage(message, pj));
+
+               TomPIT.Diagnostics.EventLog.WriteInfo($"Dequeued print job with token {pj.Token}");
+            }
 				else
 					DataModel.Queue.Complete(message.PopReceipt);
 			}
