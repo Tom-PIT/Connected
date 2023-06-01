@@ -22,7 +22,10 @@
     <ProjectReference Include="..\TomPIT.SysDb\TomPIT.SysDb.csproj" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\Deploy\Plugins\TomPIT.SysDb.Sql&quot;" />
+    <!-- <Exec Command="mkdir -p  &quot;/src/plugins/TomPIT.SysDb.Sql/&quot;" />
+    <Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/TomPIT.SysDb.Sql/&quot;" /> -->
+    <Exec Command="mkdir -p  &quot;/src/plugins/&quot;" />
+    <Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/&quot;" />
   </Target>
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />

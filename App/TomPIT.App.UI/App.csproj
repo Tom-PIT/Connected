@@ -28,8 +28,8 @@
 		<Content Remove="wwwroot\Assets\fonts.min.js" />
 	</ItemGroup>
 	<ItemGroup>
-		<Content Include="..\..\Development\TomPIT.Development.UI\wwwroot\Assets\Styles\tompit.css" Link="wwwroot\Assets\Styles\tompit.css" />
-		<Content Include="..\..\Development\TomPIT.Development.UI\wwwroot\Assets\Styles\tompit.min.css" Link="wwwroot\Assets\Styles\tompit.min.css" />
+		<Content Include="..\..\Management\TomPIT.Management.UI\wwwroot\Assets\Styles\tompit.css" Link="wwwroot\Assets\Styles\tompit.css" />
+		<Content Include="..\..\Management\TomPIT.Management.UI\wwwroot\Assets\Styles\tompit.min.css" Link="wwwroot\Assets\Styles\tompit.min.css" />
 	</ItemGroup>
 	<ItemGroup>
 	  <EmbeddedResource Include="wwwroot/Assets/**/*.*" />
@@ -66,11 +66,11 @@
 		<PackageReference Include="BuildBundlerMinifier" Version="3.2.449" />
 		<PackageReference Include="dotless.Core" Version="1.6.7" />
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="7.0.5" />
-		<PackageReference Include="Microsoft.CodeAnalysis.Common" Version="3.9.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="System.CodeDom" Version="7.0.0" />
 		<PackageReference Include="System.Configuration.ConfigurationManager" Version="7.0.0" />
 		<PackageReference Include="System.Drawing.Common" Version="7.0.0" />
+		<PackageReference Include="System.Security.Cryptography.Pkcs" Version="7.0.1" />
 		<PackageReference Include="System.ServiceModel.Primitives" Version="4.10.2" />
 	</ItemGroup>
 	<ItemGroup>
@@ -95,7 +95,7 @@
 			<Pack>$(IncludeRazorContentInPack)</Pack>
 		</Content>
 	</ItemGroup>
-	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+	<!-- <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
 		<Exec Command="IF EXIST &quot;$(SolutionDir)\.vs\config\applicationhost.config&quot; (pushd $(SolutionDir)\.vs\config\ &amp; copy /b applicationhost.config +,, &amp; popd)" />
-	</Target>
+	</Target> -->
 </Project>

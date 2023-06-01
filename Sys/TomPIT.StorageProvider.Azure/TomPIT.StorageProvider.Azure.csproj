@@ -16,6 +16,9 @@
     <ProjectReference Include="..\TomPIT.Sys.Api\TomPIT.Sys.Api.csproj" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\Deploy\Plugins\TomPIT.StorageProviders.Azure&quot;" />
+    <!-- <Exec Command="mkdir -p &quot;/src/plugins/TomPIT.StorageProviders.Azure/&quot;" />
+    <Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/TomPIT.StorageProviders.Azure/&quot;" /> -->
+    <Exec Command="mkdir -p &quot;/src/plugins/&quot;" />
+    <Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/&quot;" />
   </Target>
 </Project>
