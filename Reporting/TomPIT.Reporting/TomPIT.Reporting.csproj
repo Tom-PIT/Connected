@@ -52,6 +52,9 @@
     <Folder Include="Properties\" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\Deploy\Plugins\TomPIT.MicroServices.Reporting&quot;" />
+    <!-- <Exec Command="mkdir -p &quot;/src/plugins/TomPIT.MicroServices.Reporting/&quot;" />
+    <Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/TomPIT.MicroServices.Reporting/&quot;" /> -->
+    <Exec Command="mkdir -p &quot;/src/plugins/&quot;" />
+    <Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/&quot;" />
   </Target>
 </Project>

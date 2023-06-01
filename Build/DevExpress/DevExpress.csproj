@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="DevExpress.AspNetCore.Reporting" Version="20.1.4" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Items Include="$(NuGetPackageRoot)/dev*/20.1.4/lib/netstandard2.0/*.dll">
+		</Items>
+	</ItemGroup>
+
+	<Target Name="CopyPackages" AfterTargets="Build">
+		<Copy SourceFiles="@(Items)" DestinationFolder="/src/plugins/" />
+	</Target>
+
+</Project>

@@ -27,7 +27,7 @@ namespace TomPIT.Compilation
 {
     internal class NuGetPackages : TenantObject, IDisposable
     {
-        private const string FrameworkVersion = "net5.0";
+        private const string FrameworkVersion = "net7.0";
         private const string RepositoryUrl = "https://api.nuget.org/v3/index.json";
 
         private Lazy<ConcurrentDictionary<string, ManualResetEvent>> _packageLoadState = new Lazy<ConcurrentDictionary<string, ManualResetEvent>>();
@@ -48,7 +48,7 @@ namespace TomPIT.Compilation
 
             ReadOnly = rt.Connectivity == EnvironmentConnectivity.Offline;
 
-            System.Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.CommonApplicationData), "Temp", "TomPITPackageCache"));
+            System.Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", "/home/tompit/TomPITPackageCache");
         }
 
         private bool ReadOnly { get; }
@@ -76,7 +76,21 @@ namespace TomPIT.Compilation
             }
         }
 
-        private string RootDirectory => _root ??= Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile), ".tompit", "packages");
+        private string RootDirectory
+        {
+            get
+            {
+                if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
+                {
+                    return _root ??= Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile), ".tompit", "packages");
+                }
+                else
+                {
+                    return _root ??= "/home/tompit/packages";
+                }
+            }
+        }
+
         private PackagePathResolver PathResolver => _pathResolver ??= new PackagePathResolver(RootDirectory, false);
 
         public ImmutableList<Assembly> Resolve(Guid blob, bool entryOnly)
