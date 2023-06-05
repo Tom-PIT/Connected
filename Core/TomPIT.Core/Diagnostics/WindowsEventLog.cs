@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -9,7 +11,7 @@ namespace TomPIT.Diagnostics
    public static class EventLog
    {
       private static object WriteLock = new object();
-      private static void Write(string message, EventLogEntryType type)
+      private static void Write(string message, LogLevel type)
       {
          try
          {
@@ -42,8 +44,8 @@ namespace TomPIT.Diagnostics
          e();
       }
 
-      public static void WriteInfo(string message) => WindowsCheck(() => Write(message, EventLogEntryType.Information));
-      public static void WriteError(string message) => WindowsCheck(() => Write(message, EventLogEntryType.Error));
-      public static void WriteWarning(string message) => WindowsCheck(() => Write(message, EventLogEntryType.Warning));
+      public static void WriteInfo(string message) => WindowsCheck(() => Write(message, LogLevel.Information));
+      public static void WriteError(string message) => WindowsCheck(() => Write(message, LogLevel.Error));
+      public static void WriteWarning(string message) => WindowsCheck(() => Write(message, LogLevel.Warning));
    }
 }
