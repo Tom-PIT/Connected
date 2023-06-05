@@ -27,7 +27,7 @@ namespace TomPIT.Diagnostics
                if (!Directory.Exists(directory))
                   Directory.CreateDirectory(directory);
 
-               File.AppendAllLines(path, new[] { message });
+               File.AppendAllLines(path, new[] { $"{DateTime.UtcNow.ToString("G")} | {message}");
             }
          }
          catch
