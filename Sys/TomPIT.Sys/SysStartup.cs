@@ -30,6 +30,7 @@ namespace TomPIT.Sys
 			host.ConfiguringRouting += OnConfiguringRouting;
 			host.ConfiguringMvcRouting += OnConfiguringMvcRouting;
 			host.Configuring += OnConfiguring;
+			host.ConfiguringServices += ConfigureServices;
 		}
 
 		private void OnBooting(object sender, System.EventArgs e)
@@ -67,7 +68,7 @@ namespace TomPIT.Sys
 			e.EnableEndpointRouting = false;
 		}
 
-		public void ConfigureServices(IServiceCollection services)
+		public void ConfigureServices(object sender, IServiceCollection services)
 		{
 			services.AddSingleton<ExceptionHubFilter>();
 

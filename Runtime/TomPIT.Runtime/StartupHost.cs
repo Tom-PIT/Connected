@@ -129,8 +129,10 @@ internal class StartupHost : IStartupHostProxy
 		foreach (var plugin in Instance.Plugins)
 			plugin.Initialize(app, env);
 
-		Run(app, env);
-	}
+		Configuring?.Invoke(null, new (app, env));
+
+      Run(app, env);
+   }
 
 	private void Boot()
 	{
