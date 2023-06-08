@@ -18,7 +18,8 @@ namespace TomPIT.Proxy.Local
 			var message = new
 			{
 				component,
-				worker = name
+				worker = name,
+				arguments = arguments
 			};
 
 			DataModel.Queue.Enqueue(QueueingModel.Queue, Serializer.Serialize(message), bufferKey, expire, nextVisible, Storage.QueueScope.Content);
