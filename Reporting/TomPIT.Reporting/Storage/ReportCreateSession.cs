@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Text;
 using DevExpress.DataAccess.Json;
@@ -194,83 +195,84 @@ namespace TomPIT.MicroServices.Reporting.Storage
 			return r;
 		}
 
-		private void OnBindSubreportDataSources(object sender, System.Drawing.Printing.PrintEventArgs e)
-		{
-			var subReport = sender as XRSubreport;
+        private void OnBindSubreportDataSources(object sender, CancelEventArgs e)
+        {
+            var subReport = sender as XRSubreport;
 
-			subReport.ApplyParameterBindings();
-			/*
+            subReport.ApplyParameterBindings();
+            /*
 			 * this is workaround for the issue related to parameter bindings.
 			 * it seems devexpress doesn't know how to bind parameters from json data source
 			 * so we're gonna do it manually.
 			 */
-			var bindings = subReport.ParameterBindings;
-			var newBindings = new List<ParameterBinding>();
+            var bindings = subReport.ParameterBindings;
+            var newBindings = new List<ParameterBinding>();
 
-			foreach (var binding in bindings)
-			{
-				ReportParameterTag tag = null;
+            foreach (var binding in bindings)
+            {
+                ReportParameterTag tag = null;
 
-				if (binding.Parameter != null && !(binding.Parameter.Tag is ReportParameterTag))
-				{
-					newBindings.Add(binding);
-					continue;
-				}
+                if (binding.Parameter != null && !(binding.Parameter.Tag is ReportParameterTag))
+                {
+                    newBindings.Add(binding);
+                    continue;
+                }
 
-				tag = binding.Parameter?.Tag as ReportParameterTag;
+                tag = binding.Parameter?.Tag as ReportParameterTag;
 
-				if (subReport.ReportSource.DataSource == null)
-					continue;
+                if (subReport.ReportSource.DataSource == null)
+                    continue;
 
-				if (tag == null)
-				{
-					tag = new ReportParameterTag
-					{
-						DataSource = binding.DataSource as JsonDataSource,
-						DataMember = binding.DataMember
-					};
-				}
+                if (tag == null)
+                {
+                    tag = new ReportParameterTag
+                    {
+                        DataSource = binding.DataSource as JsonDataSource,
+                        DataMember = binding.DataMember
+                    };
+                }
 
-				var entity = tag.DataMember.Split('.')[0];
-				var property = tag.DataMember.Split('.')[1];
-				var index = subReport.Report.CurrentRowIndex;
-				var en = tag.DataSource.GetEnumerator();
+                var entity = tag.DataMember.Split('.')[0];
+                var property = tag.DataMember.Split('.')[1];
+                var index = subReport.Report.CurrentRowIndex;
+                var en = tag.DataSource.GetEnumerator();
 
-				if (!en.MoveNext())
-					continue;
+                if (!en.MoveNext())
+                    continue;
 
-				var pi = en.Current.GetType().GetProperty(entity);
+                var pi = en.Current.GetType().GetProperty(entity);
 
-				if (pi == null)
-					continue;
+                if (pi == null)
+                    continue;
 
-				if (pi.GetValue(en.Current) is not IList list)
-					continue;
+                if (pi.GetValue(en.Current) is not IList list)
+                    continue;
 
-				if (list.Count - 1 < index)
-					continue;
+                if (list.Count - 1 < index)
+                    continue;
 
-				var item = list[index];
-				pi = item.GetType().GetProperty(property);
+                var item = list[index];
+                pi = item.GetType().GetProperty(property);
 
-				if (pi == null)
-					continue;
+                if (pi == null)
+                    continue;
 
-				newBindings.Add(new ParameterBinding(binding.ParameterName, new DevExpress.XtraReports.Parameters.Parameter
-				{
-					Tag = tag,
-					Name = binding.ParameterName,
-					Type = pi.PropertyType,
-					Value = pi.GetValue(item),
-				}));
-			}
+                newBindings.Add(new ParameterBinding(binding.ParameterName, new DevExpress.XtraReports.Parameters.Parameter
+                {
+                    Tag = tag,
+                    Name = binding.ParameterName,
+                    Type = pi.PropertyType,
+                    Value = pi.GetValue(item),
+                }));
+            }
 
-			subReport.ParameterBindings.Clear();
+            subReport.ParameterBindings.Clear();
 
-			foreach (var binding in newBindings)
-				subReport.ParameterBindings.Add(binding);
+            foreach (var binding in newBindings)
+                subReport.ParameterBindings.Add(binding);
 
-			BindDataSources(subReport.ReportSource, subReport.ReportSourceUrl, subReport.ParameterBindings);
-		}
+            BindDataSources(subReport.ReportSource, subReport.ReportSourceUrl, subReport.ParameterBindings);
+
+        }
 	}
 }

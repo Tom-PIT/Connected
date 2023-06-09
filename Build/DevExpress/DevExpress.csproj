@@ -5,11 +5,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="DevExpress.AspNetCore.Reporting" Version="20.1.4" />
+		<PackageReference Include="DevExpress.AspNetCore.Reporting" Version="22.2.6" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<Items Include="$(NuGetPackageRoot)/dev*/20.1.4/lib/netstandard2.0/*.dll">
+		<Items Include="$(NuGetPackageRoot)/dev*/22.2.6/lib/netstandard2.0/*.dll">
 		</Items>
 	</ItemGroup>
 

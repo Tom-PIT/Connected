@@ -23,7 +23,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AngleSharp.Css" Version="0.17.0" />
-    <PackageReference Include="Microsoft.AspNet.Razor" Version="3.2.9" />
+
     <PackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="6.0.16" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.6.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="4.6.0" />

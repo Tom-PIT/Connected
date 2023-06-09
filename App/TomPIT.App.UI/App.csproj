@@ -47,12 +47,9 @@
 	<ItemGroup>
 		<PackageReference Include="lz4net" Version="1.0.15.93" />
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="6.0.16" />
-		<PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
-		<PackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="1.1.0" />
 		<PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" Version="7.0.5" />
 		<PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.6.0" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.6.0" />
-		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Extensions" Version="1.0.0" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="4.6.0" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.6.0" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.6.0" />
@@ -71,7 +68,7 @@
 		<PackageReference Include="System.Configuration.ConfigurationManager" Version="7.0.0" />
 		<PackageReference Include="System.Drawing.Common" Version="7.0.0" />
 		<PackageReference Include="System.Security.Cryptography.Pkcs" Version="7.0.1" />
-		<PackageReference Include="System.ServiceModel.Primitives" Version="4.10.2" />
+		<PackageReference Include="System.ServiceModel.Primitives" Version="6.0.0" />
 	</ItemGroup>
 	<ItemGroup>
 		<Folder Include="wwwroot\Assets\Libraries\Cldr\0.5.0\cldr\segments\" />
