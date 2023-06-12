@@ -34,12 +34,12 @@ namespace TomPIT.Development.Configuration
 				return Task.CompletedTask;
 			});
 
-			routes.Map("sys/media/{id}/{version}", (t) =>
-			{
-				new MediaHandler().ProcessRequest(t);
+			//routes.Map("sys/media/{id}/{version}", (t) =>
+			//{
+			//	new MediaHandler().ProcessRequest(t);
 
-				return Task.CompletedTask;
-			});
+			//	return Task.CompletedTask;
+			//});
 		}
 	}
 }
