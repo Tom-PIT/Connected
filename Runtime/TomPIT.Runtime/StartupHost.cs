@@ -95,7 +95,10 @@ internal class StartupHost : IStartupHostProxy
 		ConfigureStaticFiles(app, env);
 
 		app.UseStatusCodePagesWithReExecute("/sys/status/{0}");
-		app.UseRouting();
+
+      Configuring?.Invoke(null, new(app, env));
+
+      app.UseRouting();
 
 		app.UseAuthorization();
 
@@ -128,8 +131,6 @@ internal class StartupHost : IStartupHostProxy
 
 		foreach (var plugin in Instance.Plugins)
 			plugin.Initialize(app, env);
-
-		Configuring?.Invoke(null, new (app, env));
 
       Run(app, env);
    }
