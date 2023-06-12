@@ -6,7 +6,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="DevExpress.AspNetCore.Reporting" Version="22.2.6" />
-		<PackageReference Include="DevExpress.AspNetCore.Reporting.Skia" Version="22.2.6" />
+		<PackageReference Include="DevExpress.Drawing.Skia" Version="22.2.6" />
 	</ItemGroup>
 
 	<ItemGroup>
