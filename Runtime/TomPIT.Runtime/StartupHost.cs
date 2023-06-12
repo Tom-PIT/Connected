@@ -156,31 +156,23 @@ internal class StartupHost : IStartupHostProxy
 
    private void ConfigureTenant()
    {
-      if (Instance.Features.HasFlag(InstanceFeatures.Sys))
-      {
-         //TODO make more robust
-         Shell.GetService<IConnectivityService>().InsertTenant("Local", "http://localhost:8085", null);
-      }
-      else
-      {
-         if (!Shell.Configuration.RootElement.TryGetProperty("sys", out JsonElement element))
-            throw new ConfigurationErrorsException("'sys' configuration element expected.");
+      if (!Shell.Configuration.RootElement.TryGetProperty("sys", out JsonElement element) && !Instance.Features.HasFlag(InstanceFeatures.Sys))
+         throw new ConfigurationErrorsException("'sys' configuration element expected.");
 
-         var name = string.Empty;
-         var url = string.Empty;
-         var token = string.Empty;
+      var name = string.Empty;
+      var url = string.Empty;
+      var token = string.Empty;
 
-         if (element.TryGetProperty("name", out JsonElement nameElement))
-            name = nameElement.GetString();
+      if (element.TryGetProperty("name", out JsonElement nameElement))
+         name = nameElement.GetString();
 
-         if (element.TryGetProperty("url", out JsonElement urlElement))
-            url = urlElement.GetString();
+      if (element.TryGetProperty("url", out JsonElement urlElement))
+         url = urlElement.GetString();
 
-         if (element.TryGetProperty("token", out JsonElement tokenElement))
-            token = tokenElement.GetString();
+      if (element.TryGetProperty("token", out JsonElement tokenElement))
+         token = tokenElement.GetString();
 
-         Shell.GetService<IConnectivityService>().InsertTenant(name, url, token);
-      }
+      Shell.GetService<IConnectivityService>().InsertTenant(name, url, token);
    }
 
    private void OnTenantInitialized(object sender, TenantArgs e)
