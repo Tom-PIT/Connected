@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -158,8 +159,7 @@ internal class StartupHost : IStartupHostProxy
       if (Instance.Features.HasFlag(InstanceFeatures.Sys))
       {
          //TODO make more robust
-         var rootUrl = Shell.GetService<IRuntimeService>().Host.ServerFeatures.Get<IServerAddressesFeature>().Addresses.FirstOrDefault() ?? "inmemory://localTenant";
-         Shell.GetService<IConnectivityService>().InsertTenant("Local", rootUrl, null);
+         Shell.GetService<IConnectivityService>().InsertTenant("Local", "http://localhost:8085", null);
       }
       else
       {
