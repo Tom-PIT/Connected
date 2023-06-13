@@ -2,6 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFramework>net7.0</TargetFramework>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -10,7 +11,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Items Include="$(NuGetPackageRoot)/dev*/22.2.6/lib/netstandard2.0/*.dll">
+		<Items Include="$(OutputPath)*.dll">
 		</Items>
 	</ItemGroup>
 
