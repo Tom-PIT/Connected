@@ -97,6 +97,8 @@ namespace TomPIT
 
 		private static Assembly OnResolvingAssembly(AssemblyLoadContext ctx, AssemblyName asm)
 		{
+			Console.WriteLine(asm.FullName);
+
 			var path = ResolveAssemblyPath(asm.Name);
 
 			if (path == null)
