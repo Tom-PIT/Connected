@@ -33,14 +33,14 @@
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-		<PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="7.0.5" />
+		<PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="8.0.0-preview.5.23302.2" />
 		<PackageReference Include="System.CodeDom" Version="7.0.0" />
 		<PackageReference Include="System.Drawing.Common" Version="7.0.0" />
-		<PackageReference Include="DevExpress.Pdf.SkiaRenderer" Version="22.2.*-*" />
-		<PackageReference Include="DevExpress.AspNetCore.Reporting" Version="22.2.*-*" />
-		<PackageReference Include="SkiaSharp" Version="2.88.3" />
-		<PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.3" />
-		<PackageReference Include="DevExpress.Drawing.Skia" Version="22.2.*-*" />
+		<PackageReference Include="DevExpress.Pdf.SkiaRenderer" Version="23.1.2-beta" />
+		<PackageReference Include="DevExpress.AspNetCore.Reporting" Version="23.1.2-beta" />
+		<PackageReference Include="SkiaSharp" Version="2.88.4-preview.66" />
+		<PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.4-preview.66" />
+		<PackageReference Include="DevExpress.Drawing.Skia" Version="23.1.2-beta" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
