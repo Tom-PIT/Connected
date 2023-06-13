@@ -137,8 +137,8 @@ namespace TomPIT
 				path = targetPath;
 			}
 
-
-			return AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
+         Console.WriteLine($"Loading {asm.FullName}");
+         return AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
 		}
 
 		[DebuggerStepThrough]
