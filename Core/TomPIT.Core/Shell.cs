@@ -138,8 +138,11 @@ namespace TomPIT
 			}
 
          Console.WriteLine($"Loading {asm.FullName}");
-         return AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
-		}
+         var loadedAssembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
+         Console.WriteLine($"Loaded {asm.FullName}");
+
+			return loadedAssembly;
+      }
 
 		[DebuggerStepThrough]
 		public static T GetService<T>()
