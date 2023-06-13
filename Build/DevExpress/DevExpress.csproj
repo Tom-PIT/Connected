@@ -6,9 +6,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="DevExpress.AspNetCore.Reporting" Version="22.2.6" />
-		<PackageReference Include="DevExpress.Pdf.SkiaRenderer" Version="22.2.6" />
-		<PackageReference Include="DevExpress.Drawing.Skia" Version="22.2.6" />
+		<PackageReference Include="DevExpress.Pdf.SkiaRenderer" Version="22.2.*-*" />
+		<PackageReference Include="DevExpress.AspNetCore.Reporting" Version="22.2.*-*" />		
+		<PackageReference Include="SkiaSharp" Version="2.88.3" />
+		<PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.3" />
+		<PackageReference Include="DevExpress.Drawing.Skia" Version="22.2.*-*" />
 	</ItemGroup>
 
 	<ItemGroup>
