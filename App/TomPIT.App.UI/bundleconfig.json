@@ -1,6 +1,6 @@
 ﻿[
   {
-    "outputFileName": "wwwroot/Assets/Styles.min.css",
+    "outputFileName": "wwwroot/Assets/styles.min.css",
     "inputFiles": [
       "wwwroot/Assets/Fonts/OpenSans/opensans.css",
       "wwwroot/Assets/Styles/bootstrap/bootstrap.css",
@@ -45,7 +45,7 @@
     "sourceMap": false
   },
   {
-    "outputFileName": "wwwroot/Assets/Scripts.min.js",
+    "outputFileName": "wwwroot/Assets/scripts.min.js",
     "inputFiles": [
       "wwwroot/Assets/Scripts/jquery.js",
       "wwwroot/Assets/Scripts/tether.js",
@@ -82,7 +82,7 @@
     "sourceMap": false
   },
   {
-    "outputFileName": "wwwroot/Assets/Scripts.foot.min.js",
+    "outputFileName": "wwwroot/Assets/scripts.foot.min.js",
     "inputFiles": [
       "wwwroot/Assets/Scripts/foot.js"
     ],

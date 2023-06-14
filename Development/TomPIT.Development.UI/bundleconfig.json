@@ -5,7 +5,6 @@
       "wwwroot/Assets/Fonts/opensans/opensans.css",
       "wwwroot/Assets/Styles/bootstrap/bootstrap.css",
       "wwwroot/Assets/Libraries/DevExtreme/Latest/dx.common.css",
-      //"wwwroot/Assets/Libraries/DevExtreme/Latest/dx.light.css",
       "wwwroot/Assets/Libraries/DevExtreme/Latest/dx.material.blue.light.css",
       "wwwroot/Assets/Styles/development.css",
       "wwwroot/Assets/Styles/tompitdev.css",
@@ -20,7 +19,6 @@
   {
     "outputFileName": "wwwroot/Assets/idemap.min.css",
     "inputFiles": [
-      //"wwwroot/Assets/Styles/bootstrap/bootstrap.css",
       "wwwroot/Assets/Styles/fontawesome.css"
     ],
     "minify": {
@@ -81,7 +79,7 @@
     "sourceMap": false
   },
   {
-    "outputFileName": "wwwroot/Assets/Fonts.min.js",
+    "outputFileName": "wwwroot/Assets/fonts.min.js",
     "inputFiles": [
       "wwwroot/Assets/Scripts/fontawesome-all.js"
     ],
