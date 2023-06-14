@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Text.Json;
@@ -61,6 +62,8 @@ namespace TomPIT
 			if (Plugins.Items is not null && !string.IsNullOrWhiteSpace(Plugins.Location))
 			{
 				var dirs = Directory.GetDirectories(Plugins.Location);
+
+				dirs = dirs.Append(Plugins.Location).ToArray();
 
 				foreach (var i in dirs)
 				{
