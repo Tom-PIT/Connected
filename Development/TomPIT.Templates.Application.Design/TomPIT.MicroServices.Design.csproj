@@ -1,90 +1,92 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-    <RootNamespace>TomPIT.MicroServices.Design</RootNamespace>
-    <AssemblyName>TomPIT.MicroServices.Design</AssemblyName>
-    <AssemblyVersion>3.1.505.3</AssemblyVersion>
-    <FileVersion>3.1.505.3</FileVersion>
-    <Version>3.1.505.3</Version>
-    <Authors>Tom PIT</Authors>
-    <Company>Tom PIT</Company>
-    <Product>Tom PIT.connected</Product>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Remove="Designers\Security\**" />
-    <EmbeddedResource Remove="Designers\Security\**" />
-    <None Remove="Designers\Security\**" />
-  </ItemGroup>
-  <PropertyGroup>
-    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Remove="CreateHandlers\Connection.csx" />
-    <None Remove="CreateHandlers\Templates\Api.txt" />
-    <None Remove="CreateHandlers\Templates\ApiOperation.txt" />
-    <None Remove="CreateHandlers\Templates\DependencyInjection.txt" />
-    <None Remove="CreateHandlers\Templates\DistributedEvent.txt" />
-    <None Remove="CreateHandlers\Templates\EventBinding.txt" />
-    <None Remove="CreateHandlers\Templates\HostedService.txt" />
-    <None Remove="CreateHandlers\Templates\HostedWorker.txt" />
-    <None Remove="CreateHandlers\Templates\IocContainerOperation.txt" />
-    <None Remove="CreateHandlers\Templates\IocEndpoint.txt" />
-    <None Remove="CreateHandlers\Templates\Management.txt" />
-    <None Remove="CreateHandlers\Templates\MicroServiceInfo.txt" />
-    <None Remove="CreateHandlers\Templates\Model.txt" />
-    <None Remove="CreateHandlers\Templates\Partial.txt" />
-    <None Remove="CreateHandlers\Templates\QueueWorker.txt" />
-    <None Remove="CreateHandlers\Templates\Runtime.txt" />
-    <None Remove="CreateHandlers\Templates\ScriptBundle.txt" />
-    <None Remove="CreateHandlers\Templates\ScriptBundlePartial.txt" />
-    <None Remove="CreateHandlers\Templates\ScriptBundleView.txt" />
-    <None Remove="CreateHandlers\Templates\Settings.txt" />
-    <None Remove="CreateHandlers\Templates\Sitemap.txt" />
-    <None Remove="CreateHandlers\Templates\UiDependencyInjection.txt" />
-    <None Remove="CreateHandlers\Templates\View.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="CreateHandlers\Templates\EventBinding.txt" />
-    <EmbeddedResource Include="CreateHandlers\Templates\HostedService.txt" />
-    <EmbeddedResource Include="CreateHandlers\Templates\Management.txt" />
-    <EmbeddedResource Include="CreateHandlers\Templates\Settings.txt" />
-    <EmbeddedResource Include="CreateHandlers\Templates\UiDependencyInjection.txt" />
-    <EmbeddedResource Include="CreateHandlers\Templates\DependencyInjection.txt" />
-    <EmbeddedResource Include="CreateHandlers\Templates\Runtime.txt" />
-    <EmbeddedResource Include="CreateHandlers\Templates\SiteMap.txt" />
-    <EmbeddedResource Include="CreateHandlers\Templates\QueueWorker.txt" />
-    <EmbeddedResource Include="CreateHandlers\Templates\HostedWorker.txt" />
-    <EmbeddedResource Include="CreateHandlers\Templates\IocEndpoint.txt" />
-    <EmbeddedResource Include="CreateHandlers\Templates\IocContainerOperation.txt" />
-    <EmbeddedResource Include="CreateHandlers\Templates\Api.txt" />
-    <EmbeddedResource Include="CreateHandlers\Templates\MicroServiceInfo.txt" />
-    <EmbeddedResource Include="CreateHandlers\Templates\ScriptBundlePartial.txt" />
-    <EmbeddedResource Include="CreateHandlers\Templates\ScriptBundle.txt" />
-    <EmbeddedResource Include="CreateHandlers\Templates\Partial.txt" />
-    <EmbeddedResource Include="CreateHandlers\Templates\View.txt" />
-    <EmbeddedResource Include="CreateHandlers\Templates\ScriptBundleView.txt" />
-    <EmbeddedResource Include="CreateHandlers\Templates\DistributedEvent.txt" />
-    <EmbeddedResource Include="CreateHandlers\Templates\ApiOperation.txt" />
-    <EmbeddedResource Include="CreateHandlers\Templates\Model.txt" />
-    <EmbeddedResource Include="CreateHandlers\Templates\Connection.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="7.0.5" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
-    <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
-    <ProjectReference Include="..\..\Core\TomPIT.Sdk\TomPIT.Sdk.csproj" />
-    <ProjectReference Include="..\TomPIT.Design\TomPIT.Design.csproj" />
-    <ProjectReference Include="..\TomPIT.Development\TomPIT.Development.csproj" />
-    <ProjectReference Include="..\TomPIT.Ide\TomPIT.Ide.csproj" />
-    <ProjectReference Include="..\TomPIT.Templates.Application\TomPIT.MicroServices.csproj" />
-  </ItemGroup>
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <!-- <Exec Command="mkdir -p &quot;/src/plugins/TomPIT.MicroServices.Design/&quot;" />
-    <Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/TomPIT.MicroServices.Design/&quot;" /> -->
-    <Exec Command="mkdir -p &quot;/src/plugins/&quot;" />
-    <Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/&quot;" />
-  </Target>
+	<PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework>
+		<RootNamespace>TomPIT.MicroServices.Design</RootNamespace>
+		<AssemblyName>TomPIT.MicroServices.Design</AssemblyName>
+		<AssemblyVersion>3.1.505.3</AssemblyVersion>
+		<FileVersion>3.1.505.3</FileVersion>
+		<Version>3.1.505.3</Version>
+		<Authors>Tom PIT</Authors>
+		<Company>Tom PIT</Company>
+		<Product>Tom PIT.connected</Product>
+	</PropertyGroup>
+	<ItemGroup>
+		<Compile Remove="Designers\Security\**" />
+		<EmbeddedResource Remove="Designers\Security\**" />
+		<None Remove="Designers\Security\**" />
+	</ItemGroup>
+	<PropertyGroup>
+		<GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+	</PropertyGroup>
+	<ItemGroup>
+		<None Remove="CreateHandlers\Connection.csx" />
+		<None Remove="CreateHandlers\Templates\Api.txt" />
+		<None Remove="CreateHandlers\Templates\ApiOperation.txt" />
+		<None Remove="CreateHandlers\Templates\DependencyInjection.txt" />
+		<None Remove="CreateHandlers\Templates\DistributedEvent.txt" />
+		<None Remove="CreateHandlers\Templates\EventBinding.txt" />
+		<None Remove="CreateHandlers\Templates\HostedService.txt" />
+		<None Remove="CreateHandlers\Templates\HostedWorker.txt" />
+		<None Remove="CreateHandlers\Templates\IocContainerOperation.txt" />
+		<None Remove="CreateHandlers\Templates\IocEndpoint.txt" />
+		<None Remove="CreateHandlers\Templates\Management.txt" />
+		<None Remove="CreateHandlers\Templates\MicroServiceInfo.txt" />
+		<None Remove="CreateHandlers\Templates\Model.txt" />
+		<None Remove="CreateHandlers\Templates\Partial.txt" />
+		<None Remove="CreateHandlers\Templates\QueueWorker.txt" />
+		<None Remove="CreateHandlers\Templates\Runtime.txt" />
+		<None Remove="CreateHandlers\Templates\ScriptBundle.txt" />
+		<None Remove="CreateHandlers\Templates\ScriptBundlePartial.txt" />
+		<None Remove="CreateHandlers\Templates\ScriptBundleView.txt" />
+		<None Remove="CreateHandlers\Templates\Settings.txt" />
+		<None Remove="CreateHandlers\Templates\Sitemap.txt" />
+		<None Remove="CreateHandlers\Templates\UiDependencyInjection.txt" />
+		<None Remove="CreateHandlers\Templates\View.txt" />
+	</ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="CreateHandlers\Templates\EventBinding.txt" />
+		<EmbeddedResource Include="CreateHandlers\Templates\HostedService.txt" />
+		<EmbeddedResource Include="CreateHandlers\Templates\Management.txt" />
+		<EmbeddedResource Include="CreateHandlers\Templates\Settings.txt" />
+		<EmbeddedResource Include="CreateHandlers\Templates\UiDependencyInjection.txt" />
+		<EmbeddedResource Include="CreateHandlers\Templates\DependencyInjection.txt" />
+		<EmbeddedResource Include="CreateHandlers\Templates\Runtime.txt" />
+		<EmbeddedResource Include="CreateHandlers\Templates\SiteMap.txt" />
+		<EmbeddedResource Include="CreateHandlers\Templates\QueueWorker.txt" />
+		<EmbeddedResource Include="CreateHandlers\Templates\HostedWorker.txt" />
+		<EmbeddedResource Include="CreateHandlers\Templates\IocEndpoint.txt" />
+		<EmbeddedResource Include="CreateHandlers\Templates\IocContainerOperation.txt" />
+		<EmbeddedResource Include="CreateHandlers\Templates\Api.txt" />
+		<EmbeddedResource Include="CreateHandlers\Templates\MicroServiceInfo.txt" />
+		<EmbeddedResource Include="CreateHandlers\Templates\ScriptBundlePartial.txt" />
+		<EmbeddedResource Include="CreateHandlers\Templates\ScriptBundle.txt" />
+		<EmbeddedResource Include="CreateHandlers\Templates\Partial.txt" />
+		<EmbeddedResource Include="CreateHandlers\Templates\View.txt" />
+		<EmbeddedResource Include="CreateHandlers\Templates\ScriptBundleView.txt" />
+		<EmbeddedResource Include="CreateHandlers\Templates\DistributedEvent.txt" />
+		<EmbeddedResource Include="CreateHandlers\Templates\ApiOperation.txt" />
+		<EmbeddedResource Include="CreateHandlers\Templates\Model.txt" />
+		<EmbeddedResource Include="CreateHandlers\Templates\Connection.txt" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="7.0.5" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
+		<ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
+		<ProjectReference Include="..\..\Core\TomPIT.Sdk\TomPIT.Sdk.csproj" />
+		<ProjectReference Include="..\TomPIT.Design\TomPIT.Design.csproj" />
+		<ProjectReference Include="..\TomPIT.Development\TomPIT.Development.csproj" />
+		<ProjectReference Include="..\TomPIT.Ide\TomPIT.Ide.csproj" />
+		<ProjectReference Include="..\TomPIT.Templates.Application\TomPIT.MicroServices.csproj" />
+	</ItemGroup>
+	<Target Name="PostBuildLnx" AfterTargets="PostBuildEvent" Condition="'$(OS)' != 'Windows_NT'">
+		<Exec Command="mkdir -p &quot;/src/plugins/&quot;"  />
+		<Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/&quot;" />
+	</Target>
+	<Target Name="PostBuildWin" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT'">
+		<Exec Command="if not exist &quot;c:/src/plugins/&quot; mkdir &quot;c:/src/plugins/&quot;"  />
+		<Exec Command="copy /y &quot;$(TargetPath)&quot; &quot;/src/plugins/&quot;" />
+	</Target>
 </Project>

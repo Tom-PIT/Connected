@@ -27,7 +27,7 @@
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <!-- <Exec Command="mkdir -p &quot;/src/plugins/TomPIT.DataProviders.Sql/&quot;" />
     <Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/TomPIT.DataProviders.Sql/&quot;" /> -->
-    <Exec Command="mkdir -p &quot;/src/plugins/&quot;" />
-    <Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/&quot;" />
+    <!--<Exec Command="mkdir -p &quot;/src/plugins/&quot;" />
+    <Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/&quot;" />-->
   </Target>
 </Project>

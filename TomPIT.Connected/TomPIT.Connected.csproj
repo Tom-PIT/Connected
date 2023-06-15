@@ -38,5 +38,10 @@
     <ProjectReference Include="..\TomPIT.ServiceProviders.HealthMonitoring\TomPIT.ServiceProviders.HealthMonitoring.csproj" />
     <ProjectReference Include="..\Worker\TomPIT.Worker.App\Worker.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Update="sys.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
 </Project>
