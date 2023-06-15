@@ -233,7 +233,7 @@ internal class StartupHost : IStartupHostProxy
       builder.AddNewtonsoftJson();
       builder.ConfigureApplicationPartManager((m) =>
          {
-            var pa = new ApplicationPartsArgs();
+            var args = new ApplicationPartsArgs();
 
             foreach (var i in Tenant.GetService<IDesignService>().QueryDesigners())
             {
@@ -247,10 +247,8 @@ internal class StartupHost : IStartupHostProxy
                var ds = template.GetApplicationParts();
 
                if (ds is not null && ds.Any())
-                  pa.Parts.AddRange(ds);
+                  args.Parts.AddRange(ds);
             }
-
-            var args = new ApplicationPartsArgs();
 
             ConfiguringApplicationParts?.Invoke(null, args);
 
