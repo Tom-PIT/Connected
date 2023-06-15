@@ -336,6 +336,7 @@ namespace TomPIT.Reflection
 
 		public static Assembly LoadAssembly(string type)
 		{
+			
 			var tokens = type.Split(',');
 			var libraryName = string.Empty;
 			var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -345,12 +346,15 @@ namespace TomPIT.Reflection
 			else if (tokens.Length > 1)
 				libraryName = string.Format("{0}.dll", tokens[1].Trim());
 
-			var file = string.Format("{0}\\{1}", path, libraryName);
+			var file = Path.Combine(path, libraryName);
 
 			if (!File.Exists(file))
-				return null;
+				if (Shell.ResolveAssemblyPath(libraryName) is not string resolvedName)
+					return null;
+				else
+					file = resolvedName;
 
-			return AppDomain.CurrentDomain.Load(AssemblyName.GetAssemblyName(file));
+         return AppDomain.CurrentDomain.Load(AssemblyName.GetAssemblyName(file));
 		}
 
 		public static string ToFriendlyName(this Type type)
