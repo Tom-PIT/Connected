@@ -40,7 +40,7 @@ namespace TomPIT.MicroServices.Reporting.Design
 		{
 			return new List<string>
 			{
-				"TomPIT.MicroServices.Reporting.Design.Views.dll"
+				"TomPIT.MicroServices.Reporting.Design.dll"
 			};
 		}
 
