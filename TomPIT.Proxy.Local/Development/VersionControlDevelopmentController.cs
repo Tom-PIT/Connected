@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+
 using TomPIT.ComponentModel;
 using TomPIT.Development;
 using TomPIT.Proxy.Development;
@@ -36,7 +37,10 @@ internal class VersionControlDevelopmentController : IVersionControlController
 
     public ImmutableList<IComponent> QueryChanges(Guid microService, Guid user)
     {
-        return DataModel.Components.QueryLocks(microService, user).ToImmutableList();
+        if (user == default)
+            return DataModel.Components.QueryLocks(microService).ToImmutableList();
+        else
+            return DataModel.Components.QueryLocks(microService, user).ToImmutableList();
     }
 
     public ImmutableList<IComponentHistory> QueryCheckout(Guid microService)
