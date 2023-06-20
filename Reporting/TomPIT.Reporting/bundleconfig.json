@@ -74,8 +74,8 @@
       "node_modules/devexpress-reporting/dist/js/dx-webdocumentviewer.min.js"
     ],
     "minify": {
-      "enabled": true,
-      "renameLocals": true
+      "enabled": false,
+      "renameLocals": false
     },
     "sourceMap": false
   }

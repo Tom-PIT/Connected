@@ -4,8 +4,6 @@
     "inputFiles": [
       "wwwroot/Assets/Fonts/opensans/opensans.css",
       "wwwroot/Assets/Styles/bootstrap/bootstrap.css",
-      "wwwroot/Assets/Libraries/DevExtreme/Latest/dx.common.css",
-      "wwwroot/Assets/Libraries/DevExtreme/Latest/dx.material.blue.light.css",
       "wwwroot/Assets/Styles/development.css",
       "wwwroot/Assets/Styles/tompitdev.css",
       "wwwroot/Assets/Styles/designers.css"
@@ -16,6 +14,22 @@
     },
     "sourceMap": false
   },
+  {
+    "outputFileName": "wwwroot/Assets/devstyles.min.css",
+    "inputFiles": [
+      "wwwroot/Assets/devstyles.min.css",
+      "wwwroot/Assets/Libraries/DevExtreme/Latest/css/dx.common.css",
+      "wwwroot/Assets/Libraries/DevExtreme/Latest/css/dx.material.blue.light.css"
+    ],
+    "minify": {
+      "enabled": false,
+      "renameLocals": false
+    },
+    "sourceMap": false
+  },
+
+  
+
   {
     "outputFileName": "wwwroot/Assets/idemap.min.css",
     "inputFiles": [
@@ -59,8 +73,8 @@
       "wwwroot/Assets/Scripts/bootstrap.js",
       "wwwroot/Assets/Scripts/jquery-ui-1.12.1.js",
       "wwwroot/Assets/Libraries/Knockout/Latest/knockout.js",
-      "wwwroot/Assets/Libraries/DevExtreme/Latest/dx.all.js",
-      "wwwroot/Assets/Libraries/Underscore/1.9.1/underscore.js",
+      "wwwroot/Assets/Libraries/Underscore/underscore.js",
+      "wwwroot/Assets/Libraries/DevExtreme/Latest/js/dx.all.js",
       "wwwroot/Assets/Scripts/ajax.js",
       "wwwroot/Assets/Scripts/progress.js",
       "wwwroot/Assets/Scripts/toastr.js",
@@ -73,7 +87,7 @@
       "wwwroot/Assets/Scripts/jquery.number.js"
     ],
     "minify": {
-      "enabled": true,
+      "enabled": false,
       "renameLocals": false
     },
     "sourceMap": false

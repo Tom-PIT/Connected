@@ -19,8 +19,8 @@
       "wwwroot/Assets/Libraries/DevExtreme/Latest/dx.material.blue.light.css"
     ],
     "minify": {
-      "enabled": true,
-      "renameLocals": true
+      "enabled": false,
+      "renameLocals": false
     },
     "sourceMap": false
   },

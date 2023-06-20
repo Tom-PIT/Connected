@@ -1,19 +1,30 @@
 ﻿[
 	{
-		"outputFileName": "wwwroot/Assets/styles.min.css",
-    "inputFiles": [
-      "wwwroot/Assets/Fonts/opensans/opensans.css",
-      "wwwroot/Assets/Styles/bootstrap/bootstrap.css",
-      "wwwroot/Assets/Libraries/DevExtreme/Latest/dx.common.css",
-      "wwwroot/Assets/Libraries/DevExtreme/Latest/dx.material.blue.light.css",
-      "wwwroot/Assets/Styles/management.css",
-      "wwwroot/Assets/Styles/tompit.css",
-      "wwwroot/Assets/Styles/designers.css"
+		"outputFileName": "wwwroot/Assets/Libraries/stylestmp.min.css",
+		"inputFiles": [
+			"wwwroot/Assets/Fonts/opensans/opensans.css",
+			"wwwroot/Assets/Styles/bootstrap/bootstrap.css",
+			"wwwroot/Assets/Styles/management.css",
+			"wwwroot/Assets/Styles/tompit.css",
+			"wwwroot/Assets/Styles/designers.css"
 
-    ],
+		],
 		"minify": {
 			"enabled": true,
 			"renameLocals": true
+		},
+		"sourceMap": false
+	},
+	{
+		"outputFileName": "wwwroot/Assets/styles.min.css",
+		"inputFiles": [
+			"wwwroot/Assets/Libraries/stylestmp.min.css",
+			"wwwroot/Assets/Libraries/DevExtreme/Latest/dx.common.css",
+			"wwwroot/Assets/Libraries/DevExtreme/Latest/dx.material.blue.light.css"
+		],
+		"minify": {
+			"enabled": false,
+			"renameLocals": false
 		},
 		"sourceMap": false
 	},
