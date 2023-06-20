@@ -2,8 +2,11 @@
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
+
 using DevExpress.XtraReports.UI;
 using TomPIT.ComponentModel;
+using TomPIT.Connectivity;
 using TomPIT.Design;
 using TomPIT.Environment;
 using TomPIT.MicroServices.Reporting.Storage;
@@ -13,7 +16,7 @@ namespace TomPIT.MicroServices.Reporting.Design.Storage
 {
 	internal class ReportDesignerStorage : ReportRuntimeStorage
 	{
-		public override bool CanSetData(string url)
+        public override bool CanSetData(string url)
 		{
 			return IsValidUrl(url);
 		}
@@ -23,7 +26,7 @@ namespace TomPIT.MicroServices.Reporting.Design.Storage
 			return SelectReport(url) != null;
 		}
 
-		public override Dictionary<string, string> GetUrls()
+        public override Dictionary<string, string> GetUrls()
 		{
 			var reports = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().QueryComponents(ComponentCategories.Report);
 			var r = new Dictionary<string, string>();
@@ -32,10 +35,12 @@ namespace TomPIT.MicroServices.Reporting.Design.Storage
 			{
 				var ms = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(report.MicroService);
 
-				r.Add($"{ms.Name}/{report.Name}", $"{report.Name} ({ms.Name})");
-			}
+				r.Add($"{ms.Name}/{report.Name}", $"{ms.Name}/{report.Name}");
+//                r.Add($"{ms.Name}/{report.Name}", $"{report.Name} ({ms.Name})");
 
-			return r;
+            }
+
+            return r;
 		}
 
 		public override void SetData(XtraReport report, string url)

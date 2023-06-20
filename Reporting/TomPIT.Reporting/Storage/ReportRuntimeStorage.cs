@@ -79,8 +79,10 @@ namespace TomPIT.MicroServices.Reporting.Storage
 
 			using var stream = new MemoryStream();
 
-			r.SaveLayoutToXml(stream);
-
+            r.Name = url;
+			
+            r.SaveLayoutToXml(stream);
+			
 			return stream.ToArray();
 		}
 
