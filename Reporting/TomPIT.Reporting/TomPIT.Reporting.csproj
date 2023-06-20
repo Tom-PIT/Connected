@@ -32,6 +32,7 @@
 		<EmbeddedResource Include="wwwroot\Assets\ko.min.js" />
 	</ItemGroup>
 	<ItemGroup>
+		<PackageReference Include="BuildBundlerMinifier" Version="3.2.449" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="7.0.0" />
 		<PackageReference Include="System.CodeDom" Version="7.0.0" />
@@ -60,11 +61,13 @@
     <Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/TomPIT.StorageProviders.Azure/&quot;" /> -->
 		<Exec Command="mkdir -p &quot;/src/plugins/&quot;"  />
 		<Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/&quot;" />
+		<Exec Command="cp &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;/src/plugins/&quot;" />
 	</Target>
 	<Target Name="PostBuildWin" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT'">
 		<!-- <Exec Command="mkdir -p &quot;/src/plugins/TomPIT.StorageProviders.Azure/&quot;" />
     <Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/TomPIT.StorageProviders.Azure/&quot;" /> -->
 		<Exec Command="if not exist &quot;c:/src/plugins/&quot; mkdir &quot;c:/src/plugins/&quot;"  />
 		<Exec Command="copy /y &quot;$(TargetPath)&quot; &quot;/src/plugins/&quot;" />
+		<Exec Command="copy /y &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;/src/plugins/&quot;" />
 	</Target>
 </Project>

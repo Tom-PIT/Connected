@@ -14,12 +14,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Items Include="$(OutputPath)*.dll">
+		<Items Include="$(OutputPath)**">
 		</Items>
 	</ItemGroup>
 
 	<Target Name="CopyPackages" AfterTargets="Build">
-		<Copy SourceFiles="@(Items)" DestinationFolder="/src/plugins/" />
+		<Copy SourceFiles="@(Items)" DestinationFolder="/src/plugins/%(RecursiveDir)" SkipUnchangedFiles="true" />
 	</Target>
 
 </Project>

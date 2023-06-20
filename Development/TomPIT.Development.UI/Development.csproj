@@ -60,7 +60,6 @@
 	</ItemGroup>
 	<ItemGroup>
 		<Folder Include="wwwroot\Assets\Fonts\OpenSans\" />
-		<Folder Include="wwwroot\Assets\Libraries\Underscore\1.9.1\" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Include="compilerconfig.json" />
