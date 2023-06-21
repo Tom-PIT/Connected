@@ -35,6 +35,7 @@ namespace TomPIT.Ide.Properties
 		public string Description { get; set; }
 		public string Format { get; set; }
 		public bool Obsolete { get; set; }
+		public bool IsReadOnly { get; set; }
 		public IConfigurationElement ContextElement { get; set; }
 
 		public PropertyInfo PropertyInfo { get; set; }

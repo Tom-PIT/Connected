@@ -30,6 +30,7 @@ namespace TomPIT.Proxy.Remote
 		[KeyProperty]
 		[Browsable(false)]
 		public Guid Token { get; set; }
+		public bool IsLocallyHosted { get; set; }
 
 		public override string ToString()
 		{

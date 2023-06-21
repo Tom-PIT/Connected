@@ -57,5 +57,13 @@ namespace TomPIT.SysDb.Sql.Development
 			LockVerb = GetValue("lock_verb", LockVerb.None);
 			NameSpace = GetString("namespace");
 		}
-	}
+
+      public override string ToString()
+      {
+         if (string.IsNullOrWhiteSpace(Name))
+            return base.ToString();
+
+         return Name;
+      }
+   }
 }

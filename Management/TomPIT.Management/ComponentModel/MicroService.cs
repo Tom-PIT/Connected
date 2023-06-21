@@ -43,7 +43,6 @@ namespace TomPIT.Management.ComponentModel
 			return string.IsNullOrWhiteSpace(Name)
 				 ? base.ToString()
 				 : Name;
-
 		}
 	}
 }

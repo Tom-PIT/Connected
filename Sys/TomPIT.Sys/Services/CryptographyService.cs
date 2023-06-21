@@ -99,18 +99,11 @@ namespace TomPIT.Sys.Services
 
 			var decryptor = symmetricKey.CreateDecryptor(keyBytes, initVectorBytes);
 
-			using (var ms = new MemoryStream(cipherTextBytes))
-			{
-				using (var cryptoStream = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
-				{
-					var plainTextBytes = new byte[cipherTextBytes.Length];
-					var decryptedByteCount = cryptoStream.Read(plainTextBytes, 0, plainTextBytes.Length);
-					var plainText = Encoding.UTF8.GetString(plainTextBytes, 0, decryptedByteCount);
-
-					return plainText;
-				}
-			}
-		}
+         using var ms = new MemoryStream(cipherTextBytes);
+         using var cryptoStream = new CryptoStream(ms, decryptor, CryptoStreamMode.Read);
+         
+			return new StreamReader(cryptoStream).ReadToEnd();
+      }
 
 		public string Hash(string value)
 		{

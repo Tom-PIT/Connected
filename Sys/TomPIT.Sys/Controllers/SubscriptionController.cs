@@ -6,6 +6,8 @@ using TomPIT.Cdn;
 using TomPIT.Sys.Model;
 using TomPIT.Sys.Model.Cdn;
 
+using Recipient = TomPIT.Sys.Model.Cdn.Recipient;
+
 namespace TomPIT.Sys.Controllers
 {
 	public class SubscriptionController : SysController

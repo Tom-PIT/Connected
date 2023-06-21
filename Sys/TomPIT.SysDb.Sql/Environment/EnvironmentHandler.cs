@@ -61,7 +61,7 @@ namespace TomPIT.SysDb.Sql.Environment
 			return r.ExecuteSingleRow();
 		}
 
-		public void UpdateInstanceEndpoint(IInstanceEndpoint target, InstanceFeatures features, string name, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs)
+		public void UpdateInstanceEndpoint(IInstanceEndpoint target, InstanceFeatures features, string name, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs, bool locallyHosted = false)
 		{
 			using var w = new Writer("tompit.instance_endpoint_upd");
 
@@ -72,6 +72,7 @@ namespace TomPIT.SysDb.Sql.Environment
 			w.CreateParameter("@type", features);
 			w.CreateParameter("@verbs", verbs);
 			w.CreateParameter("@reverse_proxy_url", reverseProxyUrl, true);
+			w.CreateParameter("@locally_hosted", locallyHosted);
 
 			w.Execute();
 		}

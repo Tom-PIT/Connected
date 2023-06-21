@@ -22,6 +22,7 @@ namespace TomPIT.Design.Ide.Properties
 		string Format { get; }
 		bool Obsolete { get; }
 		bool SupportsTimezone { get; }
+		bool IsReadOnly { get; }
 
 		IConfigurationElement ContextElement { get; }
 

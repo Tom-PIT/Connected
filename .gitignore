@@ -261,3 +261,4 @@ __pycache__/
 *.pyc
 /TomPIT.RemoteDebugger
 /installer
+/Build/execs

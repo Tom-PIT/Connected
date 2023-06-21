@@ -11,6 +11,7 @@
 <script>
     $('[name="@Model.Name"]').dxTextArea({
         stylingMode: 'underlined',
+        disabled: @Html.TP().JavaScript.Render(Model.IsReadOnly),
         width: '100%',
         autoResizeEnabled: true,
         @if (Model.Validation.MaxLength.MaxLength > 0)

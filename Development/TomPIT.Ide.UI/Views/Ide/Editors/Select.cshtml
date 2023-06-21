@@ -20,6 +20,7 @@
 <script>
     $('[name="@Model.Name"]').dxSelectBox({
         stylingMode: 'underlined',
+        disabled: @Html.TP().JavaScript.Render(Model.IsReadOnly),
         dataSource:@Html.Raw(TomPIT.Serialization.Serializer.Serialize(items)) ,
         displayExpr: 'text',
         valueExpr: 'value',

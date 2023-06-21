@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using TomPIT.Data;
 using TomPIT.Sys.Model;
 
+using DataModel = TomPIT.Sys.Model.DataModel;
+
 namespace TomPIT.Sys.Controllers
 {
 	public class LockingController : SysController

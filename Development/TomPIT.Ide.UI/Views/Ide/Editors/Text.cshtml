@@ -13,6 +13,7 @@
 <script>
     $('[name="@Model.Name"]').dxTextBox({
         stylingMode: 'underlined',
+        disabled: @Html.TP().JavaScript.Render(Model.IsReadOnly),
         width: '100%',
         @if (Model.Validation.MaxLength.MaxLength > 0)
             {

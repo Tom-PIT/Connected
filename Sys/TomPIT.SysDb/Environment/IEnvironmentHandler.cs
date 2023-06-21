@@ -12,7 +12,7 @@ namespace TomPIT.SysDb.Environment
 		 * Instance endpoints
 		 */
 		void InsertInstanceEndpoint(Guid token, InstanceFeatures features, string name, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs);
-		void UpdateInstanceEndpoint(IInstanceEndpoint item, InstanceFeatures features, string name, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs);
+		void UpdateInstanceEndpoint(IInstanceEndpoint item, InstanceFeatures features, string name, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs, bool locallyHosted = false);
 		void DeleteInstanceEndpoint(IInstanceEndpoint item);
 
 		IInstanceEndpoint SelectInstanceEndpoint(Guid token);

@@ -23,7 +23,7 @@ namespace TomPIT.SysDb.Sql.BigData
 		public string Key { get; set; }
 		public Guid Timezone { get; set; }
 
-		protected override void OnCreate()
+      protected override void OnCreate()
 		{
 			base.OnCreate();
 

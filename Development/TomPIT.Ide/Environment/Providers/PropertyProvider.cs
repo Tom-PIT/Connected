@@ -151,9 +151,9 @@ namespace TomPIT.Ide.Environment.Providers
 						continue;
 				}
 
-				var editable = i.IsEditable();
+				var browsable = i.IsBrowsable();
 
-				if (!editable)
+				if (!browsable)
 					continue;
 
 				if (instance.GetType().IsSuppressed(i))
@@ -234,6 +234,8 @@ namespace TomPIT.Ide.Environment.Providers
 
 			if (tz != null)
 				val.SupportsTimezone = true;
+
+			val.IsReadOnly = !property.IsEditable();
 		}
 
 		private void DiscoverValidation(Property val, PropertyInfo property)

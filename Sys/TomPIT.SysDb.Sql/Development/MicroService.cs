@@ -1,4 +1,9 @@
 ﻿using System;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+
+using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.Data.Sql;
 
@@ -6,17 +11,31 @@ namespace TomPIT.SysDb.Sql.Development
 {
 	internal class MicroService : PrimaryKeyRecord, IMicroService
 	{
-		public string Name { get; set; }
-		public string Url { get; set; }
-		public Guid Token { get; set; }
-		public MicroServiceStatus Status { get; set; }
-		public Guid ResourceGroup { get; set; }
-		public Guid Template { get; set; }
-		public Guid Package { get; set; }
-		public UpdateStatus UpdateStatus { get; set; }
-		public CommitStatus CommitStatus { get; set; }
+        [MaxLength(128)]
+        [Required]
+        public string Name { get; set; }
+        [Browsable(false)]
+        public string Url { get; set; }
+        [Browsable(false)]
+        public Guid Token { get; set; }
+        [Browsable(false)]
+        public MicroServiceStatus Status { get; set; }
+        [Browsable(false)]
+        public Guid ResourceGroup { get; set; }
+        [PropertyCategory(PropertyCategoryAttribute.CategoryData)]
+        [PropertyEditor(PropertyEditorAttribute.Select)]
+        [Items("TomPIT.Management.Items.MicroServiceTemplatesItems, TomPIT.Management")]
+        public Guid Template { get; set; }
+        [Browsable(false)]
+        public Guid Package { get; set; }
+        [Browsable(false)]
+        public UpdateStatus UpdateStatus { get; set; }
+        [Browsable(false)]
+        public CommitStatus CommitStatus { get; set; }
+        [Editable(false)]
 		public string Version { get; set; }
-		public Guid Plan { get; set; }
+        [Browsable(false)]
+        public Guid Plan { get; set; }
 
 		protected override void OnCreate()
 		{
@@ -34,5 +53,12 @@ namespace TomPIT.SysDb.Sql.Development
 			Version = GetString("version");
 			Plan = GetGuid("plan");
 		}
-	}
+
+      public override string ToString()
+      {
+         return string.IsNullOrWhiteSpace(Name)
+             ? base.ToString()
+             : Name;
+      }
+   }
 }

@@ -13,7 +13,12 @@ namespace TomPIT.SysDb.Sql.BigData
 		public DateTime Created { get; set; }
 		public Guid ResourceGroup { get; set; }
 
-		protected override void OnCreate()
+      public override string ToString()
+      {
+         return string.IsNullOrWhiteSpace(Name) ? base.ToString() : Name;
+      }
+
+      protected override void OnCreate()
 		{
 			base.OnCreate();
 

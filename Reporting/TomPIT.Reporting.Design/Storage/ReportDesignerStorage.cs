@@ -36,8 +36,6 @@ namespace TomPIT.MicroServices.Reporting.Design.Storage
 				var ms = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(report.MicroService);
 
 				r.Add($"{ms.Name}/{report.Name}", $"{ms.Name}/{report.Name}");
-//                r.Add($"{ms.Name}/{report.Name}", $"{report.Name} ({ms.Name})");
-
             }
 
             return r;

@@ -9,8 +9,8 @@ namespace TomPIT.SysDb.Sql.BigData
 		public Guid Partition { get; set; }
 
 		public DateTime NextVisible { get; set; }
-
-		protected override void OnCreate()
+		 
+      protected override void OnCreate()
 		{
 			base.OnCreate();
 
