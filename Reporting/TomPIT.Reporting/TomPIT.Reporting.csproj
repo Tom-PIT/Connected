@@ -56,6 +56,9 @@
 	<ItemGroup>
 		<Folder Include="Properties\" />
 	</ItemGroup>
+	<Target Name="PreBuildNpm" AfterTargets="PreBuildEvent">
+		<Exec Command="npm install" />
+	</Target>
 	<Target Name="PostBuildLnx" AfterTargets="PostBuildEvent" Condition="'$(OS)' != 'Windows_NT'">
 		<!-- <Exec Command="mkdir -p &quot;/src/plugins/TomPIT.StorageProviders.Azure/&quot;" />
     <Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/TomPIT.StorageProviders.Azure/&quot;" /> -->

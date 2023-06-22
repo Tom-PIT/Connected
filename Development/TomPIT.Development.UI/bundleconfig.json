@@ -87,7 +87,7 @@
       "wwwroot/Assets/Scripts/jquery.number.js"
     ],
     "minify": {
-      "enabled": false,
+      "enabled": true,
       "renameLocals": false
     },
     "sourceMap": false
