@@ -14,7 +14,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Items Include="$(OutputPath)**">
+		<Items Include="$(OutputPath)/**">
 		</Items>
 	</ItemGroup>
 
