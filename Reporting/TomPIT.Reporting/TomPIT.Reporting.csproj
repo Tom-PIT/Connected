@@ -15,21 +15,13 @@
 		<Product>Tom PIT.connected</Product>
 	</PropertyGroup>
 	<ItemGroup>
-		<Content Remove="wwwroot\Assets\reporting.design.min.css" />
-	</ItemGroup>
-	<ItemGroup>
-		<None Remove="bundleconfig.json" />
-		<None Remove="wwwroot\Assets\reporting.design.min.css" />
-		<None Remove="wwwroot\Assets\reporting.design.min.js" />
-		<None Remove="wwwroot\Assets\reporting.min.css" />
-		<None Remove="wwwroot\Assets\reporting.min.js" />
+	  <_ContentIncludedByDefault Remove="package.json" />
 	</ItemGroup>
 	<ItemGroup>
 		<EmbeddedResource Include="wwwroot\Assets\reporting.design.min.css" />
 		<EmbeddedResource Include="wwwroot\Assets\reporting.design.min.js" />
 		<EmbeddedResource Include="wwwroot\Assets\reporting.min.css" />
 		<EmbeddedResource Include="wwwroot\Assets\reporting.min.js" />
-		<EmbeddedResource Include="wwwroot\Assets\ko.min.js" />
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="BuildBundlerMinifier" Version="3.2.449" />
@@ -55,6 +47,7 @@
 	</ItemGroup>
 	<ItemGroup>
 		<Folder Include="Properties\" />
+		<Folder Include="wwwroot\Assets\" />
 	</ItemGroup>
 	<Target Name="PreBuildNpm" AfterTargets="PreBuildEvent">
 		<Exec Command="npm install" />
@@ -62,14 +55,14 @@
 	<Target Name="PostBuildLnx" AfterTargets="PostBuildEvent" Condition="'$(OS)' != 'Windows_NT'">
 		<!-- <Exec Command="mkdir -p &quot;/src/plugins/TomPIT.StorageProviders.Azure/&quot;" />
     <Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/TomPIT.StorageProviders.Azure/&quot;" /> -->
-		<Exec Command="mkdir -p &quot;/src/plugins/&quot;"  />
+		<Exec Command="mkdir -p &quot;/src/plugins/&quot;" />
 		<Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/&quot;" />
 		<Exec Command="cp &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;/src/plugins/&quot;" />
 	</Target>
 	<Target Name="PostBuildWin" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT'">
 		<!-- <Exec Command="mkdir -p &quot;/src/plugins/TomPIT.StorageProviders.Azure/&quot;" />
     <Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/TomPIT.StorageProviders.Azure/&quot;" /> -->
-		<Exec Command="if not exist &quot;c:/src/plugins/&quot; mkdir &quot;c:/src/plugins/&quot;"  />
+		<Exec Command="if not exist &quot;c:/src/plugins/&quot; mkdir &quot;c:/src/plugins/&quot;" />
 		<Exec Command="copy /y &quot;$(TargetPath)&quot; &quot;/src/plugins/&quot;" />
 		<Exec Command="copy /y &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;/src/plugins/&quot;" />
 	</Target>

@@ -27,9 +27,6 @@
     },
     "sourceMap": false
   },
-
-  
-
   {
     "outputFileName": "wwwroot/Assets/idemap.min.css",
     "inputFiles": [
