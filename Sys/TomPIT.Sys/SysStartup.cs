@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
+using System;
 using System.Configuration;
 using System.Diagnostics;
 using System.Text.Json;
@@ -39,6 +40,7 @@ namespace TomPIT.Sys
       private void OnBooting(object sender, System.EventArgs e)
       {
          ServerConfiguration.Initialize();
+         DatabaseInitializer.Initialize();
       }
 
       private void OnConfiguring(object sender, System.Tuple<IApplicationBuilder, IWebHostEnvironment> e)

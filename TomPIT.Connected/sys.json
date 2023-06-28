@@ -11,25 +11,23 @@
     "jwToken": {
       "validIssuer": "tompit.net",
       "validAudience": "tompit.net",
-      "issuerSigningKey": "F221ECECDB704EFB9568A8756115EBEC"
+      "issuerSigningKey": "SigningKeyHere"
     }
   },
   "sys": {
-    "name": "localhost",
-    "url": "http://localhost:44001",
-    "authenticationToken": "defaultAuthenticationToken"
+    "name": "Local",
+    "url": "http://localhost:44003",
+    "token": "base64encodedSecret"
   },
   "storageProviders": [
     "TomPIT.StorageProvider.Sql.SqlStorageProvider, TomPIT.StorageProvider.Sql"
   ],
   "connectionStrings": {
-    "sys": "data source=pit-zbook\\sqlexpress; initial catalog=tp1;integrated security=true;TrustServerCertificate=true;"
+    "sys": "secretConnectionStringHere"
   },
-  "deployment": {
-    "fileSystem": {
-      "enabled": true,
-      "path": "C:\\temp\\deploy"
-    }
+  "sqlScriptPaths": {
+    "create": "/path/to/create.sql",
+    "update": "/path/to/update.json"
   },
   "diagnostics": {
     "dumpEnabled": false
@@ -45,8 +43,8 @@
     "TomPIT.MicroServices.Reporting.Design.ReportTemplate, TomPIT.MicroServices.Reporting.Design"
   ],
   "plugins": {
-    "location": "c:\\Deploy\\Plugins",
-    "shadowCopy": true,
+    "location": "/mnt/c/src/plugins",
+    "shadowCopy": false,
     "items": [
       "TomPIT.MicroServices.Configuration.Runtime.Plugin, TomPIT.MicroServices",
       "TomPIT.MicroServices.IoT.Configuration.Runtime.Plugin, TomPIT.MicroServices.IoT",

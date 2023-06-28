@@ -37,6 +37,7 @@
 		<ProjectReference Include="..\..\Search\Lucene.Memory\Contrib.Memory.csproj" />
 		<ProjectReference Include="..\..\TomPIT.Startup\TomPIT.Startup.csproj" />
 		<ProjectReference Include="..\TomPIT.Sys.Api\TomPIT.Sys.Api.csproj" />
+		<ProjectReference Include="..\TomPIT.Sys.SqlDeployment\TomPIT.Sys.SqlDeployment\TomPIT.Sys.SqlDeployment.csproj" />
 		<ProjectReference Include="..\TomPIT.SysDb.Sql\TomPIT.SysDb.Sql.csproj" />
 		<ProjectReference Include="..\TomPIT.SysDb\TomPIT.SysDb.csproj" />
 	</ItemGroup>
