@@ -287,9 +287,9 @@ namespace TomPIT.Ide
             return element.Environment.Context.MicroService.Token;
         }
 
-        public static DomDesignerAttribute ResolveDesigner(this Type type)
+        public static DomDesignerAttribute ResolveDesigner(this Type type, IEnvironment environment)
         {
-            //var mode = Shell.GetService<IRuntimeService>().Mode;
+            var mode =  environment.Mode;
             var designers = type.FindAttributes<DomDesignerAttribute>();
 
             if (designers.Count == 0)
@@ -297,7 +297,7 @@ namespace TomPIT.Ide
 
             foreach (var i in designers)
             {
-                if ((i.Mode & EnvironmentMode.Design) == EnvironmentMode.Design)
+                if (i.Mode.HasFlag(mode))
                     return i;
             }
 

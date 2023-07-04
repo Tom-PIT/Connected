@@ -190,8 +190,10 @@ namespace TomPIT.MicroServices.Reporting.Storage
 			var subreports = r.AllControls<XRSubreport>();
 
 			foreach (var subreport in subreports)
-				subreport.BeforePrint += OnBindSubreportDataSources;
-
+			{
+				//subreport.BeforePrint += OnBindSubreportDataSources;
+				OnBindSubreportDataSources(subreport, new CancelEventArgs());
+			}
 			return r;
 		}
 

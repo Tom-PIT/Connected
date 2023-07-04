@@ -108,7 +108,7 @@ namespace TomPIT.Ide.Dom.ComponentModel
 					if (Configuration == null)
 						return null;
 
-					var att = Configuration.GetType().ResolveDesigner();
+					var att = Configuration.GetType().ResolveDesigner(Environment);
 
 					if (att != null)
 						_designer = DomQuery.CreateDesigner(this, att);
