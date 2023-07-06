@@ -19,49 +19,43 @@ using System.Runtime.InteropServices;
 
 namespace TomPIT.Connected.Printing.Client
 {
-    class Program
-    {
-        static async Task<int> Main(string[] args)
-        {
-            return await Parser.Default.ParseArguments<InstallOptions, UninstallOptions, RunOptions>(args)
-                .MapResult(
-                async (RunOptions opts) =>
-                {
-                    await CreateHostBuilder(args).Build().RunAsync();
-                    return 0;
-                },
-                async (InstallOptions opts) =>
-                {
-                    ServiceManager.Install(opts.Username, opts.Password);
-                    Console.WriteLine("Service install completed. Press any key to exit.");
-                    Console.ReadLine();
-                    return 0;
-                },
-                async (UninstallOptions opts) =>
-                {
-                    ServiceManager.Uninstall();
-                    Console.WriteLine("Service uninstall completed. Press any key to exit.");
-                    Console.ReadLine();
-                    return 0;
-                },
-                errs => Task.FromResult(-1)); // Invalid arguments
-        }
+	class Program
+	{
+		static async Task<int> Main(string[] args)
+		{
+			return await Parser.Default.ParseArguments<InstallOptions, UninstallOptions, RunOptions>(args)
+				 .MapResult(
+				 async (RunOptions opts) =>
+				 {
+					 await CreateHostBuilder(args).Build().RunAsync();
+					 return 0;
+				 },
+				 async (InstallOptions opts) =>
+				 {
+					 ServiceManager.Install(opts.Username, opts.Password);
+					 Console.WriteLine("Service install completed. Press any key to exit.");
+					 Console.ReadLine();
+					 return 0;
+				 },
+				 async (UninstallOptions opts) =>
+				 {
+					 ServiceManager.Uninstall();
+					 Console.WriteLine("Service uninstall completed. Press any key to exit.");
+					 Console.ReadLine();
+					 return 0;
+				 },
+				 errs => Task.FromResult(-1)); // Invalid arguments
+		}
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-            .ConfigureServices(services =>
-            {
-                services.AddHostedService<PrintingHandler>();
-                services.AddMemoryCache();
-                services.AddSingleton<LocalizationProvider>();
-
-                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    DevExpress.Printing.CrossPlatform.CustomEngineHelper.RegisterCustomDrawingEngine(
-                        typeof(DevExpress.CrossPlatform.Printing.DrawingEngine.PangoCrossPlatformEngine));
-                }
-            })
-            .UseWindowsService()
-            .UseSystemd();
-    }
+		public static IHostBuilder CreateHostBuilder(string[] args) =>
+			 Host.CreateDefaultBuilder(args)
+			 .ConfigureServices(services =>
+			 {
+				 services.AddHostedService<PrintingHandler>();
+				 services.AddMemoryCache();
+				 services.AddSingleton<LocalizationProvider>();
+			 })
+			 .UseWindowsService()
+			 .UseSystemd();
+	}
 }

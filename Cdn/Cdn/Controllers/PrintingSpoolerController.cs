@@ -1,6 +1,8 @@
 ﻿using System;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
+using TomPIT.Cdn.Printing;
 using TomPIT.Controllers;
 using TomPIT.Middleware;
 
@@ -20,7 +22,7 @@ namespace TomPIT.Cdn.Controllers
 			{
 				Token = id
 			});
-
+			
 			if (job is null)
 				return null;
 

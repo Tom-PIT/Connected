@@ -158,9 +158,9 @@ namespace TomPIT.MicroServices.Reporting.Storage
 		{
 			var ms = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(config.MicroService());
 
-			XtraReport r = null;
+			XtraReport r = new XtraReport();
 			var url = $"{ms.Name}/{config.ComponentName()}";
-
+					
 			if (arguments != null)
 				url += $"?{Convert.ToBase64String(Encoding.UTF8.GetBytes(Serializer.Serialize(arguments)))}";
 
@@ -169,8 +169,6 @@ namespace TomPIT.MicroServices.Reporting.Storage
 				var tenant = MiddlewareDescriptor.Current.Tenant;
 				var content = tenant.GetService<IComponentService>().SelectText(((IConfiguration)config).MicroService(), config);
 
-				r = new XtraReport();
-
 				using var loadStream = new MemoryStream(Encoding.UTF8.GetBytes(content));
 
 				r.LoadLayoutFromXml(loadStream);
@@ -178,26 +176,25 @@ namespace TomPIT.MicroServices.Reporting.Storage
 				BindDataSources(r, url, null);
 			}
 
-			if (r == null)
-				r = new XtraReport();
-
 			r.RequestParameters = false;
 
 			foreach (var parameter in r.Parameters)
 				parameter.Visible = false;
+			
+			r.Name = url;
+			r.SourceUrl = url;
 
 			var subreports = r.AllControls<XRSubreport>();
-
+			
 			foreach (var subreport in subreports)
-				subreport.BeforePrint += OnBindSubreportDataSources;
-
+			{
+				subreport.BeforePrint += (s, e) => OnBindSubreportDataSources(s as XRSubreport);		
+			}
 			return r;
 		}
 
-		private void OnBindSubreportDataSources(object sender, System.Drawing.Printing.PrintEventArgs e)
+		private void OnBindSubreportDataSources(XRSubreport subReport)
 		{
-			var subReport = sender as XRSubreport;
-
 			subReport.ApplyParameterBindings();
 			/*
 			 * this is workaround for the issue related to parameter bindings.
@@ -206,6 +203,9 @@ namespace TomPIT.MicroServices.Reporting.Storage
 			 */
 			var bindings = subReport.ParameterBindings;
 			var newBindings = new List<ParameterBinding>();
+
+			subReport.ReportSource.SourceUrl = subReport.ReportSourceUrl;
+			subReport.ReportSource.Name = subReport.ReportSourceUrl;
 
 			foreach (var binding in bindings)
 			{
