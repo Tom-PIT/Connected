@@ -1,11 +1,12 @@
-﻿using System;
-using System.Drawing.Imaging;
-using System.IO;
-using DevExpress.Export;
+﻿using DevExpress.Export;
 using DevExpress.Utils;
 using DevExpress.XtraPrinting;
 using DevExpress.XtraReports.UI;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using TomPIT.Cdn;
 using TomPIT.Cdn.Documents;
 using TomPIT.ComponentModel;
@@ -234,7 +235,7 @@ namespace TomPIT.MicroServices.Reporting.Printing
                 ExportMode = ToHtmlExportMode(args.Mode),
                 ExportWatermarks = args.Watermarks,
                 InlineCss = args.InlineCss,
-                PageBorderColor = args.PageBorderColor,
+                PageBorderColor = Color.FromArgb(args.PageBorderColor.Alpha, args.PageBorderColor.Red, args.PageBorderColor.Green, args.PageBorderColor.Blue),
                 PageBorderWidth = args.PageBorderWidth,
                 PageRange = args.PageRange,
                 RasterizationResolution = args.RasterizationResolution,
@@ -254,8 +255,8 @@ namespace TomPIT.MicroServices.Reporting.Printing
             var options = new ImageExportOptions
             {
                 ExportMode = ToImageExportMode(args.Mode),
-                Format = args.Format == null ? ImageFormat.Png : args.Format,
-                PageBorderColor = args.PageBorderColor,
+                Format = ImageFormat.Png,
+                PageBorderColor = Color.FromArgb(args.PageBorderColor.Alpha, args.PageBorderColor.Red, args.PageBorderColor.Green, args.PageBorderColor.Blue),
                 PageBorderWidth = args.PageBorderWidth,
                 PageRange = args.PageRange,
                 Resolution = args.Resolution,
@@ -277,7 +278,7 @@ namespace TomPIT.MicroServices.Reporting.Printing
                 ExportMode = ToHtmlExportMode(args.Mode),
                 ExportWatermarks = args.Watermarks,
                 InlineCss = args.InlineCss,
-                PageBorderColor = args.PageBorderColor,
+                PageBorderColor = Color.FromArgb(args.PageBorderColor.Alpha, args.PageBorderColor.Red, args.PageBorderColor.Green, args.PageBorderColor.Blue),
                 PageBorderWidth = args.PageBorderWidth,
                 PageRange = args.PageRange,
                 RasterizationResolution = args.RasterizationResolution,
@@ -846,29 +847,16 @@ namespace TomPIT.MicroServices.Reporting.Printing
             if (e.Options is not ImageOptions options)
                 return StreamOperationWriteArgs.MimePng;
 
-            if (options.Format is null)
-                return StreamOperationWriteArgs.MimePng;
-
-            if (options.Format == ImageFormat.Jpeg)
+            if (options.Format == SkiaSharp.SKEncodedImageFormat.Jpeg)
                 return StreamOperationWriteArgs.MimeJpeg;
-            else if (options.Format == ImageFormat.Gif)
+            else if (options.Format == SkiaSharp.SKEncodedImageFormat.Gif)
                 return StreamOperationWriteArgs.MimeGif;
-            else if (options.Format == ImageFormat.Bmp)
+            else if (options.Format == SkiaSharp.SKEncodedImageFormat.Bmp)
                 return StreamOperationWriteArgs.MimeBmp;
-            else if (options.Format == ImageFormat.Tiff)
-                return StreamOperationWriteArgs.MimeTiff;
-            else if (options.Format == ImageFormat.Emf)
-                return StreamOperationWriteArgs.MimeEmf;
-            else if (options.Format == ImageFormat.Exif)
-                return StreamOperationWriteArgs.MimeTiff;
-            else if (options.Format == ImageFormat.Icon)
+            else if (options.Format == SkiaSharp.SKEncodedImageFormat.Ico)
                 return StreamOperationWriteArgs.MimeIcon;
-            else if (options.Format == ImageFormat.Png)
+            else if (options.Format == SkiaSharp.SKEncodedImageFormat.Png)
                 return StreamOperationWriteArgs.MimePng;
-            else if (options.Format == ImageFormat.MemoryBmp)
-                return StreamOperationWriteArgs.MimeBmp;
-            else if (options.Format == ImageFormat.Wmf)
-                return StreamOperationWriteArgs.MimeWmf;
             else
                 return StreamOperationWriteArgs.MimePng;
         }

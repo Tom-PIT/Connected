@@ -1,9 +1,9 @@
-﻿using System.Drawing;
+﻿using SkiaSharp;
 
 namespace TomPIT.UI
 {
-	public interface IImaging
-	{
-		byte[] Resize(Image image, int maxWidth, int maxHeight, bool padImage);
-	}
+    public interface IImaging
+    {
+        byte[] Resize(SKBitmap image, int maxWidth, int maxHeight, bool padImage);
+    }
 }

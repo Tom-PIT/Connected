@@ -88,7 +88,8 @@
 		<PackageReference Include="Microsoft.CodeAnalysis.Features" Version="4.6.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="System.Configuration.ConfigurationManager" Version="7.0.0" />
-		<PackageReference Include="System.Drawing.Common" Version="7.0.0" />
+		<PackageReference Include="SkiaSharp" Version="2.88.3" />
+		<PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.3" />		
 		<PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="7.0.5" />
 	</ItemGroup>
 	<ItemGroup>
