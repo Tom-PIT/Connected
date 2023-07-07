@@ -262,3 +262,9 @@ __pycache__/
 /TomPIT.RemoteDebugger
 /installer
 /Build/execs
+/Management/TomPIT.Management.UI/wwwroot/Assets/styles.min.css
+/Management/TomPIT.Management.UI/wwwroot/Assets/Libraries/stylestmp.min.css
+/Management/TomPIT.Management.UI/wwwroot/Assets/scripts.min.js
+/Reporting/TomPIT.Reporting/wwwroot/Assets/reporting.design.min.css
+/Reporting/TomPIT.Reporting/wwwroot/Assets/reporting.design.min.js
+/Reporting/TomPIT.Reporting/wwwroot/Assets/reporting.min.css
