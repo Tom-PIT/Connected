@@ -268,3 +268,7 @@ __pycache__/
 /Reporting/TomPIT.Reporting/wwwroot/Assets/reporting.design.min.css
 /Reporting/TomPIT.Reporting/wwwroot/Assets/reporting.design.min.js
 /Reporting/TomPIT.Reporting/wwwroot/Assets/reporting.min.css
+/App/TomPIT.App.UI/wwwroot/Assets/styles.min.css
+/Development/TomPIT.Development.UI/wwwroot/Assets/devscripts.min.js
+/Development/TomPIT.Development.UI/wwwroot/Assets/devstyles.min.css
+/TomPIT.Connected/sys.json
