@@ -21,13 +21,15 @@ namespace TomPIT.Design
 
 		public void Deploy(string remote, Guid repository, long branch, long commit, string authenticationToken)
 		{
-			var url = $"{remote}/Repositories/Branches/Pull";
+			var url = $"{remote}/Connected.Repositories/Branches/Pull";
 
 			Deploy(Tenant.Post<PullRequest>(url, new
 			{
 				repository,
 				branch,
-				commit
+				commit,
+				Mode = "Content",
+				Reason = "Install",
 			}, new HttpRequestArgs().WithBearerCredentials(authenticationToken)), new DeployArgs
 			{
 				ResetMicroService = true

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Linq;
+
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Data;
 using TomPIT.ComponentModel.Deployment;
@@ -15,250 +16,253 @@ using TomPIT.Runtime;
 
 namespace TomPIT.Design
 {
-    internal class DeploymentSession : TenantObject
-    {
-        public DeploymentSession(ITenant tenant, IPullRequest request) : base(tenant)
-        {
-            Request = request;
-        }
+	internal class DeploymentSession : TenantObject
+	{
+		public DeploymentSession(ITenant tenant, IPullRequest request) : base(tenant)
+		{
+			Request = request;
+		}
 
-        private IPullRequest Request { get; }
+		private IPullRequest Request { get; }
 
-        public void Deploy(DeployArgs e)
-        {
-            if (e.ResetMicroService)
-            {
-                foreach (var component in Request.Components)
-                {
-                    component.Verb = ComponentVerb.Add;
+		public void Deploy(DeployArgs e)
+		{
+			if (e.ResetMicroService)
+			{
+				foreach (var component in Request.Components)
+				{
+					component.Verb = ComponentVerb.Add;
 
-                    foreach (var file in component.Files)
-                        file.Verb = ComponentVerb.Add;
-                }
+					foreach (var file in component.Files)
+						file.Verb = ComponentVerb.Add;
+				}
 
-                DropMicroService();
-            }
+				DropMicroService();
+			}
 
-            SynchronizeMicroService();
-            Drop();
-            DeployFolders();
-            DeployComponents();
+			SynchronizeMicroService();
+			Drop();
+			DeployFolders();
+			DeployComponents();
 
-            SynchronizeEntities();
-            RunInstallers();
+			SynchronizeEntities();
+			RunInstallers();
 
-            CommitChanges(e);
-            CommitMicroService();
-        }
+			CommitChanges(e);
+			CommitMicroService();
+		}
 
-        private void CommitChanges(DeployArgs e)
-        {
-            if (!e.Commit.Enabled)
-                return;
+		private void CommitChanges(DeployArgs e)
+		{
+			if (!e.Commit.Enabled)
+				return;
 
-            var design = Tenant.GetService<IDesignService>();
-            var changes = design.VersionControl.Changes(Request.Token);
+			var design = Tenant.GetService<IDesignService>();
+			var changes = design.VersionControl.Changes(Request.Token);
 
-            if (changes.Any())
-                design.VersionControl.Commit(changes.Select(f => f.Token).ToList(), e.Commit.Comment ?? "Deploy.");
+			if (changes.Any())
+				design.VersionControl.Commit(changes.Select(f => f.Token).ToList(), e.Commit.Comment ?? "Deploy.");
 
-            var commits = design.VersionControl.QueryCommits(Request.Token);
-            var latest = commits.OrderByDescending(f => f.Created).First();
+			var commits = design.VersionControl.QueryCommits(Request.Token);
+			var latest = commits.OrderByDescending(f => f.Created).FirstOrDefault();
 
-            foreach (var com in commits)
-            {
-                if (com.Token == latest.Token)
-                    continue;
+			if (latest is null)
+				return;
 
-                design.VersionControl.DeleteCommit(com.Token);
-            }
+			foreach (var com in commits)
+			{
+				if (com.Token == latest.Token)
+					continue;
 
-            e.Commit.Id = latest.Token;
-        }
+				design.VersionControl.DeleteCommit(com.Token);
+			}
 
-        private void DropMicroService()
-        {
-            var ms = Tenant.GetService<IMicroServiceService>().Select(Request.Token);
+			e.Commit.Id = latest.Token;
+		}
 
-            if (ms is null)
-                return;
+		private void DropMicroService()
+		{
+			var ms = Tenant.GetService<IMicroServiceService>().Select(Request.Token);
 
-            if (ms.Status != MicroServiceStatus.Development)
-                UpdateMicroService(ms);
+			if (ms is null)
+				return;
 
-            Tenant.GetService<IDesignService>().MicroServices.Delete(ms.Token);
-        }
+			if (ms.Status != MicroServiceStatus.Development)
+				UpdateMicroService(ms);
 
-        private void CommitMicroService()
-        {
-            var ms = Tenant.GetService<IMicroServiceService>().Select(Request.Token);
+			Tenant.GetService<IDesignService>().MicroServices.Delete(ms.Token);
+		}
 
-            Tenant.GetService<IDesignService>().MicroServices.Update(Request.Token, Request.Name, ms.ResourceGroup, Request.Template, ResolveStatus(), UpdateStatus.UpToDate, CommitStatus.Synchronized);
-        }
+		private void CommitMicroService()
+		{
+			var ms = Tenant.GetService<IMicroServiceService>().Select(Request.Token);
 
-        private void SynchronizeMicroService()
-        {
-            var ms = Tenant.GetService<IMicroServiceService>().Select(Request.Token);
+			Tenant.GetService<IDesignService>().MicroServices.Update(Request.Token, Request.Name, ms.ResourceGroup, Request.Template, ResolveStatus(), UpdateStatus.UpToDate, CommitStatus.Synchronized);
+		}
 
-            if (ms == null)
-                InsertMicroService();
-            else
-                UpdateMicroService(ms);
-        }
+		private void SynchronizeMicroService()
+		{
+			var ms = Tenant.GetService<IMicroServiceService>().Select(Request.Token);
 
-        private void UpdateMicroService(IMicroService microService)
-        {
-            Tenant.GetService<IDesignService>().MicroServices.Update(Request.Token, Request.Name, microService.ResourceGroup, Request.Template, MicroServiceStatus.Development, microService.UpdateStatus, microService.CommitStatus);
-        }
+			if (ms == null)
+				InsertMicroService();
+			else
+				UpdateMicroService(ms);
+		}
 
-        private void InsertMicroService()
-        {
-            var resourceGroup = Tenant.GetService<IResourceGroupService>().Default.Token;
+		private void UpdateMicroService(IMicroService microService)
+		{
+			Tenant.GetService<IDesignService>().MicroServices.Update(Request.Token, Request.Name, microService.ResourceGroup, Request.Template, MicroServiceStatus.Development, microService.UpdateStatus, microService.CommitStatus);
+		}
 
-            Tenant.GetService<IDesignService>().MicroServices.Insert(Request.Token, Request.Name, resourceGroup, Request.Template, MicroServiceStatus.Development);
-        }
+		private void InsertMicroService()
+		{
+			var resourceGroup = Tenant.GetService<IResourceGroupService>().Default.Token;
 
-        private MicroServiceStatus ResolveStatus()
-        {
-            var stage = Tenant.GetService<IRuntimeService>().Stage;
+			Tenant.GetService<IDesignService>().MicroServices.Insert(Request.Token, Request.Name, resourceGroup, Request.Template, MicroServiceStatus.Development);
+		}
 
-            switch (stage)
-            {
-                case EnvironmentStage.Development:
-                    return MicroServiceStatus.Development;
-                case EnvironmentStage.Staging:
-                    return MicroServiceStatus.Staging;
-                case EnvironmentStage.Production:
-                    return MicroServiceStatus.Production;
-                default:
-                    throw new NotSupportedException();
-            }
-        }
+		private MicroServiceStatus ResolveStatus()
+		{
+			var stage = Tenant.GetService<IRuntimeService>().Stage;
 
-        private void SynchronizeEntities()
-        {
-            var components = Tenant.GetService<IComponentService>().QueryComponents(Request.Token, ComponentCategories.Model);
+			switch (stage)
+			{
+				case EnvironmentStage.Development:
+					return MicroServiceStatus.Development;
+				case EnvironmentStage.Staging:
+					return MicroServiceStatus.Staging;
+				case EnvironmentStage.Production:
+					return MicroServiceStatus.Production;
+				default:
+					throw new NotSupportedException();
+			}
+		}
 
-            foreach (var component in components)
-            {
-                if (Tenant.GetService<IComponentService>().SelectConfiguration(component.Token) is not IModelConfiguration config)
-                    continue;
+		private void SynchronizeEntities()
+		{
+			var components = Tenant.GetService<IComponentService>().QueryComponents(Request.Token, ComponentCategories.Model);
 
-                try
-                {
-                    Tenant.GetService<IModelService>().SynchronizeEntity(config);
-                }
-                catch (TomPITException ex)
-                {
-                    ex.LogError(LogCategories.Deployment);
-                }
-            }
-        }
+			foreach (var component in components)
+			{
+				if (Tenant.GetService<IComponentService>().SelectConfiguration(component.Token) is not IModelConfiguration config)
+					continue;
 
-        private void RunInstallers()
-        {
-            var components = Tenant.GetService<IComponentService>().QueryComponents(Request.Token, ComponentCategories.Installer);
+				try
+				{
+					Tenant.GetService<IModelService>().SynchronizeEntity(config);
+				}
+				catch (TomPITException ex)
+				{
+					ex.LogError(LogCategories.Deployment);
+				}
+			}
+		}
 
-            foreach (var component in components)
-            {
-                try
-                {
-                    if (Tenant.GetService<IComponentService>().SelectConfiguration(component.Token) is not IInstallerConfiguration config)
-                        continue;
+		private void RunInstallers()
+		{
+			var components = Tenant.GetService<IComponentService>().QueryComponents(Request.Token, ComponentCategories.Installer);
 
-                    using var ctx = new MicroServiceContext(Request.Token);
-                    var type = config.Middleware(ctx);
+			foreach (var component in components)
+			{
+				try
+				{
+					if (Tenant.GetService<IComponentService>().SelectConfiguration(component.Token) is not IInstallerConfiguration config)
+						continue;
 
-                    if (type == null)
-                        continue;
+					using var ctx = new MicroServiceContext(Request.Token);
+					var type = config.Middleware(ctx);
 
-                    var middleware = ctx.CreateMiddleware<IInstallerMiddleware>(type);
+					if (type == null)
+						continue;
 
-                    if (middleware == null)
-                        continue;
+					var middleware = ctx.CreateMiddleware<IInstallerMiddleware>(type);
 
-                    middleware.Invoke();
-                }
-                catch (TomPITException ex)
-                {
-                    ex.LogError(LogCategories.Deployment);
-                }
-            }
-        }
+					if (middleware == null)
+						continue;
 
-        private void Drop()
-        {
-            if (Request.Components == null)
-                return;
+					middleware.Invoke();
+				}
+				catch (TomPITException ex)
+				{
+					ex.LogError(LogCategories.Deployment);
+				}
+			}
+		}
 
-            foreach (var component in Request.Components)
-            {
-                if (component.Verb == ComponentVerb.Delete)
-                    ComponentModel.Delete(component.Token, true);
-            }
-        }
+		private void Drop()
+		{
+			if (Request.Components == null)
+				return;
 
-        private void DeployComponents()
-        {
-            if (Request.Components == null)
-                return;
+			foreach (var component in Request.Components)
+			{
+				if (component.Verb == ComponentVerb.Delete)
+					ComponentModel.Delete(component.Token, true);
+			}
+		}
 
-            foreach (var component in Request.Components)
-                ComponentModel.Restore(Request.Token, component);
-        }
+		private void DeployComponents()
+		{
+			if (Request.Components == null)
+				return;
 
-        private void DeployFolders()
-        {
-            var folders = Tenant.GetService<IComponentService>().QueryFolders(Request.Token);
-            /*
-			 * remove
-			 */
-            foreach (var folder in folders)
-            {
-                if (Request.Folders?.FirstOrDefault(f => f.Id == folder.Token) != null)
-                    continue;
+			foreach (var component in Request.Components)
+				ComponentModel.Restore(Request.Token, component);
+		}
 
-                ComponentModel.DeleteFolder(Request.Token, folder.Token, false);
-            }
-            /*
-			 * add and modify
-			 */
-            DeployFolders(Guid.Empty, folders);
-        }
+		private void DeployFolders()
+		{
+			var folders = Tenant.GetService<IComponentService>().QueryFolders(Request.Token);
+			/*
+		 * remove
+		 */
+			foreach (var folder in folders)
+			{
+				if (Request.Folders?.FirstOrDefault(f => f.Id == folder.Token) != null)
+					continue;
 
-        private void DeployFolders(Guid parent, ImmutableList<IFolder> existing)
-        {
-            if (Request.Folders == null)
-                return;
+				ComponentModel.DeleteFolder(Request.Token, folder.Token, false);
+			}
+			/*
+		 * add and modify
+		 */
+			DeployFolders(Guid.Empty, folders);
+		}
 
-            var folders = Request.Folders.Where(f => f.Parent == parent);
+		private void DeployFolders(Guid parent, ImmutableList<IFolder> existing)
+		{
+			if (Request.Folders == null)
+				return;
 
-            foreach (var folder in folders)
-            {
-                var existingFolder = existing.FirstOrDefault(f => f.Token == folder.Id);
-                /*
-				 * update
-				 */
-                if (existingFolder != null)
-                {
-                    ComponentModel.UpdateFolder(Request.Token, existingFolder.Token, folder.Name, folder.Parent);
-                }
-                else
-                {
-                    /*
-					 * insert
-					 */
-                    ComponentModel.RestoreFolder(Request.Token, folder.Id, folder.Name, folder.Parent);
+			var folders = Request.Folders.Where(f => f.Parent == parent);
 
-                    existing.Add(Tenant.GetService<IComponentService>().SelectFolder(folder.Id));
-                }
-                /*
-				 * deploy children
-				 */
-                DeployFolders(folder.Id, existing);
-            }
-        }
+			foreach (var folder in folders)
+			{
+				var existingFolder = existing.FirstOrDefault(f => f.Token == folder.Id);
+				/*
+			* update
+			*/
+				if (existingFolder != null)
+				{
+					ComponentModel.UpdateFolder(Request.Token, existingFolder.Token, folder.Name, folder.Parent);
+				}
+				else
+				{
+					/*
+			  * insert
+			  */
+					ComponentModel.RestoreFolder(Request.Token, folder.Id, folder.Name, folder.Parent);
 
-        private IComponentModel ComponentModel => Tenant.GetService<IDesignService>().Components;
-    }
+					existing.Add(Tenant.GetService<IComponentService>().SelectFolder(folder.Id));
+				}
+				/*
+			* deploy children
+			*/
+				DeployFolders(folder.Id, existing);
+			}
+		}
+
+		private IComponentModel ComponentModel => Tenant.GetService<IDesignService>().Components;
+	}
 }
