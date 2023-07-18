@@ -35,11 +35,6 @@ namespace TomPIT.Routing
 			}
 		}
 
-		private DeployRouteHandler()
-		{
-
-		}
-
 		protected override void OnProcessRequest()
 		{
 			var ctx = Tenant ?? MiddlewareDescriptor.Current.Tenant;
