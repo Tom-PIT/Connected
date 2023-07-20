@@ -1,12 +1,5 @@
 {
   "profiles": {
-    "IIS Express": {
-      "commandName": "IISExpress",
-      "launchBrowser": true,
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
     "Connected": {
       "commandName": "Project",
       "launchBrowser": true,
@@ -14,23 +7,6 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "applicationUrl": "http://localhost:44003/"
-    },
-    "WSL": {
-      "commandName": "WSL2",
-      "applicationUrl": "http://0.0.0.0:44003",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_URLS": "http://0.0.0.0:44003/"
-      },
-      "distributionName": "Debian"
-    }
-  },
-  "iisSettings": {
-    "windowsAuthentication": false,
-    "anonymousAuthentication": true,
-    "iisExpress": {
-      "applicationUrl": "http://localhost:44003/",
-      "sslPort": 44351
     }
   }
 }
