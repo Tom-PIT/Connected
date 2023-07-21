@@ -68,7 +68,7 @@
 		<None Include="wwwroot\Assets\Styles\development.less" />
 	</ItemGroup>
 	<ItemGroup>
-		<EmbeddedResource Include="wwwroot/Assets/**/*.*" />
+		<EmbeddedResource Include="wwwroot/Assets/**" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
