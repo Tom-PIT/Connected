@@ -31,7 +31,7 @@
 		<Content Remove="wwwroot\Assets\Styles\development.less" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="BuildBundlerMinifier2022" Version="2.9.9" />
+		<PackageReference Include="BuildBundlerMinifier" Version="3.2.449" />
 		<PackageReference Include="lz4net" Version="1.0.15.93" />
 		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.5" />
 		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="7.0.5" />
