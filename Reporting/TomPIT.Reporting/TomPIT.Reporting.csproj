@@ -56,7 +56,6 @@
     <Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/TomPIT.StorageProviders.Azure/&quot;" /> -->
 		<Exec Command="mkdir -p &quot;/src/plugins/&quot;" />
 		<Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/&quot;" />
-		<Exec Command="cp &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;/src/plugins/&quot;" />
 	</Target>
 	<Target Name="PostBuildWin" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT'">
 		<!-- <Exec Command="mkdir -p &quot;/src/plugins/TomPIT.StorageProviders.Azure/&quot;" />
