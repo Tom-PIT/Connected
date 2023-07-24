@@ -84,7 +84,7 @@
 		<None Include="wwwroot\Assets\Styles\bootstrap\vendor\_rfs.scss" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="BuildBundlerMinifier" Version="3.2.449" />
+		<PackageReference Include="BuildBundlerMinifierPlus" Version="5.3.0" />
 		<PackageReference Include="Microsoft.CodeAnalysis.Features" Version="4.6.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="System.Configuration.ConfigurationManager" Version="7.0.0" />
