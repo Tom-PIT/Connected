@@ -198,8 +198,6 @@ namespace TomPIT
 
         private static Assembly OnResolvingAssembly(AssemblyLoadContext ctx, AssemblyName asm)
         {
-            Console.WriteLine(asm.FullName);
-
             var path = ResolveAssemblyPath(asm.Name);
 
             if (path == null)
@@ -238,10 +236,7 @@ namespace TomPIT
                 path = targetPath;
             }
 
-
-            Console.WriteLine($"Loading {asm.FullName}: {path}");
             var loadedAssembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
-            Console.WriteLine($"Loaded {asm.FullName} {loadedAssembly.FullName}");
             return loadedAssembly;
         }
 
