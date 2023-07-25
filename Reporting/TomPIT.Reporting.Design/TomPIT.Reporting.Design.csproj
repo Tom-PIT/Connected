@@ -13,6 +13,7 @@
 		<Authors>Tom PIT</Authors>
 		<Company>Tom PIT</Company>
 		<Product>Tom PIT.connected</Product>
+		<GenerateRuntimeConfigDevFile>true</GenerateRuntimeConfigDevFile>
 	</PropertyGroup>
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
@@ -38,7 +39,7 @@
 	</Target>
 	<Target Name="PostBuildWin" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT'">
 		<Exec Command="if not exist &quot;c:/src/plugins/&quot; mkdir &quot;c:/src/plugins/&quot;" />
-		<Exec Command="copy /y &quot;$(TargetPath)&quot; &quot;/src/plugins/&quot;" />
-		<Exec Command="copy /y &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;/src/plugins/&quot;" />
+		<Exec Command="copy /y &quot;$(TargetPath)&quot; &quot;c:/src/plugins/&quot;" />
+		<Exec Command="copy /y &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;c:/src/plugins/&quot;" />
 	</Target>
 </Project>
