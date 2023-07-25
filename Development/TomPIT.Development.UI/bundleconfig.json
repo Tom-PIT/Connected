@@ -1,6 +1,6 @@
 ﻿[
   {
-    "outputFileName": "wwwroot/Assets/devstyles.min.css",
+    "outputFileName": "wwwroot/Assets/Tmp/devstyles.min.css",
     "inputFiles": [
       "wwwroot/Assets/Fonts/opensans/opensans.css",
       "wwwroot/Assets/Styles/bootstrap/bootstrap.css",
@@ -17,7 +17,7 @@
   {
     "outputFileName": "wwwroot/Assets/devstyles.min.css",
     "inputFiles": [
-      "wwwroot/Assets/devstyles.min.css",
+      "wwwroot/Assets/Tmp/devstyles.min.css",
       "wwwroot/Assets/Libraries/DevExtreme/Latest/css/dx.common.css",
       "wwwroot/Assets/Libraries/DevExtreme/Latest/css/dx.material.blue.light.css"
     ],
