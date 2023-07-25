@@ -17,7 +17,8 @@ namespace TomPIT.SysDb.Sql.Development
       [Browsable(false)]
       public string Url { get; set; }
       [Browsable(false)]
-      public Guid Token { get; set; }
+		[KeyProperty]
+		public Guid Token { get; set; }
       [PropertyCategory(PropertyCategoryAttribute.CategoryBehavior)]
       public MicroServiceStatus Status { get; set; }
       [Browsable(false)]
