@@ -107,7 +107,14 @@ namespace TomPIT.Design
 					Name = component.Name,
 					NameSpace = ComponentCategories.ResolveNamespace(component.Category)
 				});
-			}
+
+				notification.NotifyChanged(this, new ConfigurationEventArgs
+				{
+					Category = component.Category,
+					Component = component.Token,
+					MicroService = microService
+				});
+			}			
 		}
 
 		public void Restore(Guid microService, IPullRequestComponent component)
