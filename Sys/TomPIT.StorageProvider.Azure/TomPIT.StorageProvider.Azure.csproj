@@ -9,7 +9,7 @@
     <Product>Tom PIT.connected</Product>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.16.0" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.17.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
@@ -18,13 +18,13 @@
   <Target Name="PostBuildLnx" AfterTargets="PostBuildEvent" Condition="'$(OS)' != 'Windows_NT'">
 	<!-- <Exec Command="mkdir -p &quot;/src/plugins/TomPIT.StorageProviders.Azure/&quot;" />
     <Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/TomPIT.StorageProviders.Azure/&quot;" /> -->
-    <Exec Command="mkdir -p &quot;/src/plugins/&quot;"  />
+    <Exec Command="mkdir -p &quot;/src/plugins/&quot;" />
     <Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/&quot;" />
   </Target>
 	<Target Name="PostBuildWin" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT'">
 		<!-- <Exec Command="mkdir -p &quot;/src/plugins/TomPIT.StorageProviders.Azure/&quot;" />
     <Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/TomPIT.StorageProviders.Azure/&quot;" /> -->
-		<Exec Command="if not exist &quot;c:/src/plugins/&quot; mkdir &quot;c:/src/plugins/&quot;"  />
+		<Exec Command="if not exist &quot;c:/src/plugins/&quot; mkdir &quot;c:/src/plugins/&quot;" />
 		<Exec Command="copy /y &quot;$(TargetPath)&quot; &quot;/src/plugins/&quot;" />
 	</Target>
 </Project>

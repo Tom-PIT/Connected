@@ -22,7 +22,7 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="lz4net" Version="1.0.15.93" />
-		<PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="7.0.5" />
+		<PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="7.0.9" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
@@ -32,13 +32,13 @@
 	<Target Name="PostBuildLnx" AfterTargets="PostBuildEvent" Condition="'$(OS)' != 'Windows_NT'">
 		<!-- <Exec Command="mkdir -p &quot;/src/plugins/TomPIT.StorageProviders.Azure/&quot;" />
     <Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/TomPIT.StorageProviders.Azure/&quot;" /> -->
-		<Exec Command="mkdir -p &quot;/src/plugins/&quot;"  />
+		<Exec Command="mkdir -p &quot;/src/plugins/&quot;" />
 		<Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/&quot;" />
 	</Target>
 	<Target Name="PostBuildWin" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT'">
 		<!-- <Exec Command="mkdir -p &quot;/src/plugins/TomPIT.StorageProviders.Azure/&quot;" />
     <Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/TomPIT.StorageProviders.Azure/&quot;" /> -->
-		<Exec Command="if not exist &quot;c:/src/plugins/&quot; mkdir &quot;c:/src/plugins/&quot;"  />
+		<Exec Command="if not exist &quot;c:/src/plugins/&quot; mkdir &quot;c:/src/plugins/&quot;" />
 		<Exec Command="copy /y &quot;$(TargetPath)&quot; &quot;/src/plugins/&quot;" />
 	</Target>
 </Project>

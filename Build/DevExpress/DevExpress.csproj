@@ -18,8 +18,10 @@
 		</Items>
 	</ItemGroup>
 
-	<Target Name="CopyPackages" AfterTargets="Build">
+	<Target Name="CopyPackages" AfterTargets="PostBuildEvent">
+                <Exec Command="mkdir -p &quot;/src/plugins/&quot;" />
 		<Copy SourceFiles="@(Items)" DestinationFolder="/src/plugins/%(RecursiveDir)" SkipUnchangedFiles="true" />
+		<Exec Command="echo $(OutputPath)" />
 	</Target>
 
 </Project>

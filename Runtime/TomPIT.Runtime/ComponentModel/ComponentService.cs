@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+
 using TomPIT.Caching;
 using TomPIT.Connectivity;
 using TomPIT.Design.Serialization;
@@ -58,7 +59,10 @@ namespace TomPIT.ComponentModel
 			var component = Instance.SysProxy.Components.SelectByToken(id);
 
 			if (component is not null)
+			{
 				Set(component.Token, component, TimeSpan.Zero);
+				ConfigurationCache.TryRemove(component.Token, out var _);
+			}
 		}
 
 		private void OnMicroServiceRemoved(object sender, MicroServiceEventArgs e)
@@ -68,7 +72,9 @@ namespace TomPIT.ComponentModel
 			foreach (var i in components)
 			{
 				if (i.MicroService == e.MicroService)
+				{
 					Remove(i.Token);
+				}
 			}
 		}
 

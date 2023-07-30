@@ -70,7 +70,7 @@
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-		<PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="7.0.5" />
+		<PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="7.0.9" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
@@ -82,11 +82,11 @@
 		<ProjectReference Include="..\TomPIT.Templates.Application\TomPIT.MicroServices.csproj" />
 	</ItemGroup>
 	<Target Name="PostBuildLnx" AfterTargets="PostBuildEvent" Condition="'$(OS)' != 'Windows_NT'">
-		<Exec Command="mkdir -p &quot;/src/plugins/&quot;"  />
+		<Exec Command="mkdir -p &quot;/src/plugins/&quot;" />
 		<Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/&quot;" />
 	</Target>
 	<Target Name="PostBuildWin" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT'">
-		<Exec Command="if not exist &quot;c:/src/plugins/&quot; mkdir &quot;c:/src/plugins/&quot;"  />
+		<Exec Command="if not exist &quot;c:/src/plugins/&quot; mkdir &quot;c:/src/plugins/&quot;" />
 		<Exec Command="copy /y &quot;$(TargetPath)&quot; &quot;/src/plugins/&quot;" />
 	</Target>
 </Project>
