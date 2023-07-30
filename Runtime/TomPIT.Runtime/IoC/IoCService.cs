@@ -20,6 +20,39 @@ namespace TomPIT.IoC
 		private Lazy<ConcurrentDictionary<string, List<IoCEndpointDescriptor>>> _endpoints = new Lazy<ConcurrentDictionary<string, List<IoCEndpointDescriptor>>>();
 		public IoCService(ITenant tenant) : base(tenant, "iocendpoint")
 		{
+			Tenant.GetService<ICompilerService>().Invalidated += OnInvalidateScript;
+		}
+
+		private void OnInvalidateScript(object sender, Guid e)
+		{
+			var obsolete = new List<IoCEndpointDescriptor>();
+
+			foreach (var container in Endpoints)
+			{
+				lock (container.Value)
+				{
+					foreach (var endpoint in container.Value)
+					{
+						/*
+						 * It's possible the endpoint couldn't compile and it would mean
+						 * it's lost because it's type is null and initialized property set
+						 * to true. It would never get initialized again, except when 
+						 * touching script directly so it's the best we remove it in any case.
+						 */
+						if (endpoint.Type is null)
+						{
+							obsolete.Add(endpoint);
+							continue;
+						}
+
+						if (CompilerExtensions.HasScriptReference(endpoint.Type.Assembly, e))
+							obsolete.Add(endpoint);
+					}
+				}
+			}
+
+			foreach (var endpoint in obsolete)
+				OnChanged(endpoint.MicroService, endpoint.Component);
 		}
 
 		protected override string[] Categories => new string[] { ComponentCategories.IoCEndpoint };

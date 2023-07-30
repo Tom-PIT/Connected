@@ -44,7 +44,8 @@ namespace TomPIT.Worker.Services
 
         public override void Dispose()
         {
-            Dispatcher.Dispose();
+            if (Dispatcher is not null)
+                Dispatcher.Dispose();
 
             base.Dispose();
         }

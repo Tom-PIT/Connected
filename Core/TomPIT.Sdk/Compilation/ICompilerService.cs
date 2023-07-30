@@ -17,6 +17,7 @@ namespace TomPIT.Compilation
 
 	public interface ICompilerService
 	{
+		event EventHandler<Guid> Invalidated;
 		void Invalidate(IMicroServiceContext context, Guid microService, Guid component, IText sourceCode);
 		//object Execute<T>(Guid microService, IText sourceCode, object sender, T e);
 		//object Execute<T>(Guid microService, IText sourceCode, object sender, T e, out bool handled);

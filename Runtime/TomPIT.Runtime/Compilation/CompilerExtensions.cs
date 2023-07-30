@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Messaging;
@@ -61,6 +64,26 @@ namespace TomPIT.Compilation
 		public static Guid ScriptId(this IText sourceCode)
 		{
 			return sourceCode.Id;
+		}
+
+		public static Type ResolveScriptInfoType(Assembly assembly)
+		{
+			return assembly.DefinedTypes.FirstOrDefault(f => string.Equals(f.Name, CompilerService.ScriptInfoClassName, StringComparison.Ordinal));
+		}
+
+		public static bool HasScriptReference(Assembly assembly, Guid script)
+		{
+			var type = ResolveScriptInfoType(assembly);
+
+			if (type is null)
+				return false;
+
+			var property = type.GetProperty("SourceTypes", BindingFlags.Static | BindingFlags.Public);
+
+			if (property.GetValue(null) is not List<SourceTypeDescriptor> items || !items.Any())
+				return false;
+
+			return items.FirstOrDefault(f => f.Script == script) is not null;
 		}
 	}
 }
