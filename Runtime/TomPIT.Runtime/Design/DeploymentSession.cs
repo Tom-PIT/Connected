@@ -241,8 +241,8 @@ namespace TomPIT.Design
 			{
 				var existingFolder = existing.FirstOrDefault(f => f.Token == folder.Id);
 				/*
-			* update
-			*/
+				* update
+				*/
 				if (existingFolder != null)
 				{
 					ComponentModel.UpdateFolder(Request.Token, existingFolder.Token, folder.Name, folder.Parent);
@@ -250,17 +250,32 @@ namespace TomPIT.Design
 				else
 				{
 					/*
-			  * insert
-			  */
-					ComponentModel.RestoreFolder(Request.Token, folder.Id, folder.Name, folder.Parent);
+					 * insert
+					 * There is one tricky scenario. Remote folder with the same name (but different token) could be created meaning
+					 * we wouldn't be able to create local folder. In this case we will create folder with indexed name instead thus
+					 * enabling deployment process to succeed.
+					 */
+					ComponentModel.RestoreFolder(Request.Token, folder.Id, EnumerateFolder(folder, existing, 0), folder.Parent);
 
 					existing.Add(Tenant.GetService<IComponentService>().SelectFolder(folder.Id));
 				}
 				/*
-			* deploy children
-			*/
+				* deploy children
+				*/
 				DeployFolders(folder.Id, existing);
 			}
+		}
+
+		private string EnumerateFolder(IPullRequestFolder folder, ImmutableList<IFolder> existing, int index)
+		{
+			var name = index == 0 ? folder.Name : $"{folder}{index}";
+
+			var target = existing.FirstOrDefault(f => string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase) && f.Parent == folder.Parent);
+
+			if (target is null)
+				return name;
+
+			return EnumerateFolder(folder, existing, index + 1);
 		}
 
 		private IComponentModel ComponentModel => Tenant.GetService<IDesignService>().Components;

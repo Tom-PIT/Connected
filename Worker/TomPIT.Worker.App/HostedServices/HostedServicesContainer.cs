@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using System;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Distributed;
@@ -83,12 +83,16 @@ namespace TomPIT.Worker.HostedServices
 
 			using var ctx = new MicroServiceContext(ms);
 
-			if (Tenant.GetService<ICompilerService>().CreateInstance<IHostedServiceMiddleware>(ctx, type) is not IHostedServiceMiddleware middleware)
-				return;
+			try
+			{
+				if (Tenant.GetService<ICompilerService>().CreateInstance<IHostedServiceMiddleware>(ctx, type) is not IHostedServiceMiddleware middleware)
+					return;
 
-			Items.TryAdd(component, middleware);
+				Items.TryAdd(component, middleware);
 
-			await middleware.Start(_tokenSource.Token);
+				await middleware.Start(_tokenSource.Token);
+			}
+			catch { }
 		}
 
 		private ConcurrentDictionary<Guid, IHostedServiceMiddleware> Items => _items;

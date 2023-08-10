@@ -76,6 +76,7 @@ namespace TomPIT.Runtime
 		{
 			e.Tenant.RegisterService(typeof(ISerializationService), typeof(SerializationService));
 			e.Tenant.RegisterService(typeof(ICompilerService), typeof(CompilerService));
+			e.Tenant.RegisterService(typeof(INuGetService), typeof(NuGetService));
 			e.Tenant.RegisterService(typeof(IMicroServiceService), typeof(MicroServiceService));
 			e.Tenant.RegisterService(typeof(ISettingService), typeof(SettingService));
 			e.Tenant.RegisterService(typeof(INamingService), typeof(NamingService));

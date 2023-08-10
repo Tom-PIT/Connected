@@ -4,11 +4,27 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using TomPIT.Compilation;
+using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Resources;
+using TomPIT.Connectivity;
+using TomPIT.Deployment;
+using TomPIT.Design.Serialization;
+using TomPIT.Diagnostics;
+using TomPIT.Exceptions;
+using TomPIT.Middleware;
+using TomPIT.Reflection;
+using TomPIT.Storage;
 
 namespace TomPIT.Design
 {
 	internal class Components : TenantObject, IComponentModel
 	{
+		public event EventHandler<FileArgs> FileRestored;
+		public event EventHandler<ComponentArgs> ComponentRestored;
+		public event EventHandler<ComponentArgs> ConfigurationRestored;
+		public event EventHandler<FileArgs> FileDeleted;
+
 		public Components(ITenant tenant) : base(tenant)
 		{
 		}
@@ -56,8 +72,8 @@ namespace TomPIT.Design
 				svc.NotifyRemoved(this, new ComponentEventArgs(c.MicroService, c.Folder, component, c.NameSpace, c.Category, c.Name));
 
 			/*
-		 * remove configuration file
-		 */
+			 * remove configuration file
+			 */
 			if (permanent)
 			{
 				Tenant.GetService<IStorageService>().Delete(c.Token);
@@ -67,6 +83,7 @@ namespace TomPIT.Design
 			Instance.SysProxy.Development.Notifications.ConfigurationRemoved(c.MicroService, c.Token, c.Category);
 		}
 
+		[Obsolete]
 		public void Restore(Guid microService, IPackageComponent component, IPackageBlob configuration)
 		{
 			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
@@ -111,7 +128,7 @@ namespace TomPIT.Design
 			if (component.Verb == ComponentVerb.Delete)
 			{
 				Delete(component.Token, true);
-				NotifyRemoted(microService, component);
+				NotifyRemoved(microService, component);
 
 				return;
 			}
@@ -148,6 +165,8 @@ namespace TomPIT.Design
 
 					if (file.Type == BlobTypes.Template && Tenant.GetService<ICompilerService>() is ICompilerNotification notification)
 						notification.NotifyChanged(this, new ScriptChangedEventArgs(ms.Token, component.Token, file.Token));
+
+					FileDeleted?.Invoke(this, new FileArgs(microService, component.Token, file.Token));
 				}
 				else
 				{
@@ -168,6 +187,8 @@ namespace TomPIT.Design
 
 					if (file.Type == BlobTypes.Template && Tenant.GetService<ICompilerService>() is ICompilerNotification notification)
 						notification.NotifyChanged(this, new ScriptChangedEventArgs(ms.Token, component.Token, file.Token));
+
+					FileRestored?.Invoke(this, new FileArgs(microService, component.Token, file.Token));
 				}
 			}
 
@@ -197,9 +218,12 @@ namespace TomPIT.Design
 			}
 			else
 				Update(component.Token, component.Name, component.Folder, false);
+
+			ConfigurationRestored?.Invoke(this, new ComponentArgs(microService, component.Token));
+			ComponentRestored?.Invoke(this, new ComponentArgs(microService, component.Token));
 		}
 
-		private void NotifyRemoted(Guid microService, IPullRequestComponent component)
+		private void NotifyRemoved(Guid microService, IPullRequestComponent component)
 		{
 			if (Tenant.GetService<IComponentService>() is IComponentNotification notification)
 			{
@@ -465,6 +489,8 @@ namespace TomPIT.Design
 			{
 				Tenant.GetService<IStorageService>().Delete(text.TextBlob);
 				Tenant.GetService<IDesignService>().Search.Delete(text.Configuration().Component, text.Id);
+
+				FileDeleted?.Invoke(this, new FileArgs(text.Configuration().MicroService(), text.Configuration().Component, text.Id));
 			}
 			catch { }
 
@@ -615,8 +641,8 @@ namespace TomPIT.Design
 			var component = Tenant.GetService<IComponentService>().SelectComponent(image.Token);
 			var folder = image.Folder;
 			/*
-		 * if previous folder doesn't exist anymore we'll put component at root
-		 */
+			 * if previous folder doesn't exist anymore we'll put component at root
+			 */
 			if (folder != Guid.Empty)
 			{
 				var f = Tenant.GetService<IComponentService>().SelectFolder(image.Folder);
@@ -625,14 +651,14 @@ namespace TomPIT.Design
 					folder = Guid.Empty;
 			}
 			/*
-		 * if component doesn't exist it has probably been deleted so we must create
-		 * a new component with the same identifiers
-		 */
+			 * if component doesn't exist it has probably been deleted so we must create
+			 * a new component with the same identifiers
+			 */
 			if (component == null)
 			{
 				/*
-			* runtime configuration has been lost when deleting. it currently cannot be restored.
-			*/
+				* runtime configuration has been lost when deleting. it currently cannot be restored.
+				*/
 				Instance.SysProxy.Development.Components.Insert(image.MicroService, folder, image.Token, ComponentCategories.ResolveNamespace(image.Category), image.Category, image.Name, image.Type);
 
 				component = Tenant.GetService<IComponentService>().SelectComponent(image.Token);
@@ -642,9 +668,9 @@ namespace TomPIT.Design
 
 			var ms = Tenant.GetService<IMicroServiceService>().Select(component.MicroService);
 			/*
-		 * we need to find out if and blobs has been created. if so, delete it because we
-		 * are performing undo or rollback.
-		 */
+			 * we need to find out if and blobs has been created. if so, delete it because we
+			 * are performing undo or rollback.
+			 */
 			var config = Tenant.GetService<IComponentService>().SelectConfiguration(image.Token);
 			var deps = Tenant.GetService<IDiscoveryService>().Configuration.QueryDependencies(config);
 
@@ -655,8 +681,8 @@ namespace TomPIT.Design
 			}
 
 			/*
-		 * now restore configuration and all blobs
-		 */
+			 * now restore configuration and all blobs
+			 */
 			var imageConfig = Tenant.GetService<ISerializationService>().Deserialize(image.Configuration.Content, Type.GetType(image.Type)) as IConfiguration;
 
 			Update(imageConfig, new ComponentUpdateArgs(false));
@@ -675,6 +701,8 @@ namespace TomPIT.Design
 					Type = i.Type,
 					Version = i.Version
 				}, i.Content, StoragePolicy.Singleton);
+
+				FileRestored?.Invoke(this, new FileArgs(image.MicroService, image.Token, i.Token));
 			}
 
 			if (Tenant.GetService<IComponentService>() is IComponentNotification notification)
@@ -689,6 +717,9 @@ namespace TomPIT.Design
 					NameSpace = ComponentCategories.ResolveNamespace(component.Category)
 				});
 			}
+
+			ConfigurationRestored?.Invoke(this, new ComponentArgs(image.MicroService, component.Token));
+			ComponentRestored?.Invoke(this, new ComponentArgs(image.MicroService, component.Token));
 		}
 
 		public void RestoreComponent(Guid blob)

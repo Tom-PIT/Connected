@@ -7,10 +7,17 @@ namespace TomPIT.Design
 {
 	public interface IComponentModel
 	{
+		event EventHandler<FileArgs> FileRestored;
+		event EventHandler<ComponentArgs> ComponentRestored;
+		event EventHandler<ComponentArgs> ConfigurationRestored;
+
+		event EventHandler<FileArgs> FileDeleted;
+
 		List<IComponent> Query(Guid microService);
 		List<IComponent> Query(Guid[] microServices);
 		Guid Insert(Guid microService, Guid folder, string category, string name, string type);
 		void Restore(Guid microService, IPullRequestComponent component);
+		[Obsolete]
 		void Restore(Guid microService, IPackageComponent component, IPackageBlob configuration);
 		Guid Clone(Guid component, Guid microService, Guid folder);
 		void Update(Guid component, string name, Guid folder);
@@ -29,7 +36,9 @@ namespace TomPIT.Design
 
 		IComponentImage CreateComponentImage(Guid component);
 		IComponentImage SelectComponentImage(Guid blob);
+		[Obsolete]
 		void RestoreComponent(IComponentImage image);
+		[Obsolete]
 		void RestoreComponent(Guid blob);
 	}
 }
