@@ -5,233 +5,255 @@ using Microsoft.SqlServer.Management.Smo;
 
 using Newtonsoft.Json;
 
+using System.Text.RegularExpressions;
+
 using TomPIT.Sys.SqlDeployment.DTOs;
 
 namespace TomPIT.Sys.SqlDeployment;
 
 public class MsSqlSchemaDeployment
 {
-   public static void DeploySchema(string connectionString, string insertScriptPath, string updateScriptPath, string applicationVersion, ILogger? logger = null)
-   {
-      var deployer = new SchemaDeployer(connectionString, insertScriptPath, updateScriptPath, applicationVersion, logger);
+	public static void DeploySchema(string connectionString, string insertScriptPath, string updateScriptPath, string applicationVersion, ILogger? logger = null)
+	{
+		var deployer = new SchemaDeployer(connectionString, insertScriptPath, updateScriptPath, applicationVersion, logger);
 
-      deployer.DeploySchema();
-   }
+		deployer.DeploySchema();
+	}
 
-   internal class SchemaDeployer
-   {
-      private readonly string _connectionString;
-      private readonly string _insertScriptPath;
-      private readonly string _updateScriptPath;
-      private readonly string _applicationVersion;
-      private readonly ILogger? _logger;
-      
-      private SchemaVersion? _schemaVersion;
+	internal class SchemaDeployer
+	{
+		private readonly string _connectionString;
+		private readonly string _insertScriptPath;
+		private readonly string _updateScriptPath;
+		private readonly string _applicationVersion;
+		private readonly ILogger? _logger;
 
-      private SchemaVersion SchemaVersion => _schemaVersion ??= GetSchemaVersion();
+		private SchemaVersion? _schemaVersion;
 
-      public SchemaDeployer(string connectionString, string insertScriptPath, string updateScriptPath, string applicationVersion, ILogger? logger)
-      {
-         _connectionString = connectionString;
-         _insertScriptPath = insertScriptPath;
-         _updateScriptPath = updateScriptPath;
-         _applicationVersion = applicationVersion;
-         _logger = logger;
-      }
+		private SchemaVersion SchemaVersion => _schemaVersion ??= GetSchemaVersion();
 
-      public void DeploySchema()
-      {
-         using var con = new SqlConnection(_connectionString);
+		public SchemaDeployer(string connectionString, string insertScriptPath, string updateScriptPath, string applicationVersion, ILogger? logger)
+		{
+			_connectionString = connectionString;
+			_insertScriptPath = insertScriptPath;
+			_updateScriptPath = updateScriptPath;
+			_applicationVersion = applicationVersion;
+			_logger = logger;
+		}
 
-         try
-         {
-            con.Open();
-         }
-         catch (Exception ex)
-         {
-            _logger?.LogError(ex, "Error opening sql connection");
-            throw;
-         }
+		public void DeploySchema()
+		{
+			using var con = new SqlConnection(_connectionString);
 
-         if (SchemaVersion == SchemaVersion.Default)
-            CreateDatabase(con);
-         else
-            UpdateDatabase(con);
-      }
+			try
+			{
+				con.Open();
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, "Error opening sql connection");
+				throw;
+			}
 
-      private void UpdateDatabase(SqlConnection con)
-      {
-         var fileName = _updateScriptPath;
+			if (SchemaVersion == SchemaVersion.Default)
+				CreateDatabase(con);
+			else
+				UpdateDatabase(con);
+		}
 
-         if (!File.Exists(fileName))
-            return;
+		private void UpdateDatabase(SqlConnection con)
+		{
+			var fileName = _updateScriptPath;
 
-         _logger?.LogInformation("Updating database schema. This can take a while...");
+			if (!File.Exists(fileName))
+				return;
 
-         var scripts = JsonConvert.DeserializeObject<List<ChangeScript>>(File.ReadAllText(fileName));
+			_logger?.LogInformation("Updating database schema. This can take a while...");
 
-         if (scripts is null)
-            return;
+			var scripts = JsonConvert.DeserializeObject<List<ChangeScript>>(File.ReadAllText(fileName));
 
-         var server = new Server(new ServerConnection(con));
+			if (scripts is null)
+				return;
 
-         var latestVersion = SchemaVersion;
-         try
-         {
-            server.ConnectionContext.BeginTransaction();
+			var server = new Server(new ServerConnection(con));
 
-            foreach (var i in scripts)
-            {
-               if (!i.SchemaVersion.IsNewerThan(SchemaVersion))
-                  continue;
+			var latestVersion = SchemaVersion;
+			try
+			{
+				server.ConnectionContext.BeginTransaction();
 
-               server.ConnectionContext.ExecuteNonQuery(i.Content);
+				foreach (var i in scripts)
+				{
+					if (!i.SchemaVersion.IsNewerThan(SchemaVersion))
+						continue;
 
-               latestVersion = i.SchemaVersion;
-            }
+					server.ConnectionContext.ExecuteNonQuery(i.Content);
 
-            server.ConnectionContext.CommitTransaction();
+					latestVersion = i.SchemaVersion;
+				}
 
-            UpdateSchemaVersion(latestVersion);
-         }
-         catch
-         {
-            server.ConnectionContext.RollBackTransaction();
+				server.ConnectionContext.CommitTransaction();
 
-            throw;
-         }
-      }
+				UpdateSchemaVersion(latestVersion);
+			}
+			catch
+			{
+				server.ConnectionContext.RollBackTransaction();
 
-      private void CreateDatabase(SqlConnection con)
-      {
-         _logger?.LogInformation("Creating database schema. This can take a while...");
+				throw;
+			}
+		}
 
-         var fileName = _insertScriptPath;
+		private void CreateDatabase(SqlConnection con)
+		{
+			_logger?.LogInformation("Creating database schema. This can take a while...");
 
-         if (!File.Exists(fileName))
-            return;
+			var fileName = _insertScriptPath;
 
-         var content = File.ReadAllText(fileName);
+			if (!File.Exists(fileName))
+				return;
 
-         var server = new Server(new ServerConnection(con));
+			var content = File.ReadAllText(fileName);
 
-         server.ConnectionContext.ExecuteNonQuery(content);
+			var commandStrings = Regex.Split(content, @"^\s*GO\s*$", RegexOptions.Multiline | RegexOptions.IgnoreCase);
 
-         UpdateSchemaVersion(new SchemaVersion(_applicationVersion));
-      }
+			var transaction = con.BeginTransaction();
 
-      private void UpdateSchemaVersion(SchemaVersion version)
-      {
-         try
-         {
-            UpdateNewSchemaVersion(version);
-         }
-         catch
-         {
-            UpdateOldSchemaVersion(version);
-         }
-      }
+			try
+			{
+				foreach (string commandString in commandStrings)
+				{
+					if (!string.IsNullOrWhiteSpace(commandString.Trim()))
+					{
+						if (commandString.Trim().ToLower() == "commit transaction" || commandString.Trim().ToLower() == "begin transaction")
+							continue;
 
-      private void UpdateNewSchemaVersion(SchemaVersion version)
-      {
-         using var con = new SqlConnection(_connectionString);
+						new SqlCommand(commandString, con).ExecuteNonQuery();
+					}
+				}
 
-         con.Open();
+				transaction.Commit();
+			}
+			catch
+			{
+				transaction.Rollback();
+			}
 
-         var command = new SqlCommand($"IF EXISTS(SELECT * FROM tompit.setting WHERE name ='ProductVersion' AND type IS NULL AND primary_key IS NULL AND namespace IS NULL) BEGIN UPDATE tompit.setting SET value = '{version}' WHERE name = 'ProductVersion' AND type IS NULL AND primary_key IS NULL AND namespace IS NULL END ELSE BEGIN INSERT tompit.setting (name, value) VALUES ('ProductVersion', '{version}') END", con)
-         {
-            CommandType = System.Data.CommandType.Text
-         };
+			UpdateSchemaVersion(new SchemaVersion(_applicationVersion));
+		}
 
-         command.ExecuteNonQuery();
+		private void UpdateSchemaVersion(SchemaVersion version)
+		{
+			try
+			{
+				UpdateNewSchemaVersion(version);
+			}
+			catch
+			{
+				UpdateOldSchemaVersion(version);
+			}
+		}
 
-         con.Close();
-      }
+		private void UpdateNewSchemaVersion(SchemaVersion version)
+		{
+			using var con = new SqlConnection(_connectionString);
 
-      private void UpdateOldSchemaVersion(SchemaVersion version)
-      {
-         using var con = new SqlConnection(_connectionString);
+			con.Open();
 
-         con.Open();
+			var command = new SqlCommand($"IF EXISTS(SELECT * FROM tompit.setting WHERE name ='ProductVersion' AND type IS NULL AND primary_key IS NULL AND namespace IS NULL) BEGIN UPDATE tompit.setting SET value = '{version}' WHERE name = 'ProductVersion' AND type IS NULL AND primary_key IS NULL AND namespace IS NULL END ELSE BEGIN INSERT tompit.setting (name, value) VALUES ('ProductVersion', '{version}') END", con)
+			{
+				CommandType = System.Data.CommandType.Text
+			};
 
-         var command = new SqlCommand("tompit.setting_mdf", con)
-         {
-            CommandType = System.Data.CommandType.StoredProcedure
-         };
+			command.ExecuteNonQuery();
 
-         command.Parameters.AddWithValue("@name", "productVersion");
-         command.Parameters.AddWithValue("@visible", true);
-         command.Parameters.AddWithValue("@data_type", "1");
-         command.Parameters.AddWithValue("@value", version.ToString());
+			con.Close();
+		}
 
-         command.ExecuteNonQuery();
+		private void UpdateOldSchemaVersion(SchemaVersion version)
+		{
+			using var con = new SqlConnection(_connectionString);
 
-         con.Close();
-      }
+			con.Open();
 
-      private SchemaVersion GetSchemaVersion()
-      {
-         var _schemaVersion = (SchemaVersion?)null;
+			var command = new SqlCommand("tompit.setting_mdf", con)
+			{
+				CommandType = System.Data.CommandType.StoredProcedure
+			};
 
-         if (_schemaVersion is null)
-         {
-            try
-            {
-               _schemaVersion = NewSchemaVersionSelect();
-            }
-            catch
-            {
-               try
-               {
-                  _schemaVersion = NewSchemaVersionSelect2();
-               }
-               catch
-               {
-                  try
-                  {
-                     _schemaVersion = OldSchemaVersionSelect();
-                  }
-                  catch
-                  {
-                     _schemaVersion = SchemaVersion.Default;
-                  }
-               }
-            }
-         }
-         return _schemaVersion;
-      }
+			command.Parameters.AddWithValue("@name", "productVersion");
+			command.Parameters.AddWithValue("@visible", true);
+			command.Parameters.AddWithValue("@data_type", "1");
+			command.Parameters.AddWithValue("@value", version.ToString());
 
-      private SchemaVersion GetSchemaVersion(string commandString)
-      {
-         using var con = new SqlConnection(_connectionString);
+			command.ExecuteNonQuery();
 
-         con.Open();
+			con.Close();
+		}
 
-         var command = new SqlCommand(commandString, con);
+		private SchemaVersion GetSchemaVersion()
+		{
+			var _schemaVersion = (SchemaVersion?)null;
 
-         var r = command.ExecuteScalar();
+			if (_schemaVersion is null)
+			{
+				try
+				{
+					_schemaVersion = NewSchemaVersionSelect();
+				}
+				catch
+				{
+					try
+					{
+						_schemaVersion = NewSchemaVersionSelect2();
+					}
+					catch
+					{
+						try
+						{
+							_schemaVersion = OldSchemaVersionSelect();
+						}
+						catch
+						{
+							_schemaVersion = SchemaVersion.Default;
+						}
+					}
+				}
+			}
+			return _schemaVersion;
+		}
 
-         con.Close();
+		private SchemaVersion GetSchemaVersion(string commandString)
+		{
+			using var con = new SqlConnection(_connectionString);
 
-         if (r is null || r == DBNull.Value)
-            return SchemaVersion.Default;
+			con.Open();
 
-         return new SchemaVersion(r.ToString());
-      }
+			var command = new SqlCommand(commandString, con);
 
-      private SchemaVersion OldSchemaVersionSelect()
-      {
-         return GetSchemaVersion("SELECT value from tompit.setting WHERE resource_group IS NULL AND name='ProductVersion'");
-      }
+			var r = command.ExecuteScalar();
 
-      private SchemaVersion NewSchemaVersionSelect()
-      {
-         return GetSchemaVersion( "SELECT value from tompit.setting WHERE name='ProductVersion' AND type IS NULL AND primary_key IS NULL AND namespace IS NULL;");
-      }
+			con.Close();
 
-      private SchemaVersion NewSchemaVersionSelect2()
-      {
-         return GetSchemaVersion( "SELECT value from tompit.setting WHERE name='ProductVersion' AND type IS NULL AND primary_key IS NULL;");
-      }
-   }
+			if (r is null || r == DBNull.Value)
+				return SchemaVersion.Default;
+
+			return new SchemaVersion(r.ToString());
+		}
+
+		private SchemaVersion OldSchemaVersionSelect()
+		{
+			return GetSchemaVersion("SELECT value from tompit.setting WHERE resource_group IS NULL AND name='ProductVersion'");
+		}
+
+		private SchemaVersion NewSchemaVersionSelect()
+		{
+			return GetSchemaVersion("SELECT value from tompit.setting WHERE name='ProductVersion' AND type IS NULL AND primary_key IS NULL AND namespace IS NULL;");
+		}
+
+		private SchemaVersion NewSchemaVersionSelect2()
+		{
+			return GetSchemaVersion("SELECT value from tompit.setting WHERE name='ProductVersion' AND type IS NULL AND primary_key IS NULL;");
+		}
+	}
 }
