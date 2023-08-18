@@ -31,6 +31,12 @@ namespace TomPIT.Design
 			{
 				foreach (var component in Request.Components)
 				{
+					if (component?.Files is null)
+						continue;
+
+					if (!component.Files.Any())
+						continue;
+					
 					component.Verb = ComponentVerb.Add;
 
 					foreach (var file in component.Files)
