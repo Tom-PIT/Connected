@@ -170,7 +170,7 @@ namespace TomPIT.Design
 				}
 				else
 				{
-					var content = file.Content is null || !file.Content.Any() ? new byte[0] : Unpack(file.Content);
+					var content = string.IsNullOrEmpty(file.Content) ? Array.Empty<byte>() : Unpack(file.Content;
 
 					Tenant.GetService<IStorageService>().Restore(new Blob
 					{
