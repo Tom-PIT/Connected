@@ -41,7 +41,14 @@ public class MsSqlSchemaDeployment
 
       public void DeploySchema()
       {
-         using var con = new SqlConnection(_connectionString);
+         var connectionStringBuilder = new SqlConnectionStringBuilder(_connectionString);
+
+         /*
+          * Required because of the GO operator
+          */
+         connectionStringBuilder.MultipleActiveResultSets = false;
+
+         using var con = new SqlConnection(connectionStringBuilder.ConnectionString);
 
          try
          {
@@ -113,11 +120,11 @@ public class MsSqlSchemaDeployment
 
          var content = File.ReadAllText(fileName);
 
-         var server = new Server(new ServerConnection(con));
+			var server = new Server(new ServerConnection(con));
 
          server.ConnectionContext.ExecuteNonQuery(content);
 
-         UpdateSchemaVersion(new SchemaVersion(_applicationVersion));
+			UpdateSchemaVersion(new SchemaVersion(_applicationVersion));
       }
 
       private void UpdateSchemaVersion(SchemaVersion version)

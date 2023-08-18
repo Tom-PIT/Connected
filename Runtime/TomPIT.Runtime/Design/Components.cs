@@ -4,17 +4,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
-using TomPIT.Compilation;
-using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Resources;
-using TomPIT.Connectivity;
-using TomPIT.Deployment;
-using TomPIT.Design.Serialization;
-using TomPIT.Diagnostics;
-using TomPIT.Exceptions;
-using TomPIT.Middleware;
-using TomPIT.Reflection;
-using TomPIT.Storage;
 
 namespace TomPIT.Design
 {
@@ -170,7 +159,7 @@ namespace TomPIT.Design
                 }
                 else
                 {
-                    var content = file.Content is null || !file.Content.Any() ? new byte[0] : Unpack(file.Content);
+                    var content = Unpack(file.Content);
 
                     Tenant.GetService<IStorageService>().Restore(new Blob
                     {
@@ -241,6 +230,9 @@ namespace TomPIT.Design
 
         private static byte[] Unpack(string packed)
         {
+            if (string.IsNullOrEmpty(packed))
+                return Array.Empty<byte>();
+
             using var input = new MemoryStream(Convert.FromBase64String(packed));
             using var zip = new GZipStream(input, CompressionMode.Decompress);
             using var output = new MemoryStream();

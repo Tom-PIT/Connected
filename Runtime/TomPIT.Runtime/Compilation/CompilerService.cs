@@ -308,7 +308,13 @@ namespace TomPIT.Compilation
 
 			Instance.SysProxy.Development.Notifications.ScriptChanged(microService, component, id);
 			RemoveScript(sourceCode.Id);
-			Invalidated?.Invoke(this, sourceCode.Id);
+
+			try
+			{
+				Invalidated?.Invoke(this, sourceCode.Id);
+			}
+			catch { }
+
 			InvalidateReferences(component, id);
 
 			if (Tenant.GetService<IDiscoveryService>().Manifests is IManifestDiscoveryNotification notification)
@@ -342,12 +348,20 @@ namespace TomPIT.Compilation
 		{
 			RemoveScript(e.SourceCode);
 
-			Invalidated?.Invoke(this, e.SourceCode);
+			try
+			{
+				Invalidated?.Invoke(this, e.SourceCode);
+			}
+			catch { }
 
 			InvalidateReferences(e.Container, e.SourceCode);
 
-			if (Tenant.GetService<IDiscoveryService>().Manifests is IManifestDiscoveryNotification notification)
-				notification.NotifyChanged(e.MicroService, e.Container, e.SourceCode);
+			try
+			{
+				if (Tenant.GetService<IDiscoveryService>().Manifests is IManifestDiscoveryNotification notification)
+					notification.NotifyChanged(e.MicroService, e.Container, e.SourceCode);
+			}
+			catch { }
 		}
 
 		private void InvalidateReferences(Guid container, Guid script)
@@ -358,7 +372,11 @@ namespace TomPIT.Compilation
 				{
 					RemoveScript(reference.Key);
 
-					Invalidated?.Invoke(this, reference.Key);
+					try
+					{
+						Invalidated?.Invoke(this, reference.Key);
+					}
+					catch { }
 
 					References.Remove(reference.Key, out _);
 				}
