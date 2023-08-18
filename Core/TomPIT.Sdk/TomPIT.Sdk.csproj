@@ -29,4 +29,7 @@
 		<ProjectReference Include="..\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
 		<ProjectReference Include="..\TomPIT.Core\TomPIT.Core.csproj" />
 	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Middleware\Storage\" />
+	</ItemGroup>
 </Project>

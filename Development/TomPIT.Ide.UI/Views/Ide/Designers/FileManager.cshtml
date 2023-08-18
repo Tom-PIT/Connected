@@ -18,7 +18,7 @@
 </div>
 <script>
     $('#editFileManager').dxFileManager({
-         fileProvider: new DevExpress.fileProviders.Remote({
+        fileProvider: new DevExpress.fileManagement.RemoteFileSystemProvider({
              endpointUrl: "@url",
              thumbnailExpr:'icon'
          }),
