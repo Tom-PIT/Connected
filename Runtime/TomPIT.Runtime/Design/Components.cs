@@ -170,7 +170,7 @@ namespace TomPIT.Design
 				}
 				else
 				{
-					var content = string.IsNullOrEmpty(file.Content) ? Array.Empty<byte>() : Unpack(file.Content);
+					var content = Unpack(file.Content);
 
 					Tenant.GetService<IStorageService>().Restore(new Blob
 					{
@@ -241,6 +241,9 @@ namespace TomPIT.Design
 
 		private static byte[] Unpack(string packed)
 		{
+			if (string.IsNullOrEmpty(packed))
+				return Array.Empty<byte>();
+
 			using var input = new MemoryStream(Convert.FromBase64String(packed));
 			using var zip = new GZipStream(input, CompressionMode.Decompress);
 			using var output = new MemoryStream();
