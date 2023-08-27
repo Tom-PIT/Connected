@@ -6,6 +6,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Text;
 using TomPIT.Environment;
+using TomPIT.Middleware;
 using TomPIT.Models;
 using TomPIT.Runtime;
 using TomPIT.Security;
@@ -181,18 +182,18 @@ namespace TomPIT.Controllers
 			var expiration = model.RememberMe ? DateTimeOffset.UtcNow.AddDays(30) : DateTimeOffset.UtcNow.AddMinutes(20);
 
 			var content = new JObject
-				{
-					 { "jwt",token },
-					 { "endpoint",model.Endpoint   },
-					 { "expiration",expiration.Ticks   }
-				};
+					 {
+							{ "jwt",token },
+							{ "endpoint",MiddlewareDescriptor.Current.Tenant.Url   },
+							{ "expiration",expiration.Ticks   }
+					 };
 
 			Response.Cookies.Append(key, Convert.ToBase64String(Encoding.UTF8.GetBytes(Serializer.Serialize(content))), new CookieOptions
 			{
 				HttpOnly = true,
 				Expires = expiration
 			}
-							);
+								 );
 		}
 	}
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using TomPIT.Connectivity;
 using TomPIT.Diagnostics;
 using TomPIT.Middleware;
@@ -9,126 +10,126 @@ using TomPIT.Security.PermissionDescriptors;
 
 namespace TomPIT.Security.AuthorizationProviders
 {
-	internal class RoleAuthorizationProvider : IAuthorizationProvider
-	{
-		public string Id => "Roles";
+    internal class RoleAuthorizationProvider : IAuthorizationProvider
+    {
+        public string Id => "Roles";
 
-		public AuthorizationProviderResult Authorize(IMiddlewareContext context, IPermission permission, AuthorizationArgs e, Dictionary<string, object> state)
-		{
-			var roles = state["roles"] as List<Guid>;
+        public async Task<AuthorizationProviderResult> Authorize(IMiddlewareContext context, IPermission permission, AuthorizationArgs e, Dictionary<string, object> state)
+        {
+            var roles = state["roles"] as List<Guid>;
 
-			if (roles.Contains(new Guid(permission.Evidence)))
-			{
-				switch (permission.Value)
-				{
-					case PermissionValue.NotSet:
-						return AuthorizationProviderResult.NotHandled;
-					case PermissionValue.Allow:
-						return AuthorizationProviderResult.Success;
-					case PermissionValue.Deny:
-						return AuthorizationProviderResult.Fail;
-					default:
-						throw new NotSupportedException();
-				}
-			}
+            if (roles.Contains(new Guid(permission.Evidence)))
+            {
+                switch (permission.Value)
+                {
+                    case PermissionValue.NotSet:
+                        return AuthorizationProviderResult.NotHandled;
+                    case PermissionValue.Allow:
+                        return AuthorizationProviderResult.Success;
+                    case PermissionValue.Deny:
+                        return AuthorizationProviderResult.Fail;
+                    default:
+                        throw new NotSupportedException();
+                }
+            }
 
-			return AuthorizationProviderResult.NotHandled;
-		}
+            return await Task.FromResult(AuthorizationProviderResult.NotHandled);
+        }
 
-		public AuthorizationProviderResult PreAuthorize(IMiddlewareContext context, AuthorizationArgs e, Dictionary<string, object> state)
-		{
-			var roles = ResolveImplicitRoles(context, e);
+        public async Task<AuthorizationProviderResult> PreAuthorize(IMiddlewareContext context, AuthorizationArgs e, Dictionary<string, object> state)
+        {
+            var roles = ResolveImplicitRoles(context, e);
 
-			state.Add("roles", roles);
+            state.Add("roles", roles);
 
-			if (e.User != Guid.Empty)
-			{
-				var membership = context.Tenant.GetService<IAuthorizationService>() as IMembershipProvider;
+            if (e.User != Guid.Empty)
+            {
+                var membership = context.Tenant.GetService<IAuthorizationService>() as IMembershipProvider;
 
-				if (membership != null)
-				{
-					var list = membership.QueryMembership(e.User);
+                if (membership != null)
+                {
+                    var list = membership.QueryMembership(e.User);
 
-					if (list.Count > 0)
-						roles.AddRange(list.Select(f => f.Role));
-				}
-			}
+                    if (list.Count > 0)
+                        roles.AddRange(list.Select(f => f.Role));
+                }
+            }
 
-			if (roles.Contains(SecurityUtils.FullControlRole))
-				return AuthorizationProviderResult.Success;
+            if (roles.Contains(SecurityUtils.FullControlRole))
+                return AuthorizationProviderResult.Success;
 
-			return AuthorizationProviderResult.NotHandled;
-		}
+            return await Task.FromResult(AuthorizationProviderResult.NotHandled);
+        }
 
-		public List<IPermissionSchemaDescriptor> QueryDescriptors(IMiddlewareContext context)
-		{
-			var roles = context.Tenant.GetService<IRoleService>().Query();
-			var r = new List<IPermissionSchemaDescriptor>();
+        public async Task<List<IPermissionSchemaDescriptor>> QueryDescriptors(IMiddlewareContext context)
+        {
+            var roles = context.Tenant.GetService<IRoleService>().Query();
+            var r = new List<IPermissionSchemaDescriptor>();
 
-			foreach (var i in roles)
-			{
-				r.Add(new SchemaDescriptor
-				{
-					Title = i.Name,
-					Id = i.Token.ToString()
-				});
-			}
+            foreach (var i in roles)
+            {
+                r.Add(new SchemaDescriptor
+                {
+                    Title = i.Name,
+                    Id = i.Token.ToString()
+                });
+            }
 
-			return r;
-		}
+            return await Task.FromResult(r);
+        }
 
-		private List<Guid> ResolveImplicitRoles(IMiddlewareContext context, AuthorizationArgs e)
-		{
-			var r = new List<Guid>
-			{
-				SecurityUtils.EveryoneRole
-			};
+        private List<Guid> ResolveImplicitRoles(IMiddlewareContext context, AuthorizationArgs e)
+        {
+            var r = new List<Guid>
+            {
+                SecurityUtils.EveryoneRole
+            };
 
-			if (e.User == Guid.Empty)
-				r.Add(SecurityUtils.AnonymousRole);
-			else
-			{
-				var u = context.Tenant.GetService<IUserService>().Select(e.User.ToString());
+            if (e.User == Guid.Empty)
+                r.Add(SecurityUtils.AnonymousRole);
+            else
+            {
+                var u = context.Tenant.GetService<IUserService>().Select(e.User.ToString());
 
-				if (u == null)
-				{
-					context.Tenant.LogWarning(GetType().ShortName(), "Authenticated user not found. Request will be treated as anonymous.", LogCategories.Security);
-					return r;
-				}
+                if (u == null)
+                {
+                    context.Tenant.LogWarning(GetType().ShortName(), "Authenticated user not found. Request will be treated as anonymous.", LogCategories.Security);
+                    return r;
+                }
 
-				r.Add(SecurityUtils.AuthenticatedRole);
+                r.Add(SecurityUtils.AuthenticatedRole);
 
-				if (u.LoginName.Contains('\\'))
-					r.Add(SecurityUtils.DomainIdentityRole);
-				else
-					r.Add(SecurityUtils.LocalIdentityRole);
-			}
+                if (u.LoginName.Contains('\\'))
+                    r.Add(SecurityUtils.DomainIdentityRole);
+                else
+                    r.Add(SecurityUtils.LocalIdentityRole);
+            }
 
-			return r;
-		}
+            return r;
+        }
 
-		public static bool IsInImplicitRole(ITenant tenant, Guid user, IRole role)
-		{
-			if (role.Token == SecurityUtils.AnonymousRole)
-				return user == Guid.Empty;
-			else if (role.Token == SecurityUtils.AuthenticatedRole)
-				return user != Guid.Empty;
-			else if (role.Token == SecurityUtils.EveryoneRole)
-				return true;
-			else
-			{
-				var u = tenant.GetService<IUserService>().Select(user.ToString());
+        public static bool IsInImplicitRole(ITenant tenant, Guid user, IRole role)
+        {
+            if (role.Token == SecurityUtils.AnonymousRole)
+                return user == Guid.Empty;
+            else if (role.Token == SecurityUtils.AuthenticatedRole)
+                return user != Guid.Empty;
+            else if (role.Token == SecurityUtils.EveryoneRole)
+                return true;
+            else
+            {
+                var u = tenant.GetService<IUserService>().Select(user.ToString());
 
-				if (u == null)
-					return false;
+                if (u == null)
+                    return false;
 
-				if (role.Token == SecurityUtils.LocalIdentityRole)
-					return u.IsLocal();
-				else if (role.Token == SecurityUtils.DomainIdentityRole)
-					return !u.IsLocal();
-			}
+                if (role.Token == SecurityUtils.LocalIdentityRole)
+                    return u.IsLocal();
+                else if (role.Token == SecurityUtils.DomainIdentityRole)
+                    return !u.IsLocal();
+            }
 
-			return false;
-		}
-	}
+            return false;
+        }
+    }
 }

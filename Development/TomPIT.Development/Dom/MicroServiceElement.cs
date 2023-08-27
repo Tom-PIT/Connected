@@ -41,7 +41,6 @@ namespace TomPIT.Dom
 			var refs = Template.References(Environment, MicroService.Token);
 
 			Items.Add(new ReferencesElement(this, refs));
-			Items.Add(new VersionControlElement(this));
 
 			foreach (var i in Folders.OrderBy(f => f.Name))
 				Items.Add(new FolderElement(this, i));
@@ -57,12 +56,6 @@ namespace TomPIT.Dom
 
 		public override void LoadChildren(string id)
 		{
-			if (string.Compare(id, VersionControlElement.ElementId, true) == 0)
-			{
-				Items.Add(new VersionControlElement(this));
-				return;
-			}
-
 			var folder = Folders.FirstOrDefault(f => f.Token == new Guid(id));
 
 			if (folder != null)

@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Routing;
+using System;
 using System.Net;
-using Microsoft.AspNetCore.Routing;
 using TomPIT.Middleware;
 using TomPIT.Storage;
 

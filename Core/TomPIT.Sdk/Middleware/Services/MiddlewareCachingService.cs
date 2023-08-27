@@ -2,264 +2,250 @@
 using System.Collections.Generic;
 using System.Reflection;
 using TomPIT.Caching;
+using TomPIT.Data.Storage;
 using TomPIT.Reflection;
 
 namespace TomPIT.Middleware.Services
 {
-	internal class MiddlewareCachingService : MiddlewareComponent, IMiddlewareCachingService
-	{
-		private IDataCachingService _contextCache;
-		public MiddlewareCachingService(IMiddlewareContext context) : base(context)
-		{
-		}
+    internal class MiddlewareCachingService : MiddlewareComponent, IMiddlewareCachingService
+    {
+        private IDataCachingService _contextCache;
+        public MiddlewareCachingService(IMiddlewareContext context, ITransactionContext transactions) : base(context)
+        {
+            Transactions = transactions;
+        }
+        private ITransactionContext Transactions { get; }
+        public bool Exists(string key)
+        {
+            return ContextCache.Exists(key) || Context.Tenant.GetService<IDataCachingService>().Exists(key);
+        }
 
-		public bool Exists(string key)
-		{
-			return ContextCache.Exists(key) || Context.Tenant.GetService<IDataCachingService>().Exists(key);
-		}
+        public bool IsEmpty(string key)
+        {
+            return ContextCache.IsEmpty(key) && Context.Tenant.GetService<IDataCachingService>().IsEmpty(key);
+        }
 
-		public bool IsEmpty(string key)
-		{
-			return ContextCache.IsEmpty(key) && Context.Tenant.GetService<IDataCachingService>().IsEmpty(key);
-		}
+        public void CreateKey(string key)
+        {
+            Context.Tenant.GetService<IDataCachingService>().CreateKey(key);
+        }
 
-		public void CreateKey(string key)
-		{
-			Context.Tenant.GetService<IDataCachingService>().CreateKey(key);
-		}
+        public List<T> All<T>(string key) where T : class
+        {
+            return Merge(ContextCache.All<T>(Context, key), Context.Tenant.GetService<IDataCachingService>().All<T>(Context, key));
+        }
 
-		public List<T> All<T>(string key) where T : class
-		{
-			return Merge(ContextCache.All<T>(Context, key), Context.Tenant.GetService<IDataCachingService>().All<T>(Context, key));
-		}
+        public T Get<T>(string key, Func<T, bool> matchEvaluator, CacheRetrieveHandler<T> retrieve) where T : class
+        {
+            if (!Transactions.IsDirty)
+                return Context.Tenant.GetService<IDataCachingService>().Get<T>(Context, key, matchEvaluator, retrieve);
 
-		public T Get<T>(string key, Func<T, bool> matchEvaluator, CacheRetrieveHandler<T> retrieve) where T : class
-		{
-			if(!IsTransactionDirty)
-				return Context.Tenant.GetService<IDataCachingService>().Get<T>(Context, key, matchEvaluator, retrieve);
+            return ContextCache.Get(Context, key, matchEvaluator, (f) =>
+            {
+                var shared = Context.Tenant.GetService<IDataCachingService>().Get<T>(Context, key, matchEvaluator, null);
 
-			return ContextCache.Get(Context, key, matchEvaluator, (f) =>
-			{
-				var shared = Context.Tenant.GetService<IDataCachingService>().Get<T>(Context, key, matchEvaluator, null);
+                if (shared is not null)
+                    return shared;
 
-				if (shared is not null)
-					return shared;
+                return retrieve(f);
+            });
+        }
 
-				return retrieve(f);
-			});
-		}
+        public T Get<T>(string key, string id, CacheRetrieveHandler<T> retrieve) where T : class
+        {
+            if (!Transactions.IsDirty)
+                return Context.Tenant.GetService<IDataCachingService>().Get<T>(Context, key, id, retrieve);
 
-		public T Get<T>(string key, string id, CacheRetrieveHandler<T> retrieve) where T : class
-		{
-			if (!IsTransactionDirty)
-				return Context.Tenant.GetService<IDataCachingService>().Get<T>(Context, key, id, retrieve);
+            return ContextCache.Get(Context, key, id, (f) =>
+            {
+                var shared = Context.Tenant.GetService<IDataCachingService>().Get<T>(Context, key, id);
 
-			return ContextCache.Get(Context, key, id, (f) =>
-			{
-				var shared = Context.Tenant.GetService<IDataCachingService>().Get<T>(Context, key, id);
+                if (shared is not null)
+                    return shared;
 
-				if (shared is not null)
-					return shared;
+                return retrieve(f);
+            });
+        }
 
-				return retrieve(f);
-			});
-		}
+        public T Get<T>(string key, Func<dynamic, bool> predicate, CacheRetrieveHandler<T> retrieve) where T : class
+        {
+            if (!Transactions.IsDirty)
+                return Context.Tenant.GetService<IDataCachingService>().Get<T>(Context, key, predicate, retrieve);
 
-		public T Get<T>(string key, Func<dynamic, bool> predicate, CacheRetrieveHandler<T> retrieve) where T : class
-		{
-			if (!IsTransactionDirty)
-				return Context.Tenant.GetService<IDataCachingService>().Get<T>(Context, key, predicate, retrieve);
+            return ContextCache.Get(Context, key, predicate, (f) =>
+            {
+                var shared = Context.Tenant.GetService<IDataCachingService>().Get<T>(Context, key, predicate);
 
-			return ContextCache.Get(Context, key, predicate, (f) =>
-			{
-				var shared = Context.Tenant.GetService<IDataCachingService>().Get<T>(Context, key, predicate);
+                if (shared is not null)
+                    return shared;
 
-				if (shared is not null)
-					return shared;
-
-				return retrieve(f);
-			});
-		}
+                return retrieve(f);
+            });
+        }
 
 
-		public T Get<T>(string key, string id) where T : class
-		{
-			var contextItem = ContextCache.Get<T>(Context, key, id);
+        public T Get<T>(string key, string id) where T : class
+        {
+            var contextItem = ContextCache.Get<T>(Context, key, id);
 
-			if (contextItem is not null)
-				return contextItem;
+            if (contextItem is not null)
+                return contextItem;
 
-			return Context.Tenant.GetService<IDataCachingService>().Get<T>(Context, key, id);
-		}
+            return Context.Tenant.GetService<IDataCachingService>().Get<T>(Context, key, id);
+        }
 
-		public T Get<T>(string key, Func<dynamic, bool> predicate) where T : class
-		{
-			var contextItem = ContextCache.Get<T>(Context, key, predicate);
+        public T Get<T>(string key, Func<dynamic, bool> predicate) where T : class
+        {
+            var contextItem = ContextCache.Get<T>(Context, key, predicate);
 
-			if (contextItem is not null)
-				return contextItem;
+            if (contextItem is not null)
+                return contextItem;
 
-			return Context.Tenant.GetService<IDataCachingService>().Get<T>(Context, key, predicate);
-		}
+            return Context.Tenant.GetService<IDataCachingService>().Get<T>(Context, key, predicate);
+        }
 
-		public void Clear(string key)
-		{
-			ContextCache.Clear(key);
-			Context.Tenant.GetService<IDataCachingService>().Clear(key);
-		}
-		public T First<T>(string key) where T : class
-		{
-			if (ContextCache.First<T>(Context, key) is T result)
-				return result;
+        public void Clear(string key)
+        {
+            ContextCache.Clear(key);
+            Context.Tenant.GetService<IDataCachingService>().Clear(key);
+        }
+        public T First<T>(string key) where T : class
+        {
+            if (ContextCache.First<T>(Context, key) is T result)
+                return result;
 
-			return Context.Tenant.GetService<IDataCachingService>().First<T>(Context, key);
-		}
+            return Context.Tenant.GetService<IDataCachingService>().First<T>(Context, key);
+        }
 
-		public List<T> Where<T>(string key, Func<dynamic, bool> predicate) where T : class
-		{
-			return Merge(ContextCache.Where<T>(Context, key, predicate), Context.Tenant.GetService<IDataCachingService>().Where<T>(Context, key, predicate));
-		}
+        public List<T> Where<T>(string key, Func<dynamic, bool> predicate) where T : class
+        {
+            return Merge(ContextCache.Where<T>(Context, key, predicate), Context.Tenant.GetService<IDataCachingService>().Where<T>(Context, key, predicate));
+        }
 
-		public T Set<T>(string key, string id, T instance) where T : class
-		{
-			if (!IsTransactionDirty)
-				return Context.Tenant.GetService<IDataCachingService>().Set(key, id, instance);
+        public T Set<T>(string key, string id, T instance) where T : class
+        {
+            if (!Transactions.IsDirty)
+                return Context.Tenant.GetService<IDataCachingService>().Set(key, id, instance);
 
-			return ContextCache.Set(key, id, instance);
-		}
+            return ContextCache.Set(key, id, instance);
+        }
 
-		public T Set<T>(string key, string id, T instance, TimeSpan duration) where T : class
-		{
-			if (!IsTransactionDirty)
-				return Context.Tenant.GetService<IDataCachingService>().Set(key, id, instance, duration);
+        public T Set<T>(string key, string id, T instance, TimeSpan duration) where T : class
+        {
+            if (!Transactions.IsDirty)
+                return Context.Tenant.GetService<IDataCachingService>().Set(key, id, instance, duration);
 
-			return ContextCache.Set(key, id, instance, duration);
-		}
+            return ContextCache.Set(key, id, instance, duration);
+        }
 
-		public T Set<T>(string key, string id, T instance, TimeSpan duration, bool slidingExpiration) where T : class
-		{
-			if (!IsTransactionDirty)
-				return Context.Tenant.GetService<IDataCachingService>().Set(key, id, instance, duration, slidingExpiration);
+        public T Set<T>(string key, string id, T instance, TimeSpan duration, bool slidingExpiration) where T : class
+        {
+            if (!Transactions.IsDirty)
+                return Context.Tenant.GetService<IDataCachingService>().Set(key, id, instance, duration, slidingExpiration);
 
-			return ContextCache.Set(key, id, instance, duration, slidingExpiration);
-		}
+            return ContextCache.Set(key, id, instance, duration, slidingExpiration);
+        }
 
-		public void Remove(string key, string id)
-		{
-			ContextCache.Remove(key, new List<string> { id });
-			Context.Tenant.GetService<IDataCachingService>().Remove(key, new List<string> { id });
-		}
+        public void Remove(string key, string id)
+        {
+            ContextCache.Remove(key, new List<string> { id });
+            Context.Tenant.GetService<IDataCachingService>().Remove(key, new List<string> { id });
+        }
 
-		public void Remove(string key, List<string> ids)
-		{
-			ContextCache.Remove(key, ids);
-			Context.Tenant.GetService<IDataCachingService>().Remove(key, ids);
-		}
+        public void Remove(string key, List<string> ids)
+        {
+            ContextCache.Remove(key, ids);
+            Context.Tenant.GetService<IDataCachingService>().Remove(key, ids);
+        }
 
-		public void Remove<T>(string key, Func<dynamic, bool> predicate) where T : class
-		{
-			ContextCache.Remove<T>(Context, key, predicate);
-			Context.Tenant.GetService<IDataCachingService>().Remove<T>(Context, key, predicate);
-		}
+        public void Remove<T>(string key, Func<dynamic, bool> predicate) where T : class
+        {
+            ContextCache.Remove<T>(Context, key, predicate);
+            Context.Tenant.GetService<IDataCachingService>().Remove<T>(Context, key, predicate);
+        }
 
-		public string GenerateKey(params object[] parameters)
-		{
-			return Context.Tenant.GetService<IDataCachingService>().GenerateKey(parameters);
-		}
+        public string GenerateKey(params object[] parameters)
+        {
+            return Context.Tenant.GetService<IDataCachingService>().GenerateKey(parameters);
+        }
 
-		public string GenerateRandomKey(string key)
-		{
-			return Context.Tenant.GetService<IDataCachingService>().GenerateRandomKey(key);
-		}
+        public string GenerateRandomKey(string key)
+        {
+            return Context.Tenant.GetService<IDataCachingService>().GenerateRandomKey(key);
+        }
 
-		public int Count(string key)
-		{
-			return ContextCache.Count(key);
-		}
+        public int Count(string key)
+        {
+            return ContextCache.Count(key);
+        }
 
-		public void Reset(string key)
-		{
-			ContextCache.Clear(key);
-			Context.Tenant.GetService<IDataCachingService>().Reset(key);
-		}
+        public void Reset(string key)
+        {
+            ContextCache.Clear(key);
+            Context.Tenant.GetService<IDataCachingService>().Reset(key);
+        }
 
-		public void Flush()
-		{
-			Context.Tenant.GetService<IDataCachingService>().Merge(Context, ContextCache);
-		}
+        public void Flush()
+        {
+            Context.Tenant.GetService<IDataCachingService>().Merge(Context, ContextCache);
+        }
 
-		private static List<T> Merge<T>(List<T> contextItems, List<T> sharedItems)
-		{
-			if (contextItems is null)
-				return sharedItems;
+        private static List<T> Merge<T>(List<T> contextItems, List<T> sharedItems)
+        {
+            if (contextItems is null)
+                return sharedItems;
 
-			var result = new List<T>(contextItems);
+            var result = new List<T>(contextItems);
 
-			foreach (var sharedItem in sharedItems)
-			{
-				if (sharedItem is null)
-					continue;
+            foreach (var sharedItem in sharedItems)
+            {
+                if (sharedItem is null)
+                    continue;
 
-				if (ReflectionExtensions.CacheKeyProperty(sharedItem) is not PropertyInfo cacheProperty)
-				{
-					//Q: should we compare every property and add only if not matched?
-					contextItems.Add(sharedItem);
-					continue;
-				}
+                if (ReflectionExtensions.CacheKeyProperty(sharedItem) is not PropertyInfo cacheProperty)
+                {
+                    //Q: should we compare every property and add only if not matched?
+                    contextItems.Add(sharedItem);
+                    continue;
+                }
 
-				if (FindExisting(cacheProperty.GetValue(sharedItems), contextItems) is null)
-					result.Add(sharedItem);
-			}
+                if (FindExisting(cacheProperty.GetValue(sharedItems), contextItems) is null)
+                    result.Add(sharedItem);
+            }
 
-			return result;
-		}
+            return result;
+        }
 
-		private static T FindExisting<T>(object value, List<T> items)
-		{
-			if (items.IsEmpty())
-				return default;
+        private static T FindExisting<T>(object value, List<T> items)
+        {
+            if (items.IsEmpty())
+                return default;
 
-			if (ReflectionExtensions.CacheKeyProperty(items[0]) is not PropertyInfo cacheProperty)
-				return default;
+            if (ReflectionExtensions.CacheKeyProperty(items[0]) is not PropertyInfo cacheProperty)
+                return default;
 
-			foreach (var item in items)
-			{
-				var id = cacheProperty.GetValue(item);
+            foreach (var item in items)
+            {
+                var id = cacheProperty.GetValue(item);
 
-				if (Types.Compare(id, value))
-					return item;
-			}
+                if (Types.Compare(id, value))
+                    return item;
+            }
 
-			return default;
-		}
+            return default;
+        }
 
-		protected IDataCachingService ContextCache
-		{
-			get
-			{
-				if (_contextCache is null)
-				{
-					if (Context is MiddlewareContext mc && mc.Owner is not null && mc.Owner.Services.Cache is MiddlewareCachingService cache)
-						return cache.ContextCache;
-					else
-						_contextCache = Context.Tenant.GetService<IDataCachingService>().CreateService(Context.Tenant);
-				}
+        protected IDataCachingService ContextCache => _contextCache ??= Context.Tenant.GetService<IDataCachingService>().CreateService(Context.Tenant);
 
-				return _contextCache;
-			}
-		}
+        protected override void OnDisposing()
+        {
+            if (_contextCache is not null)
+            {
+                _contextCache.Dispose();
+                _contextCache = null;
+            }
 
-		protected override void OnDisposing()
-		{
-			if(_contextCache is not null)
-			{
-				_contextCache.Dispose();
-				_contextCache = null;
-			}
-
-			base.OnDisposing();
-		}
-
-		private bool IsTransactionDirty => Context is MiddlewareContext ctx && ctx.Transaction is MiddlewareTransaction transaction && transaction.IsDirty;
-	}
+            base.OnDisposing();
+        }
+    }
 }

@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Middleware;
@@ -16,7 +16,7 @@ namespace TomPIT.App.Models
         private IModelNavigation _navigation = null;
         private JObject _arguments = null;
 
-        public RuntimeModel(RuntimeModel context) : base(context)
+        public RuntimeModel(RuntimeModel context)
         {
             ActionContext = context.ActionContext;
             TempData = context.TempData;
@@ -48,7 +48,7 @@ namespace TomPIT.App.Models
             Controller = controller;
             MicroService = microService;
 
-            Initialize(null);
+            Initialize();
 
             OnInitializing();
         }
@@ -87,11 +87,10 @@ namespace TomPIT.App.Models
 
         public IRuntimeModel Clone()
         {
-            var model = new RuntimeModel(this) 
+            var model = new RuntimeModel(this)
             {
                 Component = Component,
                 Controller = Controller,
-                Endpoint = Endpoint,
                 MicroService = MicroService,
                 Title = Title,
                 ViewConfiguration = ViewConfiguration,

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using TomPIT.Annotations;
 using TomPIT.Connectivity;
@@ -18,16 +19,10 @@ namespace TomPIT.Middleware
 
 		public static T WithContext<T>(this T operation, IMiddlewareContext context) where T : IMiddlewareOperation
 		{
-			if (operation.Context is MiddlewareContext op && context is MiddlewareContext mc)
-			{
-				if (op.Owner == mc)
-					return operation;
+			var property = operation.GetType().GetProperty(nameof(IMiddlewareObject.Context));
 
-				op.Owner = mc;
-
-				if (operation is MiddlewareOperation mop && mc.Transaction != null)
-					mop.Transaction = mc.Transaction;
-			}
+			if (property is not null && property.CanWrite)
+				property.SetValue(operation, context);
 
 			return operation;
 		}
@@ -65,7 +60,7 @@ namespace TomPIT.Middleware
 
 			foreach (var property in properties)
 			{
-				var reflected = component.GetType().GetProperty(property.Key, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance| BindingFlags.IgnoreCase);
+				var reflected = component.GetType().GetProperty(property.Key, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase);
 
 				if (reflected == null)
 					throw new RuntimeException($"{SR.ErrPropertyNotFound} ({property.Key})");
@@ -89,8 +84,8 @@ namespace TomPIT.Middleware
 			if (exception.Logged)
 				return;
 
-			using var ctx = new MiddlewareContext(MiddlewareDescriptor.Current.Tenant.Url);
-			
+			using var ctx = new MiddlewareContext();
+
 			LogError(exception, ctx, category);
 		}
 
@@ -111,7 +106,7 @@ namespace TomPIT.Middleware
 			if (exception.Logged)
 				return;
 
-			using var ctx = new MiddlewareContext(MiddlewareDescriptor.Current.Tenant.Url);
+			using var ctx = new MiddlewareContext();
 
 			LogWarning(exception, ctx, category);
 		}
@@ -125,5 +120,23 @@ namespace TomPIT.Middleware
 
 			context.Services.Diagnostic.Warning(exception.Source, exception.ToString(), category);
 		}
+
+		public static List<Type> ResolveImplementedMiddleware(Type type)
+		{
+			var result = new List<Type>();
+			var interfaces = type.GetInterfaces();
+
+			foreach (var i in interfaces)
+			{
+				if (typeof(IMiddleware).FullName is not string fullName)
+					continue;
+
+				if (i.GetInterface(fullName) is not null)
+					result.Add(i);
+			}
+
+			return result;
+		}
+
 	}
 }

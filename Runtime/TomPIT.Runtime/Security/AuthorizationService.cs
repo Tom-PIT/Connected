@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading.Tasks;
 using TomPIT.Annotations;
 using TomPIT.Caching;
 using TomPIT.Collections;
@@ -106,6 +107,11 @@ namespace TomPIT.Security
 
         public IAuthorizationResult Authorize(IMiddlewareContext context, AuthorizationArgs e)
         {
+            return AsyncUtils.RunSync(() => AuthorizeAsync(context, e));
+        }
+
+        public async Task<IAuthorizationResult> AuthorizeAsync(IMiddlewareContext context, AuthorizationArgs e)
+        {
             if (context is IElevationContext ec && ec.State == ElevationContextState.Granted)
                 return AuthorizationResult.OK(0);
 
@@ -126,7 +132,7 @@ namespace TomPIT.Security
 
             foreach (var i in Providers)
             {
-                if (i.PreAuthorize(context, e, state) == AuthorizationProviderResult.Success)
+                if (await i.PreAuthorize(context, e, state) == AuthorizationProviderResult.Success)
                     return AuthorizationResult.OK(permissions.Count);
             }
 
@@ -147,7 +153,7 @@ namespace TomPIT.Security
             {
                 foreach (var j in Providers)
                 {
-                    var r = j.Authorize(context, i, e, state);
+                    var r = await j.Authorize(context, i, e, state);
 
                     switch (r)
                     {
@@ -339,7 +345,7 @@ namespace TomPIT.Security
             if (container == null)
                 return;
 
-            using var context = new MiddlewareContext(Tenant.Url);
+            using var context = new MiddlewareContext();
 
             Authorize(context, container.Routes, context.Services.Identity.IsAuthenticated
                 ? context.Services.Identity.User.Token
@@ -380,7 +386,12 @@ namespace TomPIT.Security
 
         PermissionValue IPermissionService.Toggle(string claim, string schema, string evidence, string primaryKey, string permissionDescriptor)
         {
-            var value = Instance.SysProxy.Management.Security.SetPermission(evidence, schema, claim, permissionDescriptor, primaryKey, Guid.Empty, null);
+            return AsyncUtils.RunSync(() => ((IPermissionService)this).ToggleAsync(claim, schema, evidence, primaryKey, permissionDescriptor));
+        }
+
+        async Task<PermissionValue> IPermissionService.ToggleAsync(string claim, string schema, string evidence, string primaryKey, string permissionDescriptor)
+        {
+            var value = await Instance.SysProxy.Management.Security.SetPermission(evidence, schema, claim, permissionDescriptor, primaryKey, Guid.Empty, null);
 
             NotifyPermissionChanged(this, new PermissionEventArgs(Guid.Empty, evidence, schema, claim, primaryKey, permissionDescriptor));
 
@@ -450,9 +461,20 @@ namespace TomPIT.Security
 
         public void AuthorizePolicies(IMiddlewareContext context, object instance)
         {
-            AuthorizePolicies(context, instance, null);
+            AsyncUtils.RunSync(() => AuthorizePoliciesAsync(context, instance, null));
         }
+
+        public async Task AuthorizePoliciesAsync(IMiddlewareContext context, object instance)
+        {
+            await AuthorizePoliciesAsync(context, instance, null);
+        }
+
         public void AuthorizePolicies(IMiddlewareContext context, object instance, string method)
+        {
+            AsyncUtils.RunSync(() => AuthorizePoliciesAsync(context, instance, method));
+        }
+
+        public async Task AuthorizePoliciesAsync(IMiddlewareContext context, object instance, string method)
         {
             var attributes = instance.GetType().GetCustomAttributes(true);
 

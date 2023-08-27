@@ -1,108 +1,106 @@
-﻿using System.ComponentModel;
-using System.Linq;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using System.ComponentModel;
 using TomPIT.Annotations;
 using TomPIT.Reflection;
-using TomPIT.Runtime;
 
 namespace TomPIT.Middleware
 {
-	public abstract class MiddlewareObject : IMiddlewareObject
-	{
-		private IMiddlewareContext _context = null;
+    public abstract class MiddlewareObject : IMiddlewareObject
+    {
+        private IMiddlewareContext _context = null;
 
-		protected MiddlewareObject()
-		{
+        protected MiddlewareObject()
+        {
 
-		}
+        }
 
-		protected MiddlewareObject(IMiddlewareContext context)
-		{
-			HasOwnContext = false;
-			_context = context;
-		}
+        protected MiddlewareObject(IMiddlewareContext context)
+        {
+            HasOwnContext = false;
+            _context = context;
+        }
 
-		private bool Disposed { get; set; }
-		private bool HasOwnContext { get; set; }
+        private bool Disposed { get; set; }
+        private bool HasOwnContext { get; set; }
 
-		[JsonIgnore]
-		[SkipValidation]
-		[Browsable(false)]
-		public IMiddlewareContext Context
-		{
-			get
-			{
-				if (_context == null && !Disposed)
-				{
-					_context = new MiddlewareContext(MiddlewareDescriptor.Current.Tenant?.Url);
+        [JsonIgnore]
+        [SkipValidation]
+        [Browsable(false)]
+        public IMiddlewareContext Context
+        {
+            get
+            {
+                if (_context is null && !Disposed)
+                {
+                    _context = new MiddlewareContext();
 
-					HasOwnContext = true;
+                    HasOwnContext = true;
 
-					OnContextChanged();
-				}
+                    OnContextChanged();
+                }
 
-				return _context;
-			}
-			/*
+                return _context;
+            }
+            /*
 			 * this setter must be present because of reflection
 			 */
-			private set
-			{
-				if (_context != value)
-				{
-					if (_context != null && HasOwnContext)
-					{
-						_context.Dispose();
-						_context = null;
-					}
+            protected set
+            {
+                if (_context != value)
+                {
+                    if (_context != null && HasOwnContext)
+                    {
+                        _context.Dispose();
+                        _context = null;
+                    }
 
-					_context = value;
+                    _context = value;
 
-					HasOwnContext = false;
+                    HasOwnContext = false;
 
-					OnContextChanged();
-				}
-			}
-		}
+                    OnContextChanged();
+                }
+            }
+        }
 
-		protected virtual void OnContextChanged()
-		{
+        protected virtual void OnContextChanged()
+        {
 
-		}
+        }
 
-		public override string ToString()
-		{
-			return GetType().ShortName();
-		}
+        public override string ToString()
+        {
+            return GetType().ShortName();
+        }
 
-		protected virtual void Dispose(bool disposing)
-		{
-			if (!Disposed)
-			{
-				if (disposing)
-				{
-					OnDisposing();
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!Disposed)
+            {
+                if (disposing)
+                {
+                    OnDisposing();
 
-					if (HasOwnContext && _context != null)
-						_context.Dispose();
+                    if (HasOwnContext && _context is not null)
+                        _context.Dispose();
 
-					_context = null;
+                    _context = null;
 
-				}
+                }
 
-				Disposed = true;
-			}
-		}
+                Disposed = true;
+            }
+        }
 
-		protected virtual void OnDisposing()
-		{
+        protected virtual void OnDisposing()
+        {
 
-		}
+        }
 
-		public void Dispose()
-		{
-			Dispose(true);
-			System.GC.SuppressFinalize(this);
-		}
-	}
+        public void Dispose()
+        {
+            Dispose(true);
+            System.GC.SuppressFinalize(this);
+        }
+    }
 }

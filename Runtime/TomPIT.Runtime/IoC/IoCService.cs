@@ -10,236 +10,246 @@ using TomPIT.ComponentModel.IoC;
 using TomPIT.Connectivity;
 using TomPIT.Diagnostics;
 using TomPIT.Middleware;
+using TomPIT.Runtime;
 using TomPIT.Serialization;
 using TomPIT.Services;
 
 namespace TomPIT.IoC
 {
-	internal class IoCService : ConfigurationRepository<IIoCEndpointConfiguration>, IIoCService
-	{
-		private Lazy<ConcurrentDictionary<string, List<IoCEndpointDescriptor>>> _endpoints = new Lazy<ConcurrentDictionary<string, List<IoCEndpointDescriptor>>>();
-		public IoCService(ITenant tenant) : base(tenant, "iocendpoint")
-		{
-			Tenant.GetService<ICompilerService>().Invalidated += OnInvalidateScript;
-		}
+    internal class IoCService : ConfigurationRepository<IIoCEndpointConfiguration>, IIoCService
+    {
+        private Lazy<ConcurrentDictionary<string, List<IoCEndpointDescriptor>>> _endpoints = new Lazy<ConcurrentDictionary<string, List<IoCEndpointDescriptor>>>();
+        public IoCService(ITenant tenant) : base(tenant, "iocendpoint")
+        {
+            Tenant.GetService<ICompilerService>().Invalidated += OnInvalidateScript;
+        }
 
-		private void OnInvalidateScript(object sender, Guid e)
-		{
-			var obsolete = new List<IoCEndpointDescriptor>();
+        private void OnInvalidateScript(object sender, Guid e)
+        {
+            var obsolete = new List<IoCEndpointDescriptor>();
 
-			foreach (var container in Endpoints)
-			{
-				lock (container.Value)
-				{
-					foreach (var endpoint in container.Value)
-					{
-						/*
+            foreach (var container in Endpoints)
+            {
+                lock (container.Value)
+                {
+                    foreach (var endpoint in container.Value)
+                    {
+                        /*
 						 * It's possible the endpoint couldn't compile and it would mean
 						 * it's lost because it's type is null and initialized property set
 						 * to true. It would never get initialized again, except when 
 						 * touching script directly so it's the best we remove it in any case.
 						 */
-						if (endpoint.Type is null)
-						{
-							obsolete.Add(endpoint);
-							continue;
-						}
+                        if (endpoint.Type is null)
+                        {
+                            obsolete.Add(endpoint);
+                            continue;
+                        }
 
-						if (CompilerExtensions.HasScriptReference(endpoint.Type.Assembly, e))
-							obsolete.Add(endpoint);
-					}
-				}
-			}
+                        if (CompilerExtensions.HasScriptReference(endpoint.Type.Assembly, e))
+                            obsolete.Add(endpoint);
+                    }
+                }
+            }
 
-			foreach (var endpoint in obsolete)
-				OnChanged(endpoint.MicroService, endpoint.Component);
-		}
+            foreach (var endpoint in obsolete)
+                OnChanged(endpoint.MicroService, endpoint.Component);
+        }
 
-		protected override string[] Categories => new string[] { ComponentCategories.IoCEndpoint };
+        protected override string[] Categories => new string[] { ComponentCategories.IoCEndpoint };
 
-		protected override void OnChanged(Guid microService, Guid component)
-		{
-			OnRemoved(microService, component);
-			OnAdded(microService, component);
-		}
+        protected override void OnChanged(Guid microService, Guid component)
+        {
+            OnRemoved(microService, component);
+            OnAdded(microService, component);
+        }
 
-		protected override void OnInitialized()
-		{
-			Parallel.ForEach(All(), (i) =>
-			{
-				OnAdded(i.MicroService(), i.Component);
-			});
-		}
-		protected override void OnAdded(Guid microService, Guid component)
-		{
-			var configuration = Get(component);
+        protected override void OnInitialized()
+        {
+            Parallel.ForEach(All(), (i) =>
+            {
+                OnAdded(i.MicroService(), i.Component);
+            });
+        }
+        protected override void OnAdded(Guid microService, Guid component)
+        {
+            var configuration = Get(component);
 
-			if (configuration == null)
-				return;
+            if (configuration == null)
+                return;
 
-			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
+            var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
 
-			foreach (var endpoint in configuration.Endpoints)
-			{
-				if (string.IsNullOrWhiteSpace(endpoint.Name) || string.IsNullOrWhiteSpace(endpoint.Container))
-					continue;
+            foreach (var endpoint in configuration.Endpoints)
+            {
+                if (string.IsNullOrWhiteSpace(endpoint.Name) || string.IsNullOrWhiteSpace(endpoint.Container))
+                    continue;
 
-				var descriptor = new IoCEndpointDescriptor(Tenant)
-				{
-					Endpoint = endpoint,
-					Component = configuration.Component,
-					MicroService = ms.Token
-				};
+                var descriptor = new IoCEndpointDescriptor(Tenant)
+                {
+                    Endpoint = endpoint,
+                    Component = configuration.Component,
+                    MicroService = ms.Token
+                };
 
-				if (Endpoints.TryGetValue(endpoint.Container, out List<IoCEndpointDescriptor> list))
-				{
-					lock (list)
-						list.Add(descriptor);
-				}
-				else
-				{
-					lock (Endpoints)
-						if (!Endpoints.TryAdd(endpoint.Container, new List<IoCEndpointDescriptor>
-						{
-							descriptor
-						}))
-						{
-							if (!Endpoints.TryGetValue(endpoint.Container, out List<IoCEndpointDescriptor> items))
-								Tenant.LogWarning(nameof(IoCService), $"Cannot register endpoint {configuration.ComponentName()}");
-							else
-							{
-								lock (items)
-									items.Add(descriptor);
-							}
-						}
-				}
-			}
-		}
+                if (Endpoints.TryGetValue(endpoint.Container, out List<IoCEndpointDescriptor> list))
+                {
+                    lock (list)
+                        list.Add(descriptor);
+                }
+                else
+                {
+                    lock (Endpoints)
+                        if (!Endpoints.TryAdd(endpoint.Container, new List<IoCEndpointDescriptor>
+                        {
+                            descriptor
+                        }))
+                        {
+                            if (!Endpoints.TryGetValue(endpoint.Container, out List<IoCEndpointDescriptor> items))
+                                Tenant.LogWarning(nameof(IoCService), $"Cannot register endpoint {configuration.ComponentName()}");
+                            else
+                            {
+                                lock (items)
+                                    items.Add(descriptor);
+                            }
+                        }
+                }
+            }
+        }
 
-		protected override void OnRemoved(Guid microService, Guid component)
-		{
-			lock (Endpoints)
-				foreach (var endpoint in Endpoints)
-				{
-					var targets = endpoint.Value.Where(f => f.Component == component).ToImmutableArray();
+        protected override void OnRemoved(Guid microService, Guid component)
+        {
+            lock (Endpoints)
+                foreach (var endpoint in Endpoints)
+                {
+                    var targets = endpoint.Value.Where(f => f.Component == component).ToImmutableArray();
 
-					if (targets.Any())
-					{
-						lock (endpoint.Value)
-						{
-							foreach (var target in targets)
-								endpoint.Value.Remove(target);
-						}
-					}
-				}
-		}
+                    if (targets.Any())
+                    {
+                        lock (endpoint.Value)
+                        {
+                            foreach (var target in targets)
+                                endpoint.Value.Remove(target);
+                        }
+                    }
+                }
+        }
 
-		public void Invoke(IMiddlewareContext context, IIoCOperation operation, object e = null)
-		{
-			using var ctx = new MicroServiceContext(operation.Configuration().MicroService(), context);
-			var instance = Tenant.GetService<ICompilerService>().CreateInstance<IIoCOperationMiddleware>(ctx, operation, e, operation.Name);
+        public void Invoke(IMiddlewareContext context, IIoCOperation operation, object e = null)
+        {
+            using var ctx = new MicroServiceContext(operation.Configuration().MicroService());
+            var instance = Tenant.GetService<ICompilerService>().CreateInstance<IIoCOperationMiddleware>(ctx, operation, e, operation.Name);
 
-			if (instance is IIoCOperationContext iocContext)
-				iocContext.Operation = operation;
+            instance?.SetContext(context);
 
-			instance.Invoke();
-		}
+            if (instance is IIoCOperationContext iocContext)
+                iocContext.Operation = operation;
 
-		public R Invoke<R>(IMiddlewareContext context, IIoCOperation operation, object e = null)
-		{
-			using var ctx = new MicroServiceContext(operation.Configuration().MicroService(), context);
-			var instance = Tenant.GetService<ICompilerService>().CreateInstance<object>(ctx, operation, e, operation.Name);
+            instance.Invoke();
+        }
 
-			if (instance is IIoCOperationContext iocContext)
-				iocContext.Operation = operation;
+        public R Invoke<R>(IMiddlewareContext context, IIoCOperation operation, object e = null)
+        {
+            using var ctx = new MicroServiceContext(operation.Configuration().MicroService());
+            var instance = Tenant.GetService<ICompilerService>().CreateInstance<object>(ctx, operation, e, operation.Name);
 
-			var method = instance.GetType().GetMethod("Invoke");
+            if (instance is IMiddlewareObject mo)
+                mo.SetContext(context);
 
-			var r = method.Invoke(instance, null);
+            if (instance is IIoCOperationContext iocContext)
+                iocContext.Operation = operation;
 
-			return Marshall.Convert<R>(r);
-		}
+            var method = instance.GetType().GetMethod("Invoke");
 
-		public List<IIoCEndpointMiddleware> CreateEndpoints(IMiddlewareContext context, IIoCOperation operation, object e)
-		{
-			Initialize();
+            var r = method.Invoke(instance, null);
 
-			var result = new List<IIoCEndpointMiddleware>();
-			var endpoints = ResolveEndpoints(operation);
+            return Marshall.Convert<R>(r);
+        }
 
-			if (endpoints == null)
-				return result;
+        public List<IIoCEndpointMiddleware> CreateEndpoints(IMiddlewareContext context, IIoCOperation operation, object e)
+        {
+            Initialize();
 
-			var ctx = new MicroServiceContext(operation.Configuration().MicroService(), context);
+            var result = new List<IIoCEndpointMiddleware>();
+            var endpoints = ResolveEndpoints(operation);
 
-			lock (endpoints)
-				foreach (var endpoint in endpoints)
-				{
-					if (endpoint.Type == null)
-						continue;
+            if (endpoints == null)
+                return result;
 
-					var endpointInstance = Tenant.GetService<ICompilerService>().CreateInstance<IIoCEndpointMiddleware>(ctx, endpoint.Type, e);
+            var ctx = new MicroServiceContext(operation.Configuration().MicroService());
 
-					if (endpointInstance == null)
-						continue;
+            lock (endpoints)
+                foreach (var endpoint in endpoints)
+                {
+                    if (endpoint.Type == null)
+                        continue;
 
-					if (!endpointInstance.CanHandleRequest())
-						continue;
+                    var endpointInstance = Tenant.GetService<ICompilerService>().CreateInstance<IIoCEndpointMiddleware>(ctx, endpoint.Type, e);
 
-					result.Add(endpointInstance);
-				}
+                    if (endpointInstance == null)
+                        continue;
 
-			return result;
-		}
+                    endpointInstance?.SetContext(context);
 
-		public bool HasEndpoints(IMiddlewareContext context, IIoCOperation operation, object e)
-		{
-			Initialize();
+                    if (!endpointInstance.CanHandleRequest())
+                        continue;
 
-			var endpoints = ResolveEndpoints(operation);
+                    result.Add(endpointInstance);
+                }
 
-			if (endpoints == null)
-				return false;
+            return result;
+        }
 
-			using var ctx = new MicroServiceContext(operation.Configuration().MicroService(), context);
+        public bool HasEndpoints(IMiddlewareContext context, IIoCOperation operation, object e)
+        {
+            Initialize();
 
-			lock (endpoints)
-				foreach (var endpoint in endpoints)
-				{
-					if (endpoint.Type == null)
-						continue;
+            var endpoints = ResolveEndpoints(operation);
 
-					var endpointInstance = Tenant.GetService<ICompilerService>().CreateInstance<IIoCEndpointMiddleware>(ctx, endpoint.Type, e);
+            if (endpoints == null)
+                return false;
 
-					if (endpointInstance == null)
-						continue;
+            using var ctx = new MicroServiceContext(operation.Configuration().MicroService());
 
-					if (endpointInstance.CanHandleRequest())
-						return true;
-				}
+            lock (endpoints)
+                foreach (var endpoint in endpoints)
+                {
+                    if (endpoint.Type == null)
+                        continue;
 
-			return false;
-		}
-		private ConcurrentDictionary<string, List<IoCEndpointDescriptor>> Endpoints => _endpoints.Value;
+                    var endpointInstance = Tenant.GetService<ICompilerService>().CreateInstance<IIoCEndpointMiddleware>(ctx, endpoint.Type, e);
 
-		private List<IoCEndpointDescriptor> ResolveEndpoints(IIoCOperation operation)
-		{
-			if (string.IsNullOrWhiteSpace(operation.Name))
-				return null;
+                    if (endpointInstance == null)
+                        continue;
 
-			var name = operation.Name;
-			var ms = Tenant.GetService<IMicroServiceService>().Select(operation.Configuration().MicroService());
-			var component = Tenant.GetService<IComponentService>().SelectComponent(operation.Configuration().Component);
+                    endpointInstance.SetContext(context);
 
-			if (ms == null || component == null)
-				return null;
+                    if (endpointInstance.CanHandleRequest())
+                        return true;
+                }
 
-			var key = $"{ms.Name}/{component.Name}/{name}";
+            return false;
+        }
+        private ConcurrentDictionary<string, List<IoCEndpointDescriptor>> Endpoints => _endpoints.Value;
 
-			if (Endpoints.TryGetValue(key, out List<IoCEndpointDescriptor> result))
-				return result;
+        private List<IoCEndpointDescriptor> ResolveEndpoints(IIoCOperation operation)
+        {
+            if (string.IsNullOrWhiteSpace(operation.Name))
+                return null;
 
-			return null;
-		}
-	}
+            var name = operation.Name;
+            var ms = Tenant.GetService<IMicroServiceService>().Select(operation.Configuration().MicroService());
+            var component = Tenant.GetService<IComponentService>().SelectComponent(operation.Configuration().Component);
+
+            if (ms == null || component == null)
+                return null;
+
+            var key = $"{ms.Name}/{component.Name}/{name}";
+
+            if (Endpoints.TryGetValue(key, out List<IoCEndpointDescriptor> result))
+                return result;
+
+            return null;
+        }
+    }
 }

@@ -93,7 +93,7 @@ namespace TomPIT.Design.Designers
                     var schema = Providers.FirstOrDefault(f => f.Id.Equals(SelectedSchema, StringComparison.OrdinalIgnoreCase));
 
                     if (schema != null)
-                        _descriptors = schema.QueryDescriptors(Environment.Context);
+                        _descriptors = AsyncUtils.RunSync(() => schema.QueryDescriptors(Environment.Context));
 
                     _descriptors = _descriptors.OrderBy(f => f.Title).ToList();
                 }

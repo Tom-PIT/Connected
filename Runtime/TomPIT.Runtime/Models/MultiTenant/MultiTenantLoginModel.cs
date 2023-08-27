@@ -1,13 +1,15 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
+using System.ComponentModel.DataAnnotations;
 using TomPIT.Connectivity;
+using TomPIT.Middleware;
 
 namespace TomPIT.Models.MultiTenant
 {
 	public class MultiTenantLoginModel : LoginModel, ITenantProvider
 	{
 		[Required]
-		public string EndpointUrl { get { return Endpoint; } set { Endpoint = value; } }
+		public string EndpointUrl { get; set; }
+		public string Endpoint => MiddlewareDescriptor.Current.Tenant.Url;
 
 		public override void MapAuthenticate(JObject data)
 		{

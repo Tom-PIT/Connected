@@ -9,6 +9,7 @@ using TomPIT.Configuration;
 using TomPIT.Connectivity;
 using TomPIT.Data;
 using TomPIT.Data.DataProviders;
+using TomPIT.Data.Storage;
 using TomPIT.Design;
 using TomPIT.Design.Serialization;
 using TomPIT.Design.Validation;
@@ -20,6 +21,7 @@ using TomPIT.Globalization;
 using TomPIT.IoC;
 using TomPIT.IoT;
 using TomPIT.Messaging;
+using TomPIT.Middleware;
 using TomPIT.Navigation;
 using TomPIT.Reflection;
 using TomPIT.Search;
@@ -122,6 +124,8 @@ namespace TomPIT.Runtime
 			e.Tenant.RegisterService(typeof(IMicroServiceTemplateService), typeof(MicroServiceTemplateService));
 			e.Tenant.RegisterService(typeof(IWorkerService), typeof(WorkerService));
 			e.Tenant.RegisterService(typeof(IMicroServiceRuntimeService), new MicroServiceRuntimeService(e.Tenant));
+			e.Tenant.RegisterService(typeof(IMiddlewareService), new MiddlewareService(e.Tenant));
+			e.Tenant.RegisterService(typeof(IStorageSynchronizationService), new StorageSynchronizationService());
 
 			if (Instance.Features.HasFlag(InstanceFeatures.IoT))
 			{

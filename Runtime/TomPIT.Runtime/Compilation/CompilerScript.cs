@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Runtime.Loader;
 using System.Text;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Apis;
 using TomPIT.Connectivity;
 using TomPIT.Reflection;
 using TomPIT.Runtime;
@@ -28,10 +29,16 @@ namespace TomPIT.Compilation
 		private IScriptContext ScriptContext { get; set; }
 		public void Create()
 		{
-			var code = Tenant.GetService<IComponentService>().SelectText(MicroService, SourceCode);
+			string code = Tenant.GetService<IComponentService>().SelectText(MicroService, SourceCode);
 
 			if (string.IsNullOrWhiteSpace(code))
 				return;
+
+			if (ResolveRequiresSyntaxRoot())
+				code = $"#load \"{ResolveScriptName()}\"{System.Environment.NewLine}";
+			else
+				code = NamespaceRewriter.Rewrite(code);
+
 			var msv = Tenant.GetService<IMicroServiceService>().Select(MicroService);
 
 			using var loader = new InteractiveAssemblyLoader();
@@ -46,13 +53,13 @@ namespace TomPIT.Compilation
 				ScriptReferences = refs;
 
 			var options = ScriptOptions.Default
-				  .WithImports(Usings)
-				  .WithReferences(References)
-				  .WithSourceResolver(new ScriptResolver(Tenant, MicroService))
-				  .WithMetadataResolver(new AssemblyResolver(Tenant, MicroService, true))
-				  .WithEmitDebugInformation(Tenant.GetService<IRuntimeService>().Stage != EnvironmentStage.Production)
-				  .WithFilePath(SourceCode.FileName)
-				  .WithFileEncoding(Encoding.UTF8);
+					.WithImports(Usings)
+					.WithReferences(References)
+					.WithSourceResolver(new ScriptResolver(Tenant, MicroService))
+					.WithMetadataResolver(new AssemblyResolver(Tenant, MicroService, true))
+					.WithEmitDebugInformation(Tenant.GetService<IRuntimeService>().Stage != EnvironmentStage.Production)
+					.WithFilePath(SourceCode.FileName)
+					.WithFileEncoding(Encoding.UTF8);
 
 			foreach (var reference in ScriptContext.References)
 			{
@@ -62,8 +69,8 @@ namespace TomPIT.Compilation
 				foreach (var executable in reference.Value)
 				{
 					/*
-			  * in memory assembly
-			  */
+		* in memory assembly
+		*/
 					if (string.IsNullOrEmpty(executable.FilePath))
 					{
 						var tokens = reference.Key.Split('/');
@@ -99,18 +106,40 @@ namespace TomPIT.Compilation
 			Script = CreateScript($"{code};{System.Environment.NewLine}{GenerateStaticCode()}", options, loader);
 		}
 
+		private bool ResolveRequiresSyntaxRoot()
+		{
+			var component = Tenant.GetService<IComponentService>().SelectComponent(SourceCode.Configuration().Component);
+			/*
+			 * There is a bug in the configuration files. IoC containers have PublicScript namespace which is wrong because they
+			 * can't be references thus we are handling IoC containers separately.
+			 */
+			return !string.Equals(component.Category, ComponentCategories.IoCContainer, StringComparison.OrdinalIgnoreCase)
+				&& string.Equals(component.NameSpace, ComponentCategories.NameSpacePublicScript, StringComparison.OrdinalIgnoreCase);
+		}
+
+		private string ResolveScriptName()
+		{
+			var element = Tenant.GetService<IDiscoveryService>().Configuration.Find(SourceCode.Configuration().Component, SourceCode.Id);
+			var ms = Tenant.GetService<IMicroServiceService>().Select(element.Configuration().MicroService());
+
+			if (element is IApiOperation op)
+				return $"{ms.Name}/{element.Configuration().ComponentName()}/{op.Name}.csx";
+			else
+				return $"{ms.Name}/{element.Configuration().ComponentName()}.csx";
+		}
+
 		protected virtual Script<object> CreateScript(string sourceCode, ScriptOptions options, InteractiveAssemblyLoader loader)
 		{
 			return CSharpScript.Create(sourceCode, options: options, assemblyLoader: loader);
 		}
 		protected virtual List<Assembly> References => new List<Assembly>
-					 {
-							CompilerService.LoadSystemAssembly("TomPIT.Core"),
-							CompilerService.LoadSystemAssembly("TomPIT.ComponentModel"),
-							CompilerService.LoadSystemAssembly("TomPIT.Sdk"),
-							CompilerService.LoadSystemAssembly("TomPIT.Runtime"),
-							CompilerService.LoadSystemAssembly("Newtonsoft.Json")
-					 };
+							{
+									 CompilerService.LoadSystemAssembly("TomPIT.Core"),
+									 CompilerService.LoadSystemAssembly("TomPIT.ComponentModel"),
+									 CompilerService.LoadSystemAssembly("TomPIT.Sdk"),
+									 CompilerService.LoadSystemAssembly("TomPIT.Runtime"),
+									 CompilerService.LoadSystemAssembly("Newtonsoft.Json")
+							};
 		protected virtual string[] Usings => Array.Empty<string>();
 
 		public void Dispose()
@@ -131,19 +160,20 @@ namespace TomPIT.Compilation
 			foreach (var file in ScriptContext.SourceFiles)
 			{
 				var config = file.Value.Configuration();
-
 				var component = Tenant.GetService<IComponentService>().SelectComponent(config.Component);
-
 				var manifest = Tenant.GetService<IDiscoveryService>().Manifests.SelectScript(config.MicroService(), component.Token, file.Value.Id);
 
-				foreach (var manifestType in manifest.DeclaredTypes)
+				if (manifest is not null)
 				{
-					sb.AppendLine("new TomPIT.Compilation.SourceTypeDescriptor{");
-					sb.AppendLine($"Component = new System.Guid(\"{component.Token}\"),");
-					sb.AppendLine($"ContainingType = \"{manifestType.ContainingType}\",");
-					sb.AppendLine($"TypeName = \"{manifestType.Name}\",");
-					sb.AppendLine($"Script = new System.Guid(\"{file.Value.Id}\")");
-					sb.AppendLine("},");
+					foreach (var manifestType in manifest.DeclaredTypes)
+					{
+						sb.AppendLine("new TomPIT.Compilation.SourceTypeDescriptor{");
+						sb.AppendLine($"Component = new System.Guid(\"{component.Token}\"),");
+						sb.AppendLine($"ContainingType = \"{manifestType.ContainingType}\",");
+						sb.AppendLine($"TypeName = \"{manifestType.Name}\",");
+						sb.AppendLine($"Script = new System.Guid(\"{file.Value.Id}\")");
+						sb.AppendLine("},");
+					}
 				}
 			}
 

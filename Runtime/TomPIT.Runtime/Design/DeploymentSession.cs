@@ -36,7 +36,7 @@ namespace TomPIT.Design
 
 					if (!component.Files.Any())
 						continue;
-					
+
 					component.Verb = ComponentVerb.Add;
 
 					foreach (var file in component.Files)
@@ -50,40 +50,9 @@ namespace TomPIT.Design
 			Drop();
 			DeployFolders();
 			DeployComponents();
-
 			SynchronizeEntities();
 			RunInstallers();
-
-			CommitChanges(e);
 			CommitMicroService();
-		}
-
-		private void CommitChanges(DeployArgs e)
-		{
-			if (!e.Commit.Enabled)
-				return;
-
-			var design = Tenant.GetService<IDesignService>();
-			var changes = design.VersionControl.Changes(Request.Token);
-
-			if (changes.Any())
-				design.VersionControl.Commit(changes.Select(f => f.Token).ToList(), e.Commit.Comment ?? "Deploy.");
-
-			var commits = design.VersionControl.QueryCommits(Request.Token);
-			var latest = commits.OrderByDescending(f => f.Created).FirstOrDefault();
-
-			if (latest is null)
-				return;
-
-			foreach (var com in commits)
-			{
-				if (com.Token == latest.Token)
-					continue;
-
-				design.VersionControl.DeleteCommit(com.Token);
-			}
-
-			e.Commit.Id = latest.Token;
 		}
 
 		private void DropMicroService()

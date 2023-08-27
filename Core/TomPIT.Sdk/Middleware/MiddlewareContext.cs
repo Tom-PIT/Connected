@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Text.Json.Serialization;
 using System.Threading;
+using System.Threading.Tasks;
 using TomPIT.Connectivity;
 using TomPIT.Data;
+using TomPIT.Data.Storage;
 using TomPIT.Exceptions;
 using TomPIT.Middleware.Services;
+using TomPIT.Middleware.Storage;
 using TomPIT.Reflection;
 using TomPIT.Runtime;
 using TomPIT.Security;
@@ -16,190 +19,59 @@ namespace TomPIT.Middleware
     {
         #region Members
         private ElevationContextState _elevationState = ElevationContextState.Revoked;
-        private object _authorizationOwner = null;
-        private IMiddlewareServices _services = null;
-        private ITenant _tenant = null;
-        private IMiddlewareInterop _interop = null;
-        private IMiddlewareEnvironment _environment = null;
-        private MiddlewareConnectionPool _connections = null;
-        private IMiddlewareTransaction _transaction = null;
-        private bool _isReadonly = false;
-        private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private object _authorizationOwner;
+        private CancellationTokenSource _cancellationTokenSource = new();
         #endregion
 
         #region Constructors
-
         public MiddlewareContext()
         {
-            Initialize(null);
+            Transactions = new TransactionContext();
+            Interop = new MiddlewareInterop(this);
+            Services = new MiddlewareServices(this, Transactions);
+            Environment = new MiddlewareEnvironment();
+            Connections = new ConnectionProvider(this, Transactions);
+            ModelConnections = new(this, Transactions);
+            Tenant = MiddlewareDescriptor.Current.Tenant;
+
+            _authorizationOwner = this;
+
+            Initialize();
         }
 
-        public MiddlewareContext(IMiddlewareObject owner) : this(owner?.Context)
+        public MiddlewareContext(bool interactive) : this()
         {
+            ((MiddlewareEnvironment)Environment).IsInteractive = interactive;
         }
-
-        public MiddlewareContext(IMiddlewareContext sender)
-        {
-            var endpoint = sender is ITenantProvider c ? c.Endpoint : null;
-            
-            Initialize(endpoint);
-
-            if (sender is MiddlewareContext mw)
-            {
-                ((MiddlewareDiagnosticService)Services.Diagnostic).MetricParent = ((MiddlewareDiagnosticService)mw.Services.Diagnostic).MetricParent;
-
-                Owner = mw;
-            }
-        }
-
-        public MiddlewareContext(string endpoint)
-        {
-            Initialize(endpoint);
-        }
-
         #endregion
 
         #region Properties
         private bool Disposed { get; set; }
 
         private bool IsReadOnly => ((IIOBehaviorContext)this).Behavior == EnvironmentIOBehavior.ReadOnly;
+        internal ITransactionContext Transactions { get; }
+        private IConnectionProvider Connections { get; }
+        private MiddlewareConnectionPool ModelConnections { get; }
+        [JsonIgnore]
+        ElevationContextState IElevationContext.State { get; set; } = ElevationContextState.Revoked;
 
         [JsonIgnore]
-        ElevationContextState IElevationContext.State
-        {
-            get
-            {
-
-                if (Owner == null)
-                    return _elevationState;
-
-                if (Owner is IElevationContext elevationContext)
-                    return elevationContext.State;
-
-                return _elevationState;
-            }
-            set
-            {
-                if (Owner == null || Owner is not IElevationContext elevationOwner)
-                    _elevationState = value;
-                else
-                    elevationOwner.State = value;
-            }
-        }
+        object IElevationContext.AuthorizationOwner { get { return _authorizationOwner; } set { _authorizationOwner = value; } }
 
         [JsonIgnore]
-        object IElevationContext.AuthorizationOwner
-        {
-            get
-            {
-                if (Owner == null)
-                    return _authorizationOwner;
-
-                if (Owner is IElevationContext elevationContext)
-                    return elevationContext.AuthorizationOwner;
-
-                return _authorizationOwner;
-            }
-            set
-            {
-                if (Owner == null || Owner is not IElevationContext elevationOwner)
-                    _authorizationOwner = value;
-                else
-                    elevationOwner.AuthorizationOwner = value;
-            }
-        }
+        public virtual IMiddlewareServices Services { get; }
 
         [JsonIgnore]
-        public virtual IMiddlewareServices Services
-        {
-            get
-            {
-                if (_services == null)
-                    _services = new MiddlewareServices(this);
-
-                return _services;
-            }
-        }
+        public IMiddlewareEnvironment Environment { get; }
 
         [JsonIgnore]
-        public IMiddlewareEnvironment Environment
-        {
-            get
-            {
-                if (_environment == null)
-                    _environment = new MiddlewareEnvironment();
-
-                return _environment;
-            }
-        }
+        public ITenant Tenant { get; }
 
         [JsonIgnore]
-        public ITenant Tenant
-        {
-            get
-            {
-                if (_tenant == null)
-                {
-                    if (string.IsNullOrWhiteSpace(Endpoint))
-                        _tenant = MiddlewareDescriptor.Current.Tenant;
-                    else
-                        _tenant = Shell.GetService<IConnectivityService>().SelectTenant(Endpoint);
-                }
-
-                return _tenant;
-            }
-        }
+        public IMiddlewareInterop Interop { get; }
 
         [JsonIgnore]
-        public IMiddlewareInterop Interop
-        {
-            get
-            {
-                if (_interop == null)
-                    _interop = new MiddlewareInterop(this);
-
-                return _interop;
-            }
-        }
-
         public CancellationToken CancellationToken => _cancellationTokenSource.Token;
-
-        internal MiddlewareContext Owner { get; set; }
-
-        [JsonIgnore]
-        public string Endpoint { get; protected set; }
-
-        internal MiddlewareConnectionPool Connections
-        {
-            get
-            {
-                if (Owner != null)
-                    return Owner.Connections;
-
-                if (_connections == null && !Disposed)
-                    _connections = new MiddlewareConnectionPool();
-
-                return _connections;
-            }
-        }
-
-        internal IMiddlewareTransaction Transaction
-        {
-            get
-            {
-                if (_transaction != null)
-                    return _transaction;
-
-                return BeginTransaction();
-            }
-            set
-            {
-                if (_transaction != null)
-                    throw new RuntimeException(SR.ErrTransactionNotNull);
-
-                _transaction = value;
-            }
-        }
 
         EnvironmentIOBehavior IIOBehaviorContext.Behavior { get; set; }
 
@@ -207,19 +79,33 @@ namespace TomPIT.Middleware
 
         #region Methods
 
+        public void Cancel()
+        {
+            _cancellationTokenSource.Cancel();
+        }
         public IDataReader<T> OpenReader<T>([CIP(CIP.ConnectionProvider)] string connection, [CIP(CIP.CommandTextProvider)] string commandText)
         {
-            if (Transaction.State == MiddlewareTransactionState.Active)
-                return OpenReader<T>(connection, commandText, ConnectionBehavior.Shared);
+            return AsyncUtils.RunSync(() => OpenReaderAsync<T>(connection, commandText));
+        }
+
+        public async Task<IDataReader<T>> OpenReaderAsync<T>([CIP(CIP.ConnectionProvider)] string connection, [CIP(CIP.CommandTextProvider)] string commandText)
+        {
+            if (Transactions.State == MiddlewareTransactionState.Active)
+                return await OpenReaderAsync<T>(connection, commandText, ConnectionBehavior.Shared);
             else
-                return OpenReader<T>(connection, commandText, ConnectionBehavior.Isolated);
+                return await OpenReaderAsync<T>(connection, commandText, ConnectionBehavior.Isolated);
         }
 
         public IDataReader<T> OpenReader<T>([CIP(CIP.ConnectionProvider)] string connection, [CIP(CIP.CommandTextProvider)] string commandText, ConnectionBehavior behavior)
         {
+            return AsyncUtils.RunSync(() => OpenReaderAsync<T>(connection, commandText, behavior));
+        }
+
+        public async Task<IDataReader<T>> OpenReaderAsync<T>([CIP(CIP.ConnectionProvider)] string connection, [CIP(CIP.CommandTextProvider)] string commandText, ConnectionBehavior behavior)
+        {
             return new DataReader<T>(this)
             {
-                Connection = OpenConnection(connection, behavior),
+                Connection = await OpenConnection(connection, behavior),
                 CommandText = commandText
             };
         }
@@ -235,13 +121,18 @@ namespace TomPIT.Middleware
 
         public IDataWriter OpenWriter([CIP(CIP.ConnectionProvider)] string connection, [CIP(CIP.CommandTextProvider)] string commandText)
         {
+            return AsyncUtils.RunSync(() => OpenWriterAsync(connection, commandText));
+        }
+
+        public async Task<IDataWriter> OpenWriterAsync([CIP(CIP.ConnectionProvider)] string connection, [CIP(CIP.CommandTextProvider)] string commandText)
+        {
             if (IsReadOnly)
                 throw new TomPITException(SR.ErrContextInReadonlyMode);
 
-            if (Transaction.State == MiddlewareTransactionState.Active)
-                return OpenWriter(connection, commandText, ConnectionBehavior.Shared);
+            if (Transactions.State == MiddlewareTransactionState.Active)
+                return await OpenWriterAsync(connection, commandText, ConnectionBehavior.Shared);
             else
-                return OpenWriter(connection, commandText, ConnectionBehavior.Isolated);
+                return await OpenWriterAsync(connection, commandText, ConnectionBehavior.Isolated);
         }
 
         public IDataWriter OpenWriter(IDataConnection connection, [CIP(CIP.CommandTextProvider)] string commandText)
@@ -249,7 +140,7 @@ namespace TomPIT.Middleware
             if (IsReadOnly)
                 throw new TomPITException(SR.ErrContextInReadonlyMode);
 
-            return new DataWriter(this)
+            return new DataWriter(this, Transactions)
             {
                 Connection = connection,
                 CommandText = commandText
@@ -258,12 +149,17 @@ namespace TomPIT.Middleware
 
         public IDataWriter OpenWriter([CIP(CIP.ConnectionProvider)] string connection, [CIP(CIP.CommandTextProvider)] string commandText, ConnectionBehavior behavior)
         {
+            return AsyncUtils.RunSync(() => OpenWriterAsync(connection, commandText, behavior));
+        }
+
+        public async Task<IDataWriter> OpenWriterAsync([CIP(CIP.ConnectionProvider)] string connection, [CIP(CIP.CommandTextProvider)] string commandText, ConnectionBehavior behavior)
+        {
             if (IsReadOnly)
                 throw new TomPITException(SR.ErrContextInReadonlyMode);
 
-            return new DataWriter(this)
+            return new DataWriter(this, Transactions)
             {
-                Connection = OpenConnection(connection, behavior),
+                Connection = await OpenConnection(connection, behavior),
                 CommandText = commandText
             };
         }
@@ -274,29 +170,25 @@ namespace TomPIT.Middleware
         }
         #endregion
 
-        protected void Initialize(string endpoint)
+        protected void Initialize()
         {
-            Endpoint = endpoint;
-
-            if (string.IsNullOrWhiteSpace(endpoint))
-                Endpoint = Tenant?.Url;
-
             ((IIOBehaviorContext)this).Behavior = Tenant.GetService<IRuntimeService>().IOBehavior;
         }
 
-        internal IDataConnection OpenConnection([CIP(CIP.ConnectionProvider)] string connection, ConnectionBehavior behavior)
+        internal async Task<IDataConnection> OpenConnection([CIP(CIP.ConnectionProvider)] string connection, ConnectionBehavior behavior)
         {
-            return OpenConnection(connection, behavior, null);
+            return await OpenConnectionAsync(connection, behavior, null);
         }
 
-        public IDataConnection OpenConnection([CIP(CIP.ConnectionProvider)] string connection, ConnectionBehavior behavior, object arguments)
+        public async Task<IDataConnection> OpenConnectionAsync([CIP(CIP.ConnectionProvider)] string connection, ConnectionBehavior behavior, object arguments)
         {
             try
             {
                 CancellationToken.ThrowIfCancellationRequested();
-                return Connections.OpenConnection(this, connection, behavior, arguments);
+
+                return await ModelConnections.OpenConnection(connection, behavior, arguments);
             }
-            catch(OperationCanceledException ex) 
+            catch (OperationCanceledException ex)
             {
                 //TODO localize
                 throw new Exception("Cannot open new connection on unstable context", ex);
@@ -307,22 +199,9 @@ namespace TomPIT.Middleware
             }
         }
 
-        private IMiddlewareTransaction BeginTransaction()
+        public IDataConnection OpenConnection([CIP(CIP.ConnectionProvider)] string connection, ConnectionBehavior behavior, object arguments)
         {
-            if (_transaction is not null)
-                return _transaction;
-
-            if (Owner is not null)
-                return Owner.BeginTransaction();
-
-            _transaction = new MiddlewareTransaction(this);
-
-            return _transaction;
-        }
-
-        internal void CloseConnections()
-        {
-            Connections.CloseConnections();
+            return AsyncUtils.RunSync(() => OpenConnectionAsync(connection, behavior, arguments));
         }
 
         public T OpenModel<T>() where T : IModelComponent
@@ -334,29 +213,25 @@ namespace TomPIT.Middleware
             return (T)result;
         }
 
+        public async Task<IStorage<TEntity>> OpenStorage<TEntity>() where TEntity : IEntity
+        {
+            var result = new EntityStorage<TEntity>(this, Connections, Transactions);
+
+            await result.Initialize();
+
+            return result;
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!Disposed)
             {
                 if (disposing)
                 {
-                    if (Owner == null)
-                        Connections.Dispose();
-
-                    if (_interop != null)
-                    {
-                        _interop.Dispose();
-                        _interop = null;
-                    }
-
-                    if (_services is not null)
-                    {
-                        _services.Dispose();
-                        _services = null;
-                    }
-
-                    _connections = null;
-                    _authorizationOwner = null;
+                    Connections.Dispose();
+                    ModelConnections.Dispose();
+                    Interop.Dispose();
+                    Services.Dispose();
                 }
 
                 Disposed = true;
@@ -373,6 +248,5 @@ namespace TomPIT.Middleware
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-       
     }
 }

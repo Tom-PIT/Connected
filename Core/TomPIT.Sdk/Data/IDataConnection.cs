@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Threading;
+using System.Threading.Tasks;
 using TomPIT.Data.DataProviders;
 using TomPIT.Middleware;
 
@@ -9,17 +9,17 @@ namespace TomPIT.Data
 {
     public interface IDataConnection : IDisposable
     {
-        void Commit();
-        void Rollback();
+        Task Commit();
+        Task Rollback();
 
-        void Open();
-        void Close();
+        Task Open();
+        Task Close();
 
-        int Execute(IDataCommandDescriptor command);
+        Task<int> Execute(IDataCommandDescriptor command);
 
-        List<T> Query<T>(IDataCommandDescriptor command);
+        Task<List<T>> Query<T>(IDataCommandDescriptor command);
 
-        T Select<T>(IDataCommandDescriptor command);
+        Task<T> Select<T>(IDataCommandDescriptor command);
 
         IDbCommand CreateCommand();
         ConnectionBehavior Behavior { get; }

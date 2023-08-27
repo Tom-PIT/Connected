@@ -16,9 +16,6 @@ namespace TomPIT.Middleware.Services
         {
             get
             {
-                if (Context is MiddlewareContext mc && mc.Owner != null)
-                    return mc.Owner.Services.Identity.IsAuthenticated;
-
                 if (!string.IsNullOrWhiteSpace(ImpersonatedUser))
                     return true;
 
@@ -38,24 +35,16 @@ namespace TomPIT.Middleware.Services
         {
             get
             {
-                if (Context is MiddlewareContext mc && mc.Owner != null)
-                    return ((MiddlewareIdentityService)mc.Owner.Services.Identity).ImpersonatedUser;
-
                 return _impersonatedUser;
             }
             set
             {
-                if (Context is MiddlewareContext mc && mc.Owner != null)
-                    ((MiddlewareIdentityService)mc.Owner.Services.Identity).ImpersonatedUser = value;
-                else
-                {
-                    _user = Context.Tenant.GetService<IUserService>().Select(value);
+                _user = Context.Tenant.GetService<IUserService>().Select(value);
 
-                    if (_user != null)
-                        _impersonatedUser = value;
-                    else
-                        _impersonatedUser = null;
-                }
+                if (_user != null)
+                    _impersonatedUser = value;
+                else
+                    _impersonatedUser = null;
             }
         }
 
@@ -65,9 +54,6 @@ namespace TomPIT.Middleware.Services
             {
                 if (!IsAuthenticated)
                     return null;
-
-                if (Context is MiddlewareContext mc && mc.Owner != null)
-                    return mc.Owner.Services.Identity.User;
 
                 if (_user == null)
                 {

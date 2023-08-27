@@ -7,109 +7,109 @@ using TomPIT.Reflection.Api;
 
 namespace TomPIT.Reflection.Providers
 {
-	internal class ApiManifestProvider : ComponentManifestProvider<IApiConfiguration>
-	{
-		protected override IComponentManifest OnCreateManifest()
-		{
-			var manifest = new ApiManifest(this);
+    internal class ApiManifestProvider : ComponentManifestProvider<IApiConfiguration>
+    {
+        protected override IComponentManifest OnCreateManifest()
+        {
+            var manifest = new ApiManifest(this);
 
-			BindManifest(manifest);
-			BindApi(manifest);
-			BindOperations(manifest);
-			
-			return manifest;
-		}
+            BindManifest(manifest);
+            BindApi(manifest);
+            BindOperations(manifest);
 
-		protected override void OnLoadMetaData(IComponentManifest manifest)
-		{
-			var api = manifest as ApiManifest;
-			
-			if(Tenant.GetService<IDiscoveryService>().Manifests.SelectScript(Configuration.MicroService(), Configuration.Component, Configuration.Component) is IScriptManifest script)
-			{ 
-				script.LoadMetaData(Tenant);
+            return manifest;
+        }
 
-				BindDocumentation(api.DeclaredType, script.DeclaredTypes);
-			}
+        protected override void OnLoadMetaData(IComponentManifest manifest)
+        {
+            var api = manifest as ApiManifest;
 
-			foreach(var operation in api.Operations)
-			{
-				if( Tenant.GetService<IDiscoveryService>().Manifests.SelectScript(Configuration.MicroService(), Configuration.Component, operation.Id) is IScriptManifest opScript)
-				{
-					opScript.LoadMetaData(Tenant);
+            if (Tenant.GetService<IDiscoveryService>().Manifests.SelectScript(Configuration.MicroService(), Configuration.Component, Configuration.Component) is IScriptManifest script)
+            {
+                script.LoadMetaData(Tenant);
 
-					BindDocumentation(operation.DeclaredType, opScript.DeclaredTypes);
-				}
-			}
-		}
+                BindDocumentation(api.DeclaredType, script.DeclaredTypes);
+            }
 
-		private void BindApi(ApiManifest manifest)
-		{
-			manifest.Scope = Configuration.Scope;
+            foreach (var operation in api.Operations)
+            {
+                if (Tenant.GetService<IDiscoveryService>().Manifests.SelectScript(Configuration.MicroService(), Configuration.Component, operation.Id) is IScriptManifest opScript)
+                {
+                    opScript.LoadMetaData(Tenant);
 
-			var script = Tenant.GetService<IDiscoveryService>().Manifests.SelectScript(Configuration.MicroService(), Configuration.Component, Configuration.Component);
+                    BindDocumentation(operation.DeclaredType, opScript.DeclaredTypes);
+                }
+            }
+        }
 
-			if (script != null)
-			{
-				if (script.DeclaredTypes.FirstOrDefault(f => string.Compare(f.Name, Configuration.ComponentName(), false) == 0) is IManifestType type)
-					manifest.Address = script.GetPointer(script.Address);
-			}
+        private void BindApi(ApiManifest manifest)
+        {
+            manifest.Scope = Configuration.Scope;
 
-			using var ctx = new MicroServiceContext(Configuration.MicroService(), Tenant.Url);
-			var info = Tenant.GetService<IDiscoveryService>().MicroServices.Info.SelectMiddleware(ctx, ctx.MicroService.Token);
+            var script = Tenant.GetService<IDiscoveryService>().Manifests.SelectScript(Configuration.MicroService(), Configuration.Component, Configuration.Component);
 
-			if (info != null)
-			{
-				manifest.Version = info.Version;
-				manifest.TermsOfService = info.TermsOfService;
-				
-				manifest.License.Name = info.License.Name;
-				manifest.License.Url = info.License.Url;
+            if (script != null)
+            {
+                if (script.DeclaredTypes.FirstOrDefault(f => string.Compare(f.Name, Configuration.ComponentName(), false) == 0) is IManifestType type)
+                    manifest.Address = script.GetPointer(script.Address);
+            }
 
-				manifest.Contact.Email = info.Contact.Email;
-				manifest.Contact.Name = info.Contact.Name;
-				manifest.Contact.Url = info.Contact.Url;
-			}
-		}
+            using var ctx = new MicroServiceContext(Configuration.MicroService());
+            var info = Tenant.GetService<IDiscoveryService>().MicroServices.Info.SelectMiddleware(ctx, ctx.MicroService.Token);
 
-		private void BindOperations(ApiManifest manifest)
-		{
-			foreach (var operation in Configuration.Operations)
-			{
-				if (Element != Guid.Empty && Element != operation.Id)
-					continue;
+            if (info != null)
+            {
+                manifest.Version = info.Version;
+                manifest.TermsOfService = info.TermsOfService;
 
-				BindOperation(manifest, operation);
-			}
-		}
+                manifest.License.Name = info.License.Name;
+                manifest.License.Url = info.License.Url;
 
-		private void BindOperation(ApiManifest manifest, IApiOperation operation)
-		{
-			var om = new ApiOperationManifest
-			{
-				Name = operation.Name,
-				Scope = operation.Scope,
-				Id = operation.Id
-			};
+                manifest.Contact.Email = info.Contact.Email;
+                manifest.Contact.Name = info.Contact.Name;
+                manifest.Contact.Url = info.Contact.Url;
+            }
+        }
 
-			manifest.Operations.Add(om);
+        private void BindOperations(ApiManifest manifest)
+        {
+            foreach (var operation in Configuration.Operations)
+            {
+                if (Element != Guid.Empty && Element != operation.Id)
+                    continue;
 
-			var script = Tenant.GetService<IDiscoveryService>().Manifests.SelectScript(Configuration.MicroService(), Configuration.Component, operation.Id);
+                BindOperation(manifest, operation);
+            }
+        }
 
-			if (script == null)
-				return;
+        private void BindOperation(ApiManifest manifest, IApiOperation operation)
+        {
+            var om = new ApiOperationManifest
+            {
+                Name = operation.Name,
+                Scope = operation.Scope,
+                Id = operation.Id
+            };
 
-			om.Address = script.GetPointer(script.Address);
-			var declaredType = script.DeclaredTypes.FirstOrDefault(f => string.Compare(f.Name, operation.Name, false) == 0);
-			om.DeclaredType = CloneType(Tenant, declaredType, script);
+            manifest.Operations.Add(om);
 
-			if (declaredType is IScriptManifestHttpType http)
-				om.Verbs = http.Verbs;
+            var script = Tenant.GetService<IDiscoveryService>().Manifests.SelectScript(Configuration.MicroService(), Configuration.Component, operation.Id);
 
-			if (declaredType is IScriptManifestExtenderSupportedType extender && extender.Extenders.Any())
-				om.Extenders.AddRange(extender.Extenders);
+            if (script == null)
+                return;
 
-			if (declaredType is IScriptManifestReturnType returnType)
-				om.ReturnType = returnType.ReturnType;
-		}
-	}
+            om.Address = script.GetPointer(script.Address);
+            var declaredType = script.DeclaredTypes.FirstOrDefault(f => string.Compare(f.Name, operation.Name, false) == 0);
+            om.DeclaredType = CloneType(Tenant, declaredType, script);
+
+            if (declaredType is IScriptManifestHttpType http)
+                om.Verbs = http.Verbs;
+
+            if (declaredType is IScriptManifestExtenderSupportedType extender && extender.Extenders.Any())
+                om.Extenders.AddRange(extender.Extenders);
+
+            if (declaredType is IScriptManifestReturnType returnType)
+                om.ReturnType = returnType.ReturnType;
+        }
+    }
 }

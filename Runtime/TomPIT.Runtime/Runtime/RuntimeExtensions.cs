@@ -1,5 +1,5 @@
-﻿using System;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
 using TomPIT.Middleware;
@@ -49,7 +49,7 @@ namespace TomPIT.Runtime
 
 		public static IMicroServiceContext CreateContext(this IComponent component)
 		{
-			return new MicroServiceContext(component.MicroService, MiddlewareDescriptor.Current.Tenant.Url);
+			return new MicroServiceContext(component.MicroService);
 		}
 
 		public static IMicroServiceContext CreateContext(this IConfiguration configuration)

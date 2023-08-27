@@ -7,7 +7,6 @@ namespace TomPIT.Design
 {
 	internal class DesignService : TenantObject, IDesignService
 	{
-		private IVersionControl _versionControl = null;
 		private IComponentModel _components = null;
 		private IDesignSearch _search = null;
 		private IDeployment _deployment = null;
@@ -80,17 +79,6 @@ namespace TomPIT.Design
 					_components = new Components(Tenant);
 
 				return _components;
-			}
-		}
-
-		public IVersionControl VersionControl
-		{
-			get
-			{
-				if (_versionControl == null)
-					_versionControl = new VersionControl(Tenant);
-
-				return _versionControl;
 			}
 		}
 

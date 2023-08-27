@@ -1,36 +1,34 @@
-﻿using System.Globalization;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Localization;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Localization;
-using TomPIT.Connectivity;
 using TomPIT.Middleware;
-using TomPIT.Security;
 
 namespace TomPIT.Globalization
 {
-    internal class DomainCultureProvider : CultureProviderBase, IRequestCultureProvider
-    {
-        public override Task<ProviderCultureResult> DetermineProviderCultureResult(HttpContext httpContext)
-        {
-            var domain = httpContext.Request.Host.ToString().Split('.').LastOrDefault()?.Split(':').FirstOrDefault();
+	internal class DomainCultureProvider : CultureProviderBase, IRequestCultureProvider
+	{
+		public override Task<ProviderCultureResult> DetermineProviderCultureResult(HttpContext httpContext)
+		{
+			var domain = httpContext.Request.Host.ToString().Split('.').LastOrDefault()?.Split(':').FirstOrDefault();
 
-            if (string.IsNullOrWhiteSpace(domain))
-                return Unresolved;
+			if (string.IsNullOrWhiteSpace(domain))
+				return Unresolved;
 
-            var languageService = MiddlewareDescriptor.Current.Tenant.GetService<ILanguageService>();
+			var languageService = MiddlewareDescriptor.Current.Tenant.GetService<ILanguageService>();
 
-            var language = languageService.Match(domain);
+			var language = languageService.Match(domain);
 
-            if (language is null)
-                return Unresolved;
+			if (language is null)
+				return Unresolved;
 
-            var culture = CultureInfo.GetCultureInfo(language.Lcid);
+			var culture = CultureInfo.GetCultureInfo(language.Lcid);
 
-            if (culture is null)
-                return Unresolved;
+			if (culture is null)
+				return Unresolved;
 
-            return Task.FromResult(new ProviderCultureResult(culture.Name, culture.Name));
-        }
-    }
+			return Task.FromResult(new ProviderCultureResult(culture.Name, culture.Name));
+		}
+	}
 }
