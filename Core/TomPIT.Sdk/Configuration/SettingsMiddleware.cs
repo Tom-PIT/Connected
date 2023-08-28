@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Runtime.CompilerServices;
 using System.Text;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
@@ -17,7 +18,7 @@ namespace TomPIT.Configuration
 		[Browsable(false)]
 		public string NameSpace { get; set; }
 
-		protected T GetValue<T>(string name)
+		protected T GetValue<T>([CallerMemberName] string name = null)
 		{
 			var result = Context.Tenant.GetService<ISettingService>().GetValue<object>(name, NameSpace, Type, PrimaryKey);
 
@@ -40,6 +41,8 @@ namespace TomPIT.Configuration
 			Validate(name, value);
 			Context.Tenant.GetService<ISettingService>().Update(name, NameSpace, Type, PrimaryKey, value);
 		}
+
+		protected void SetValue<T>(T value, [CallerMemberName] string propertyName = null) => SetValue(propertyName, value);
 
 		protected void Validate<T>(string name, T value)
 		{
