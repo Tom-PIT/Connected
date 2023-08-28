@@ -15,6 +15,7 @@ namespace TomPIT.Design
 
 		public void Delete(Guid component, Guid element)
 		{
+			return; 
 			var u = Tenant.CreateUrl("SearchDevelopment", "Delete");
 			var e = new JObject
 			{
@@ -27,6 +28,7 @@ namespace TomPIT.Design
 
 		public void Delete(Guid component)
 		{
+			return;
 			var u = Tenant.CreateUrl("SearchDevelopment", "Delete");
 			var e = new JObject
 			{
