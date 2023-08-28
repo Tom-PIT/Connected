@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Reflection;
-using Newtonsoft.Json;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
 using TomPIT.Connectivity;
@@ -24,6 +24,11 @@ namespace TomPIT.Reflection
 				return null;
 
 			return Find(config, id, new List<object>());
+		}
+
+		public IText Find(string path)
+		{
+			return new TextElementResolver(path).Resolve();
 		}
 
 		public IElement Find(IConfiguration configuration, Guid id)

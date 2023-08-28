@@ -9,7 +9,6 @@ using System.Reflection;
 using System.Runtime.Loader;
 using System.Text;
 using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Apis;
 using TomPIT.Connectivity;
 using TomPIT.Reflection;
 using TomPIT.Runtime;
@@ -34,10 +33,8 @@ namespace TomPIT.Compilation
 			if (string.IsNullOrWhiteSpace(code))
 				return;
 
-			if (ResolveRequiresSyntaxRoot())
-				code = $"#load \"{ResolveScriptName()}\"{System.Environment.NewLine}";
-			else
-				code = NamespaceRewriter.Rewrite(code);
+			var scriptName = ResolveScriptName();
+			code = $"#load \"{scriptName}\"{System.Environment.NewLine}";
 
 			var msv = Tenant.GetService<IMicroServiceService>().Select(MicroService);
 
@@ -119,13 +116,13 @@ namespace TomPIT.Compilation
 
 		private string ResolveScriptName()
 		{
-			var element = Tenant.GetService<IDiscoveryService>().Configuration.Find(SourceCode.Configuration().Component, SourceCode.Id);
+			var element = Tenant.GetService<IDiscoveryService>().Configuration.Find(SourceCode.Configuration().Component, SourceCode.Id) as IText;
 			var ms = Tenant.GetService<IMicroServiceService>().Select(element.Configuration().MicroService());
 
-			if (element is IApiOperation op)
-				return $"{ms.Name}/{element.Configuration().ComponentName()}/{op.Name}.csx";
-			else
+			if (element is IConfiguration config)
 				return $"{ms.Name}/{element.Configuration().ComponentName()}.csx";
+			else
+				return $"{ms.Name}/{element.Configuration().ComponentName()}/{element.FileName}";
 		}
 
 		protected virtual Script<object> CreateScript(string sourceCode, ScriptOptions options, InteractiveAssemblyLoader loader)

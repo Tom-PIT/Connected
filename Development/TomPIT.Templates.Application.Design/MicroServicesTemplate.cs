@@ -40,13 +40,13 @@ namespace TomPIT.MicroServices.Design
 		{
 			_items = new ConcurrentDictionary<string, IItemDescriptor>(new Dictionary<string, IItemDescriptor>
 				{
-					 { ComponentCategories.Entity,      new ItemDescriptor("Entity",       ComponentCategories.Entity,        typeof(EntityConfiguration))                          { Glyph = "fal fa-database",             Category = "Data" ,           Ordinal=9} },
+					 //{ ComponentCategories.Entity,      new ItemDescriptor("Entity",       ComponentCategories.Entity,        typeof(EntityConfiguration))                          { Glyph = "fal fa-database",             Category = "Data" ,           Ordinal=9} },
 					{ ComponentCategories.Connection,      new ItemDescriptor("Connection",       ComponentCategories.Connection,        typeof(Connection))                          { Glyph = "fal fa-server",             Category = "Data" ,           Ordinal=10} },
 					 { ComponentCategories.Model,             new ItemDescriptor("Model",              ComponentCategories.Model,               typeof(Model))                                 { Glyph = "fal fa-file-code",    Category = "Data" ,     Ordinal=20} },
 
 					 { ComponentCategories.Api,             new ItemDescriptor("Api",              ComponentCategories.Api,               typeof(Apis.Api))                                 { Glyph = "fal fa-broadcast-tower",    Category = "Middleware" ,     Ordinal=110} },
 					 { ComponentCategories.Script,          new ItemDescriptor("Script",           ComponentCategories.Script,            typeof(Scripting.Script))                    { Glyph = "fal fa-file-code",          Category = "Middleware" ,     Ordinal=120} },
-					 { ComponentCategories.Middleware,      new ItemDescriptor("Middleware",           ComponentCategories.Middleware,          typeof(MiddlewareConfiguration))                    { Glyph = "fal fa-cog",          Category = "Middleware" ,     Ordinal=121} },
+					 //{ ComponentCategories.Middleware,      new ItemDescriptor("Middleware",           ComponentCategories.Middleware,          typeof(MiddlewareConfiguration))                    { Glyph = "fal fa-plug",          Category = "Middleware" ,     Ordinal=121} },
 					 { ComponentCategories.DistributedEvent,new ItemDescriptor("Distributed events",ComponentCategories.DistributedEvent,  typeof(DistributedEvents))                    { Glyph = "fal fa-chart-network",      Category = "Middleware" ,    Ordinal=130} },
 					 { ComponentCategories.HostedWorker,    new ItemDescriptor("Hosted worker",    ComponentCategories.HostedWorker,      typeof(HostedWorker))                        { Glyph = "fal fa-cog",                Category = "Middleware" ,    Ordinal=140} },
 					 { ComponentCategories.HostedService,    new ItemDescriptor("Hosted service",    ComponentCategories.HostedService,      typeof(HostedService))                        { Glyph = "fal fa-cog",                Category = "Middleware" ,    Ordinal=141} },

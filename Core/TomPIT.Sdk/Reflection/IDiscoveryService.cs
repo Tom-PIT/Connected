@@ -9,13 +9,13 @@ namespace TomPIT.Reflection
 {
 	public interface IDiscoveryService
 	{
-		IMicroServiceDiscovery MicroServices { get; } 
+		IMicroServiceDiscovery MicroServices { get; }
 		IConfigurationDiscovery Configuration { get; }
 		IManifestDiscovery Manifests { get; }
 
 		[Obsolete("Please use MicroServices.References instead.")]
 		IServiceReferencesConfiguration References(string microService);
-		[Obsolete("Please use MicroServices.References instead.")] 
+		[Obsolete("Please use MicroServices.References instead.")]
 		IServiceReferencesConfiguration References(Guid microService);
 		[Obsolete("Please use MicroServices.References instead.")]
 		List<IMicroService> FlattenReferences(Guid microService);

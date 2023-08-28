@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
@@ -149,7 +149,7 @@ namespace TomPIT.Reflection
 
 			var component = Tenant.GetService<IComponentService>().SelectComponentByNameSpace(ms.Token, ComponentCategories.NameSpaceNuGet, Path.GetFileNameWithoutExtension(tokens[1]));
 
-			if(component == null)
+			if (component == null)
 				component = Tenant.GetService<IComponentService>().SelectComponentByNameSpace(ms.Token, ComponentCategories.NameSpaceResource, Path.GetFileNameWithoutExtension(tokens[1]));
 
 			if (component == null)
@@ -168,7 +168,7 @@ namespace TomPIT.Reflection
 			if (string.IsNullOrWhiteSpace(path))
 				return null;
 
-			return ScriptResolver.LoadScript(path);
+			return Tenant.GetService<IDiscoveryService>().Configuration.Find(path);
 		}
 		private short CreateScriptReference(string fileName)
 		{

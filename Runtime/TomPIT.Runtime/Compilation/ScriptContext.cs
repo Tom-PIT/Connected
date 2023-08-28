@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
 using TomPIT.Exceptions;
+using TomPIT.Reflection;
 
 namespace TomPIT.Compilation
 {
@@ -106,7 +107,7 @@ namespace TomPIT.Compilation
 
 				try
 				{
-					sourceFile = ScriptResolver.LoadScript(resolvedReference);
+					sourceFile = Tenant.GetService<IDiscoveryService>().Configuration.Find(resolvedReference);
 				}
 				catch { }
 
