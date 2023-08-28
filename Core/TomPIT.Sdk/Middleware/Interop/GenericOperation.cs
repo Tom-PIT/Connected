@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Threading.Tasks;
 using TomPIT.Annotations;
 using TomPIT.Compilation;
 using TomPIT.Exceptions;
@@ -12,284 +13,319 @@ using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Middleware.Interop
 {
-	public abstract class Operation<TReturnValue> : MiddlewareApiOperation, IOperation<TReturnValue>
-	{
-		protected Operation()
-		{
+    public abstract class Operation<TReturnValue> : MiddlewareApiOperation, IOperation<TReturnValue>
+    {
+        protected Operation()
+        {
 
-		}
+        }
 
-		[CIP(CIP.ExtenderProvider)]
-		public string Extender { get; set; }
+        [CIP(CIP.ExtenderProvider)]
+        public string? Extender { get; set; }
 
-		public T Invoke<T>()
-		{
-			return Invoke<T>(null);
-		}
-		public T Invoke<T>(IMiddlewareContext context)
-		{
-			if (context != null)
-				this.WithContext(context);
+        public T? Invoke<T>()
+        {
+            return AsyncUtils.RunSync(InvokeAsync<T>);
+        }
 
-			var r = Invoke();
+        public async Task<T?> InvokeAsync<T>()
+        {
+            return await InvokeAsync<T>(null);
+        }
 
-			if (r == null)
-				return default;
+        public T? Invoke<T>(IMiddlewareContext? context)
+        {
+            return AsyncUtils.RunSync(() => InvokeAsync<T>(context));
+        }
+        public async Task<T?> InvokeAsync<T>(IMiddlewareContext? context)
+        {
+            if (context is not null)
+                this.WithContext(context);
 
-			if (r.GetType().IsCollection() && !r.GetType().IsArray)
-			{
-				var listResult = (IList)r;
-				var genericArguments = typeof(T).GenericTypeArguments;
-				var result = (IList)typeof(List<>).MakeGenericType(genericArguments).CreateInstance();
+            var r = Invoke();
 
-				foreach (var item in listResult)
-					result.Add(item);
+            if (r is null)
+                return default;
 
-				return (T)result;
-			}
-			else
-				return (T)Convert.ChangeType(r, typeof(T));
-		}
+            if (r.GetType().IsCollection() && !r.GetType().IsArray)
+            {
+                var listResult = (IList)r;
+                var genericArguments = typeof(T).GenericTypeArguments;
+                var result = (IList)typeof(List<>).MakeGenericType(genericArguments).CreateInstance();
 
-		public TReturnValue Invoke()
-		{
-			return Invoke(null);
-		}
-		public TReturnValue Invoke(IMiddlewareContext context)
-		{
-			if (context != null)
-				this.WithContext(context);
+                foreach (var item in listResult)
+                    result.Add(item);
 
-			var metrics = StartMetrics();
-			var success = true;
+                return (T)result;
+            }
+            else
+                return (T)Convert.ChangeType(r, typeof(T));
 
-			try
-			{
-				ValidateExtender();
-				Validate();
-				OnValidating();
+            await Task.CompletedTask;
+        }
 
-				if (Context.Environment.IsInteractive)
-				{
-					AuthorizePolicies();
-					OnAuthorize();
-					OnAuthorizing();
-				}
+        public TReturnValue? Invoke()
+        {
+            return AsyncUtils.RunSync(() => InvokeAsync(null));
+        }
 
-				var result = DependencyInjections.Invoke(OnInvoke());
+        public async Task<TReturnValue?> InvokeAsync()
+        {
+            return await InvokeAsync(null);
+        }
 
-				if (result != null)
-				{
-					if (!string.IsNullOrWhiteSpace(Extender))
-						result = Extend(result);
-					else
-					{
-						if (Context.Environment.IsInteractive)
-							OnAuthorize(result);
-					}
-				}
+        public TReturnValue? Invoke(IMiddlewareContext? context)
+        {
+            return AsyncUtils.RunSync(() => InvokeAsync(context));
+        }
+        public async Task<TReturnValue?> InvokeAsync(IMiddlewareContext? context)
+        {
+            if (context is not null)
+                this.WithContext(context);
 
-				Invoked();
+            try
+            {
+                ValidateExtender();
+                Validate();
+                OnValidating();
 
-				return result;
-			}
-			catch (ValidationException)
-			{
-				success = false;
-				Rollback();
+                if (Context.Environment.IsInteractive)
+                {
+                    AuthorizePolicies();
+                    OnAuthorize();
+                    OnAuthorizing();
+                }
 
-				throw;
-			}
-			catch (Exception ex)
-			{
-				success = false;
-				Rollback();
+                var result = DependencyInjections.Invoke(OnInvoke());
 
-				throw TomPITException.Unwrap(this, ex);
-			}
-			finally
-			{
-				StopMetrics(metrics, success, null);
-			}
-		}
+                if (result is not null)
+                {
+                    if (!string.IsNullOrWhiteSpace(Extender))
+                        result = Extend(result);
+                    else
+                    {
+                        if (Context.Environment.IsInteractive)
+                            OnAuthorize(result);
+                    }
+                }
 
-		private TReturnValue Extend(TReturnValue items)
-		{
-			var ext = ResolveExtenderType();
-			using var ctx = new MicroServiceContext(Context.Tenant.GetService<ICompilerService>().ResolveMicroService(this), Context);
-			var extenderInstance = Context.Tenant.GetService<ICompilerService>().CreateInstance<object>(ctx, ext);
+                Invoked();
 
-			if (extenderInstance is IMiddlewareProxy proxy)
-				proxy.Proxy = this;
+                return result;
+            }
+            catch (ValidationException)
+            {
+                Rollback();
 
-			var inputType = GetExtendingType(extenderInstance);
-			var list = typeof(List<>);
-			var genericList = list.MakeGenericType(new Type[] { inputType });
-			var method = extenderInstance.GetType().GetMethod("Invoke", new Type[] { genericList });
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Rollback();
 
-			if (items.GetType().IsCollection())
-			{
-				var listResult = (IList)items;
-				var extenderResult = method.Invoke(extenderInstance, new object[] { items }) as IList;
+                throw TomPITException.Unwrap(this, ex);
+            }
 
-				listResult.Clear();
+            await Task.CompletedTask;
+        }
 
-				foreach (var i in extenderResult)
-					listResult.Add(i);
+        private TReturnValue Extend(TReturnValue items)
+        {
+            var ext = ResolveExtenderType();
+            using var ctx = new MicroServiceContext(Context.Tenant.GetService<ICompilerService>().ResolveMicroService(this));
+            var extenderInstance = Context.Tenant.GetService<ICompilerService>().CreateInstance<object>(ctx, ext);
 
-				if (Context.Environment.IsInteractive)
-					return DependencyInjections.Authorize(OnAuthorize(AuthorizePolicies(items)));
-				else
-					return items;
-			}
-			else
-			{
-				var listInstance = (IList)genericList.CreateInstance();
+            if (extenderInstance is IMiddlewareObject mo)
+                mo.SetContext(Context);
 
-				listInstance.Add(items);
+            if (extenderInstance is IMiddlewareProxy proxy)
+                proxy.Proxy = this;
 
-				var listResult = method.Invoke(extenderInstance, new object[] { listInstance }) as IList;
+            var inputType = GetExtendingType(extenderInstance);
+            var list = typeof(List<>);
+            var genericList = list.MakeGenericType(new Type[] { inputType });
+            var method = extenderInstance.GetType().GetMethod("Invoke", new Type[] { genericList });
 
-				if (Context.Environment.IsInteractive)
-					return DependencyInjections.Authorize(OnAuthorize(AuthorizePolicies((TReturnValue)listResult[0])));
-				else
-					return (TReturnValue)listResult[0];
-			}
-		}
+            if (items.GetType().IsCollection())
+            {
+                var listResult = (IList)items;
+                var extenderResult = method.Invoke(extenderInstance, new object[] { items }) as IList;
 
-		private Type GetExtendingType(object extenderInstance)
-		{
-			var interfaces = extenderInstance.GetType().GetInterfaces();
+                listResult.Clear();
 
-			foreach (var i in interfaces)
-			{
-				if (i.IsGenericType && string.Compare(i.Name, typeof(IExtender<object, object>).Name, false) == 0)
-					return i.GetGenericArguments()[0];
-			}
+                foreach (var i in extenderResult)
+                    listResult.Add(i);
 
-			throw new RuntimeException($"{SR.ErrCannotResolveExtender} ({GetType().ShortName()})");
-		}
-		protected virtual TReturnValue OnInvoke()
-		{
-			return default;
-		}
+                if (Context.Environment.IsInteractive)
+                    return DependencyInjections.Authorize(OnAuthorize(AuthorizePolicies(items)));
+                else
+                    return items;
+            }
+            else
+            {
+                var listInstance = (IList)genericList.CreateInstance();
 
-		protected virtual TReturnValue OnAuthorize(TReturnValue e)
-		{
-			return e;
-		}
+                listInstance.Add(items);
 
-		protected virtual void OnAuthorize()
-		{
+                var listResult = method.Invoke(extenderInstance, new object[] { listInstance }) as IList;
 
-		}
+                if (Context.Environment.IsInteractive)
+                    return DependencyInjections.Authorize(OnAuthorize(AuthorizePolicies((TReturnValue)listResult[0])));
+                else
+                    return (TReturnValue)listResult[0];
+            }
+        }
 
-		private void ValidateExtender()
-		{
-			if (string.IsNullOrWhiteSpace(Extender))
-				return;
+        private Type GetExtendingType(object extenderInstance)
+        {
+            var interfaces = extenderInstance.GetType().GetInterfaces();
 
-			ResolveExtenderType();
-		}
+            foreach (var i in interfaces)
+            {
+                if (i.IsGenericType && string.Compare(i.Name, typeof(IExtender<object, object>).Name, false) == 0)
+                    return i.GetGenericArguments()[0];
+            }
 
-		private Type ResolveExtenderType()
-		{
-			var extenders = GetType().FindAttributes<ExtenderAttribute>();
+            throw new RuntimeException($"{SR.ErrCannotResolveExtender} ({GetType().ShortName()})");
+        }
+        protected virtual TReturnValue? OnInvoke()
+        {
+            return AsyncUtils.RunSync(OnInvokeAsync);
+        }
 
-			if (extenders == null)
-				throw new RuntimeException($"{SR.ErrExtenderNotSupported} ({Extender})");
+        protected virtual async Task<TReturnValue?> OnInvokeAsync()
+        {
+            await Task.CompletedTask;
 
-			var extender = extenders.FirstOrDefault(f => string.Compare(f.Extender.ShortName(), Extender, true) == 0);
+            return default;
+        }
 
-			if (extender == null)
-				throw new RuntimeException($"{SR.ErrExtenderNotSupported} ({Extender})");
+        protected virtual TReturnValue? OnAuthorize(TReturnValue e)
+        {
+            return AsyncUtils.RunSync(() => OnAuthorizeAsync(e));
+        }
 
-			return extender.Extender;
-		}
+        protected virtual async Task<TReturnValue?> OnAuthorizeAsync(TReturnValue e)
+        {
+            return await Task.FromResult(e);
+        }
 
-		private TReturnValue AuthorizePolicies(TReturnValue e)
-		{
-			if (e == null)
-				return e;
+        protected virtual void OnAuthorize()
+        {
+            AsyncUtils.RunSync(OnAuthorizeAsync);
+        }
 
-			var attributes = GetType().GetCustomAttributes(true);
-			var targets = new List<AuthorizationPolicyAttribute>();
+        protected virtual async Task OnAuthorizeAsync()
+        {
+            await Task.CompletedTask;
+        }
 
-			foreach (var attribute in attributes)
-			{
-				if (!(attribute is AuthorizationPolicyAttribute policy) || policy.MiddlewareStage != AuthorizationMiddlewareStage.Result)
-					continue;
+        private void ValidateExtender()
+        {
+            if (string.IsNullOrWhiteSpace(Extender))
+                return;
 
-				targets.Add(policy);
-			}
+            ResolveExtenderType();
+        }
 
-			if (typeof(TReturnValue).IsCollection())
-			{
-				var items = (IList)e;
-				var result = typeof(TReturnValue).CreateInstance<IList>();
+        private Type ResolveExtenderType()
+        {
+            var extenders = GetType().FindAttributes<ExtenderAttribute>();
 
-				foreach (var item in items)
-				{
-					var authorized = AuthorizePoliciesItem(item, targets);
+            if (extenders == null)
+                throw new RuntimeException($"{SR.ErrExtenderNotSupported} ({Extender})");
 
-					if (authorized != default)
-						result.Add(authorized);
-				}
+            var extender = extenders.FirstOrDefault(f => string.Compare(f.Extender.ShortName(), Extender, true) == 0);
 
-				return (TReturnValue)result;
-			}
-			else
-				return (TReturnValue)AuthorizePoliciesItem(e, targets);
-		}
+            if (extender == null)
+                throw new RuntimeException($"{SR.ErrExtenderNotSupported} ({Extender})");
 
-		private object AuthorizePoliciesItem(object e, List<AuthorizationPolicyAttribute> attributes)
-		{
-			if (attributes.Count == 0)
-				return e;
+            return extender.Extender;
+        }
 
-			var restore = false;
+        private TReturnValue AuthorizePolicies(TReturnValue e)
+        {
+            if (e is null)
+                return e;
 
-			if (Context is IElevationContext c && c.State == ElevationContextState.Granted)
-			{
-				restore = true;
-				c.State = ElevationContextState.Revoked;
-			}
+            var attributes = GetType().GetCustomAttributes(true);
+            var targets = new List<AuthorizationPolicyAttribute>();
 
-			Exception firstFail = null;
-			bool onePassed = false;
+            foreach (var attribute in attributes)
+            {
+                if (attribute is not AuthorizationPolicyAttribute policy || policy.MiddlewareStage != AuthorizationMiddlewareStage.Result)
+                    continue;
 
-			try
-			{
-				foreach (var attribute in attributes.OrderByDescending(f => f.Priority))
-				{
-					try
-					{
-						if (attribute.Behavior == AuthorizationPolicyBehavior.Optional && onePassed)
-							continue;
+                targets.Add(policy);
+            }
 
-						attribute.Authorize(Context, e);
+            if (typeof(TReturnValue).IsCollection())
+            {
+                var items = (IList)e;
+                var result = typeof(TReturnValue).CreateInstance<IList>();
 
-						onePassed = true;
-					}
-					catch (Exception ex)
-					{
-						if (attribute.Behavior == AuthorizationPolicyBehavior.Mandatory)
-							throw;
+                foreach (var item in items)
+                {
+                    var authorized = AuthorizePoliciesItem(item, targets);
 
-						firstFail = ex;
-					}
-				}
+                    if (authorized != default)
+                        result.Add(authorized);
+                }
 
-				if (!onePassed && firstFail != null)
-					throw firstFail;
+                return (TReturnValue)result;
+            }
+            else
+                return (TReturnValue)AuthorizePoliciesItem(e, targets);
+        }
 
-				return e;
-			}
-			finally
-			{
-				if (restore && Context is IElevationContext elevation)
-					elevation.State = ElevationContextState.Granted;
-			}
-		}
-	}
+        private object AuthorizePoliciesItem(object e, List<AuthorizationPolicyAttribute> attributes)
+        {
+            if (attributes.Count == 0)
+                return e;
+
+            var restore = false;
+
+            if (Context is IElevationContext c && c.State == ElevationContextState.Granted)
+            {
+                restore = true;
+                c.State = ElevationContextState.Revoked;
+            }
+
+            Exception firstFail = null;
+            bool onePassed = false;
+
+            try
+            {
+                foreach (var attribute in attributes.OrderByDescending(f => f.Priority))
+                {
+                    try
+                    {
+                        if (attribute.Behavior == AuthorizationPolicyBehavior.Optional && onePassed)
+                            continue;
+
+                        attribute.Authorize(Context, e);
+
+                        onePassed = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        if (attribute.Behavior == AuthorizationPolicyBehavior.Mandatory)
+                            throw;
+
+                        firstFail = ex;
+                    }
+                }
+
+                if (!onePassed && firstFail != null)
+                    throw firstFail;
+
+                return e;
+            }
+            finally
+            {
+                if (restore && Context is IElevationContext elevation)
+                    elevation.State = ElevationContextState.Granted;
+            }
+        }
+    }
 }

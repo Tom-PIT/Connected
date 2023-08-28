@@ -85,7 +85,7 @@ namespace TomPIT.App.Resources
             if (ms == null)
                 throw new RuntimeException(GetType().ShortName(), string.Format("{0} ({1})", SR.ErrMicroServiceNotFound, microService));
 
-            using var ctx = new MicroServiceContext(ms.Token, Tenant.Url);
+            using var ctx = new MicroServiceContext(ms.Token);
             var key = GenerateKey(ms.Token, name.ToLowerInvariant(), ctx.Services.Routing.RootUrl);
             var r = Get(key);
 
@@ -169,7 +169,7 @@ namespace TomPIT.App.Resources
             var path = match.Value[3..^1];
             var tokens = path.Split('/');
 
-            using var ctx = new MiddlewareContext(Tenant.Url);
+            using var ctx = new MiddlewareContext();
             //var ms = ctx.Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
             //var component = ctx.Tenant.GetService<IComponentService>().SelectComponent(ms.Token, ComponentCategories.ScriptBundle, tokens[1]);
 

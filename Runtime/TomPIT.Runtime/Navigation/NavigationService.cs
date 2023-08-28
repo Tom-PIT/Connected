@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Template;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Web;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.Template;
 using TomPIT.Annotations;
 using TomPIT.Collections;
 using TomPIT.Compilation;
@@ -27,11 +27,11 @@ namespace TomPIT.Navigation
 		private static Lazy<ConcurrentDictionary<string, Guid>> _contextPointers = new Lazy<ConcurrentDictionary<string, Guid>>();
 
 		private static readonly HashSet<string> ReservedParameters = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-		{
-			".",
-			"action",
-			"controller"
-		};
+		  {
+				".",
+				"action",
+				"controller"
+		  };
 		public NavigationService(ITenant tenant) : base(tenant, "sitemap")
 		{
 		}
@@ -218,7 +218,7 @@ namespace TomPIT.Navigation
 		private void LoadDescriptorRoutes(NavigationHandlerDescriptor handler, List<string> tags, List<ISiteMapContainer> items)
 		{
 			var ms = Tenant.GetService<IMicroServiceService>().Select(handler.MicroService);
-			var ctx = new MicroServiceContext(ms, Tenant.Url);
+			var ctx = new MicroServiceContext(ms);
 			var instance = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapMiddleware>(ctx, handler.Handler);
 			var containers = instance.Invoke();
 
@@ -487,9 +487,9 @@ namespace TomPIT.Navigation
 				breadCrumb.Key = route.Template;
 
 			/*
-			 * Last breadcrumb should be without a link 
-			 * because it points to a currently displayed ui
-			 */
+		 * Last breadcrumb should be without a link 
+		 * because it points to a currently displayed ui
+		 */
 			if (linkBehavior == BreadcrumbLinkBehavior.All || (items.Count > 0 && route != null && !string.IsNullOrWhiteSpace(route.Template)))
 				breadCrumb.Url = route.WithNavigationContext(ParseUrl(route.Template, MergeParameters(parameters, item)));
 
@@ -507,9 +507,9 @@ namespace TomPIT.Navigation
 				breadCrumb.Key = route.Template;
 
 			/*
-			 * Last breadcrumb should be without a link 
-			 * because it points to a currently displayed ui
-			 */
+		 * Last breadcrumb should be without a link 
+		 * because it points to a currently displayed ui
+		 */
 			if (linkBehavior == BreadcrumbLinkBehavior.All || (items.Count > 0 && route != null && !string.IsNullOrWhiteSpace(route.Template)))
 				breadCrumb.Url = route.WithNavigationContext(ParseUrl(route.Template, MergeParameters(parameters, item)));
 
@@ -663,7 +663,7 @@ namespace TomPIT.Navigation
 		private ISiteMapRoute SelectRouteByTemplate(NavigationHandlerDescriptor descriptor, string template)
 		{
 			var ms = Tenant.GetService<IMicroServiceService>().Select(descriptor.MicroService);
-			var ctx = new MicroServiceContext(ms, Tenant.Url);
+			var ctx = new MicroServiceContext(ms);
 			var handler = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapMiddleware>(ctx, descriptor.Handler);
 
 			if (handler == null)
@@ -701,7 +701,7 @@ namespace TomPIT.Navigation
 		private ISiteMapRoute SelectRoute(NavigationHandlerDescriptor descriptor, string routeKey)
 		{
 			var ms = Tenant.GetService<IMicroServiceService>().Select(descriptor.MicroService);
-			var ctx = new MicroServiceContext(ms, Tenant.Url);
+			var ctx = new MicroServiceContext(ms);
 			var handler = Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapMiddleware>(ctx, descriptor.Handler);
 
 			if (handler == null)

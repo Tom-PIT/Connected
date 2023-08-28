@@ -1,18 +1,18 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Data;
-using Newtonsoft.Json.Linq;
 using TomPIT.Middleware;
 
 namespace TomPIT.Data
 {
-	public interface IDataEntity
-	{
-		string Serialize();
-		void Deserialize(JObject state);
-		[Obsolete("This method is not used. Please use DataSource(IDataReader) instead.")]
-		void DataSource(JObject state);
-		void Deserialize(IMiddlewareContext context, IDataReader reader);
+    public interface IDataEntity
+    {
+        string Serialize();
+        void Deserialize(JObject state);
+        [Obsolete("This method is not used. Please use DataSource(IDataReader) instead.")]
+        void DataSource(JObject state);
+        void Deserialize(IMiddlewareContext context, IDataReader reader);
 
-		T Evolve<T>() where T : class, IDataEntity;
-	}
+        T Evolve<T>() where T : class, IDataEntity;
+    }
 }

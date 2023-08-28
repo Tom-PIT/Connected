@@ -2,7 +2,7 @@
 {
 	public class ResourceTextEdit : ResourceEdit, IResourceTextEdit
 	{
-		public ITextEdit Edit { get; set; }
+		public ITextEdit TextEdit { get; set; }
 
 		public int ModelVersionId { get; set; }
 

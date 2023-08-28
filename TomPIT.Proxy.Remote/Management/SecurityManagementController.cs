@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Threading.Tasks;
 using TomPIT.Proxy.Management;
 using TomPIT.Security;
 
@@ -70,7 +71,7 @@ internal class SecurityManagementController : ISecurityManagementController
         });
     }
 
-    public PermissionValue SetPermission(string evidence, string schema, string claim, string descriptor, string primaryKey, Guid resourceGroup, string component)
+    public async Task<PermissionValue> SetPermission(string evidence, string schema, string claim, string descriptor, string primaryKey, Guid resourceGroup, string component)
     {
         return Connection.Post<PermissionValue>(Connection.CreateUrl(Controller, "SetPermission"), new
         {

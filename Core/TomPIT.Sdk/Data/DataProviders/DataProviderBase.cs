@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Threading;
+using System.Threading.Tasks;
 using TomPIT.Middleware;
 
 namespace TomPIT.Data.DataProviders
@@ -11,6 +12,7 @@ namespace TomPIT.Data.DataProviders
     public abstract class DataProviderBase<T> : IDataProvider where T : class, IDataConnection
     {
         private object _sync = new object();
+        private SemaphoreSlim _semaphore;
         private ConcurrentDictionary<IDataCommandDescriptor, IDbCommand> _commands = null;
 
         public Guid Id { get; }
@@ -18,11 +20,13 @@ namespace TomPIT.Data.DataProviders
 
         protected DataProviderBase(string name, Guid id)
         {
+            _semaphore = new(1);
+
             Id = id;
             Name = name;
         }
 
-        public abstract IDataConnection OpenConnection(IMiddlewareContext context, string connectionString, ConnectionBehavior behavior);
+        public abstract Task<IDataConnection> OpenConnection(IMiddlewareContext context, string connectionString, ConnectionBehavior behavior);
 
         private ConcurrentDictionary<IDataCommandDescriptor, IDbCommand> Commands
         {
@@ -41,9 +45,9 @@ namespace TomPIT.Data.DataProviders
             }
         }
 
-        public virtual int Execute(IMiddlewareContext context, IDataCommandDescriptor command, IDataConnection connection)
+        public virtual async Task<int> Execute(IMiddlewareContext context, IDataCommandDescriptor command, IDataConnection connection)
         {
-            EnsureOpen(connection);
+            await EnsureOpen(connection);
 
             var com = ResolveCommand(command, connection);
 
@@ -52,7 +56,7 @@ namespace TomPIT.Data.DataProviders
             foreach (var i in command.Parameters)
                 SetParameterValue(connection, com, i.Name, i.Value);
 
-            var recordsAffected = Execute(command, com, (context as MiddlewareContext)?.CancellationToken);
+            var recordsAffected = await Execute(command, com, (context as MiddlewareContext)?.CancellationToken);
 
             foreach (var i in command.Parameters)
             {
@@ -68,7 +72,7 @@ namespace TomPIT.Data.DataProviders
 
         }
 
-        protected virtual object GetParameterValue(IDbCommand command, string parameterName)
+        protected virtual object? GetParameterValue(IDbCommand command, string parameterName)
         {
             return null;
         }
@@ -77,11 +81,11 @@ namespace TomPIT.Data.DataProviders
         {
         }
 
-        protected virtual int Execute(IDataCommandDescriptor command, IDbCommand cmd, CancellationToken? cancellationToken = null)
+        protected virtual async Task<int> Execute(IDataCommandDescriptor command, IDbCommand cmd, CancellationToken? cancellationToken = null)
         {
             if (cmd is DbCommand dbCommand)
             {
-                return AsyncUtils.RunSync(()=> dbCommand.ExecuteNonQueryAsync(cancellationToken.GetValueOrDefault()));
+                return await dbCommand.ExecuteNonQueryAsync(cancellationToken.GetValueOrDefault());
             }
             else
             {
@@ -89,19 +93,19 @@ namespace TomPIT.Data.DataProviders
             }
         }
 
-        public virtual List<R> Query<R>(IMiddlewareContext context, IDataCommandDescriptor command)
+        public virtual async Task<List<R>> Query<R>(IMiddlewareContext context, IDataCommandDescriptor command)
         {
-            return Query<R>(context, command, null);
+            return await Query<R>(context, command, null);
         }
 
-        public virtual R Select<R>(IMiddlewareContext context, IDataCommandDescriptor command)
+        public virtual async Task<R> Select<R>(IMiddlewareContext context, IDataCommandDescriptor command)
         {
-            return Select<R>(context, command, null);
+            return await Select<R>(context, command, null);
         }
 
-        public virtual List<R> Query<R>(IMiddlewareContext context, IDataCommandDescriptor command, IDataConnection connection)
+        public virtual async Task<List<R>> Query<R>(IMiddlewareContext context, IDataCommandDescriptor command, IDataConnection connection)
         {
-            EnsureOpen(connection);
+            await EnsureOpen(connection);
 
             var com = ResolveCommand(command, connection);
 
@@ -125,14 +129,22 @@ namespace TomPIT.Data.DataProviders
             }
             finally
             {
-                if (rdr != null && !rdr.IsClosed)
-                    rdr.Close();
+                if (rdr is not null && !rdr.IsClosed)
+                    await CloseReader(rdr);
             }
         }
 
-        public virtual R Select<R>(IMiddlewareContext context, IDataCommandDescriptor command, IDataConnection connection)
+        protected virtual async Task CloseReader(IDataReader reader)
         {
-            EnsureOpen(connection);
+            if (reader is DbDataReader db)
+                await db.CloseAsync();
+            else
+                reader.Close();
+        }
+
+        public virtual async Task<R?> Select<R>(IMiddlewareContext context, IDataCommandDescriptor command, IDataConnection connection)
+        {
+            await EnsureOpen(connection);
 
             var com = ResolveCommand(command, connection);
 
@@ -155,17 +167,17 @@ namespace TomPIT.Data.DataProviders
             }
             finally
             {
-                if (rdr != null && !rdr.IsClosed)
-                    rdr.Close();
+                if (rdr is not null && !rdr.IsClosed)
+                    await CloseReader(rdr);
             }
         }
 
         public virtual void TestConnection(IMiddlewareContext context, string connectionString)
         {
-            var con = OpenConnection(context, connectionString, ConnectionBehavior.Isolated);
+            var con = AsyncUtils.RunSync(() => OpenConnection(context, connectionString, ConnectionBehavior.Isolated));
 
-            con.Open();
-            con.Close();
+            AsyncUtils.RunSync(con.Open);
+            AsyncUtils.RunSync(con.Close);
         }
 
         protected virtual IDbCommand ResolveCommand(IDataCommandDescriptor command, IDataConnection connection)
@@ -193,20 +205,26 @@ namespace TomPIT.Data.DataProviders
             }
         }
 
-        private static void EnsureOpen(IDataConnection connection)
+        private async Task EnsureOpen(IDataConnection connection)
         {
-            if (connection == null)
+            if (connection is null)
                 return;
 
             if (connection.State == ConnectionState.Open)
                 return;
 
-            lock (connection)
+            await _semaphore.WaitAsync();
+
+            try
             {
                 if (connection.State == ConnectionState.Open)
                     return;
 
-                connection.Open();
+                await connection.Open();
+            }
+            finally
+            {
+                _semaphore.Release();
             }
         }
 
@@ -218,6 +236,8 @@ namespace TomPIT.Data.DataProviders
                     command.Value.Dispose();
 
                 Commands.Clear();
+
+                _semaphore?.Dispose();
             }
         }
 

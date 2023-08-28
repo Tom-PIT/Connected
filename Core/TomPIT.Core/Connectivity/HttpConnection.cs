@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
 using System.Text;
-using Newtonsoft.Json.Linq;
+using System.Threading.Tasks;
 using TomPIT.Exceptions;
 using TomPIT.Serialization;
 
@@ -72,6 +73,11 @@ namespace TomPIT.Connectivity
             return Post<T>(url, CreateContent(content), e);
         }
 
+        public async Task<T> PostAsync<T>(string url, object content, HttpRequestArgs e = null)
+        {
+            return await PostAsync<T>(url, CreateContent(content), e);
+        }
+
         public void Post(string url, HttpRequestArgs e = null)
         {
             Post(url, null, e);
@@ -94,6 +100,15 @@ namespace TomPIT.Connectivity
 
             HandleResponse(client.PostAsync(url, httpContent).GetAwaiter().GetResult(), e);
         }
+        public async Task PostAsync(string url, HttpContent httpContent, HttpRequestArgs e = null)
+        {
+            var client = e == null || e.Credentials == null
+                ? HttpClientPool.Get(AuthenticationToken, this as IInstanceMetadataProvider)
+                : HttpClientPool.Get(e.Credentials, this as IInstanceMetadataProvider);
+
+            HandleResponse(await client.PostAsync(url, httpContent), e);
+        }
+
 
         public T Post<T>(string url, HttpContent httpContent, HttpRequestArgs e)
         {

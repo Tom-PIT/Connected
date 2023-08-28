@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.ExceptionServices;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Threading.Tasks;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.Diagnostics;
@@ -98,11 +99,24 @@ namespace TomPIT.Middleware.Interop
 
         public void Invoke()
         {
-            Invoke(null);
+            AsyncUtils.RunSync(InvokeAsync);
         }
-        public void Invoke(IMiddlewareContext context)
+
+        public async Task InvokeAsync()
         {
-            if (context != null)
+            Invoke(null);
+
+            await Task.CompletedTask;
+        }
+
+        public void Invoke(IMiddlewareContext? context)
+        {
+            AsyncUtils.RunSync(() => InvokeAsync(context));
+        }
+
+        public async Task InvokeAsync(IMiddlewareContext? context)
+        {
+            if (context is not null)
                 this.WithContext(context);
 
             try
@@ -148,11 +162,13 @@ namespace TomPIT.Middleware.Interop
 
                 ExceptionDispatchInfo.Capture(se).Throw();
             }
+
+            await Task.CompletedTask;
         }
 
-        protected internal override void OnCommitting()
+        protected internal override async Task OnCommittingAsync()
         {
-            base.OnCommitting();
+            await base.OnCommittingAsync();
 
             if (OperationTarget == DistributedOperationTarget.Distributed && !((MiddlewareCallback)Callback).Attached)
             {
@@ -166,12 +182,26 @@ namespace TomPIT.Middleware.Interop
             }
         }
 
+        [Obsolete("Please use async method")]
         protected virtual void OnInvoke()
         {
+            AsyncUtils.RunSync(OnInvokeAsync);
         }
 
+        protected virtual async Task OnInvokeAsync()
+        {
+            await Task.CompletedTask;
+        }
+
+        [Obsolete("Please use async method")]
         protected virtual void OnAuthorize()
         {
+            AsyncUtils.RunSync(OnAuthorizeAsync);
+        }
+
+        protected virtual async Task OnAuthorizeAsync()
+        {
+            await Task.CompletedTask;
         }
     }
 }

@@ -72,7 +72,7 @@ namespace TomPIT.Cdn.Events
             MicroService = ms.Name;
             Event = message.Name;
 
-            using var ctx = new MicroServiceContext(ms, MiddlewareDescriptor.Current.Tenant.Url);
+            using var ctx = new MicroServiceContext(ms);
             var responses = new List<IOperationResponse>();
             IDistributedEventMiddleware eventInstance = null;
 
@@ -212,7 +212,7 @@ namespace TomPIT.Cdn.Events
             if (string.IsNullOrEmpty(i.Name))
                 return null;
 
-            using var context = new MicroServiceContext(i.Configuration().MicroService(), MiddlewareDescriptor.Current.Tenant.Url);
+            using var context = new MicroServiceContext(i.Configuration().MicroService());
             var type = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().ResolveType(i.Configuration().MicroService(), i, i.Name, false);
 
             if (type == null)

@@ -10,8 +10,10 @@
 		public static string Queue => "Queue";
 		//public static string Event => "Event";
 		public static string Connection => "Connection";
+		public static string Entity => "Entity";
 		public static string SiteMap => "SiteMap";
 		public static string Script => "Script";
+		public static string Middleware => "Middleware";
 		public static string BigDataPartition => "BigDataPartition";
 		public static string Reference => "Reference";
 		public static string MasterView => "MasterView";
@@ -58,44 +60,46 @@
 		public static string NameSpaceMiddleware => "Middleware";
 		public static string NameSpaceDeployment => "Deployment";
 		public static string NameSpaceQuality => "Quality";
-		public static string NameSpaceNuGet=> "NuGetPackage";
+		public static string NameSpaceNuGet => "NuGetPackage";
 
 		public static string[] ScriptCategories => new string[] { Script, IoCContainer };
 		public static string ResolveNamespace(string category)
 		{
 			if (string.Compare(category, Api, true) == 0
-				|| string.Compare(category, Script, true) == 0
-				|| string.Compare(category, IoCContainer, true) == 0
-				|| string.Compare(category, Model, true) == 0
-				|| string.Compare(category, Settings, true) == 0)
+				 || string.Compare(category, Script, true) == 0
+				 || string.Compare(category, Model, true) == 0
+				 || string.Compare(category, Settings, true) == 0
+				|| string.Compare(category, Entity, true) == 0)
 				return NameSpacePublicScript;
 			else if (string.Compare(category, Subscription, true) == 0
-				|| string.Compare(category, Queue, true) == 0
-				|| string.Compare(category, SiteMap, true) == 0
-				|| string.Compare(category, BigDataPartition, true) == 0
-				|| string.Compare(category, DistributedEvent, true) == 0
-				|| string.Compare(category, HostedWorker, true) == 0
-				|| string.Compare(category, HostedService, true) == 0
-				|| string.Compare(category, SearchCatalog, true) == 0
-				|| string.Compare(category, IoTHub, true) == 0
-				|| string.Compare(category, IoTSchema, true) == 0
-				|| string.Compare(category, IoCEndpoint, true) == 0)
+				 || string.Compare(category, IoCContainer, true) == 0
+				 || string.Compare(category, Queue, true) == 0
+				 || string.Compare(category, SiteMap, true) == 0
+				 || string.Compare(category, BigDataPartition, true) == 0
+				 || string.Compare(category, DistributedEvent, true) == 0
+				 || string.Compare(category, HostedWorker, true) == 0
+				 || string.Compare(category, HostedService, true) == 0
+				 || string.Compare(category, SearchCatalog, true) == 0
+				 || string.Compare(category, IoTHub, true) == 0
+				 || string.Compare(category, IoTSchema, true) == 0
+				 || string.Compare(category, IoCEndpoint, true) == 0
+				 || string.Compare(category, Middleware, true) == 0)
 				return NameSpaceInternalScript;
 			else if (string.Compare(category, View, true) == 0
-				|| string.Compare(category, MasterView, true) == 0
-				|| string.Compare(category, Partial, true) == 0
-				|| string.Compare(category, MailTemplate, true) == 0)
+				 || string.Compare(category, MasterView, true) == 0
+				 || string.Compare(category, Partial, true) == 0
+				 || string.Compare(category, MailTemplate, true) == 0)
 				return NameSpaceView;
 			else if (string.Compare(category, Connection, true) == 0)
 				return NameSpaceData;
 			else if (string.Compare(category, Reference, true) == 0)
 				return NameSpaceReference;
 			else if (string.Compare(category, Theme, true) == 0
-				|| string.Compare(category, ScriptBundle, true) == 0
-				|| string.Compare(category, StringTable, true) == 0
-				|| string.Compare(category, Media, true) == 0
-				|| string.Compare(category, EmbeddedAssembly, true) == 0
-				|| string.Compare(category, FileAssembly, true) == 0)
+				 || string.Compare(category, ScriptBundle, true) == 0
+				 || string.Compare(category, StringTable, true) == 0
+				 || string.Compare(category, Media, true) == 0
+				 || string.Compare(category, EmbeddedAssembly, true) == 0
+				 || string.Compare(category, FileAssembly, true) == 0)
 				return NameSpaceResource;
 			else if (string.Compare(category, EventBinder, true) == 0)
 				return NameSpaceMiddleware;
@@ -104,7 +108,7 @@
 			else if (string.Compare(category, UnitTest, true) == 0)
 				return NameSpaceQuality;
 			else if (string.Compare(category, NuGetPackage, true) == 0
-				|| string.Compare(category, EmbeddedNuGetPackage, true) == 0)
+				 || string.Compare(category, EmbeddedNuGetPackage, true) == 0)
 				return NameSpaceNuGet;
 			else
 				return "Default";

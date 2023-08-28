@@ -1,107 +1,142 @@
-﻿using System.ComponentModel;
-using Newtonsoft.Json;
-using TomPIT.Annotations;
+﻿using System;
+using System.ComponentModel;
+using System.Threading.Tasks;
 using TomPIT.Security;
 
 namespace TomPIT.Middleware
 {
-	public abstract class MiddlewareOperation : MiddlewareComponent, IMiddlewareOperation, IMiddlewareTransactionClient
-	{
-		[SkipValidation]
-		[EditorBrowsable(EditorBrowsableState.Advanced)]
-		[JsonIgnore]
-		public IMiddlewareTransaction Transaction
-		{
-			get
-			{
-				if (Context is MiddlewareContext mc)
-				{
-					var transaction = mc.Transaction;
+    public abstract class MiddlewareOperation : MiddlewareComponent, IMiddlewareOperation
+    {
+        [Obsolete("Please use async method")]
+        protected void Rollback()
+        {
+            AsyncUtils.RunSync(RollbackAsync);
+        }
 
-					if (transaction != null && transaction is MiddlewareTransaction mt)
-						mt.Notify(this);
+        protected override void OnContextChanged()
+        {
+            if (Context is MiddlewareContext middleware)
+                middleware.Transactions.Register(this);
+        }
 
-					return transaction;
-				}
+        protected async Task RollbackAsync()
+        {
+            if (Context is MiddlewareContext middleware)
+                await middleware.Transactions.Rollback();
+        }
 
-				return null;
-			}
-			internal set
-			{
-				if (Context is MiddlewareContext mc)
-					mc.Transaction = value;
+        internal async Task CommitOperation()
+        {
+            OnCommit();
+            OnCommitting();
 
-				if (value is MiddlewareTransaction transaction)
-					transaction.Notify(this);
-			}
-		}
+            await Task.CompletedTask;
+        }
 
-		protected void Rollback()
-		{
-			if (Transaction is MiddlewareTransaction t)
-				t.Rollback();
-		}
+        internal async Task RollbackOperation()
+        {
+            OnRollbacking();
+            OnRollback();
 
-		void IMiddlewareTransactionClient.CommitTransaction()
-		{
-			OnCommit();
-			OnCommitting();
-		}
+            await Task.CompletedTask;
+        }
 
-		void IMiddlewareTransactionClient.RollbackTransaction()
-		{
-			OnRollbacking();
-			OnRollback();
-		}
+        [Obsolete("Please use async method")]
+        protected virtual void OnCommit()
+        {
+            AsyncUtils.RunSync(OnCommitAsync);
+        }
 
-		protected virtual void OnCommit()
-		{
+        [Obsolete("Please use async method")]
+        protected virtual void OnRollback()
+        {
+            AsyncUtils.RunSync(OnRollbackAsync);
+        }
 
-		}
+        protected virtual async Task OnCommitAsync()
+        {
+            await Task.CompletedTask;
+        }
 
-		protected virtual void OnRollback()
-		{
+        protected virtual async Task OnRollbackAsync()
+        {
+            await Task.CompletedTask;
+        }
 
-		}
+        [Obsolete("Please use async method")]
+        protected internal void Invoked()
+        {
+            AsyncUtils.RunSync(InvokedAsync);
+        }
 
-		protected internal void Invoked()
-		{
-			var mc = Context as MiddlewareContext;
+        protected internal async Task InvokedAsync()
+        {
+            if (Context is MiddlewareContext middleware)
+                middleware.Transactions.Commit(this);
+        }
 
-			if (mc?.Owner is null)
-			{
-				if (!(Transaction is MiddlewareTransaction transaction))
-					return;
+        [Obsolete("Please use async method")]
+        protected internal virtual void OnCommitting()
+        {
+            AsyncUtils.RunSync(OnCommittingAsync);
+        }
 
-				transaction.Commit();
-			}
-		}
+        protected internal virtual async Task OnCommittingAsync()
+        {
+            await Task.CompletedTask;
+        }
 
-		protected internal virtual void OnCommitting()
-		{
-		}
-		[EditorBrowsable(EditorBrowsableState.Advanced)]
-		protected internal virtual void OnRollbacking()
-		{
-		}
+        [Obsolete("Please use async method")]
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        protected internal virtual void OnRollbacking()
+        {
+            AsyncUtils.RunSync(OnRollbackingAsync);
+        }
 
-		protected internal virtual void OnAuthorizing()
-		{
-		}
 
-		protected internal virtual void OnValidating()
-		{
-		}
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        protected internal virtual async Task OnRollbackingAsync()
+        {
+            await Task.CompletedTask;
+        }
 
-		protected internal virtual void AuthorizePolicies()
-		{
-			if (Context is not IElevationContext elevationContext || elevationContext.AuthorizationOwner != this)
-				return;
+        [Obsolete("Please use async method")]
+        protected internal virtual void OnAuthorizing()
+        {
+            AsyncUtils.RunSync(OnAuthorizingAsync);
+        }
 
-			Context.Tenant.GetService<IAuthorizationService>().AuthorizePolicies(Context, this);
+        protected internal virtual async Task OnAuthorizingAsync()
+        {
+            await Task.CompletedTask;
+        }
 
-			if (Context is IElevationContext postElevationContext && postElevationContext.State == ElevationContextState.Revoked)
-				postElevationContext.State = ElevationContextState.Granted;
-		}
-	}
+        [Obsolete("Please use async method")]
+        protected internal virtual void OnValidating()
+        {
+            AsyncUtils.RunSync(OnValidatingAsync);
+        }
+
+        protected internal virtual async Task OnValidatingAsync()
+        {
+            await Task.CompletedTask;
+        }
+
+        [Obsolete("Please use async method")]
+        protected internal virtual void AuthorizePolicies()
+        {
+            AsyncUtils.RunSync(AuthorizePoliciesAsync);
+        }
+
+        protected internal virtual async Task AuthorizePoliciesAsync()
+        {
+            if (Context is not IElevationContext elevationContext || elevationContext.AuthorizationOwner != this)
+                return;
+
+            await Context.Tenant.GetService<IAuthorizationService>().AuthorizePoliciesAsync(Context, this);
+
+            if (Context is IElevationContext postElevationContext && postElevationContext.State == ElevationContextState.Revoked)
+                postElevationContext.State = ElevationContextState.Granted;
+        }
+    }
 }

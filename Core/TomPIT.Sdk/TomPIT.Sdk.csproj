@@ -1,7 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFramework>net7.0</TargetFramework>
 		<RootNamespace>TomPIT</RootNamespace>
+		<Nullable>enable</Nullable>
 		<Authors>Tom PIT</Authors>
 		<Company>Tom PIT</Company>
 		<Product>Tom PIT.connected</Product>
@@ -19,6 +20,7 @@
 		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="7.0.9" />
 		<PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="4.6.0" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.6.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.6.0" />
 		<PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.32.0" />
 		<PackageReference Include="SkiaSharp" Version="2.88.3" />
 		<PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.3" />		
@@ -28,8 +30,5 @@
 		<ProjectReference Include="..\..\TomPIT.ServiceProviders.HealthMonitoring\TomPIT.ServiceProviders.HealthMonitoring.csproj" />
 		<ProjectReference Include="..\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
 		<ProjectReference Include="..\TomPIT.Core\TomPIT.Core.csproj" />
-	</ItemGroup>
-	<ItemGroup>
-	  <Folder Include="Middleware\Storage\" />
 	</ItemGroup>
 </Project>

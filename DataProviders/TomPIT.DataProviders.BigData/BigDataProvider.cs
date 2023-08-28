@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Threading.Tasks;
 using TomPIT.Data;
 using TomPIT.Data.DataProviders;
 using TomPIT.Data.DataProviders.Design;
@@ -7,61 +8,63 @@ using TomPIT.Middleware;
 
 namespace TomPIT.DataProviders.BigData
 {
-	[SchemaBrowser("TomPIT.DataProviders.BigData.Design.Browser, TomPIT.DataProviders.BigData")]
-	public class BigDataProvider : DataProviderBase<DataConnection>
-	{
-		public BigDataProvider() : base("BigData", new Guid("BFEE9DDE-3721-4168-B902-DBC72E63EE22"))
-		{
+    [SchemaBrowser("TomPIT.DataProviders.BigData.Design.Browser, TomPIT.DataProviders.BigData")]
+    public class BigDataProvider : DataProviderBase<DataConnection>
+    {
+        public BigDataProvider() : base("BigData", new Guid("BFEE9DDE-3721-4168-B902-DBC72E63EE22"))
+        {
 
-		}
+        }
 
-		public override IDataConnection OpenConnection(IMiddlewareContext context, string connectionString, ConnectionBehavior behavior)
-		{
-			return new DataConnection(context, this, connectionString, behavior);
-		}
+        public override async Task<IDataConnection> OpenConnection(IMiddlewareContext context, string connectionString, ConnectionBehavior behavior)
+        {
+            await Task.CompletedTask;
 
-		protected override void SetupParameters(IDataCommandDescriptor command, IDbCommand cmd)
-		{
-			if (cmd.Parameters.Count > 0)
-			{
-				foreach (BigDataParameter i in cmd.Parameters)
-					i.Value = DBNull.Value;
-			}
-			else
-			{
-				BigDataParameter rv = null;
+            return new DataConnection(context, this, connectionString, behavior);
+        }
 
-				foreach (var i in command.Parameters)
-				{
-					var p = new BigDataParameter
-					{
-						ParameterName = i.Name,
-						DbType = i.DataType
-					};
+        protected override void SetupParameters(IDataCommandDescriptor command, IDbCommand cmd)
+        {
+            if (cmd.Parameters.Count > 0)
+            {
+                foreach (BigDataParameter i in cmd.Parameters)
+                    i.Value = DBNull.Value;
+            }
+            else
+            {
+                BigDataParameter rv = null;
 
-					if (i.Direction == ParameterDirection.ReturnValue)
-						p.Direction = ParameterDirection.ReturnValue;
+                foreach (var i in command.Parameters)
+                {
+                    var p = new BigDataParameter
+                    {
+                        ParameterName = i.Name,
+                        DbType = i.DataType
+                    };
 
-					cmd.Parameters.Add(p);
+                    if (i.Direction == ParameterDirection.ReturnValue)
+                        p.Direction = ParameterDirection.ReturnValue;
 
-					if (i.Direction == ParameterDirection.ReturnValue && rv == null)
-						rv = p;
-				}
-			}
-		}
+                    cmd.Parameters.Add(p);
 
-		protected override object GetParameterValue(IDbCommand command, string parameterName)
-		{
-			var cmd = command as BigDataCommand;
+                    if (i.Direction == ParameterDirection.ReturnValue && rv == null)
+                        rv = p;
+                }
+            }
+        }
 
-			return cmd.Parameters[parameterName].Value;
-		}
+        protected override object GetParameterValue(IDbCommand command, string parameterName)
+        {
+            var cmd = command as BigDataCommand;
 
-		protected override void SetParameterValue(IDataConnection connection, IDbCommand command, string parameterName, object value)
-		{
-			var cmd = command as BigDataCommand;
+            return cmd.Parameters[parameterName].Value;
+        }
 
-			cmd.Parameters[parameterName].Value = value;
-		}
-	}
+        protected override void SetParameterValue(IDataConnection connection, IDbCommand command, string parameterName, object value)
+        {
+            var cmd = command as BigDataCommand;
+
+            cmd.Parameters[parameterName].Value = value;
+        }
+    }
 }

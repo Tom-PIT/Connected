@@ -1,10 +1,12 @@
-﻿namespace TomPIT.Data
-{
-	public interface IDataWriter : IDataCommand
-	{
-		int Execute();
-		T Execute<T>();
+﻿using System.Threading.Tasks;
 
-		IDataParameter SetReturnValueParameter(string name);
-	}
+namespace TomPIT.Data
+{
+    public interface IDataWriter : IDataCommand
+    {
+        Task<int> Execute();
+        Task<T> Execute<T>();
+
+        IDataParameter SetReturnValueParameter(string name);
+    }
 }

@@ -1,94 +1,131 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using Newtonsoft.Json;
+using System.Threading.Tasks;
 using TomPIT.Annotations;
 using TomPIT.Data;
 using TomPIT.Exceptions;
 
 namespace TomPIT.Middleware
 {
-	public abstract class MiddlewareComponent : MiddlewareObject, IMiddlewareComponent
-	{
-		private MiddlewareValidator _validator = null;
-		protected MiddlewareComponent()
-		{
+    public abstract class MiddlewareComponent : MiddlewareObject, IMiddlewareComponent
+    {
+        private MiddlewareValidator? _validator = null;
+        protected MiddlewareComponent()
+        {
 
-		}
+        }
 
-		protected MiddlewareComponent(IMiddlewareContext context) : base(context)
-		{
-		}
+        protected MiddlewareComponent(IMiddlewareContext context) : base(context)
+        {
+        }
 
-		protected virtual void OnValidate(List<ValidationResult> results)
-		{
+        protected virtual void OnValidate(List<ValidationResult> results)
+        {
 
-		}
+        }
 
-		protected virtual List<object> OnProvideUniqueValues(string propertyName)
-		{
-			return null;
-		}
+        [Obsolete("Please use async method")]
+        protected virtual List<object>? OnProvideUniqueValues(string propertyName)
+        {
+            return AsyncUtils.RunSync(() => OnProvideUniqueValuesAsync(propertyName));
+        }
 
-		bool IUniqueValueProvider.IsUnique(IMiddlewareContext context, string propertyName)
-		{
-			return IsValueUnique(propertyName);
-		}
-		[EditorBrowsable(EditorBrowsableState.Advanced)]
-		protected virtual bool IsValueUnique(string propertyName)
-		{
-			return true;
-		}
+        protected virtual async Task<List<object>?> OnProvideUniqueValuesAsync(string propertyName)
+        {
+            await Task.CompletedTask;
 
-		public void Validate()
-		{
-			Validator.Validate();
-		}
+            return default;
+        }
 
-		protected void Validate(object instance)
-		{
-			Validator.Validate(instance, false);
-		}
+        bool IUniqueValueProvider.IsUnique(IMiddlewareContext context, string propertyName)
+        {
+            return IsValueUnique(propertyName);
+        }
 
-		[SkipValidation]
-		[JsonIgnore]
-		private MiddlewareValidator Validator
-		{
-			get
-			{
-				if (_validator == null)
-				{
-					_validator = new MiddlewareValidator(this);
+        async Task<bool> IUniqueValueProvider.IsUniqueAsync(IMiddlewareContext context, string propertyName)
+        {
+            return await IsValueUniqueAsync(propertyName);
+        }
 
-					_validator.Validating += OnValidating;
-				}
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        [Obsolete("Please use async method")]
+        protected virtual bool IsValueUnique(string propertyName)
+        {
+            return AsyncUtils.RunSync(() => IsValueUniqueAsync(propertyName));
+        }
 
-				return _validator;
-			}
-		}
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        protected virtual async Task<bool> IsValueUniqueAsync(string propertyName)
+        {
+            await Task.CompletedTask;
 
-		private void OnValidating(object sender, List<ValidationResult> results)
-		{
-			try
-			{
-				OnValidate(results);
-			}
-			catch(Exception ex)
-			{
-				throw TomPITException.Unwrap(this, ex);
-			}
-		}
+            return true;
+        }
 
-		protected override void OnDisposing()
-		{
-			if (_validator != null)
-			{
-				_validator.Validating -= OnValidating;
-				_validator.Dispose();
-				_validator = null;
-			}
-			base.OnDisposing();
-		}
-	}
+        [Obsolete("Please Use Async version.")]
+        public void Validate()
+        {
+            AsyncUtils.RunSync(ValidateAsync);
+        }
+
+        public async Task ValidateAsync()
+        {
+            await Task.CompletedTask;
+        }
+
+        [Obsolete("Please Use Async version.")]
+        protected void Validate(object instance)
+        {
+            AsyncUtils.RunSync(() => ValidateAsync(instance));
+        }
+
+        protected async Task ValidateAsync(object instance)
+        {
+            await Validator.Validate(instance, false);
+        }
+
+        [SkipValidation]
+        [JsonIgnore]
+        private MiddlewareValidator Validator
+        {
+            get
+            {
+                if (_validator is null)
+                {
+                    _validator = new MiddlewareValidator(this);
+
+                    _validator.Validating += OnValidating;
+                }
+
+                return _validator;
+            }
+        }
+
+        private void OnValidating(object sender, List<ValidationResult> results)
+        {
+            try
+            {
+                OnValidate(results);
+            }
+            catch (Exception ex)
+            {
+                throw TomPITException.Unwrap(this, ex);
+            }
+        }
+
+        protected override void OnDisposing()
+        {
+            if (_validator is not null)
+            {
+                _validator.Validating -= OnValidating;
+                _validator.Dispose();
+                _validator = null;
+            }
+
+            base.OnDisposing();
+        }
+    }
 }

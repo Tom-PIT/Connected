@@ -64,7 +64,7 @@ namespace TomPIT.BigData.Transactions
 
         public void Prepare(IPartitionConfiguration partition, JArray items)
         {
-            using var ctx = new MicroServiceContext(partition.MicroService(), Tenant.Url);
+            using var ctx = new MicroServiceContext(partition.MicroService());
             var middleware = partition.Middleware(ctx);
 
             if (middleware is null)

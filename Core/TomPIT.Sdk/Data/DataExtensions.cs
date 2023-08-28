@@ -7,43 +7,45 @@ using TomPIT.Serialization;
 
 namespace TomPIT.Data
 {
-	public static class DataExtensions
-	{
-		public static IConnectionString ResolveConnectionString(this IConnectionConfiguration connection, IMiddlewareContext context, ConnectionStringContext connectionContext)
-		{
-			return ResolveConnectionString(connection, context, connectionContext, null);
-		}
-		public static IConnectionString ResolveConnectionString(this IConnectionConfiguration connection, IMiddlewareContext context, ConnectionStringContext connectionContext, object arguments)
-		{
-			var ms = connection.MicroService();
-			var componentName = connection.ComponentName();
-			var type = context.Tenant.GetService<ICompilerService>().ResolveType(ms, connection, componentName, false);
+    public static class DataExtensions
+    {
+        public static IConnectionString ResolveConnectionString(this IConnectionConfiguration connection, IMiddlewareContext context, ConnectionStringContext connectionContext)
+        {
+            return ResolveConnectionString(connection, context, connectionContext, null);
+        }
+        public static IConnectionString ResolveConnectionString(this IConnectionConfiguration connection, IMiddlewareContext context, ConnectionStringContext connectionContext, object arguments)
+        {
+            var ms = connection.MicroService();
+            var componentName = connection.ComponentName();
+            var type = context.Tenant.GetService<ICompilerService>().ResolveType(ms, connection, componentName, false);
 
-			if (type == null)
-				return StaticConnectionConfiguration(connection);
+            if (type == null)
+                return StaticConnectionConfiguration(connection);
 
-			var e = arguments == null ? string.Empty : Serializer.Serialize(arguments);
-			using var ctx = new MicroServiceContext(ms, context);
-			var middleware = context.Tenant.GetService<ICompilerService>().CreateInstance<ConnectionMiddleware>(ctx, type, e);
+            var e = arguments == null ? string.Empty : Serializer.Serialize(arguments);
+            using var ctx = new MicroServiceContext(ms);
+            var middleware = context.Tenant.GetService<ICompilerService>().CreateInstance<ConnectionMiddleware>(ctx, type, e);
 
-			var result = middleware.Invoke(new ConnectionMiddlewareArgs(connectionContext));
+            middleware.SetContext(context);
 
-			if (result == null)
-				return StaticConnectionConfiguration(connection);
+            var result = middleware.Invoke(new ConnectionMiddlewareArgs(connectionContext));
 
-			if (result.DataProvider == Guid.Empty && connection.DataProvider != Guid.Empty && result is ConnectionString cs)
-				cs.DataProvider = connection.DataProvider;
+            if (result == null)
+                return StaticConnectionConfiguration(connection);
 
-			return result;
-		}
+            if (result.DataProvider == Guid.Empty && connection.DataProvider != Guid.Empty && result is ConnectionString cs)
+                cs.DataProvider = connection.DataProvider;
 
-		private static IConnectionString StaticConnectionConfiguration(IConnectionConfiguration configuration)
-		{
-			return new ConnectionString
-			{
-				DataProvider = configuration.DataProvider,
-				Value = configuration.Value
-			};
-		}
-	}
+            return result;
+        }
+
+        private static IConnectionString StaticConnectionConfiguration(IConnectionConfiguration configuration)
+        {
+            return new ConnectionString
+            {
+                DataProvider = configuration.DataProvider,
+                Value = configuration.Value
+            };
+        }
+    }
 }

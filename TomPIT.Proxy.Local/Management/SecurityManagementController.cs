@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
+using System.Threading.Tasks;
 using TomPIT.Proxy.Management;
 using TomPIT.Security;
 using TomPIT.Sys.Model;
@@ -37,13 +38,13 @@ internal class SecurityManagementController : ISecurityManagementController
         DataModel.Permissions.Reset(claim, schema, primaryKey, descriptor);
     }
 
-    public PermissionValue SetPermission(string evidence, string schema, string claim, string descriptor, string primaryKey, Guid resourceGroup, string component)
+    public async Task<PermissionValue> SetPermission(string evidence, string schema, string claim, string descriptor, string primaryKey, Guid resourceGroup, string component)
     {
         var p = DataModel.Permissions.Select(evidence, schema, claim, primaryKey, descriptor);
 
         if (p is null)
         {
-            DataModel.Permissions.Insert(resourceGroup, evidence, schema, claim, descriptor, primaryKey, PermissionValue.Allow, component);
+            await DataModel.Permissions.Insert(resourceGroup, evidence, schema, claim, descriptor, primaryKey, PermissionValue.Allow, component);
 
             return PermissionValue.Allow;
         }

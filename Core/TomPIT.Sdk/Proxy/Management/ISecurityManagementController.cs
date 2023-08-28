@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Immutable;
+using System.Threading.Tasks;
 using TomPIT.Security;
 
 namespace TomPIT.Proxy.Management
 {
     public interface ISecurityManagementController
     {
-        PermissionValue SetPermission(string evidence, string schema, string claim, string descriptor, string primaryKey, Guid resourceGroup, string component);
+        Task<PermissionValue> SetPermission(string evidence, string schema, string claim, string descriptor, string primaryKey, Guid resourceGroup, string component);
         void Reset(string schema, string claim, string primaryKey, string descriptor);
         ImmutableList<IMembership> QueryMembership(Guid role);
         void InsertMembership(Guid user, Guid role);

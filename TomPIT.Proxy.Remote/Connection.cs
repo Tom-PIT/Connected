@@ -1,4 +1,5 @@
-﻿using TomPIT.Connectivity;
+﻿using System.Threading.Tasks;
+using TomPIT.Connectivity;
 using TomPIT.Middleware;
 
 namespace TomPIT.Proxy.Remote
@@ -23,6 +24,11 @@ namespace TomPIT.Proxy.Remote
         public static T Post<T>(string url, object args)
         {
             return MiddlewareDescriptor.Current.Tenant.Post<T>(url, args);
+        }
+
+        public static async Task<T> PostAsync<T>(string url, object args)
+        {
+            return await MiddlewareDescriptor.Current.Tenant.PostAsync<T>(url, args);
         }
 
         public static T Post<T>(string url)

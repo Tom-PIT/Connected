@@ -12,155 +12,155 @@ using TomPIT.Navigation;
 
 namespace TomPIT.Development.Navigation
 {
-	internal class NavigationDesignService : TenantObject, INavigationDesignService
-	{
-		public NavigationDesignService(ITenant tenant) : base(tenant)
-		{
+    internal class NavigationDesignService : TenantObject, INavigationDesignService
+    {
+        public NavigationDesignService(ITenant tenant) : base(tenant)
+        {
 
-		}
-		public ImmutableList<INavigationRouteDescriptor> QueryRouteKeys(Guid microService)
-		{
-			var configurations = Tenant.GetService<IComponentService>().QueryConfigurations(microService, ComponentCategories.SiteMap);
-			var r = new HashSet<INavigationRouteDescriptor>(new NavigationRouteComparer());
+        }
+        public ImmutableList<INavigationRouteDescriptor> QueryRouteKeys(Guid microService)
+        {
+            var configurations = Tenant.GetService<IComponentService>().QueryConfigurations(microService, ComponentCategories.SiteMap);
+            var r = new HashSet<INavigationRouteDescriptor>(new NavigationRouteComparer());
 
-			foreach (var configuration in configurations)
-			{
-				var containers = QueryContainers(microService, configuration);
+            foreach (var configuration in configurations)
+            {
+                var containers = QueryContainers(microService, configuration);
 
-				if (containers == null)
-					continue;
+                if (containers == null)
+                    continue;
 
-				foreach (var container in containers)
-					FillKeys(container, r);
-			}
+                foreach (var container in containers)
+                    FillKeys(container, r);
+            }
 
-			return r.ToImmutableList();
-		}
+            return r.ToImmutableList();
+        }
 
-		private void FillKeys(ISiteMapContainer container, HashSet<INavigationRouteDescriptor> items)
-		{
-			foreach (var item in container.Routes)
-			{
-				if (container is ISiteMapRouteContainer routeContainer)
-					items.Add(new NavigationRouteDescriptor { RouteKey = routeContainer.RouteKey, Template = routeContainer.Template, Text = routeContainer.Text });
+        private void FillKeys(ISiteMapContainer container, HashSet<INavigationRouteDescriptor> items)
+        {
+            foreach (var item in container.Routes)
+            {
+                if (container is ISiteMapRouteContainer routeContainer)
+                    items.Add(new NavigationRouteDescriptor { RouteKey = routeContainer.RouteKey, Template = routeContainer.Template, Text = routeContainer.Text });
 
-				FillKeys(item, items);
-			}
-		}
+                FillKeys(item, items);
+            }
+        }
 
-		private void FillKeys(ISiteMapRoute route, HashSet<INavigationRouteDescriptor> items)
-		{
-			if (!string.IsNullOrWhiteSpace(route.RouteKey) && items.FirstOrDefault(f => string.Compare(f.RouteKey, route.RouteKey, true) == 0) == null)
-				items.Add(new NavigationRouteDescriptor { RouteKey = route.RouteKey, Template = route.Template, Text = route.Text });
+        private void FillKeys(ISiteMapRoute route, HashSet<INavigationRouteDescriptor> items)
+        {
+            if (!string.IsNullOrWhiteSpace(route.RouteKey) && items.FirstOrDefault(f => string.Compare(f.RouteKey, route.RouteKey, true) == 0) == null)
+                items.Add(new NavigationRouteDescriptor { RouteKey = route.RouteKey, Template = route.Template, Text = route.Text });
 
-			foreach (var item in route.Routes)
-				FillKeys(item, items);
-		}
+            foreach (var item in route.Routes)
+                FillKeys(item, items);
+        }
 
-		public ImmutableList<string> QuerySiteMapKeys(Guid microService)
-		{
-			var configurations = Tenant.GetService<IComponentService>().QueryConfigurations(microService, "SiteMap");
-			var r = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        public ImmutableList<string> QuerySiteMapKeys(Guid microService)
+        {
+            var configurations = Tenant.GetService<IComponentService>().QueryConfigurations(microService, "SiteMap");
+            var r = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-			foreach (var configuration in configurations)
-			{
-				var containers = QueryContainers(microService, configuration);
+            foreach (var configuration in configurations)
+            {
+                var containers = QueryContainers(microService, configuration);
 
-				if (containers == null)
-					continue;
+                if (containers == null)
+                    continue;
 
-				foreach (var container in containers)
-				{
-					if (string.IsNullOrEmpty(container.Key))
-						continue;
+                foreach (var container in containers)
+                {
+                    if (string.IsNullOrEmpty(container.Key))
+                        continue;
 
-					r.Add(container.Key);
+                    r.Add(container.Key);
 
-					QuerySiteMapKeys(container.Routes, r);
-				}
-			}
+                    QuerySiteMapKeys(container.Routes, r);
+                }
+            }
 
-			return r.ToImmutableList();
-		}
+            return r.ToImmutableList();
+        }
 
-		private void QuerySiteMapKeys(ConnectedList<ISiteMapRoute, ISiteMapContainer> routes, HashSet<string> items)
-		{
-			if (routes == null)
-				return;
+        private void QuerySiteMapKeys(ConnectedList<ISiteMapRoute, ISiteMapContainer> routes, HashSet<string> items)
+        {
+            if (routes == null)
+                return;
 
-			foreach(var route in routes)
-			{
-				if (string.IsNullOrWhiteSpace(route.RouteKey))
-					continue;
+            foreach (var route in routes)
+            {
+                if (string.IsNullOrWhiteSpace(route.RouteKey))
+                    continue;
 
-				items.Add(route.RouteKey);
+                items.Add(route.RouteKey);
 
-				QuerySiteMapKeys(route.Routes, items);
-			}
-		}
+                QuerySiteMapKeys(route.Routes, items);
+            }
+        }
 
-		private void QuerySiteMapKeys(ConnectedList<ISiteMapRoute, ISiteMapRoute> routes, HashSet<string> items)
-		{
-			if (routes == null)
-				return;
+        private void QuerySiteMapKeys(ConnectedList<ISiteMapRoute, ISiteMapRoute> routes, HashSet<string> items)
+        {
+            if (routes == null)
+                return;
 
-			foreach (var route in routes)
-			{
-				if (string.IsNullOrWhiteSpace(route.RouteKey))
-					continue;
+            foreach (var route in routes)
+            {
+                if (string.IsNullOrWhiteSpace(route.RouteKey))
+                    continue;
 
-				items.Add(route.RouteKey);
+                items.Add(route.RouteKey);
 
-				QuerySiteMapKeys(route.Routes, items);
-			}
-		}
+                QuerySiteMapKeys(route.Routes, items);
+            }
+        }
 
-		private List<ISiteMapContainer> QueryContainers(Guid microService, IConfiguration configuration)
-		{
-			if (configuration is not ISiteMapConfiguration siteMap)
-				return null;
+        private List<ISiteMapContainer> QueryContainers(Guid microService, IConfiguration configuration)
+        {
+            if (configuration is not ISiteMapConfiguration siteMap)
+                return null;
 
-			if (Tenant.GetService<ICompilerService>().ResolveType(microService, siteMap, siteMap.ComponentName()) is not Type type)
-				return null;
+            if (Tenant.GetService<ICompilerService>().ResolveType(microService, siteMap, siteMap.ComponentName()) is not Type type)
+                return null;
 
-			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
-			
-			if( Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapMiddleware>(new MicroServiceContext(ms, Tenant.Url), type) is not ISiteMapMiddleware middleware)
-				return null;
+            var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
 
-			return middleware.Invoke();
-		}
+            if (Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapMiddleware>(new MicroServiceContext(ms), type) is not ISiteMapMiddleware middleware)
+                return null;
 
-		private List<INavigationContext> QueryContexts(Guid microService, IConfiguration configuration)
-		{
-			if (configuration is not ISiteMapConfiguration siteMap)
-				return null;
+            return middleware.Invoke();
+        }
 
-			if (Tenant.GetService<ICompilerService>().ResolveType(microService, siteMap, siteMap.ComponentName()) is not Type type)
-				return null;
+        private List<INavigationContext> QueryContexts(Guid microService, IConfiguration configuration)
+        {
+            if (configuration is not ISiteMapConfiguration siteMap)
+                return null;
 
-			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
+            if (Tenant.GetService<ICompilerService>().ResolveType(microService, siteMap, siteMap.ComponentName()) is not Type type)
+                return null;
 
-			if (Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapMiddleware>(new MicroServiceContext(ms, Tenant.Url), type) is not ISiteMapMiddleware middleware)
-				return null;
+            var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
 
-			return middleware.QueryContexts();
-		}
+            if (Tenant.GetService<ICompilerService>().CreateInstance<ISiteMapMiddleware>(new MicroServiceContext(ms), type) is not ISiteMapMiddleware middleware)
+                return null;
 
-		public ImmutableList<string> QueryNavigationContexts(Guid microService)
-		{
-			var configurations = Tenant.GetService<IComponentService>().QueryConfigurations(microService, ComponentCategories.SiteMap);
-			var r = new List<INavigationContext>();
+            return middleware.QueryContexts();
+        }
 
-			foreach (var configuration in configurations)
-			{
-				if (QueryContexts(microService, configuration) is not List<INavigationContext> items)
-					continue;
+        public ImmutableList<string> QueryNavigationContexts(Guid microService)
+        {
+            var configurations = Tenant.GetService<IComponentService>().QueryConfigurations(microService, ComponentCategories.SiteMap);
+            var r = new List<INavigationContext>();
 
-				r.AddRange(items);
-			}
+            foreach (var configuration in configurations)
+            {
+                if (QueryContexts(microService, configuration) is not List<INavigationContext> items)
+                    continue;
 
-			return r.Select(f => f.Key).ToImmutableList();
-		}
-	}
+                r.AddRange(items);
+            }
+
+            return r.Select(f => f.Key).ToImmutableList();
+        }
+    }
 }

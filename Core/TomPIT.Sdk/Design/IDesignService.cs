@@ -7,7 +7,7 @@ namespace TomPIT.Design
 	{
 		IDeployment Deployment { get; }
 
-		IVersionControl VersionControl { get; }
+		//IVersionControl VersionControl { get; }
 		IComponentModel Components { get; }
 		[Obsolete]
 		IDesignSearch Search { get; }

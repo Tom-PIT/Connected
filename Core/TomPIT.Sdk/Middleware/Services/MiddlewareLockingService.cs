@@ -5,84 +5,71 @@ using TomPIT.Data;
 
 namespace TomPIT.Middleware.Services
 {
-   internal class MiddlewareLockingService : MiddlewareObject, IMiddlewareLockingService
-   {
-      public MiddlewareLockingService(IMiddlewareContext context) : base(context)
-      {
-         Locks = new();
-      }
+    internal class MiddlewareLockingService : MiddlewareObject, IMiddlewareLockingService
+    {
+        public MiddlewareLockingService(IMiddlewareContext context) : base(context)
+        {
+            Locks = new();
+        }
 
-      private ConcurrentDictionary<string, ILock> Locks { get; }
+        private ConcurrentDictionary<string, ILock> Locks { get; }
 
-      public ILock Lock(string entity, TimeSpan timeout)
-      {
-         var locks = Locks;
+        public ILock Lock(string entity, TimeSpan timeout)
+        {
+            var locks = Locks;
 
-         if (Context is MiddlewareContext ctx)
-         {
-            while (ctx.Owner is not null)
-            {
-               if (ctx.Owner.Services.Data?.Locking is MiddlewareLockingService lockingService)
-               {
-                  locks = lockingService.Locks;
+            if (locks.TryGetValue(entity, out var @lock))
+                return @lock;
 
-                  ctx = ctx.Owner;
-               }
-            }
-         }
+            var newLock = Context.Tenant.GetService<ILockingService>().Lock(entity, timeout, 10);
 
-         if (locks.TryGetValue(entity, out var @lock))
-            return @lock;
+            locks.TryAdd(entity, newLock);
 
-         var newLock = Context.Tenant.GetService<ILockingService>().Lock(entity, timeout, 10);
+            return newLock;
+        }
 
-         locks.TryAdd(entity, newLock);
+        public ILock Lock(string entity)
+        {
+            return Lock(entity, TimeSpan.FromSeconds(15));
+        }
 
-         return newLock;
-      }
+        public void Ping(Guid unlockKey)
+        {
+            Ping(unlockKey, TimeSpan.FromSeconds(10));
+        }
 
-      public ILock Lock(string entity)
-      {
-         return Lock(entity, TimeSpan.FromSeconds(15));
-      }
+        public void Ping(Guid unlockKey, TimeSpan timeout)
+        {
+            Context.Tenant.GetService<ILockingService>().Ping(unlockKey, timeout);
+        }
 
-      public void Ping(Guid unlockKey)
-      {
-         Ping(unlockKey, TimeSpan.FromSeconds(10));
-      }
+        public void Ping(ILock unlockKey)
+        {
+            if (unlockKey == null)
+                return;
 
-      public void Ping(Guid unlockKey, TimeSpan timeout)
-      {
-         Context.Tenant.GetService<ILockingService>().Ping(unlockKey, timeout);
-      }
+            Ping(unlockKey.UnlockKey);
+        }
 
-      public void Ping(ILock unlockKey)
-      {
-         if (unlockKey == null)
-            return;
+        public void Ping(ILock unlockKey, TimeSpan timeout)
+        {
+            if (unlockKey == null)
+                return;
 
-         Ping(unlockKey.UnlockKey);
-      }
+            Ping(unlockKey.UnlockKey, timeout);
+        }
 
-      public void Ping(ILock unlockKey, TimeSpan timeout)
-      {
-         if (unlockKey == null)
-            return;
+        public void Unlock(ILock lockEntity)
+        {
+            if (lockEntity == null)
+                return;
 
-         Ping(unlockKey.UnlockKey, timeout);
-      }
+            Unlock(lockEntity.UnlockKey);
+        }
 
-      public void Unlock(ILock lockEntity)
-      {
-         if (lockEntity == null)
-            return;
-
-         Unlock(lockEntity.UnlockKey);
-      }
-
-      public void Unlock(Guid unlockKey)
-      {
-         Context.Tenant.GetService<ILockingService>().Unlock(unlockKey);
-      }
-   }
+        public void Unlock(Guid unlockKey)
+        {
+            Context.Tenant.GetService<ILockingService>().Unlock(unlockKey);
+        }
+    }
 }
