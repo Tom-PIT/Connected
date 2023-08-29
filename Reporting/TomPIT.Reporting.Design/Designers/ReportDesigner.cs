@@ -1,8 +1,8 @@
-﻿using System;
+﻿using DevExpress.DataAccess.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using DevExpress.DataAccess.Json;
-using Newtonsoft.Json.Linq;
 using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
@@ -15,7 +15,6 @@ using TomPIT.Ide.Designers;
 using TomPIT.Ide.Designers.ActionResults;
 using TomPIT.MicroServices.Reporting.Design.Dom;
 using TomPIT.Reflection;
-using TomPIT.Reflection.Api;
 
 namespace TomPIT.MicroServices.Reporting.Design.Designers
 {
@@ -206,62 +205,63 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 
 			result.Name = op.Name;
 
-			var manifest = Environment.Context.Tenant.GetService<IDiscoveryService>().Manifests.Select(descriptor.Component.Token) as ApiManifest;
+			return null;
+			//var manifest = Environment.Context.Tenant.GetService<IDiscoveryService>().Manifests.Select(descriptor.Component.Token) as ApiManifest;
 
-			if (manifest == null)
-				return null;
+			//if (manifest == null)
+			//	return null;
 
-			var opManifest = manifest.Operations.FirstOrDefault(f => string.Compare(f.Name, op.Name, true) == 0);
+			//var opManifest = manifest.Operations.FirstOrDefault(f => string.Compare(f.Name, op.Name, true) == 0);
 
-			if (opManifest == null)
-				return null;
+			//if (opManifest == null)
+			//	return null;
 
-			using var typeResolver = Environment.Context.Tenant.GetService<IDiscoveryService>().Manifests.SelectTypeResolver(opManifest);
-			var schemaType = typeResolver.Resolve(opManifest.ReturnType);
+			//using var typeResolver = Environment.Context.Tenant.GetService<IDiscoveryService>().Manifests.SelectTypeResolver(opManifest);
+			//var schemaType = typeResolver.Resolve(opManifest.ReturnType);
 
-			if (schemaType == null)
-				return null;
+			//if (schemaType == null)
+			//	return null;
 
-			var schema = new JsonSchemaNode(ResolveSchemaName(schemaType), true, JsonNodeType.Array)
-			{
-				DisplayName = ResolveSchemaName(schemaType)
-			};
+			//var schema = new JsonSchemaNode(ResolveSchemaName(schemaType), true, JsonNodeType.Array)
+			//{
+			//	DisplayName = ResolveSchemaName(schemaType)
+			//};
 
-			result.Schema.AddChildren(schema);
+			//result.Schema.AddChildren(schema);
 
-			var fields = new List<JsonSchemaNode>();
-			var members = schemaType.IsArray ? schemaType.TypeArguments[0].Members : schemaType.Members;
+			//var fields = new List<JsonSchemaNode>();
+			//var members = schemaType.IsArray ? schemaType.TypeArguments[0].Members : schemaType.Members;
 
-			foreach (var property in members)
-			{
-				var type = typeResolver.Resolve(property.Value.Name);
+			//foreach (var property in members)
+			//{
+			//	var type = typeResolver.Resolve(property.Value.Name);
 
-				fields.Add(new JsonSchemaNode(new JsonNode(property.Key, true, JsonNodeType.Property)
-				{
-					Type = ResolveType(type)
-				}));
-			}
+			//	fields.Add(new JsonSchemaNode(new JsonNode(property.Key, true, JsonNodeType.Property)
+			//	{
+			//		Type = ResolveType(type)
+			//	}));
+			//}
 
-			schema.AddChildren(fields.ToArray());
+			//schema.AddChildren(fields.ToArray());
 
-			return result;
+			//return result;
 		}
 
-		private static string ResolveSchemaName(IManifestTypeDescriptor descriptor)
-		{
-			if (!descriptor.IsArray)
-				return descriptor.Name;
+		//private static string ResolveSchemaName(IManifestTypeDescriptor descriptor)
+		//{
+		//	if (!descriptor.IsArray)
+		//		return descriptor.Name;
 
-			return descriptor.TypeArguments[0].Name;
-		}
+		//	return descriptor.TypeArguments[0].Name;
+		//}
 
-		private static Type ResolveType(IManifestTypeDescriptor descriptor)
-		{
-			if (TypeExtensions.GetType(descriptor.Name) is Type resolved)
-				return resolved;
+		//private static Type ResolveType(IManifestTypeDescriptor descriptor)
+		//{
+		//	if (TypeExtensions.GetType(descriptor.Name) is Type resolved)
+		//		return resolved;
 
-			return typeof(string);
-		}
+		//	return typeof(string);
+		//}
 
 		//private JsonSchemaNode CreateObjectNode(ApiManifest manifest, IManifestProperty property, IManifestType member)
 		//{

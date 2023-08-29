@@ -22,6 +22,8 @@ internal class MiddlewareService : ConfigurationRepository<IMiddlewareConfigurat
 		Descriptors = new();
 
 		Tenant.GetService<ICompilerService>().Invalidated += OnInvalidateScript;
+
+		Initialize();
 	}
 
 	private ConcurrentDictionary<string, List<MiddlewareTypeDescriptor>> Descriptors { get; }
@@ -235,10 +237,10 @@ internal class MiddlewareService : ConfigurationRepository<IMiddlewareConfigurat
 		var key = middlewareType.FullName;
 
 		if (key is null || Descriptors is null)
-			return default;
+			return ImmutableList<MiddlewareTypeDescriptor>.Empty;
 
 		if (!Descriptors.TryGetValue(key, out List<MiddlewareTypeDescriptor>? items) || items is null)
-			return default;
+			return ImmutableList<MiddlewareTypeDescriptor>.Empty;
 
 		var types = new List<Type>();
 
@@ -251,7 +253,7 @@ internal class MiddlewareService : ConfigurationRepository<IMiddlewareConfigurat
 		}
 
 		if (!types.Any())
-			return default;
+			return ImmutableList<MiddlewareTypeDescriptor>.Empty;
 
 		types.SortByPriority();
 

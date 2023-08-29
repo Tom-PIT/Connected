@@ -1,15 +1,15 @@
-﻿using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.IO;
-using System.Reflection;
-using System.Text;
-using Microsoft.AspNetCore.Html;
+﻿using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Razor.Hosting;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.IO;
+using System.Reflection;
+using System.Text;
 using TomPIT.Ide.TextServices.CSharp;
 using TomPIT.Ide.TextServices.Razor.Services;
 using TomPIT.Ide.TextServices.Services;
@@ -105,13 +105,13 @@ namespace TomPIT.Ide.TextServices.Razor
 			{
 				builder.SetBaseType($"TomPIT.Runtime.Design.UI.DesignViewBase");
 			});
-			
+
 			var document = RazorSourceDocument.Create(Text, Encoding.UTF8, new RazorSourceDocumentProperties($"{Model.Id}.cshtml", $"{Model.Id}.cshtml"));
 			var imports = ImmutableArray.Create(RazorSourceDocument.Create(ImportUsings, "ImportUsings.cshtml"));
 			var tagHelpers = ImmutableArray.Create<TagHelperDescriptor>();
 
 			var sourceResult = engine.ProcessDesignTime(document, "view", imports, tagHelpers);
-			
+
 			_sourceText = SourceText.From(sourceResult.GetCSharpDocument().GeneratedCode);
 		}
 

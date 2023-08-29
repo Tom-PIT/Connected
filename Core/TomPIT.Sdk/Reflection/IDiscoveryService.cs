@@ -9,13 +9,13 @@ namespace TomPIT.Reflection
 {
 	public interface IDiscoveryService
 	{
-		IMicroServiceDiscovery MicroServices { get; } 
+		IMicroServiceDiscovery MicroServices { get; }
 		IConfigurationDiscovery Configuration { get; }
-		IManifestDiscovery Manifests { get; }
+		//IManifestDiscovery Manifests { get; }
 
 		[Obsolete("Please use MicroServices.References instead.")]
 		IServiceReferencesConfiguration References(string microService);
-		[Obsolete("Please use MicroServices.References instead.")] 
+		[Obsolete("Please use MicroServices.References instead.")]
 		IServiceReferencesConfiguration References(Guid microService);
 		[Obsolete("Please use MicroServices.References instead.")]
 		List<IMicroService> FlattenReferences(Guid microService);
@@ -27,12 +27,6 @@ namespace TomPIT.Reflection
 		IElement Find(IConfiguration configuration, Guid id);
 		[Obsolete("Please use Configuration.Query instead.")]
 		List<T> Children<T>(IConfiguration configuration) where T : IElement;
-		[Obsolete("Please use Manifests.Select instead.")]
-		IComponentManifest Manifest(Guid component);
-		[Obsolete("Please use Manifests.Select instead.")]
-		IComponentManifest Manifest(string microService, string category, string componentName);
-		//[Obsolete("Please use Manifests.Query instead.")]
-		//List<IComponentManifest> Manifests(Guid microService);
 
 		[Obsolete("Please use Configuration.QueryDependencies instead.")]
 		List<Guid> Dependencies(IConfiguration configuration);
