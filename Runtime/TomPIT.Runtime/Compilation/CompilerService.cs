@@ -298,12 +298,6 @@ namespace TomPIT.Compilation
 			catch { }
 
 			InvalidateReferences(component, id);
-
-			if (Tenant.GetService<IDiscoveryService>().Manifests is IManifestDiscoveryNotification notification)
-			{
-				if (sourceCode.GetType().FindAttribute<SyntaxAttribute>() is not SyntaxAttribute sa || string.Compare(sa.Syntax, SyntaxAttribute.CSharp, true) == 0)
-					notification.Invalidate(microService, component, sourceCode.Id);
-			}
 		}
 
 		internal static Assembly LoadSystemAssembly(string fileName)
@@ -337,13 +331,6 @@ namespace TomPIT.Compilation
 			catch { }
 
 			InvalidateReferences(e.Container, e.SourceCode);
-
-			try
-			{
-				if (Tenant.GetService<IDiscoveryService>().Manifests is IManifestDiscoveryNotification notification)
-					notification.NotifyChanged(e.MicroService, e.Container, e.SourceCode);
-			}
-			catch { }
 		}
 
 		private void InvalidateReferences(Guid container, Guid script)
@@ -749,8 +736,8 @@ namespace TomPIT.Compilation
 
 		private bool NamespaceMatches(string namespace1, string namespace2)
 		{
-			var elements1 = namespace1.Split('.', '+').SkipWhile(e => e.StartsWith("Submission#"));
-			var elements2 = namespace2.Split('.', '+').SkipWhile(e => e.StartsWith("Submission#"));
+			var elements1 = namespace1.Split('.', '+').SkipWhile(e => e.StartsWith("Submission#0") || string.IsNullOrEmpty(e));
+			var elements2 = namespace2.Split('.', '+').SkipWhile(e => e.StartsWith("Submission#0") || string.IsNullOrEmpty(e));
 
 			return elements1.SequenceEqual(elements2);
 		}

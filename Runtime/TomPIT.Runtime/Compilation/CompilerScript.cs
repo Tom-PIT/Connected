@@ -1,10 +1,13 @@
 ﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.CodeAnalysis.Scripting.Hosting;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Text;
@@ -158,19 +161,21 @@ namespace TomPIT.Compilation
 			{
 				var config = file.Value.Configuration();
 				var component = Tenant.GetService<IComponentService>().SelectComponent(config.Component);
-				var manifest = Tenant.GetService<IDiscoveryService>().Manifests.SelectScript(config.MicroService(), component.Token, file.Value.Id);
+				var declaredTypes = SyntaxBrowser.QueryDeclaredTypes(DocumentIdentity.From(config.MicroService(), component.Token, file.Value.Id));
 
-				if (manifest is not null)
+				foreach (var declaredType in declaredTypes)
 				{
-					foreach (var manifestType in manifest.DeclaredTypes)
-					{
-						sb.AppendLine("new TomPIT.Compilation.SourceTypeDescriptor{");
-						sb.AppendLine($"Component = new System.Guid(\"{component.Token}\"),");
-						sb.AppendLine($"ContainingType = \"{manifestType.ContainingType}\",");
-						sb.AppendLine($"TypeName = \"{manifestType.Name}\",");
-						sb.AppendLine($"Script = new System.Guid(\"{file.Value.Id}\")");
-						sb.AppendLine("},");
-					}
+					var resolved = ResolveTypeDeclaration(declaredType);
+
+					if (string.IsNullOrEmpty(resolved.Item1))
+						continue;
+
+					sb.AppendLine("new TomPIT.Compilation.SourceTypeDescriptor{");
+					sb.AppendLine($"Component = new System.Guid(\"{component.Token}\"),");
+					sb.AppendLine($"ContainingType = \"{resolved.Item2}\",");
+					sb.AppendLine($"TypeName = \"{resolved.Item1}\",");
+					sb.AppendLine($"Script = new System.Guid(\"{file.Value.Id}\")");
+					sb.AppendLine("},");
 				}
 			}
 
@@ -182,6 +187,31 @@ namespace TomPIT.Compilation
 			sb.AppendLine("}");
 
 			return sb.ToString();
+		}
+
+		private static (string, string) ResolveTypeDeclaration(TypeDeclarationSyntax syntax)
+		{
+			if (syntax.Modifiers.Any(f => f.IsKind(SyntaxKind.PartialKeyword)))
+				return (null, null);
+
+			var name = syntax.Identifier.Text;
+			var containingTypeChain = new List<string>();
+
+			var parent = syntax.Parent;
+
+			while (parent is not null && parent.IsKind(SyntaxKind.ClassDeclaration))
+			{
+				var declaration = parent as ClassDeclarationSyntax;
+
+				containingTypeChain.Add(declaration.Identifier.Text);
+
+				parent = parent.Parent;
+			}
+
+			if (containingTypeChain.Any())
+				containingTypeChain.Reverse();
+
+			return (name, string.Join('.', containingTypeChain));
 		}
 	}
 }

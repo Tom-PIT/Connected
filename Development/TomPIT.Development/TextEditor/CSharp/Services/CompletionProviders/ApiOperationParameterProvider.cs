@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.Exceptions;
@@ -11,72 +11,76 @@ using TomPIT.Ide.TextServices.CSharp;
 using TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders;
 using TomPIT.Ide.TextServices.Languages;
 using TomPIT.Reflection;
-using TomPIT.Reflection.Api;
 
 namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 {
 	internal class ApiOperationParameterProvider : CompletionProvider
 	{
+		public override bool WillProvideItems(CompletionProviderArgs e, IReadOnlyCollection<ICompletionItem> existing)
+		{
+			return false;
+		}
 		protected override List<ICompletionItem> OnProvideItems()
 		{
-			var node = Arguments.Model.SyntaxTree.GetRoot().FindNode(Editor.GetMappedSpan(Arguments.Position));
-			var descriptor = ResolveApi(node);
+			return null;
+			//var node = Arguments.Model.SyntaxTree.GetRoot().FindNode(Editor.GetMappedSpan(Arguments.Position));
+			//var descriptor = ResolveApi(node);
 
-			if (descriptor == null)
-				return null;
+			//if (descriptor == null)
+			//	return null;
 
-			var op = descriptor.Configuration.Operations.FirstOrDefault(f => string.Compare(f.Name, descriptor.Element, true) == 0);
+			//var op = descriptor.Configuration.Operations.FirstOrDefault(f => string.Compare(f.Name, descriptor.Element, true) == 0);
 
-			if (op == null)
-				return null;
+			//if (op == null)
+			//	return null;
 
-			var parameters = QueryParameters(op);
-			var existing = QueryExisting(node);
-			var r = new List<ICompletionItem>();
+			//var parameters = QueryParameters(op);
+			//var existing = QueryExisting(node);
+			//var r = new List<ICompletionItem>();
 
-			var members = parameters.DeclaredType?.Members;
+			//var members = parameters.DeclaredType?.Members;
 
-			if (members==null||!members.Any())
-			{
-				r.Add(new CompletionItem
-				{
-					Label = "Api operation has no parameters",
-					Kind = CompletionItemKind.Text
-				});
-			}
-			else
-			{
-				foreach (var parameter in members)
-				{
-					if (existing != null && existing.FirstOrDefault(f => string.Compare(f, parameter.Name, true) == 0) != null)
-						continue;
+			//if (members == null || !members.Any())
+			//{
+			//	r.Add(new CompletionItem
+			//	{
+			//		Label = "Api operation has no parameters",
+			//		Kind = CompletionItemKind.Text
+			//	});
+			//}
+			//else
+			//{
+			//	foreach (var parameter in members)
+			//	{
+			//		if (existing != null && existing.FirstOrDefault(f => string.Compare(f, parameter.Name, true) == 0) != null)
+			//			continue;
 
-					r.Add(new CompletionItem
-					{
-						Label = parameter.Name,
-						InsertText = parameter.Name,
-						FilterText = parameter.Name,
-						SortText = parameter.Name,
-						Kind = CompletionItemKind.Property,
-						Detail = parameter.Type
-					});
-				}
+			//		r.Add(new CompletionItem
+			//		{
+			//			Label = parameter.Name,
+			//			InsertText = parameter.Name,
+			//			FilterText = parameter.Name,
+			//			SortText = parameter.Name,
+			//			Kind = CompletionItemKind.Property,
+			//			Detail = parameter.Type
+			//		});
+			//	}
 
-				if (r.Count == 0)
-				{
-					r.Add(new CompletionItem
-					{
-						Label = "All parameters set",
-						Kind = CompletionItemKind.Text
-					});
-				}
-				else
-				{
-					if (node is ArgumentSyntax arg && arg.Expression is AnonymousObjectCreationExpressionSyntax)
-						r.Add(AllParametersSnippet(parameters));
-				}
-			}
-			return r;
+			//	if (r.Count == 0)
+			//	{
+			//		r.Add(new CompletionItem
+			//		{
+			//			Label = "All parameters set",
+			//			Kind = CompletionItemKind.Text
+			//		});
+			//	}
+			//else
+			//{
+			//	if (node is ArgumentSyntax arg && arg.Expression is AnonymousObjectCreationExpressionSyntax)
+			//		r.Add(AllParametersSnippet(parameters));
+			//}
+			//}
+			//return r;
 		}
 
 		private ConfigurationDescriptor<IApiConfiguration> ResolveApi(SyntaxNode node)
@@ -145,35 +149,35 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 
 			return r;
 		}
-		private ICompletionItem AllParametersSnippet(ApiOperationManifest config)
-		{
-			var sb = new StringBuilder();
+		//private ICompletionItem AllParametersSnippet(ApiOperationManifest config)
+		//{
+		//	var sb = new StringBuilder();
+		//	var properties = SyntaxBrowser.QueryProperties()
+		//	var members = config.DeclaredType?.Members.OrderBy(f => f.Name);
 
-			var members = config.DeclaredType?.Members.OrderBy(f => f.Name);
+		//	if (members != null)
+		//	{
+		//		foreach (var i in members)
+		//		{
+		//			var t = TypeExtensions.GetType(i.Type);
+		//			object value = "null";
 
-			if (members != null)
-			{
-				foreach (var i in members)
-				{
-					var t = TypeExtensions.GetType(i.Type);
-					object value = "null";
+		//			if (t != null)
+		//				value = t.DefaultValue();
 
-					if (t != null)
-						value = t.DefaultValue();
+		//			sb.AppendLine($"{i.Name} = {value},");
+		//		}
+		//	}
 
-					sb.AppendLine($"{i.Name} = {value},");
-				}
-			}
-
-			return new CompletionItem
-			{
-				Label = "AllParameters",
-				InsertText = $"{RemoveTrailingComma(sb)}",
-				Detail = "Insert all api parameters",
-				FilterText = "AllParameters",
-				Kind = CompletionItemKind.Snippet
-			};
-		}
+		//	return new CompletionItem
+		//	{
+		//		Label = "AllParameters",
+		//		InsertText = $"{RemoveTrailingComma(sb)}",
+		//		Detail = "Insert all api parameters",
+		//		FilterText = "AllParameters",
+		//		Kind = CompletionItemKind.Snippet
+		//	};
+		//}
 		private bool IsArguments(SemanticModel model, InvocationExpressionSyntax node)
 		{
 			var idn = node.IdentiferName();
@@ -195,15 +199,15 @@ namespace TomPIT.Development.TextEditor.CSharp.Services.CompletionProviders
 			return true;
 		}
 
-		private ApiOperationManifest QueryParameters(IApiOperation operation)
-		{
-			var manifest = Editor.Context.Tenant.GetService<IDiscoveryService>().Manifests.Select(operation.Configuration().Component) as ApiManifest;
+		//private ApiOperationManifest QueryParameters(IApiOperation operation)
+		//{
+		//	var manifest = Editor.Context.Tenant.GetService<IDiscoveryService>().Manifests.Select(operation.Configuration().Component) as ApiManifest;
 
-			if (manifest == null)
-				return null;
+		//	if (manifest == null)
+		//		return null;
 
-			return manifest.Operations.FirstOrDefault(f => string.Compare(operation.Name, f.Name, true) == 0);
-		}
+		//	return manifest.Operations.FirstOrDefault(f => string.Compare(operation.Name, f.Name, true) == 0);
+		//}
 
 		private string RemoveTrailingComma(StringBuilder sb)
 		{

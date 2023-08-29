@@ -44,7 +44,6 @@ namespace TomPIT.Ide.TextServices.CSharp.Services
 				{
 					_providers = new List<ICodeLensProvider>
 			 {
-						new ManifestLensProvider(),
 						new ApiInjectionLensProvider(),
 						new IoCLensProvider()
 			 };
