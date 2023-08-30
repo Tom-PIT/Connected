@@ -36,13 +36,11 @@ namespace TomPIT.Configuration
 			return Types.Convert<T>(result);
 		}
 
-		protected void SetValue<T>(string name, T value)
+		protected void SetValue<T>([CallerMemberName] string name = null, T value = default)
 		{
 			Validate(name, value);
 			Context.Tenant.GetService<ISettingService>().Update(name, NameSpace, Type, PrimaryKey, value);
 		}
-
-		protected void SetValue<T>(T value, [CallerMemberName] string propertyName = null) => SetValue(propertyName, value);
 
 		protected void Validate<T>(string name, T value)
 		{
