@@ -124,8 +124,8 @@ namespace TomPIT.Runtime
 			e.Tenant.RegisterService(typeof(IMicroServiceTemplateService), typeof(MicroServiceTemplateService));
 			e.Tenant.RegisterService(typeof(IWorkerService), typeof(WorkerService));
 			e.Tenant.RegisterService(typeof(IMicroServiceRuntimeService), new MicroServiceRuntimeService(e.Tenant));
-			e.Tenant.RegisterService(typeof(IMiddlewareService), new MiddlewareService(e.Tenant));
-			e.Tenant.RegisterService(typeof(IStorageSynchronizationService), new StorageSynchronizationService());
+			//e.Tenant.RegisterService(typeof(IMiddlewareService), new MiddlewareService(e.Tenant));
+			//e.Tenant.RegisterService(typeof(IStorageSynchronizationService), new StorageSynchronizationService());
 
 			if (Instance.Features.HasFlag(InstanceFeatures.IoT))
 			{
