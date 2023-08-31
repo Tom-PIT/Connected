@@ -1,9 +1,11 @@
 ﻿using Newtonsoft.Json;
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Reflection;
+
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
 using TomPIT.Connectivity;
@@ -12,6 +14,11 @@ namespace TomPIT.Reflection
 {
 	internal class ConfigurationDiscovery : TenantObject, IConfigurationDiscovery
 	{
+		private enum SearchMode
+		{
+			Id = 1,
+			TextBlob = 2
+		}
 		public ConfigurationDiscovery(ITenant tenant) : base(tenant)
 		{
 		}
@@ -23,7 +30,17 @@ namespace TomPIT.Reflection
 			if (config == null)
 				return null;
 
-			return Find(config, id, new List<object>());
+			return Find(config, id, SearchMode.Id, new List<object>());
+		}
+
+		public IText FindText(Guid component, Guid textBlob)
+		{
+			var config = Tenant.GetService<IComponentService>().SelectConfiguration(component);
+
+			if (config == null)
+				return null;
+
+			return Find(config, textBlob, SearchMode.TextBlob, new List<object>()) as IText;
 		}
 
 		public IText Find(string path)
@@ -33,10 +50,10 @@ namespace TomPIT.Reflection
 
 		public IElement Find(IConfiguration configuration, Guid id)
 		{
-			return Find(configuration, id, new List<object>());
+			return Find(configuration, id,  SearchMode.Id, new List<object>());
 		}
 
-		private IElement Find(object instance, Guid id, List<object> referenceTrail)
+		private IElement Find(object instance, Guid id, SearchMode mode, List<object> referenceTrail)
 		{
 			if (instance == null)
 				return null;
@@ -46,8 +63,19 @@ namespace TomPIT.Reflection
 
 			referenceTrail.Add(instance);
 
-			if (instance is IElement el && el.Id == id)
-				return el;
+			switch (mode)
+			{
+				case SearchMode.Id:
+					if (instance is IElement el && el.Id == id)
+						return el;
+					break;
+				case SearchMode.TextBlob:
+					if (instance is IText text && text.TextBlob == id)
+						return text;
+					break;
+				default:
+					throw new NotSupportedException();
+			}
 
 			if (instance.GetType().IsCollection())
 			{
@@ -62,7 +90,7 @@ namespace TomPIT.Reflection
 						return element;
 					else
 					{
-						var r = Find(enm.Current, id, referenceTrail);
+						var r = Find(enm.Current, id, mode, referenceTrail);
 
 						if (r != null)
 							return r;
@@ -84,7 +112,7 @@ namespace TomPIT.Reflection
 					if (i.FindAttribute<JsonIgnoreAttribute>() != null)
 						continue;
 
-					var r = Find(value, id, referenceTrail);
+					var r = Find(value, id, mode, referenceTrail);
 
 					if (r != null)
 						return r;
