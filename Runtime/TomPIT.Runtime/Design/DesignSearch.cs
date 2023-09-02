@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using TomPIT.Connectivity;
+using TomPIT.Search;
 
 namespace TomPIT.Design
 {
