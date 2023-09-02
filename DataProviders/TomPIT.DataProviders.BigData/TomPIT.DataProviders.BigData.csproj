@@ -18,7 +18,7 @@
 		<!-- <Exec Command="mkdir -p &quot;/src/plugins/TomPIT.StorageProviders.Azure/&quot;" />
     <Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/TomPIT.StorageProviders.Azure/&quot;" /> -->
 		<Exec Command="if not exist &quot;c:/src/plugins/&quot; mkdir &quot;c:/src/plugins/&quot;"  />
-		<Exec Command="copy /y &quot;$(TargetPath)&quot; &quot;/src/plugins/&quot;" />
+		<Exec Command="copy /y &quot;$(TargetPath)&quot; &quot;c:/src/plugins/&quot;" />
 	</Target>
 	<ItemGroup>
 		<ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
