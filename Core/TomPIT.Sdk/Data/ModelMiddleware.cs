@@ -5,7 +5,6 @@ using System.Data;
 using System.Dynamic;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using TomPIT.Annotations;
 using TomPIT.Annotations.Models;
 using TomPIT.Compilation;
@@ -35,16 +34,10 @@ namespace TomPIT.Data
 		public virtual ConnectionBehavior ConnectionBehavior { get; set; } = ConnectionBehavior.Shared;
 		protected virtual object ConnectionArguments { get; }
 		public ConcurrencyMode Concurrency { get; set; } = ConcurrencyMode.Enabled;
-		[Obsolete("Please use async method.")]
 		public int Execute([CIP(CIP.ModelExecuteOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] params object[] e)
 		{
-			return AsyncUtils.RunSync(() => ExecuteAsync(operation, e));
-		}
-
-		public async Task<int> ExecuteAsync([CIP(CIP.ModelExecuteOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] params object[] e)
-		{
 			var op = ResolveOperation(operation);
-			var con = await OpenConnection();
+			var con = OpenConnection();
 			var descriptor = Context.Tenant.GetService<IModelService>().CreateDescriptor(op, con);
 
 			var w = Context.OpenWriter(con, descriptor.CommandText);
@@ -56,7 +49,7 @@ namespace TomPIT.Data
 			foreach (var arg in e)
 				BindParameters(w, arg, descriptor);
 
-			var recordsAffected = await w.Execute();
+			var recordsAffected = w.Execute();
 
 			if (recordsAffected == 0 && Concurrency == ConcurrencyMode.Enabled && descriptor.SupportsConcurrency)
 				throw new ConcurrencyException(GetType(), operation);
@@ -67,27 +60,15 @@ namespace TomPIT.Data
 			return recordsAffected;
 		}
 
-		[Obsolete("Please use async method.")]
 		public List<T> Query([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] params object[] e)
 		{
-			return AsyncUtils.RunSync(() => QueryAsync(operation, e));
+			return Query<T>(operation, e);
 		}
 
-		public async Task<List<T>> QueryAsync([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] params object[] e)
-		{
-			return await QueryAsync<T>(operation, e);
-		}
-
-		[Obsolete("Please use async method.")]
 		public List<R> Query<R>([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] params object[] e)
 		{
-			return AsyncUtils.RunSync(() => QueryAsync<R>(operation, e));
-		}
-
-		public async Task<List<R>> QueryAsync<R>([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] params object[] e)
-		{
 			var op = ResolveOperation(operation);
-			var con = await OpenConnection();
+			var con = OpenConnection();
 			var descriptor = Context.Tenant.GetService<IModelService>().CreateDescriptor(op, con);
 
 			var r = Context.OpenReader<R>(con, descriptor.CommandText);
@@ -99,29 +80,18 @@ namespace TomPIT.Data
 			foreach (var arg in e)
 				BindParameters(r, arg, descriptor);
 
-			return await r.Query();
+			return r.Query();
 		}
 
-		[Obsolete("Please use async method.")]
 		public T Select([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] params object[] e)
 		{
-			return AsyncUtils.RunSync(() => SelectAsync(operation, e));
+			return Select<T>(operation, e);
 		}
 
-		public async Task<T> SelectAsync([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] params object[] e)
-		{
-			return await SelectAsync<T>(operation, e);
-		}
-
-		[Obsolete("Please use async method.")]
 		public R Select<R>([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] params object[] e)
 		{
-			return AsyncUtils.RunSync(() => SelectAsync<R>(operation, e));
-		}
-		public async Task<R> SelectAsync<R>([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] params object[] e)
-		{
 			var op = ResolveOperation(operation);
-			var con = await OpenConnection();
+			var con = OpenConnection();
 			var descriptor = Context.Tenant.GetService<IModelService>().CreateDescriptor(op, con);
 
 			var r = Context.OpenReader<R>(con, descriptor.CommandText);
@@ -133,7 +103,7 @@ namespace TomPIT.Data
 			foreach (var arg in e)
 				BindParameters(r, arg, descriptor);
 
-			return await r.Select();
+			return r.Select();
 		}
 
 		private IModelOperation ResolveOperation(string operation)
@@ -146,7 +116,7 @@ namespace TomPIT.Data
 			return op;
 		}
 
-		private async Task<IDataConnection> OpenConnection()
+		private IDataConnection OpenConnection()
 		{
 			if (Configuration.Connection == Guid.Empty)
 				throw new RuntimeException(nameof(ModelMiddleware<T>), $"{SR.ErrModelConnectionNotSet} ({Configuration.ComponentName()})", LogCategories.Middleware);
@@ -158,7 +128,7 @@ namespace TomPIT.Data
 
 			var ms = Context.Tenant.GetService<IMicroServiceService>().Select(Configuration.MicroService());
 
-			return await Context.OpenConnectionAsync($"{ms.Name}/{connection.Name}", ConnectionBehavior, ConnectionArguments);
+			return Context.OpenConnection($"{ms.Name}/{connection.Name}", ConnectionBehavior, ConnectionArguments);
 		}
 
 		private void ResetParameters(IDataCommand command)

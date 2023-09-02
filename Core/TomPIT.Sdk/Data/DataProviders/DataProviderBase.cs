@@ -2,249 +2,237 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
 using System.Threading;
-using System.Threading.Tasks;
 using TomPIT.Middleware;
 
 namespace TomPIT.Data.DataProviders
 {
-    public abstract class DataProviderBase<T> : IDataProvider where T : class, IDataConnection
-    {
-        private object _sync = new object();
-        private SemaphoreSlim _semaphore;
-        private ConcurrentDictionary<IDataCommandDescriptor, IDbCommand> _commands = null;
+	public abstract class DataProviderBase<T> : IDataProvider where T : class, IDataConnection
+	{
+		private object _sync = new object();
+		private SemaphoreSlim _semaphore;
+		private ConcurrentDictionary<IDataCommandDescriptor, IDbCommand> _commands = null;
 
-        public Guid Id { get; }
-        public string Name { get; }
+		public Guid Id { get; }
+		public string Name { get; }
 
-        protected DataProviderBase(string name, Guid id)
-        {
-            _semaphore = new(1);
+		protected DataProviderBase(string name, Guid id)
+		{
+			_semaphore = new(1);
 
-            Id = id;
-            Name = name;
-        }
+			Id = id;
+			Name = name;
+		}
 
-        public abstract Task<IDataConnection> OpenConnection(IMiddlewareContext context, string connectionString, ConnectionBehavior behavior);
+		public abstract IDataConnection OpenConnection(IMiddlewareContext context, string connectionString, ConnectionBehavior behavior);
 
-        private ConcurrentDictionary<IDataCommandDescriptor, IDbCommand> Commands
-        {
-            get
-            {
-                if (_commands == null)
-                {
-                    lock (_sync)
-                    {
-                        if (_commands == null)
-                            _commands = new ConcurrentDictionary<IDataCommandDescriptor, IDbCommand>();
-                    }
-                }
+		private ConcurrentDictionary<IDataCommandDescriptor, IDbCommand> Commands
+		{
+			get
+			{
+				if (_commands == null)
+				{
+					lock (_sync)
+					{
+						if (_commands == null)
+							_commands = new ConcurrentDictionary<IDataCommandDescriptor, IDbCommand>();
+					}
+				}
 
-                return _commands;
-            }
-        }
+				return _commands;
+			}
+		}
 
-        public virtual async Task<int> Execute(IMiddlewareContext context, IDataCommandDescriptor command, IDataConnection connection)
-        {
-            await EnsureOpen(connection);
+		public virtual int Execute(IMiddlewareContext context, IDataCommandDescriptor command, IDataConnection connection)
+		{
+			EnsureOpen(connection);
 
-            var com = ResolveCommand(command, connection);
+			var com = ResolveCommand(command, connection);
 
-            SetupParameters(command, com);
+			SetupParameters(command, com);
 
-            foreach (var i in command.Parameters)
-                SetParameterValue(connection, com, i.Name, i.Value);
+			foreach (var i in command.Parameters)
+				SetParameterValue(connection, com, i.Name, i.Value);
 
-            var recordsAffected = await Execute(command, com, (context as MiddlewareContext)?.CancellationToken);
+			var recordsAffected = Execute(command, com, (context as MiddlewareContext)?.CancellationToken);
 
-            foreach (var i in command.Parameters)
-            {
-                if (i.Direction == ParameterDirection.ReturnValue)
-                    i.Value = GetParameterValue(com, i.Name);
-            }
+			foreach (var i in command.Parameters)
+			{
+				if (i.Direction == ParameterDirection.ReturnValue)
+					i.Value = GetParameterValue(com, i.Name);
+			}
 
-            return recordsAffected;
-        }
+			return recordsAffected;
+		}
 
-        protected virtual void SetParameterValue(IDataConnection connection, IDbCommand command, string parameterName, object value)
-        {
+		protected virtual void SetParameterValue(IDataConnection connection, IDbCommand command, string parameterName, object value)
+		{
 
-        }
+		}
 
-        protected virtual object? GetParameterValue(IDbCommand command, string parameterName)
-        {
-            return null;
-        }
+		protected virtual object? GetParameterValue(IDbCommand command, string parameterName)
+		{
+			return null;
+		}
 
-        protected virtual void SetupParameters(IDataCommandDescriptor command, IDbCommand cmd)
-        {
-        }
+		protected virtual void SetupParameters(IDataCommandDescriptor command, IDbCommand cmd)
+		{
+		}
 
-        protected virtual async Task<int> Execute(IDataCommandDescriptor command, IDbCommand cmd, CancellationToken? cancellationToken = null)
-        {
-            if (cmd is DbCommand dbCommand)
-            {
-                return await dbCommand.ExecuteNonQueryAsync(cancellationToken.GetValueOrDefault());
-            }
-            else
-            {
-                return cmd.ExecuteNonQuery();
-            }
-        }
+		protected virtual int Execute(IDataCommandDescriptor command, IDbCommand cmd, CancellationToken? cancellationToken = null)
+		{
+			return cmd.ExecuteNonQuery();
+		}
 
-        public virtual async Task<List<R>> Query<R>(IMiddlewareContext context, IDataCommandDescriptor command)
-        {
-            return await Query<R>(context, command, null);
-        }
+		public virtual List<R> Query<R>(IMiddlewareContext context, IDataCommandDescriptor command)
+		{
+			return Query<R>(context, command, null);
+		}
 
-        public virtual async Task<R> Select<R>(IMiddlewareContext context, IDataCommandDescriptor command)
-        {
-            return await Select<R>(context, command, null);
-        }
+		public virtual R Select<R>(IMiddlewareContext context, IDataCommandDescriptor command)
+		{
+			return Select<R>(context, command, null);
+		}
 
-        public virtual async Task<List<R>> Query<R>(IMiddlewareContext context, IDataCommandDescriptor command, IDataConnection connection)
-        {
-            await EnsureOpen(connection);
+		public virtual List<R> Query<R>(IMiddlewareContext context, IDataCommandDescriptor command, IDataConnection connection)
+		{
+			EnsureOpen(connection);
 
-            var com = ResolveCommand(command, connection);
+			var com = ResolveCommand(command, connection);
 
-            IDataReader rdr = null;
+			IDataReader rdr = null;
 
-            try
-            {
-                SetupParameters(command, com);
+			try
+			{
+				SetupParameters(command, com);
 
-                foreach (var i in command.Parameters)
-                    SetParameterValue(connection, com, i.Name, i.Value);
+				foreach (var i in command.Parameters)
+					SetParameterValue(connection, com, i.Name, i.Value);
 
-                rdr = com.ExecuteReader();
-                var result = new List<R>();
-                var mappings = new FieldMappings<R>(context, rdr);
+				rdr = com.ExecuteReader();
+				var result = new List<R>();
+				var mappings = new FieldMappings<R>(context, rdr);
 
-                while (rdr.Read())
-                    result.Add(mappings.CreateInstance(rdr));
+				while (rdr.Read())
+					result.Add(mappings.CreateInstance(rdr));
 
-                return result;
-            }
-            finally
-            {
-                if (rdr is not null && !rdr.IsClosed)
-                    await CloseReader(rdr);
-            }
-        }
+				return result;
+			}
+			finally
+			{
+				if (rdr is not null && !rdr.IsClosed)
+					CloseReader(rdr);
+			}
+		}
 
-        protected virtual async Task CloseReader(IDataReader reader)
-        {
-            if (reader is DbDataReader db)
-                await db.CloseAsync();
-            else
-                reader.Close();
-        }
+		protected virtual void CloseReader(IDataReader reader)
+		{
+			reader.Close();
+		}
 
-        public virtual async Task<R?> Select<R>(IMiddlewareContext context, IDataCommandDescriptor command, IDataConnection connection)
-        {
-            await EnsureOpen(connection);
+		public virtual R? Select<R>(IMiddlewareContext context, IDataCommandDescriptor command, IDataConnection connection)
+		{
+			EnsureOpen(connection);
 
-            var com = ResolveCommand(command, connection);
+			var com = ResolveCommand(command, connection);
 
-            IDataReader rdr = null;
+			IDataReader rdr = null;
 
-            try
-            {
-                SetupParameters(command, com);
+			try
+			{
+				SetupParameters(command, com);
 
-                foreach (var i in command.Parameters)
-                    SetParameterValue(connection, com, i.Name, i.Value);
+				foreach (var i in command.Parameters)
+					SetParameterValue(connection, com, i.Name, i.Value);
 
-                rdr = com.ExecuteReader(CommandBehavior.SingleRow);
-                var mappings = new FieldMappings<R>(context, rdr);
+				rdr = com.ExecuteReader(CommandBehavior.SingleRow);
+				var mappings = new FieldMappings<R>(context, rdr);
 
-                if (rdr.Read())
-                    return mappings.CreateInstance(rdr);
+				if (rdr.Read())
+					return mappings.CreateInstance(rdr);
 
-                return default;
-            }
-            finally
-            {
-                if (rdr is not null && !rdr.IsClosed)
-                    await CloseReader(rdr);
-            }
-        }
+				return default;
+			}
+			finally
+			{
+				if (rdr is not null && !rdr.IsClosed)
+					CloseReader(rdr);
+			}
+		}
 
-        public virtual void TestConnection(IMiddlewareContext context, string connectionString)
-        {
-            var con = AsyncUtils.RunSync(() => OpenConnection(context, connectionString, ConnectionBehavior.Isolated));
+		public virtual void TestConnection(IMiddlewareContext context, string connectionString)
+		{
+			var con = OpenConnection(context, connectionString, ConnectionBehavior.Isolated);
 
-            AsyncUtils.RunSync(con.Open);
-            AsyncUtils.RunSync(con.Close);
-        }
+			con.Open();
+			con.Close();
+		}
 
-        protected virtual IDbCommand ResolveCommand(IDataCommandDescriptor command, IDataConnection connection)
-        {
-            if (Commands.TryGetValue(command, out IDbCommand existing))
-                return existing;
+		protected virtual IDbCommand ResolveCommand(IDataCommandDescriptor command, IDataConnection connection)
+		{
+			if (Commands.TryGetValue(command, out IDbCommand existing))
+				return existing;
 
-            lock (_sync)
-            {
-                if (Commands.TryGetValue(command, out IDbCommand existing2))
-                    return existing2;
+			lock (_sync)
+			{
+				if (Commands.TryGetValue(command, out IDbCommand existing2))
+					return existing2;
 
-                var r = connection.CreateCommand();
+				var r = connection.CreateCommand();
 
-                r.CommandText = command.CommandText;
-                r.CommandType = command.CommandType;
-                r.CommandTimeout = command.CommandTimeout;
+				r.CommandText = command.CommandText;
+				r.CommandType = command.CommandType;
+				r.CommandTimeout = command.CommandTimeout;
 
-                if (connection.Transaction != null)
-                    r.Transaction = connection.Transaction;
+				if (connection.Transaction != null)
+					r.Transaction = connection.Transaction;
 
-                Commands.TryAdd(command, r);
+				Commands.TryAdd(command, r);
 
-                return r;
-            }
-        }
+				return r;
+			}
+		}
 
-        private async Task EnsureOpen(IDataConnection connection)
-        {
-            if (connection is null)
-                return;
+		private void EnsureOpen(IDataConnection connection)
+		{
+			if (connection is null)
+				return;
 
-            if (connection.State == ConnectionState.Open)
-                return;
+			if (connection.State == ConnectionState.Open)
+				return;
 
-            await _semaphore.WaitAsync();
+			_semaphore.WaitAsync();
 
-            try
-            {
-                if (connection.State == ConnectionState.Open)
-                    return;
+			try
+			{
+				if (connection.State == ConnectionState.Open)
+					return;
 
-                await connection.Open();
-            }
-            finally
-            {
-                _semaphore.Release();
-            }
-        }
+				connection.Open();
+			}
+			finally
+			{
+				_semaphore.Release();
+			}
+		}
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                foreach (var command in Commands)
-                    command.Value.Dispose();
+		protected virtual void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				foreach (var command in Commands)
+					command.Value.Dispose();
 
-                Commands.Clear();
+				Commands.Clear();
 
-                _semaphore?.Dispose();
-            }
-        }
+				_semaphore?.Dispose();
+			}
+		}
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-    }
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+	}
 }

@@ -1,82 +1,57 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using System.Threading.Tasks;
 using TomPIT.Exceptions;
 
 namespace TomPIT.Middleware.Interop
 {
-    public abstract class Operation : MiddlewareApiOperation, IOperation
-    {
-        public void Invoke()
-        {
-            AsyncUtils.RunSync(() => InvokeAsync(null));
-        }
+	public abstract class Operation : MiddlewareApiOperation, IOperation
+	{
+		public void Invoke()
+		{
+			Invoke(null);
+		}
 
-        public async Task InvokeAsync()
-        {
-            await InvokeAsync(null);
-        }
+		public void Invoke(IMiddlewareContext? context)
+		{
+			if (context is not null)
+				this.WithContext(context);
 
-        public void Invoke(IMiddlewareContext? context)
-        {
-            AsyncUtils.RunSync(() => InvokeAsync(context));
-        }
+			try
+			{
+				Validate();
+				OnValidating();
 
-        public async Task InvokeAsync(IMiddlewareContext? context)
-        {
-            if (context is not null)
-                this.WithContext(context);
+				if (Context.Environment.IsInteractive)
+				{
+					AuthorizePolicies();
+					OnAuthorize();
+					OnAuthorizing();
+				}
 
-            try
-            {
-                Validate();
-                OnValidating();
+				OnInvoke();
+				DependencyInjections.Invoke<object>(null);
 
-                if (Context.Environment.IsInteractive)
-                {
-                    AuthorizePolicies();
-                    OnAuthorize();
-                    OnAuthorizing();
-                }
+				Invoked();
+			}
+			catch (ValidationException)
+			{
+				Rollback();
+				throw;
+			}
+			catch (Exception ex)
+			{
+				Rollback();
 
-                OnInvoke();
-                DependencyInjections.Invoke<object>(null);
+				throw TomPITException.Unwrap(this, ex);
+			}
+		}
 
-                Invoked();
-            }
-            catch (ValidationException)
-            {
-                Rollback();
-                throw;
-            }
-            catch (Exception ex)
-            {
-                Rollback();
+		protected virtual void OnInvoke()
+		{
+		}
 
-                throw TomPITException.Unwrap(this, ex);
-            }
-
-            await Task.CompletedTask;
-        }
-
-        protected virtual void OnInvoke()
-        {
-            AsyncUtils.RunSync(OnInvokeAsync);
-        }
-
-        protected virtual void OnAuthorize()
-        {
-            AsyncUtils.RunSync(OnAuthorizeAsync);
-        }
-
-        protected virtual async Task OnInvokeAsync()
-        {
-            await Task.CompletedTask;
-        }
-
-        protected virtual async Task OnAuthorizeAsync()
-        {
-            await Task.CompletedTask;
-        }
-    }
+		protected virtual void OnAuthorize()
+		{
+		}
+	}
 }

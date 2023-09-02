@@ -1,61 +1,60 @@
 ﻿using System.Collections.Generic;
-using System.Threading.Tasks;
 using TomPIT.Middleware;
 
 namespace TomPIT.Data
 {
-    internal class DataReader<T> : DataCommand, IDataReader<T>
-    {
-        public DataReader(IMiddlewareContext context) : base(context)
-        {
-        }
+	internal class DataReader<T> : DataCommand, IDataReader<T>
+	{
+		public DataReader(IMiddlewareContext context) : base(context)
+		{
+		}
 
-        public async Task<List<T>> Query()
-        {
-            try
-            {
-                EnsureCommand();
+		public List<T> Query()
+		{
+			try
+			{
+				EnsureCommand();
 
-                var result = await Connection.Query<T>(Command);
+				var result = Connection.Query<T>(Command);
 
-                if (Connection.Behavior == ConnectionBehavior.Isolated)
-                    await Connection.Commit();
+				if (Connection.Behavior == ConnectionBehavior.Isolated)
+					Connection.Commit();
 
-                return result;
-            }
-            finally
-            {
-                if (Connection.Behavior == ConnectionBehavior.Isolated)
-                {
-                    await Connection.Close();
-                    Connection.Dispose();
-                    Connection = null;
-                }
-            }
-        }
+				return result;
+			}
+			finally
+			{
+				if (Connection.Behavior == ConnectionBehavior.Isolated)
+				{
+					Connection.Close();
+					Connection.Dispose();
+					Connection = null;
+				}
+			}
+		}
 
-        public async Task<T> Select()
-        {
-            try
-            {
-                EnsureCommand();
+		public T Select()
+		{
+			try
+			{
+				EnsureCommand();
 
-                var result = await Connection.Select<T>(Command);
+				var result = Connection.Select<T>(Command);
 
-                if (Connection.Behavior == ConnectionBehavior.Isolated)
-                    await Connection.Commit();
+				if (Connection.Behavior == ConnectionBehavior.Isolated)
+					Connection.Commit();
 
-                return result;
-            }
-            finally
-            {
-                if (Connection.Behavior == ConnectionBehavior.Isolated)
-                {
-                    await Connection.Close();
-                    Connection.Dispose();
-                    Connection = null;
-                }
-            }
-        }
-    }
+				return result;
+			}
+			finally
+			{
+				if (Connection.Behavior == ConnectionBehavior.Isolated)
+				{
+					Connection.Close();
+					Connection.Dispose();
+					Connection = null;
+				}
+			}
+		}
+	}
 }

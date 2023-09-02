@@ -1,28 +1,27 @@
 ﻿using System;
-using System.Threading.Tasks;
 using TomPIT.Middleware;
 
 namespace TomPIT.Data.Storage;
 
 public enum MiddlewareTransactionState
 {
-    Active = 1,
-    Committing = 2,
-    Reverting = 3,
-    Completed = 4
+	Active = 1,
+	Committing = 2,
+	Reverting = 3,
+	Completed = 4
 }
 
 public interface ITransactionContext
 {
-    MiddlewareTransactionState State { get; }
+	MiddlewareTransactionState State { get; }
 
-    bool IsDirty { get; set; }
+	bool IsDirty { get; set; }
 
-    event EventHandler? StateChanged;
+	event EventHandler? StateChanged;
 
-    void Register(IMiddlewareOperation operation);
+	void Register(IMiddlewareOperation operation);
 
-    Task Rollback();
+	void Rollback();
 
-    Task Commit(IMiddlewareOperation sender);
+	void Commit(IMiddlewareOperation sender);
 }

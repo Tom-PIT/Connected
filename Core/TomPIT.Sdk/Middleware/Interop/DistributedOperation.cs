@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.ExceptionServices;
-using System.Threading.Tasks;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.Diagnostics;
@@ -14,194 +13,166 @@ using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Middleware.Interop
 {
-    public abstract class DistributedOperation : MiddlewareApiOperation, IOperation, IDistributedOperation
-    {
-        private IMiddlewareCallback _callback = null;
-        private List<IOperationResponse> _responses = null;
-        [Obsolete("Please use parameterless constructor")]
-        protected DistributedOperation([CIP(CIP.ApiOperationProvider)] string callbackPath)
-        {
-            CallbackPath = callbackPath;
-        }
+	public abstract class DistributedOperation : MiddlewareApiOperation, IOperation, IDistributedOperation
+	{
+		private IMiddlewareCallback _callback = null;
+		private List<IOperationResponse> _responses = null;
+		[Obsolete("Please use parameterless constructor")]
+		protected DistributedOperation([CIP(CIP.ApiOperationProvider)] string callbackPath)
+		{
+			CallbackPath = callbackPath;
+		}
 
-        protected DistributedOperation()
-        {
-            var component = Context.Tenant.GetService<ICompilerService>().ResolveComponent(this);
-            var ms = Context.Tenant.GetService<IMicroServiceService>().Select(component.MicroService);
+		protected DistributedOperation()
+		{
+			var component = Context.Tenant.GetService<ICompilerService>().ResolveComponent(this);
+			var ms = Context.Tenant.GetService<IMicroServiceService>().Select(component.MicroService);
 
-            CallbackPath = $"{ms.Name}/{component.Name}/{GetType().ShortName()}";
-        }
+			CallbackPath = $"{ms.Name}/{component.Name}/{GetType().ShortName()}";
+		}
 
-        [JsonIgnore]
-        public List<IOperationResponse> Responses
-        {
-            get
-            {
-                if (_responses == null)
-                    _responses = new List<IOperationResponse>();
+		[JsonIgnore]
+		public List<IOperationResponse> Responses
+		{
+			get
+			{
+				if (_responses == null)
+					_responses = new List<IOperationResponse>();
 
-                return _responses;
-            }
-        }
+				return _responses;
+			}
+		}
 
-        protected bool ResponseSuccessfull
-        {
-            get
-            {
-                if (Responses.Count == 0)
-                    return true;
+		protected bool ResponseSuccessfull
+		{
+			get
+			{
+				if (Responses.Count == 0)
+					return true;
 
-                foreach (var response in Responses)
-                {
-                    switch (response.Result)
-                    {
-                        case ResponseResult.Objection:
-                            return false;
-                    }
-                }
+				foreach (var response in Responses)
+				{
+					switch (response.Result)
+					{
+						case ResponseResult.Objection:
+							return false;
+					}
+				}
 
-                return true;
-            }
-        }
-        private string CallbackPath { get; }
-        [JsonIgnore]
-        public DistributedOperationTarget OperationTarget { get; private set; } = DistributedOperationTarget.Distributed;
-        [JsonIgnore]
-        public IMiddlewareCallback Callback
-        {
-            get
-            {
-                if (_callback is null)
-                {
-                    if (string.IsNullOrWhiteSpace(CallbackPath))
-                        throw new RuntimeException(SR.ErrAsyncPathExpected).WithMetrics(Context);
+				return true;
+			}
+		}
+		private string CallbackPath { get; }
+		[JsonIgnore]
+		public DistributedOperationTarget OperationTarget { get; private set; } = DistributedOperationTarget.Distributed;
+		[JsonIgnore]
+		public IMiddlewareCallback Callback
+		{
+			get
+			{
+				if (_callback is null)
+				{
+					if (string.IsNullOrWhiteSpace(CallbackPath))
+						throw new RuntimeException(SR.ErrAsyncPathExpected).WithMetrics(Context);
 
-                    var descriptor = ComponentDescriptor.Api(Context, CallbackPath);
+					var descriptor = ComponentDescriptor.Api(Context, CallbackPath);
 
-                    descriptor.Validate();
+					descriptor.Validate();
 
-                    var op = descriptor.Configuration.Operations.FirstOrDefault(f => string.Compare(f.Name, descriptor.Element, true) == 0);
+					var op = descriptor.Configuration.Operations.FirstOrDefault(f => string.Compare(f.Name, descriptor.Element, true) == 0);
 
-                    if (op == null)
-                        throw new RuntimeException($"{SR.ErrServiceOperationNotFound} ({CallbackPath})");
+					if (op == null)
+						throw new RuntimeException($"{SR.ErrServiceOperationNotFound} ({CallbackPath})");
 
-                    _callback = new MiddlewareCallback(descriptor.MicroService.Token, descriptor.Component.Token, op.Id);
-                }
+					_callback = new MiddlewareCallback(descriptor.MicroService.Token, descriptor.Component.Token, op.Id);
+				}
 
-                return _callback;
-            }
-        }
+				return _callback;
+			}
+		}
 
-        protected virtual void OnBeginInvoke()
-        {
+		protected virtual void OnBeginInvoke()
+		{
 
-        }
+		}
 
-        public void Invoke()
-        {
-            AsyncUtils.RunSync(InvokeAsync);
-        }
+		public void Invoke()
+		{
+			Invoke(null);
+		}
 
-        public async Task InvokeAsync()
-        {
-            Invoke(null);
+		public void Invoke(IMiddlewareContext? context)
+		{
+			if (context is not null)
+				this.WithContext(context);
 
-            await Task.CompletedTask;
-        }
+			try
+			{
+				Validate();
+				OnValidating();
 
-        public void Invoke(IMiddlewareContext? context)
-        {
-            AsyncUtils.RunSync(() => InvokeAsync(context));
-        }
+				if (OperationTarget == DistributedOperationTarget.Distributed)
+				{
+					if (Context.Environment.IsInteractive)
+					{
+						AuthorizePolicies();
+						OnAuthorizing();
+						OnAuthorize();
+					}
 
-        public async Task InvokeAsync(IMiddlewareContext? context)
-        {
-            if (context is not null)
-                this.WithContext(context);
+					OnBeginInvoke();
+				}
+				else
+				{
+					try
+					{
+						OnInvoke();
+					}
+					catch (Exception ex)
+					{
+						throw;
+					}
+					DependencyInjections.Invoke<object>(null);
+				}
 
-            try
-            {
-                Validate();
-                OnValidating();
+				Invoked();
+			}
+			catch (System.ComponentModel.DataAnnotations.ValidationException)
+			{
+				Rollback();
+				throw;
+			}
+			catch (Exception ex)
+			{
+				Rollback();
+				var se = new ScriptException(this, TomPITException.Unwrap(this, ex));
 
-                if (OperationTarget == DistributedOperationTarget.Distributed)
-                {
-                    if (Context.Environment.IsInteractive)
-                    {
-                        AuthorizePolicies();
-                        OnAuthorizing();
-                        OnAuthorize();
-                    }
+				ExceptionDispatchInfo.Capture(se).Throw();
+			}
+		}
 
-                    OnBeginInvoke();
-                }
-                else
-                {
-                    try
-                    {
-                        OnInvoke();
-                    }
-                    catch (Exception ex)
-                    {
-                        throw;
-                    }
-                    DependencyInjections.Invoke<object>(null);
-                }
+		protected internal override void OnCommitting()
+		{
+			base.OnCommitting();
 
-                Invoked();
-            }
-            catch (System.ComponentModel.DataAnnotations.ValidationException)
-            {
-                Rollback();
-                throw;
-            }
-            catch (Exception ex)
-            {
-                Rollback();
-                var se = new ScriptException(this, TomPITException.Unwrap(this, ex));
+			if (OperationTarget == DistributedOperationTarget.Distributed && !((MiddlewareCallback)Callback).Attached)
+			{
+				if (Context.Services.Identity.IsAuthenticated)
+				{
+					var args = JObject.FromObject(this);
+					args["user$"] = Context.Services.Identity.User.Token;
+				}
 
-                ExceptionDispatchInfo.Capture(se).Throw();
-            }
+				Context.Services.Cdn.Events.TriggerEvent("$", this, Callback);
+			}
+		}
 
-            await Task.CompletedTask;
-        }
+		protected virtual void OnInvoke()
+		{
+		}
 
-        protected internal override async Task OnCommittingAsync()
-        {
-            await base.OnCommittingAsync();
-
-            if (OperationTarget == DistributedOperationTarget.Distributed && !((MiddlewareCallback)Callback).Attached)
-            {
-                if (Context.Services.Identity.IsAuthenticated)
-                {
-                    var args = JObject.FromObject(this);
-                    args["user$"] = Context.Services.Identity.User.Token;
-                }
-
-                Context.Services.Cdn.Events.TriggerEvent("$", this, Callback);
-            }
-        }
-
-        [Obsolete("Please use async method")]
-        protected virtual void OnInvoke()
-        {
-            AsyncUtils.RunSync(OnInvokeAsync);
-        }
-
-        protected virtual async Task OnInvokeAsync()
-        {
-            await Task.CompletedTask;
-        }
-
-        [Obsolete("Please use async method")]
-        protected virtual void OnAuthorize()
-        {
-            AsyncUtils.RunSync(OnAuthorizeAsync);
-        }
-
-        protected virtual async Task OnAuthorizeAsync()
-        {
-            await Task.CompletedTask;
-        }
-    }
+		protected virtual void OnAuthorize()
+		{
+		}
+	}
 }

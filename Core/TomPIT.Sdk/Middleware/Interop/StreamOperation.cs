@@ -3,159 +3,133 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Net.Mime;
-using System.Threading.Tasks;
 using TomPIT.Exceptions;
 
 namespace TomPIT.Middleware.Interop
 {
-    public abstract class StreamOperation : MiddlewareApiOperation, IOperation
-    {
-        public void Invoke()
-        {
-            AsyncUtils.RunSync(InvokeAsync);
-        }
+	public abstract class StreamOperation : MiddlewareApiOperation, IOperation
+	{
+		public void Invoke()
+		{
+			Invoke(null);
+		}
 
-        public async Task InvokeAsync()
-        {
-            Invoke(null);
-        }
+		public void Invoke(IMiddlewareContext? context)
+		{
+			if (context is not null)
+				this.WithContext(context);
 
-        public void Invoke(IMiddlewareContext? context)
-        {
-            AsyncUtils.RunSync(() => InvokeAsync(context));
-        }
+			try
+			{
+				Validate();
+				OnValidating();
 
-        public async Task InvokeAsync(IMiddlewareContext? context)
-        {
-            if (context is not null)
-                this.WithContext(context);
+				if (Context.Environment.IsInteractive)
+				{
+					AuthorizePolicies();
+					OnAuthorize();
+					OnAuthorizing();
+				}
 
-            try
-            {
-                Validate();
-                OnValidating();
+				OnInvoke();
+				DependencyInjections.Invoke<object>(null);
 
-                if (Context.Environment.IsInteractive)
-                {
-                    AuthorizePolicies();
-                    OnAuthorize();
-                    OnAuthorizing();
-                }
+				Invoked();
+			}
+			catch (ValidationException)
+			{
+				Rollback();
+				throw;
+			}
+			catch (Exception ex)
+			{
+				Rollback();
 
-                OnInvoke();
-                DependencyInjections.Invoke<object>(null);
+				throw TomPITException.Unwrap(this, ex);
+			}
+		}
 
-                Invoked();
-            }
-            catch (ValidationException)
-            {
-                Rollback();
-                throw;
-            }
-            catch (Exception ex)
-            {
-                Rollback();
+		protected virtual void OnInvoke()
+		{
+		}
 
-                throw TomPITException.Unwrap(this, ex);
-            }
-        }
+		protected virtual void OnAuthorize()
+		{
+		}
 
-        [Obsolete("Please use async method")]
-        protected virtual void OnInvoke()
-        {
-            AsyncUtils.RunSync(OnInvokeAsync);
-        }
+		protected HttpContext HttpContext => Shell.HttpContext;
+		protected bool HasBeenModified(DateTime date)
+		{
+			if (HttpContext == null)
+				throw new RuntimeException(SR.ErrHttpContextNull);
 
-        protected virtual async Task OnInvokeAsync()
-        {
-            await Task.CompletedTask;
-        }
+			date = new DateTime(date.Year, date.Month, date.Day, date.Hour, date.Minute, date.Second);
 
-        [Obsolete("Please use async method")]
+			if (!string.IsNullOrEmpty(HttpContext.Request.Headers["If-Modified-Since"]))
+			{
+				var provider = CultureInfo.InvariantCulture;
+				var lastMod = DateTime.ParseExact(HttpContext.Request.Headers["If-Modified-Since"], "r", provider).ToLocalTime();
 
-        protected virtual void OnAuthorize()
-        {
-            AsyncUtils.RunSync(OnAuthorizeAsync);
-        }
+				if (lastMod == date)
+				{
+					HttpContext.Response.StatusCode = 304;
 
-        protected virtual async Task OnAuthorizeAsync()
-        {
-            await Task.CompletedTask;
-        }
+					return false;
+				}
+			}
+			else if (string.IsNullOrEmpty(HttpContext.Request.Headers["ETag"]))
+			{
+				var lastMod = new DateTime(Convert.ToInt64(HttpContext.Request.Headers["If-Modified-Since"]));
 
-        protected HttpContext HttpContext => Shell.HttpContext;
-        protected bool HasBeenModified(DateTime date)
-        {
-            if (HttpContext == null)
-                throw new RuntimeException(SR.ErrHttpContextNull);
+				if (lastMod == date)
+				{
+					HttpContext.Response.StatusCode = 304;
 
-            date = new DateTime(date.Year, date.Month, date.Day, date.Hour, date.Minute, date.Second);
+					return false;
+				}
+			}
+			return true;
+		}
 
-            if (!string.IsNullOrEmpty(HttpContext.Request.Headers["If-Modified-Since"]))
-            {
-                var provider = CultureInfo.InvariantCulture;
-                var lastMod = DateTime.ParseExact(HttpContext.Request.Headers["If-Modified-Since"], "r", provider).ToLocalTime();
+		protected void SetModified(DateTime date, int maxAge = 600)
+		{
+			if (HttpContext == null)
+				throw new RuntimeException(SR.ErrHttpContextNull);
 
-                if (lastMod == date)
-                {
-                    HttpContext.Response.StatusCode = 304;
+			date = new DateTime(date.Year, date.Month, date.Day, date.Hour, date.Minute, date.Second);
 
-                    return false;
-                }
-            }
-            else if (string.IsNullOrEmpty(HttpContext.Request.Headers["ETag"]))
-            {
-                var lastMod = new DateTime(Convert.ToInt64(HttpContext.Request.Headers["If-Modified-Since"]));
+			HttpContext.Response.Headers["Last-Modified"] = date.ToUniversalTime().ToString("r");
+			HttpContext.Response.Headers["ETag"] = date.ToUniversalTime().Ticks.ToString();
+			HttpContext.Response.Headers["Cache-Control"] = $"public, max-age={maxAge}";
+		}
 
-                if (lastMod == date)
-                {
-                    HttpContext.Response.StatusCode = 304;
+		protected void Write(StreamOperationWriteArgs e)
+		{
+			if (HttpContext == null)
+				throw new RuntimeException(SR.ErrHttpContextNull);
 
-                    return false;
-                }
-            }
-            return true;
-        }
+			if (e.Content == null || e.Content.Length == 0)
+				return;
 
-        protected void SetModified(DateTime date, int maxAge = 600)
-        {
-            if (HttpContext == null)
-                throw new RuntimeException(SR.ErrHttpContextNull);
+			if (e.Modified != DateTime.MinValue && !HasBeenModified(e.Modified))
+				return;
 
-            date = new DateTime(date.Year, date.Month, date.Day, date.Hour, date.Minute, date.Second);
+			HttpContext.Response.ContentType = e.ContentType;
 
-            HttpContext.Response.Headers["Last-Modified"] = date.ToUniversalTime().ToString("r");
-            HttpContext.Response.Headers["ETag"] = date.ToUniversalTime().Ticks.ToString();
-            HttpContext.Response.Headers["Cache-Control"] = $"public, max-age={maxAge}";
-        }
+			if (e.Modified != DateTime.MinValue)
+				SetModified(e.Modified);
 
-        protected void Write(StreamOperationWriteArgs e)
-        {
-            if (HttpContext == null)
-                throw new RuntimeException(SR.ErrHttpContextNull);
+			var cd = new ContentDisposition
+			{
+				FileName = e.FileName,
+				Inline = e.Inline
+			};
 
-            if (e.Content == null || e.Content.Length == 0)
-                return;
+			HttpContext.Response.Headers.Append("Content-Disposition", cd.ToString());
+			HttpContext.Response.ContentLength = e.Content.Length;
+			HttpContext.Response.Body.WriteAsync(e.Content, 0, e.Content.Length).Wait();
 
-            if (e.Modified != DateTime.MinValue && !HasBeenModified(e.Modified))
-                return;
-
-            HttpContext.Response.ContentType = e.ContentType;
-
-            if (e.Modified != DateTime.MinValue)
-                SetModified(e.Modified);
-
-            var cd = new ContentDisposition
-            {
-                FileName = e.FileName,
-                Inline = e.Inline
-            };
-
-            HttpContext.Response.Headers.Append("Content-Disposition", cd.ToString());
-            HttpContext.Response.ContentLength = e.Content.Length;
-            HttpContext.Response.Body.WriteAsync(e.Content, 0, e.Content.Length).Wait();
-
-            HttpContext.Response.CompleteAsync().Wait();
-        }
-    }
+			HttpContext.Response.CompleteAsync().Wait();
+		}
+	}
 }
