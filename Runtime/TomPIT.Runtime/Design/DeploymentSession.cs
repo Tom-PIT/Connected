@@ -183,7 +183,15 @@ namespace TomPIT.Design
 				return;
 
 			foreach (var component in Request.Components)
+			{
+				/*
+				 * Empty components are corrupted and we don't want to restore them.
+				 */
+				if (component.Files is null || !component.Files.Any())
+					continue;
+
 				ComponentModel.Restore(Request.Token, component);
+			}
 		}
 
 		private void DeployFolders()

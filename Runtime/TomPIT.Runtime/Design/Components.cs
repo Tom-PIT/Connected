@@ -130,6 +130,17 @@ namespace TomPIT.Design
 			}
 
 			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
+
+			RestoreComponent(microService, component);
+			RestoreConfiguration(ms, component);
+			RestoreFiles(ms, component);
+
+			ConfigurationRestored?.Invoke(this, new ComponentArgs(microService, component.Token));
+			ComponentRestored?.Invoke(this, new ComponentArgs(microService, component.Token));
+		}
+
+		private void RestoreConfiguration(IMicroService microService, IPullRequestComponent component)
+		{
 			var configuration = component.Files.FirstOrDefault(f => f.Type == BlobTypes.Configuration);
 
 			if (configuration is not null && (configuration.Verb == ComponentVerb.Add || configuration.Verb == ComponentVerb.Edit))
@@ -138,16 +149,29 @@ namespace TomPIT.Design
 				{
 					ContentType = configuration.ContentType,
 					FileName = configuration.FileName,
-					ResourceGroup = ms.ResourceGroup,
-					MicroService = microService,
+					ResourceGroup = microService.ResourceGroup,
+					MicroService = microService.Token,
 					Type = configuration.Type,
 					Token = component.Token,
 					PrimaryKey = component.Token.ToString()
 				};
 
 				Tenant.GetService<IStorageService>().Upload(blob, Unpack(configuration.Content), StoragePolicy.Singleton, component.Token);
-			}
 
+				if (Tenant.GetService<IComponentService>() is IComponentNotification notification)
+				{
+					notification.NotifyChanged(this, new ConfigurationEventArgs
+					{
+						Category = component.Category,
+						Component = component.Token,
+						MicroService = microService.Token
+					});
+				}
+			}
+		}
+
+		private void RestoreFiles(IMicroService microService, IPullRequestComponent component)
+		{
 			foreach (var file in component.Files)
 			{
 				if (file.Type == BlobTypes.Configuration || file.Type == BlobTypes.RuntimeConfiguration)
@@ -160,9 +184,9 @@ namespace TomPIT.Design
 					Tenant.GetService<IStorageService>().Delete(file.Token);
 
 					if (file.Type == BlobTypes.Template && Tenant.GetService<ICompilerService>() is ICompilerNotification notification)
-						notification.NotifyChanged(this, new ScriptChangedEventArgs(ms.Token, component.Token, file.Token));
+						notification.NotifyChanged(this, new ScriptChangedEventArgs(microService.Token, component.Token, file.Token));
 
-					FileDeleted?.Invoke(this, new FileArgs(microService, component.Token, file.Token));
+					FileDeleted?.Invoke(this, new FileArgs(microService.Token, component.Token, file.Token));
 				}
 				else
 				{
@@ -172,8 +196,8 @@ namespace TomPIT.Design
 					{
 						ContentType = file.ContentType,
 						FileName = file.FileName,
-						MicroService = microService,
-						ResourceGroup = ms.ResourceGroup,
+						MicroService = microService.Token,
+						ResourceGroup = microService.ResourceGroup,
 						Token = file.Token,
 						PrimaryKey = file.PrimaryKey,
 						Topic = file.Topic,
@@ -182,12 +206,15 @@ namespace TomPIT.Design
 					}, content);
 
 					if (file.Type == BlobTypes.Template && Tenant.GetService<ICompilerService>() is ICompilerNotification notification)
-						notification.NotifyChanged(this, new ScriptChangedEventArgs(ms.Token, component.Token, file.Token));
+						notification.NotifyChanged(this, new ScriptChangedEventArgs(microService.Token, component.Token, file.Token));
 
-					FileRestored?.Invoke(this, new FileArgs(microService, component.Token, file.Token));
+					FileRestored?.Invoke(this, new FileArgs(microService.Token, component.Token, file.Token));
 				}
 			}
+		}
 
+		private void RestoreComponent(Guid microService, IPullRequestComponent component)
+		{
 			if (component.Verb == ComponentVerb.Add)
 			{
 				Instance.SysProxy.Development.Components.Insert(microService, component.Folder, component.Token, ComponentCategories.ResolveNamespace(component.Category), component.Category, component.Name, component.Type);
@@ -203,20 +230,10 @@ namespace TomPIT.Design
 						Name = component.Name,
 						NameSpace = ComponentCategories.ResolveNamespace(component.Category)
 					});
-
-					notification.NotifyChanged(this, new ConfigurationEventArgs
-					{
-						Category = component.Category,
-						Component = component.Token,
-						MicroService = microService
-					});
 				}
 			}
 			else
 				Update(component.Token, component.Name, component.Folder, false);
-
-			ConfigurationRestored?.Invoke(this, new ComponentArgs(microService, component.Token));
-			ComponentRestored?.Invoke(this, new ComponentArgs(microService, component.Token));
 		}
 
 		private void NotifyRemoved(Guid microService, IPullRequestComponent component)

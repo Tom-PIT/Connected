@@ -14,33 +14,23 @@ namespace TomPIT.Reflection
 {
 	internal class ConfigurationDiscovery : TenantObject, IConfigurationDiscovery
 	{
-		private enum SearchMode
-		{
-			Id = 1,
-			TextBlob = 2
-		}
 		public ConfigurationDiscovery(ITenant tenant) : base(tenant)
 		{
 		}
 
 		public IElement Find(Guid component, Guid id)
 		{
-			var config = Tenant.GetService<IComponentService>().SelectConfiguration(component);
-
-			if (config == null)
-				return null;
-
-			return Find(config, id, SearchMode.Id, new List<object>());
+			return Find(component, id, SearchMode.Element);
 		}
 
-		public IText FindText(Guid component, Guid textBlob)
+		public IElement Find(Guid component, Guid blob, SearchMode mode)
 		{
 			var config = Tenant.GetService<IComponentService>().SelectConfiguration(component);
 
-			if (config == null)
+			if (config is null)
 				return null;
 
-			return Find(config, textBlob, SearchMode.TextBlob, new List<object>()) as IText;
+			return Find(config, blob, mode, new List<object>());
 		}
 
 		public IText Find(string path)
@@ -50,7 +40,7 @@ namespace TomPIT.Reflection
 
 		public IElement Find(IConfiguration configuration, Guid id)
 		{
-			return Find(configuration, id,  SearchMode.Id, new List<object>());
+			return Find(configuration, id, SearchMode.Element, new List<object>());
 		}
 
 		private IElement Find(object instance, Guid id, SearchMode mode, List<object> referenceTrail)
@@ -65,13 +55,15 @@ namespace TomPIT.Reflection
 
 			switch (mode)
 			{
-				case SearchMode.Id:
+				case SearchMode.Element:
 					if (instance is IElement el && el.Id == id)
 						return el;
 					break;
-				case SearchMode.TextBlob:
+				case SearchMode.Blob:
 					if (instance is IText text && text.TextBlob == id)
 						return text;
+					else if (instance is IUploadResource upload && upload.Blob == id)
+						return upload;
 					break;
 				default:
 					throw new NotSupportedException();
