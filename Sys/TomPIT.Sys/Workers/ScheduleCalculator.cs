@@ -256,7 +256,7 @@ namespace TomPIT.Sys.Workers
 						break;
 					case WorkerYearMode.RelativeDate:
 						nextRun = new DateTime(nextRun.Year, worker.MonthNumber, 1, nextRun.Hour, nextRun.Minute, nextRun.Second);
-                        nextRun ProcessMonthPart(worker, nextRun, WorkerMonthMode.RelativeDay);
+                        nextRun = ProcessMonthPart(worker, nextRun, WorkerMonthMode.RelativeDay);
 						break;
 					default:
 						return DateTime.MinValue;
