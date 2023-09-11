@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using TomPIT.Cdn.Printing;
 using TomPIT.Controllers;
 
 namespace TomPIT.Cdn.Controllers

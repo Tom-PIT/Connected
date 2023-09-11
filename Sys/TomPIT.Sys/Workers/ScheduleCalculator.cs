@@ -1,4 +1,5 @@
 ﻿using System;
+
 using TomPIT.Distributed;
 
 namespace TomPIT.Sys.Workers
@@ -8,12 +9,12 @@ namespace TomPIT.Sys.Workers
 		public static DateTime NextRun(IScheduledJob worker)
 		{
 			var initial = worker.NextRun;
-			var result = DateTime.MinValue;
 			var now = DateTime.UtcNow;
 
 			if (initial > now)
 				return initial;
 
+			DateTime result;
 			do
 			{
 				result = NextRun(worker, initial, now);
@@ -182,15 +183,18 @@ namespace TomPIT.Sys.Workers
 
 		private static DateTime CalcNextRunWeekly(IScheduledJob worker, DateTime initial, DateTime now)
 		{
-			if (HasFinished(worker, now) || !HasWeekdayChecked(worker))
+			if (HasFinished(worker, now))
 				return DateTime.MinValue;
 
 			var daysIncrement = 7 * (worker.IntervalValue < 1 ? 1 : worker.IntervalValue);
-			var nextRun = initial.AddDays(daysIncrement);
+			var nextRun = initial;
+
+			if (!HasWeekdayChecked(worker))
+				return nextRun.AddDays(daysIncrement);
 
 			for (int i = 0; i < 7; i++)
 			{
-				if (IsWeedayEnabled(worker, nextRun))
+				if (IsWeekdayEnabled(worker, nextRun))
 					break;
 
 				if (IsWeekCompleted(worker, nextRun) || nextRun.DayOfWeek == DayOfWeek.Sunday)
@@ -212,9 +216,25 @@ namespace TomPIT.Sys.Workers
 			initial = CorrectStart(worker, initial, now);
 			var nextRun = FixTime(worker, initial);
 
-			nextRun = new DateTime(nextRun.Year, nextRun.Month, 1, nextRun.Hour, nextRun.Minute, nextRun.Second).AddMonths(worker.IntervalValue == 0 ? 1 : worker.IntervalValue);
+			var intervalValue = worker.MonthNumber == 0 ? 1 : worker.MonthNumber;
 
-			return ProcessMonthPart(worker, nextRun, worker.MonthMode);
+			nextRun = new DateTime(nextRun.Year, nextRun.Month, 1, nextRun.Hour, nextRun.Minute, nextRun.Second);
+
+			nextRun = ProcessMonthPart(worker, nextRun, worker.MonthMode);
+
+			if (nextRun.Date < now.Date)
+			{
+				if (worker.MonthMode == WorkerMonthMode.ExactDay)
+				{
+					nextRun = nextRun.AddMonths(intervalValue);
+				}
+				else
+				{
+					nextRun = CalcNextRunMonthly(worker, nextRun.AddMonths(intervalValue), now);
+				}
+			}
+
+			return nextRun;
 		}
 
 		private static DateTime CalcNextRunYearly(IScheduledJob worker, DateTime initial, DateTime now)
@@ -226,19 +246,36 @@ namespace TomPIT.Sys.Workers
 				initial = CorrectStart(worker, initial, now);
 				var nextRun = FixTime(worker, initial);
 
-				nextRun = new DateTime(nextRun.Year + (worker.IntervalValue == 0 ? 1 : worker.IntervalValue), 1, 1, nextRun.Hour, nextRun.Minute, nextRun.Second);
+				var intervalValue = worker.IntervalValue < 1 ? 0 : worker.IntervalValue;
+
+				nextRun = new DateTime(nextRun.Year, 1, 1, nextRun.Hour, nextRun.Minute, nextRun.Second);
 
 				switch (worker.YearMode)
 				{
 					case WorkerYearMode.ExactDate:
-						return EnsureValidDate(worker, new DateTime(nextRun.Year, worker.MonthNumber, worker.DayOfMonth, nextRun.Hour, nextRun.Minute, nextRun.Second));
+						nextRun = EnsureValidDate(worker, new DateTime(nextRun.Year, worker.MonthNumber, worker.DayOfMonth, nextRun.Hour, nextRun.Minute, nextRun.Second));
+						break;
 					case WorkerYearMode.RelativeDate:
 						nextRun = new DateTime(nextRun.Year, worker.MonthNumber, 1, nextRun.Hour, nextRun.Minute, nextRun.Second);
-
-						return ProcessMonthPart(worker, nextRun, WorkerMonthMode.RelativeDay);
+						nextRun = ProcessMonthPart(worker, nextRun, WorkerMonthMode.RelativeDay);
+						break;
 					default:
 						return DateTime.MinValue;
 				}
+
+				if (nextRun.Date < now.Date)
+				{
+					if (worker.YearMode == WorkerYearMode.ExactDate)
+					{
+						nextRun = nextRun.AddYears(intervalValue);
+					}
+					else
+					{
+						nextRun = CalcNextRunYearly(worker, nextRun.AddYears(intervalValue), now);
+					}
+				}
+
+				return nextRun;
 			}
 		}
 
@@ -465,25 +502,25 @@ namespace TomPIT.Sys.Workers
 			switch (day)
 			{
 				case DayOfWeek.Friday:
-					return !(IsWeedayEnabled(worker, DayOfWeek.Saturday) || IsWeedayEnabled(worker, DayOfWeek.Sunday));
+					return !(IsWeekdayEnabled(worker, DayOfWeek.Saturday) || IsWeekdayEnabled(worker, DayOfWeek.Sunday));
 				case DayOfWeek.Monday:
-					return !(IsWeedayEnabled(worker, DayOfWeek.Tuesday) || IsWeedayEnabled(worker, DayOfWeek.Wednesday) || IsWeedayEnabled(worker, DayOfWeek.Thursday) || IsWeedayEnabled(worker, DayOfWeek.Friday) || IsWeedayEnabled(worker, DayOfWeek.Saturday) || IsWeedayEnabled(worker, DayOfWeek.Sunday));
+					return !(IsWeekdayEnabled(worker, DayOfWeek.Tuesday) || IsWeekdayEnabled(worker, DayOfWeek.Wednesday) || IsWeekdayEnabled(worker, DayOfWeek.Thursday) || IsWeekdayEnabled(worker, DayOfWeek.Friday) || IsWeekdayEnabled(worker, DayOfWeek.Saturday) || IsWeekdayEnabled(worker, DayOfWeek.Sunday));
 				case DayOfWeek.Saturday:
-					return !IsWeedayEnabled(worker, DayOfWeek.Sunday);
+					return !IsWeekdayEnabled(worker, DayOfWeek.Sunday);
 				case DayOfWeek.Sunday:
 					return true;
 				case DayOfWeek.Thursday:
-					return !(IsWeedayEnabled(worker, DayOfWeek.Friday) || IsWeedayEnabled(worker, DayOfWeek.Saturday) || IsWeedayEnabled(worker, DayOfWeek.Sunday));
+					return !(IsWeekdayEnabled(worker, DayOfWeek.Friday) || IsWeekdayEnabled(worker, DayOfWeek.Saturday) || IsWeekdayEnabled(worker, DayOfWeek.Sunday));
 				case DayOfWeek.Tuesday:
-					return !(IsWeedayEnabled(worker, DayOfWeek.Friday) || IsWeedayEnabled(worker, DayOfWeek.Saturday) || IsWeedayEnabled(worker, DayOfWeek.Sunday));
+					return !(IsWeekdayEnabled(worker, DayOfWeek.Wednesday) || IsWeekdayEnabled(worker, DayOfWeek.Thursday) || IsWeekdayEnabled(worker, DayOfWeek.Friday) || IsWeekdayEnabled(worker, DayOfWeek.Saturday) || IsWeekdayEnabled(worker, DayOfWeek.Sunday));
 				case DayOfWeek.Wednesday:
-					return !(IsWeedayEnabled(worker, DayOfWeek.Thursday) || IsWeedayEnabled(worker, DayOfWeek.Friday) || IsWeedayEnabled(worker, DayOfWeek.Saturday) || IsWeedayEnabled(worker, DayOfWeek.Sunday));
+					return !(IsWeekdayEnabled(worker, DayOfWeek.Thursday) || IsWeekdayEnabled(worker, DayOfWeek.Friday) || IsWeekdayEnabled(worker, DayOfWeek.Saturday) || IsWeekdayEnabled(worker, DayOfWeek.Sunday));
 			}
 
 			return true;
 		}
 
-		private static bool IsWeedayEnabled(IScheduledJob worker, DayOfWeek dow)
+		private static bool IsWeekdayEnabled(IScheduledJob worker, DayOfWeek dow)
 		{
 			switch (dow)
 			{
@@ -506,7 +543,7 @@ namespace TomPIT.Sys.Workers
 			}
 		}
 
-		private static bool IsWeedayEnabled(IScheduledJob worker, DateTime date)
+		private static bool IsWeekdayEnabled(IScheduledJob worker, DateTime date)
 		{
 			switch (date.DayOfWeek)
 			{

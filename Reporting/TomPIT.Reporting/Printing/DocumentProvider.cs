@@ -1,7 +1,9 @@
-﻿using DevExpress.Export;
+﻿
+using DevExpress.Export;
 using DevExpress.Utils;
 using DevExpress.XtraPrinting;
 using DevExpress.XtraReports.UI;
+
 using Newtonsoft.Json.Linq;
 using System;
 using System.Drawing;
@@ -32,6 +34,13 @@ namespace TomPIT.MicroServices.Reporting.Printing
             using var ms = new MemoryStream();
 
             report.SaveLayoutToXml(ms);
+
+			var subreports = report.AllControls<XRSubreport>();
+			
+			foreach(var subreport in subreports) 
+			{
+				subreport.ReportSource.SaveLayoutToXml(ms);	
+			}
 
             ms.Seek(0, SeekOrigin.Begin);
 
@@ -86,7 +95,7 @@ namespace TomPIT.MicroServices.Reporting.Printing
 
         private static XtraReport CreateReport(Guid component, object e, string user)
         {
-            if (!(MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(component) is IReportConfiguration descriptor))
+			if (MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(component) is not IReportConfiguration)
                 return null;
 
             var report = new ReportCreateSession
