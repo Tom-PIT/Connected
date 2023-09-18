@@ -26,6 +26,7 @@ namespace TomPIT.ComponentModel
 		public event ComponentChangedHandler ComponentChanged;
 		public event ComponentChangedHandler ComponentAdded;
 		public event ComponentChangedHandler ComponentRemoved;
+		public event ComponentChangedHandler Deleting;
 		public event ConfigurationChangedHandler ConfigurationChanged;
 		public event ConfigurationChangedHandler ConfigurationAdded;
 		public event ConfigurationChangedHandler ConfigurationRemoved;
@@ -133,6 +134,11 @@ namespace TomPIT.ComponentModel
 		{
 			Remove(e.Component);
 			ComponentRemoved?.Invoke(Tenant, e);
+		}
+
+		public void NotifyDeleting(object sender, ComponentEventArgs e)
+		{
+			Deleting?.Invoke(Tenant, e);
 		}
 
 		public ImmutableList<IConfiguration> QueryConfigurations(ImmutableList<IComponent> components)

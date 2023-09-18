@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
+
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
@@ -50,6 +51,10 @@ namespace TomPIT.Design
 			if (c == null)
 				return;
 
+			var svc = Tenant.GetService<IComponentService>() as IComponentNotification;
+
+			svc?.NotifyDeleting(this, new ComponentEventArgs(c.MicroService, c.Folder, component, c.NameSpace, c.Category, c.Name));
+
 			var config = Tenant.GetService<IComponentService>().SelectConfiguration(c.Token);
 
 			if (config != null)
@@ -64,8 +69,8 @@ namespace TomPIT.Design
 
 			Instance.SysProxy.Development.Components.Delete(component, MiddlewareDescriptor.Current.UserToken, permanent);
 
-			if (Tenant.GetService<IComponentService>() is IComponentNotification svc)
-				svc.NotifyRemoved(this, new ComponentEventArgs(c.MicroService, c.Folder, component, c.NameSpace, c.Category, c.Name));
+
+			svc?.NotifyRemoved(this, new ComponentEventArgs(c.MicroService, c.Folder, component, c.NameSpace, c.Category, c.Name));
 
 			/*
 		 * remove configuration file

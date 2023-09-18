@@ -14,6 +14,7 @@ namespace TomPIT.ComponentModel
 		event ComponentChangedHandler ComponentChanged;
 		event ComponentChangedHandler ComponentAdded;
 		event ComponentChangedHandler ComponentRemoved;
+		event ComponentChangedHandler Deleting;
 		event ConfigurationChangedHandler ConfigurationChanged;
 		event ConfigurationChangedHandler ConfigurationAdded;
 		event ConfigurationChangedHandler ConfigurationRemoved;

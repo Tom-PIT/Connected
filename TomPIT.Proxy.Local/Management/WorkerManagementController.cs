@@ -15,7 +15,7 @@ internal class WorkerManagementController : IWorkerManagementController
 
     public void Complete(Guid microService, Guid worker, Guid popReceipt)
     {
-        DataModel.Workers.Complete(microService, worker, popReceipt);
+        DataModel.Workers.Complete(microService, popReceipt, worker);
     }
 
     public ImmutableList<IQueueMessage> Dequeue(int count)
