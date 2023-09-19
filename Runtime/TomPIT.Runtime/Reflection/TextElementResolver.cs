@@ -11,6 +11,7 @@ using TomPIT.ComponentModel.IoC;
 using TomPIT.ComponentModel.IoT;
 using TomPIT.ComponentModel.Management;
 using TomPIT.ComponentModel.Messaging;
+using TomPIT.ComponentModel.Navigation;
 using TomPIT.ComponentModel.Quality;
 using TomPIT.ComponentModel.Runtime;
 using TomPIT.ComponentModel.Scripting;
@@ -126,6 +127,9 @@ internal class TextElementResolver
 			return;
 
 		if (LoadIoTHub())
+			return;
+
+		if (LoadSitemap())
 			return;
 	}
 
@@ -261,6 +265,11 @@ internal class TextElementResolver
 	private bool LoadIoTHub()
 	{
 		return LoadSimple<IIoTHubConfiguration>(ComponentCategories.IoTHub);
+	}
+
+	private bool LoadSitemap()
+	{
+		return LoadSimple<ISiteMapConfiguration>(ComponentCategories.SiteMap);
 	}
 
 	private bool LoadSimple<T>(string category) where T : IText

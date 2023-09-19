@@ -424,7 +424,7 @@ namespace TomPIT.Compilation
 					return null;
 			}
 
-			var result = ResolveTypeName(script.Assembly, sourceCode, typeName);
+			var result = ResolveTypeName(script.Assembly, sourceCode, typeName, throwException);
 
 			if (result is null)
 			{
@@ -437,7 +437,7 @@ namespace TomPIT.Compilation
 			return result;
 		}
 
-		private Type ResolveTypeName(string assembly, IText sourceCode, string typeName)
+		private Type ResolveTypeName(string assembly, IText sourceCode, string typeName, bool throwException)
 		{
 			var ns = ResolveNamespace(sourceCode);
 			var asm = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(f => string.Compare(f.ShortName(), assembly, true) == 0);
@@ -465,11 +465,17 @@ namespace TomPIT.Compilation
 			{
 				var ms = Tenant.GetService<IMicroServiceService>().Select(sourceCode.Configuration().MicroService());
 
+				if(throwException)
 				throw new RuntimeException($"{SR.ErrTypeMultipleMatch} ({ms.Name}/{sourceCode.Configuration().ComponentName()}/{typeName})");
+
+				return null;
 			}
 			else if (results.Count() == 0)
 			{
+				if(throwException)
 				throw new RuntimeException($"{SR.ErrTypeNotFound} ({typeName})");
+
+				return null;
 			}
 
 			return results.First();
