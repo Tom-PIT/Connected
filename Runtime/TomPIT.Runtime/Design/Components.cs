@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.SqlServer.Management.Smo;
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -189,7 +191,7 @@ namespace TomPIT.Design
 					Tenant.GetService<IStorageService>().Delete(file.Token);
 
 					if (file.Type == BlobTypes.Template && Tenant.GetService<ICompilerService>() is ICompilerNotification notification)
-						notification.NotifyChanged(this, new ScriptChangedEventArgs(microService.Token, component.Token, file.Token));
+						notification.NotifyChanged(this, new ScriptChangedEventArgs(microService.Token, component.Token, ResolveElementId(component.Token, file.Token)));
 
 					FileDeleted?.Invoke(this, new FileArgs(microService.Token, component.Token, file.Token));
 				}
@@ -211,7 +213,7 @@ namespace TomPIT.Design
 					}, content);
 
 					if (file.Type == BlobTypes.Template && Tenant.GetService<ICompilerService>() is ICompilerNotification notification)
-						notification.NotifyChanged(this, new ScriptChangedEventArgs(microService.Token, component.Token, file.Token));
+						notification.NotifyChanged(this, new ScriptChangedEventArgs(microService.Token, component.Token, ResolveElementId(component.Token, file.Token)));
 
 					FileRestored?.Invoke(this, new FileArgs(microService.Token, component.Token, file.Token));
 				}
@@ -239,6 +241,10 @@ namespace TomPIT.Design
 			}
 			else
 				Update(component.Token, component.Name, component.Folder, false);
+		}
+		private Guid ResolveElementId(Guid component, Guid blob) 
+		{
+			return Tenant.GetService<IDiscoveryService>().Configuration.Find(component, blob, SearchMode.Blob)?.Id ?? default;
 		}
 
 		private void NotifyRemoved(Guid microService, IPullRequestComponent component)
