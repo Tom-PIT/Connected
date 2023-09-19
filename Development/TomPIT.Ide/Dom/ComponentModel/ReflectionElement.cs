@@ -142,7 +142,7 @@ namespace TomPIT.Ide.Dom.ComponentModel
 
 					if (_designer == null && Value != null)
 					{
-						var att = Value.GetType().ResolveDesigner();
+						var att = Value.GetType().ResolveDesigner(Environment);
 
 						if (att != null)
 							_designer = DomQuery.CreateDesigner(this, att);

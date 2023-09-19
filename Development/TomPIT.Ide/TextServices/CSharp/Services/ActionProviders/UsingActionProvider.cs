@@ -140,7 +140,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.ActionProviders
 				ModelVersionId = Editor.Model.Version
 			};
 
-			textEdit.Edit = new TextEdit
+			textEdit.TextEdit = new TextEdit
 			{
 				Text = $"{title};\n",
 				Eol = EndOfLineSequence.CRLF,
@@ -161,7 +161,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.ActionProviders
 			if (rte == null && result.Edit is WorkspaceEdit wsEdit && wsEdit.Edits != null && wsEdit.Edits.Count > 0)
 				rte = wsEdit.Edits[0] as ResourceTextEdit;
 
-			rte.Edit = new TextEdit
+			rte.TextEdit = new TextEdit
 			{
 				Text = type.Name,
 				Range = new Range

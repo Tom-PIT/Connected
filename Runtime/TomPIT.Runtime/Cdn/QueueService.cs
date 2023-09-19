@@ -2,7 +2,6 @@
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Distributed;
 using TomPIT.Connectivity;
-using TomPIT.Middleware;
 using TomPIT.Serialization;
 
 namespace TomPIT.Cdn
@@ -20,14 +19,7 @@ namespace TomPIT.Cdn
 
 		public void Enqueue<T>(IQueueWorker worker, string bufferKey, T arguments, TimeSpan expire, TimeSpan nextVisible)
 		{
-			Tenant.Post(Tenant.CreateUrl("Queue", "Enqueue"), new
-			{
-				worker.Configuration().Component,
-				Worker = worker.Name,
-				expire,
-				nextVisible,
-				arguments = arguments == null ? null : Serializer.Serialize(arguments)
-			});
+			Instance.SysProxy.Queue.Enqueue(worker.Configuration().Component, worker.Name, bufferKey, arguments is null ? null : Serializer.Serialize(arguments), expire, nextVisible);
 		}
 	}
 }

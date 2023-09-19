@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 using TomPIT.Analysis;
 using TomPIT.Connectivity;
 using TomPIT.Ide.Analysis.Tools;
-using TomPIT.Middleware;
 
 namespace TomPIT.Ide.Analysis
 {
@@ -19,9 +17,10 @@ namespace TomPIT.Ide.Analysis
 
 		public List<ITool> Query()
 		{
-			var u = Tenant.CreateUrl("Tools", "Query");
+			return new();
+			//var u = Tenant.CreateUrl("Tools", "Query");
 
-			return Tenant.Get<List<Tool>>(u).ToList<ITool>();
+			//return Tenant.Get<List<Tool>>(u).ToList<ITool>();
 		}
 
 		public void Run(string name)
@@ -41,24 +40,25 @@ namespace TomPIT.Ide.Analysis
 
 		private void UpdateStatus(string name, ToolStatus status)
 		{
-			var u = Tenant.CreateUrl("Tools", "Update");
-			var e = new JObject
-			{
-				{"name", name },
-				{"status", status.ToString() }
-			};
+			//var u = Tenant.CreateUrl("Tools", "Update");
+			//var e = new JObject
+			//{
+			//	{"name", name },
+			//	{"status", status.ToString() }
+			//};
 
-			Tenant.Post(u, e);
+			//Tenant.Post(u, e);
 		}
 		public ITool Select(string name)
 		{
-			var u = Tenant.CreateUrl("Tools", "Select");
-			var e = new JObject
-			{
-				{"name", name }
-			};
+			return null;
+			//var u = Tenant.CreateUrl("Tools", "Select");
+			//var e = new JObject
+			//{
+			//	{"name", name }
+			//};
 
-			return Tenant.Post<Tool>(u, e);
+			//return Tenant.Post<Tool>(u, e);
 		}
 
 		public void Register(IToolMiddleware middleware)

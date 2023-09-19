@@ -1,4 +1,5 @@
 ﻿@using TomPIT;
+@using TomPIT.Environment
 @using TomPIT.Serialization;
 @using TomPIT.ComponentModel;
 @using Newtonsoft.Json;
@@ -45,7 +46,7 @@
 
 <script>
 		iot.connect({
-		'url': '@string.Format("{0}/iot",Model.Services.Routing.GetServer(TomPIT.Environment.InstanceType.IoT, TomPIT.Environment.InstanceVerbs.All))',
+		'url': '@string.Format("{0}/iot",Model.Services.Routing.GetServer(InstanceFeatures.IoT, TomPIT.Environment.InstanceVerbs.All))',
 		'microService': '@ms.Name',
 		'appBaseUrl': '@Model.Services.Routing.MapPath("~/sys/plugins/iot/partial")',
 		'hub':'@view.Hub',

@@ -216,6 +216,13 @@ namespace TomPIT.Data
 					if (bin != null)
 						column.BinaryKind = bin.Kind;
 				}
+				else if(column.DataType == DbType.String 
+					|| column.DataType == DbType.AnsiString
+					|| column.DataType == DbType.AnsiStringFixedLength
+					|| column.DataType == DbType.StringFixedLength)
+				{
+					column.MaxLength = 50;
+				}
 
 				ParseDefaultValue(column, property);
 

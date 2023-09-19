@@ -22,12 +22,12 @@ namespace TomPIT.Cdn.Printing
 			return true;
 		}
 
-		protected override Task OnExecute(CancellationToken cancel)
+		protected override async Task OnExecute(CancellationToken cancel)
 		{
-			if (PrintingHubs.Printing == null)
+			if (PrintingHubs.Printing is null)
 			{
 				IntervalTimeout = TimeSpan.FromSeconds(15);
-				return Task.CompletedTask;
+				return;
 			}
 
 			if (IntervalTimeout > TimeSpan.FromSeconds(1))
@@ -36,17 +36,17 @@ namespace TomPIT.Cdn.Printing
 			var jobs = MiddlewareDescriptor.Current.Tenant.GetService<IPrintingSpoolerManagementService>().Dequeue(128);
 
 			if (cancel.IsCancellationRequested)
-				return Task.CompletedTask;
+				return;
 
-			if (jobs == null)
-				return Task.CompletedTask;
+			if (jobs is null)
+				return;
 
 			var queue = new List<PrintNotificationDescriptor>();
 
 			foreach (var job in jobs)
 			{
 				if (cancel.IsCancellationRequested)
-					return Task.CompletedTask;
+					return;
 
 				var message = Serializer.Deserialize<JObject>(job.Message);
 				var printer = message.Optional("printer", string.Empty);
@@ -73,10 +73,8 @@ namespace TomPIT.Cdn.Printing
 				var ordered = queue.OrderBy(f => f.SerialNumber);
 
 				foreach(var job in ordered)
-					PrintingHubs.Printing.Clients.Group(job.Printer).SendCoreAsync("print", new object[] { job.Id, job.PopReceipt }, cancel).Wait();
+					await PrintingHubs.Printing.Clients.Group(job.Printer).SendCoreAsync("print", new object[] { job.Id, job.PopReceipt }, cancel);
 			}
-
-			return Task.CompletedTask;
 		}
 	}
 }

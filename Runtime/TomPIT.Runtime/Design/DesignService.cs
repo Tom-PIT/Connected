@@ -1,10 +1,12 @@
-﻿using TomPIT.Connectivity;
+﻿using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Text.Json;
+using TomPIT.Connectivity;
 
 namespace TomPIT.Design
 {
 	internal class DesignService : TenantObject, IDesignService
 	{
-		private IVersionControl _versionControl = null;
 		private IComponentModel _components = null;
 		private IDesignSearch _search = null;
 		private IDeployment _deployment = null;
@@ -13,6 +15,16 @@ namespace TomPIT.Design
 
 		public DesignService(ITenant tenant) : base(tenant)
 		{
+			Designers = new();
+
+			InitializeConfiguration();
+		}
+
+		private List<string> Designers { get; }
+
+		public ImmutableList<string> QueryDesigners()
+		{
+			return Designers.ToImmutableList();
 		}
 
 		public IMicroServiceDesign MicroServices
@@ -70,20 +82,18 @@ namespace TomPIT.Design
 			}
 		}
 
-		public IVersionControl VersionControl
-		{
-			get
-			{
-				if (_versionControl == null)
-					_versionControl = new VersionControl(Tenant);
-
-				return _versionControl;
-			}
-		}
-
 		public void Initialize()
 		{
 			((Deployment)Deployment).Initialize();
+		}
+
+		private void InitializeConfiguration()
+		{
+			if (!Shell.Configuration.RootElement.TryGetProperty("designers", out JsonElement element))
+				return;
+
+			foreach (var item in element.EnumerateArray())
+				Designers.Add(item.GetString());
 		}
 	}
 }

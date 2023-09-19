@@ -1,143 +1,91 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
 using TomPIT.Deployment;
 using TomPIT.Design;
-using TomPIT.Middleware;
 using TomPIT.Security;
 
 namespace TomPIT.Management.ComponentModel
 {
-	internal class MicroServiceManagementService : TenantObject, IMicroServiceManagementService
-	{
-		public MicroServiceManagementService(ITenant tenant) : base(tenant)
-		{
-		}
+    internal class MicroServiceManagementService : TenantObject, IMicroServiceManagementService
+    {
+        public MicroServiceManagementService(ITenant tenant) : base(tenant)
+        {
+        }
 
-		public void Delete(Guid microService)
-		{
-			var components = Tenant.GetService<IDesignService>().Components.Query(microService);
+        public void Delete(Guid microService)
+        {
+            var components = Tenant.GetService<IDesignService>().Components.Query(microService);
 
-			foreach (var i in components)
-				Tenant.GetService<IDesignService>().Components.Delete(i.Token, true);
+            foreach (var i in components)
+                Tenant.GetService<IDesignService>().Components.Delete(i.Token, true);
 
-			var folders = FolderModel.Create(Tenant.GetService<IComponentService>().QueryFolders(microService));
+            var folders = FolderModel.Create(Tenant.GetService<IComponentService>().QueryFolders(microService));
 
-			foreach (var i in folders)
-				DeleteFolder(i);
+            foreach (var i in folders)
+                DeleteFolder(i);
 
-			var u = Tenant.CreateUrl("MicroServiceManagement", "Delete");
-			var args = new JObject {
-					 {"microService", microService }
-				};
+            Instance.SysProxy.Management.MicroServices.Delete(microService);
+            Instance.SysProxy.Storage.Clean(microService);
 
-			Tenant.Post(u, args);
+            if (Tenant.GetService<IMicroServiceService>() is IMicroServiceNotification svc)
+                svc.NotifyRemoved(this, new MicroServiceEventArgs(microService));
+        }
 
-			u = Tenant.CreateUrl("Storage", "Clean");
-			args = new JObject {
-					 {"microService", microService }
-				};
+        private void DeleteFolder(FolderModel model)
+        {
+            foreach (var i in model.Items)
+                DeleteFolder(i);
 
-			Tenant.Post(u, args);
+            Tenant.GetService<IDesignService>().Components.DeleteFolder(model.Folder.MicroService, model.Folder.Token, true);
+        }
 
-			if (Tenant.GetService<IMicroServiceService>() is IMicroServiceNotification svc)
-				svc.NotifyRemoved(this, new MicroServiceEventArgs(microService));
-		}
+        public void Insert(Guid token, string name, Guid resourceGroup, Guid template, MicroServiceStatus status, IPackage package, string version)
+        {
+            Instance.SysProxy.Management.MicroServices.Insert(token, name, resourceGroup, template, status, CreateMeta(token, package), version);
 
-		private void DeleteFolder(FolderModel model)
-		{
-			foreach (var i in model.Items)
-				DeleteFolder(i);
+            if (Tenant.GetService<IMicroServiceService>() is IMicroServiceNotification svc)
+                svc.NotifyChanged(this, new MicroServiceEventArgs(token));
+        }
 
-			Tenant.GetService<IDesignService>().Components.DeleteFolder(model.Folder.MicroService, model.Folder.Token, true);
-		}
+        private string CreateMeta(Guid microService, IPackage package)
+        {
+            var meta = new JObject
+                {
+                     {"microService", microService },
+                     {"created", DateTime.Today }
+                };
 
-		public void Insert(Guid token, string name, Guid resourceGroup, Guid template, MicroServiceStatus status, IPackage package, string version)
-		{
-			var u = Tenant.CreateUrl("MicroServiceManagement", "Insert");
-			var args = new JObject
-				{
-					 { "name",name },
-					 { "microService",token },
-					 {"status", status.ToString() },
-					 {"resourceGroup", resourceGroup },
-					 {"template", template },
-					 {"meta", CreateMeta(token, package) },
-					 {"version", version }
-				};
+            if (package != null)
+            {
+                meta.Add("author", package.MetaData.Account);
+                meta.Add("plan", package.MetaData.Plan);
+                meta.Add("service", package.MetaData.Service);
+            };
 
-			Tenant.Post(u, args);
+            return Tenant.GetService<ICryptographyService>().Encrypt(JsonConvert.SerializeObject(meta));
+        }
 
-			if (Tenant.GetService<IMicroServiceService>() is IMicroServiceNotification svc)
-				svc.NotifyChanged(this, new MicroServiceEventArgs(token));
-		}
+        public void Update(Guid microService, string name, MicroServiceStatus status, Guid template, Guid resourceGroup, Guid package, Guid plan, UpdateStatus updateStatus, CommitStatus commitStatus)
+        {
+            Instance.SysProxy.Management.MicroServices.Update(microService, name, resourceGroup, template, status, updateStatus, commitStatus, package, plan);
 
-		private string CreateMeta(Guid microService, IPackage package)
-		{
-			var meta = new JObject
-				{
-					 {"microService", microService },
-					 {"created", DateTime.Today }
-				};
+            if (Tenant.GetService<IMicroServiceService>() is IMicroServiceNotification svc)
+                svc.NotifyChanged(this, new MicroServiceEventArgs(microService));
+        }
 
-			if (package != null)
-			{
-				meta.Add("author", package.MetaData.Account);
-				meta.Add("plan", package.MetaData.Plan);
-				meta.Add("service", package.MetaData.Service);
-			};
+        public List<IMicroService> Query(Guid resourceGroup)
+        {
+            return Instance.SysProxy.Management.MicroServices.Query(resourceGroup).ToList();
+        }
 
-			return Tenant.GetService<ICryptographyService>().Encrypt(JsonConvert.SerializeObject(meta));
-		}
-
-		private string CreateMicroServiceMeta(Guid microService)
-		{
-			var u = Tenant.CreateUrl("MicroServiceManagement", "CreateMicroServiceMeta")
-				 .AddParameter("microService", microService);
-
-			return Tenant.Get<string>(u);
-		}
-
-		public void Update(Guid microService, string name, MicroServiceStatus status, Guid template, Guid resourceGroup, Guid package, Guid plan, UpdateStatus updateStatus, CommitStatus commitStatus)
-		{
-			var u = Tenant.CreateUrl("MicroServiceManagement", "Update");
-			var args = new JObject
-				{
-					 { "name",name },
-					 { "microService",microService },
-					 {"status", status.ToString() },
-					 {"template", template },
-					 {"resourceGroup", resourceGroup },
-					 {"package", package },
-					 {"plan", plan },
-					 {"updateStatus", updateStatus.ToString() },
-					 {"commitStatus", commitStatus.ToString() }
-				};
-
-			Tenant.Post(u, args);
-
-			if (Tenant.GetService<IMicroServiceService>() is IMicroServiceNotification svc)
-				svc.NotifyChanged(this, new MicroServiceEventArgs(microService));
-		}
-
-		public List<IMicroService> Query(Guid resourceGroup)
-		{
-			var u = Tenant.CreateUrl("MicroServiceManagement", "Query")
-				 .AddParameter("resourceGroup", resourceGroup);
-
-			return Tenant.Get<List<MicroService>>(u).ToList<IMicroService>();
-		}
-
-		public List<IMicroServiceString> QueryStrings(Guid microService)
-		{
-			var u = Tenant.CreateUrl("MicroServiceManagement", "QueryStrings")
-				 .AddParameter("microService", microService);
-
-			return Tenant.Get<List<MicroServiceString>>(u).ToList<IMicroServiceString>();
-		}
-	}
+        public List<IMicroServiceString> QueryStrings(Guid microService)
+        {
+            return new();
+        }
+    }
 }

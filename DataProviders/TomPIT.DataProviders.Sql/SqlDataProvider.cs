@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Microsoft.Data.SqlClient;
+using System;
 using System.Collections.Generic;
 using System.Data;
-using Microsoft.Data.SqlClient;
 using TomPIT.Data;
 using TomPIT.Data.DataProviders;
 using TomPIT.Data.DataProviders.Design;

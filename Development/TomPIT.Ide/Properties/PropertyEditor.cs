@@ -7,5 +7,7 @@ namespace TomPIT.Ide.Properties
 		public string Name { get; set; }
 
 		public string View { get; set; }
+
+		public bool Editable { get; set; }
 	}
 }

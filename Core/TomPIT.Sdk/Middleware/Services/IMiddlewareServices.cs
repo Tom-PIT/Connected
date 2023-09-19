@@ -1,6 +1,8 @@
-﻿namespace TomPIT.Middleware.Services
+﻿using System;
+
+namespace TomPIT.Middleware.Services
 {
-	public interface IMiddlewareServices
+	public interface IMiddlewareServices : IDisposable
 	{
 		IMiddlewareIoCService IoC { get; }
 		IMiddlewareAuthorizationService Authorization { get; }
@@ -18,5 +20,6 @@
 		IMiddlewareSearchService Search { get; }
 		IMiddlewareMembershipService Membership { get; }
 		IMiddlewareAnalyticsService Analytics { get; }
+		IMiddlewareWorkersService Workers { get; }
 	}
 }

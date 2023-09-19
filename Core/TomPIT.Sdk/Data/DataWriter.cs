@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Linq;
+using TomPIT.Data.Storage;
 using TomPIT.Middleware;
 
 namespace TomPIT.Data
 {
 	internal class DataWriter : DataCommand, IDataWriter
 	{
-		public DataWriter(IMiddlewareContext context) : base(context)
+		public DataWriter(IMiddlewareContext context, ITransactionContext transactions) : base(context)
 		{
+			Transactions = transactions;
 		}
-
+		private ITransactionContext Transactions { get; }
 		public int Execute()
 		{
 			try
@@ -21,6 +23,8 @@ namespace TomPIT.Data
 					Connection.Commit();
 
 				BindReturnValues();
+
+				SignalDirty();
 
 				return recordsAffected;
 			}
@@ -46,11 +50,12 @@ namespace TomPIT.Data
 					Connection.Commit();
 
 				BindReturnValues();
+				SignalDirty();
 
 				foreach (var parameter in Parameters)
 				{
 					if (parameter.Direction == System.Data.ParameterDirection.ReturnValue
-						&& Types.TryConvert(parameter.Value, out T r))
+						 && Types.TryConvert(parameter.Value, out T r))
 						return r;
 				}
 
@@ -94,6 +99,11 @@ namespace TomPIT.Data
 			parameter.Direction = System.Data.ParameterDirection.ReturnValue;
 
 			return parameter;
+		}
+
+		private void SignalDirty()
+		{
+			Transactions.IsDirty = true;
 		}
 	}
 }

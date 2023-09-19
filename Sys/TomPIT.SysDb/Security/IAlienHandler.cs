@@ -7,8 +7,8 @@ namespace TomPIT.SysDb.Security
 {
 	public interface IAlienHandler
 	{
-		void Insert(Guid token, string firstName, string lastName, string email, string mobile, string phone, ILanguage language, string timezone);
-		void Update(IAlien alien, string firstName, string lastName, string email, string mobile, string phone, ILanguage language, string timezone);
+		void Insert(Guid token, string firstName, string lastName, string email, string mobile, string phone, ILanguage language, string timezone, string resourceType, string resourcePrimaryKey);
+		void Update(IAlien alien, string firstName, string lastName, string email, string mobile, string phone, ILanguage language, string timezone, string resourceType, string resourcePrimaryKey);
 		void Delete(IAlien alien);
 
 		List<IAlien> Query();

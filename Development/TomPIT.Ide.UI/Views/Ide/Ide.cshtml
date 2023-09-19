@@ -25,16 +25,17 @@
     }
 
 
-    var path = "Assets/Libraries/monaco/vs";
+    var path = "Assets/Libraries/Monaco/vs";
 
     var ctx = Model as TomPIT.Middleware.IMiddlewareContext;
     if (ctx != null)
     {
-        path = ctx.Services.Routing.MapPath("~/Assets/Libraries/monaco/vs");
+        path = ctx.Services.Routing.MapPath("~/Assets/Libraries/Monaco/vs");
     }
 }
 
 @section head {
+        <partial name="~/Views/Shared/DevHeader.cshtml" />
     @{
         var templates = Model.Context.Tenant.GetService<IMicroServiceTemplateService>().Query();
 
@@ -75,19 +76,13 @@
 </environment>
 }
 
-<script src="~/Assets/Libraries/monaco/vs/loader.js"></script>
+<script src="~/Assets/Libraries/Monaco/vs/loader.js"></script>
 
 
 <div id="ide" class="h-100">
     @await Html.PartialAsync("~/Views/Ide/Console.cshtml", Model)
 </div>
 
-
-@section Scripts {
-    <script>
-        DevExpress.ui.setTemplateEngine("underscore");
-    </script>
-}
 
 <script>
     tompit.disableNavigation();
@@ -114,10 +109,12 @@
             textEditorState = sender;
             textEditor = instance;
             textEditorWidget = sender;
-
+            textEditor.layout();
+            textEditorState.registerForObservation(document.querySelector('#devDesignerSizeBox'));
             initTextEditor();
         }
     });
+
 
     $('#devExplorer').keyup(function (e) {
         if (e.which === 39) {
@@ -165,10 +162,11 @@
             data: {
                 'error': ide.options.designer.errorListState.error,
                 'warning': ide.options.designer.errorListState.warning,
-                'info': ide.options.designer.errorListState.info
+                'info': ide.options.designer.errorListState.info,
+                'loadMore': ide.options.designer.errorListState.loadMore
             },
             onComplete: function () {
-                setTimeout(refreshErrorList, 5000);
+                setTimeout(refreshErrorList, 10000);
             }
         });
     }

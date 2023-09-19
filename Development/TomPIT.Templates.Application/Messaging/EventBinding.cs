@@ -13,6 +13,7 @@ namespace TomPIT.MicroServices.Messaging
 	[Create(DesignUtils.EventBinding)]
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	[Syntax(SyntaxAttribute.CSharp)]
+	[ComponentCreatedHandler("TomPIT.MicroServices.Design.CreateHandlers.EventBinding, TomPIT.MicroServices.Design")]
 	[ClassRequired]
 	public class EventBinding : TextElement, IEventBinding
 	{

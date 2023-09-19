@@ -1,36 +1,45 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
-  <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-    <AssemblyVersion>2.2.418.1</AssemblyVersion>
-    <FileVersion>2.2.418.1</FileVersion>
-    <Version>2.2.418.1</Version>
-  </PropertyGroup>
-  <PropertyGroup>
-    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
-    <AssemblyName>TomPIT.MicroServices.Reporting.Design</AssemblyName>
-    <RootNamespace>TomPIT.MicroServices.Reporting.Design</RootNamespace>
-    <Authors>Tom PIT</Authors>
-    <Company>Tom PIT</Company>
-    <Product>Tom PIT.connected</Product>
-  </PropertyGroup>
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="5.0.4" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
-    <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
-    <ProjectReference Include="..\..\Development\TomPIT.Design\TomPIT.Design.csproj" />
-    <ProjectReference Include="..\..\Development\TomPIT.Development\TomPIT.Development.csproj" />
-    <ProjectReference Include="..\..\Development\TomPIT.Ide\TomPIT.Ide.csproj" />
-    <ProjectReference Include="..\..\Runtime\TomPIT.Extensions\TomPIT.Extensions.csproj" />
-    <ProjectReference Include="..\TomPIT.Reporting\TomPIT.Reporting.csproj" />
-  </ItemGroup>
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\Deploy\Plugins\TomPIT.MicroServices.Reporting.Design&quot;&#xD;&#xA;copy &quot;$(TargetDir)$(TargetName).Views.dll&quot; &quot;c:\Deploy\Plugins\TomPIT.MicroServices.Reporting.Design&quot;" />
-  </Target>
+	<PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework>
+		<AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    <AssemblyVersion>3.1.706.1</AssemblyVersion>
+    <FileVersion>3.1.706.1</FileVersion>
+    <Version>3.1.706.1</Version>
+	</PropertyGroup>
+	<PropertyGroup>
+		<GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+		<AssemblyName>TomPIT.MicroServices.Reporting.Design</AssemblyName>
+		<RootNamespace>TomPIT.MicroServices.Reporting.Design</RootNamespace>
+		<Authors>Tom PIT</Authors>
+		<Company>Tom PIT</Company>
+		<Product>Tom PIT.connected</Product>
+		<GenerateRuntimeConfigDevFile>true</GenerateRuntimeConfigDevFile>
+	</PropertyGroup>
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="SkiaSharp" Version="2.88.3" />
+		<PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.3" />
+		<PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="7.0.9" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
+		<ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
+		<ProjectReference Include="..\..\Development\TomPIT.Design\TomPIT.Design.csproj" />
+		<ProjectReference Include="..\..\Development\TomPIT.Development\TomPIT.Development.csproj" />
+		<ProjectReference Include="..\..\Development\TomPIT.Ide\TomPIT.Ide.csproj" />
+		<ProjectReference Include="..\..\Runtime\TomPIT.Extensions\TomPIT.Extensions.csproj" />
+		<ProjectReference Include="..\TomPIT.Reporting\TomPIT.Reporting.csproj" />
+	</ItemGroup>
+	<Target Name="PostBuildLnx" AfterTargets="PostBuildEvent" Condition="'$(OS)' != 'Windows_NT'">
+		<Exec Command="mkdir -p &quot;/src/plugins/&quot;" />
+		<Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/&quot;" />
+	</Target>
+	<Target Name="PostBuildWin" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT'">
+		<Exec Command="if not exist &quot;c:/src/plugins/&quot; mkdir &quot;c:/src/plugins/&quot;" />
+		<Exec Command="copy /y &quot;$(TargetPath)&quot; &quot;c:/src/plugins/&quot;" />
+		<Exec Command="copy /y &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;c:/src/plugins/&quot;" />
+	</Target>
 </Project>

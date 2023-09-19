@@ -11,16 +11,14 @@ namespace TomPIT.Reflection
 {
 	internal class DiscoveryService : TenantObject, IDiscoveryService
 	{
-		private IManifestDiscovery _manifests;
 		private IConfigurationDiscovery _configuration;
 		private IMicroServiceDiscovery _microServices;
 
-		public DiscoveryService (ITenant tenant) : base(tenant)
+		public DiscoveryService(ITenant tenant) : base(tenant)
 		{
 
 		}
 
-		public IManifestDiscovery Manifests => _manifests ??= new ManifestDiscovery(Tenant);
 		public IConfigurationDiscovery Configuration => _configuration ??= new ConfigurationDiscovery(Tenant);
 		public IMicroServiceDiscovery MicroServices => _microServices ??= new MicroServiceDiscovery(Tenant);
 
@@ -43,20 +41,6 @@ namespace TomPIT.Reflection
 		{
 			return MicroServices.References.Select(microService);
 		}
-
-		public IComponentManifest Manifest(Guid component)
-		{
-			return Manifests.Select(component);
-		}
-
-		public IComponentManifest Manifest(string microService, string category, string componentName)
-		{
-			return Manifests.Select(microService, category, componentName);
-		}
-
-		//public List<IComponentManifest> Manifests(Guid microService)
-		//{
-		//}
 
 		public List<IMicroService> FlattenReferences(Guid microService)
 		{

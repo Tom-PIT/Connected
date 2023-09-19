@@ -55,7 +55,7 @@ namespace TomPIT.IoC
 			{
 				_operation = value;
 
-				if (_operation != null)
+				if (_operation is not null)
 					ReflectionExtensions.SetPropertyValue(this, nameof(Context), _operation.Context);
 			}
 		}
@@ -67,7 +67,6 @@ namespace TomPIT.IoC
 
 		protected virtual void OnAuthorize()
 		{
-
 		}
 
 		public void Validate()
@@ -87,7 +86,6 @@ namespace TomPIT.IoC
 
 		protected virtual void OnCommit()
 		{
-
 		}
 
 		public void Rollback()
@@ -97,7 +95,6 @@ namespace TomPIT.IoC
 
 		protected virtual void OnRollback()
 		{
-
 		}
 	}
 
@@ -110,7 +107,6 @@ namespace TomPIT.IoC
 
 		protected virtual void OnInvoke(object e)
 		{
-
 		}
 	}
 
@@ -133,7 +129,7 @@ namespace TomPIT.IoC
 
 		protected virtual T OnInvoke(T e)
 		{
-			return default;
+			return e;
 		}
 	}
 }

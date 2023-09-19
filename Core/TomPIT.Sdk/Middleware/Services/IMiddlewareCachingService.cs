@@ -4,7 +4,7 @@ using TomPIT.Caching;
 
 namespace TomPIT.Middleware.Services
 {
-	public interface IMiddlewareCachingService
+	public interface IMiddlewareCachingService : IDisposable
 	{
 		bool Exists(string key);
 		bool IsEmpty(string key);

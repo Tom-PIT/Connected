@@ -6,6 +6,8 @@ using TomPIT.Cdn;
 using TomPIT.Sys.Model;
 using TomPIT.Sys.Model.Cdn;
 
+using Recipient = TomPIT.Sys.Model.Cdn.Recipient;
+
 namespace TomPIT.Sys.Controllers
 {
 	public class SubscriptionController : SysController
@@ -21,6 +23,18 @@ namespace TomPIT.Sys.Controllers
 			var primaryKey = body.Required<string>("primaryKey");
 
 			DataModel.Subscriptions.Enqueue(microService, handler, topic, primaryKey);
+		}
+
+		[HttpPost]
+		public void Delete()
+		{
+			var body = FromBody();
+
+			var handler = body.Required<Guid>("handler");
+			var primaryKey = body.Required<string>("primaryKey");
+			var topic = body.Optional("topic", string.Empty);
+			
+			DataModel.Subscriptions.Delete(handler, topic, primaryKey);
 		}
 
 		[HttpPost]
@@ -86,8 +100,9 @@ namespace TomPIT.Sys.Controllers
 			var subscription = body.Required<Guid>("subscription");
 			var type = body.Required<SubscriptionResourceType>("type");
 			var resourcePrimaryKey = body.Required<string>("resourcePrimaryKey");
+			var tags = body.Optional<List<string>>("tags", null);
 
-			return DataModel.Subscriptions.InsertSubscriber(subscription, type, resourcePrimaryKey);
+			return DataModel.Subscriptions.InsertSubscriber(subscription, type, resourcePrimaryKey, tags);
 		}
 
 		[HttpPost]
@@ -103,7 +118,8 @@ namespace TomPIT.Sys.Controllers
 				subscribers.Add(new Recipient
 				{
 					Type = recipient.Required<SubscriptionResourceType>("type"),
-					ResourcePrimaryKey = recipient.Required<string>("resourcePrimaryKey")
+					ResourcePrimaryKey = recipient.Required<string>("resourcePrimaryKey"),
+					Tags = recipient.Optional<List<string>>("tags", null)
 				});
 			}
 

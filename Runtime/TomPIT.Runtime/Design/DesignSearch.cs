@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
 using TomPIT.Connectivity;
-using TomPIT.Middleware;
 using TomPIT.Search;
 
 namespace TomPIT.Design
@@ -15,25 +13,25 @@ namespace TomPIT.Design
 
 		public void Delete(Guid component, Guid element)
 		{
-			var u = Tenant.CreateUrl("SearchDevelopment", "Delete");
-			var e = new JObject
-			{
-				{"component", component },
-				{"element", element }
-			};
+			//var u = Tenant.CreateUrl("SearchDevelopment", "Delete");
+			//var e = new JObject
+			//{
+			//	{"component", component },
+			//	{"element", element }
+			//};
 
-			Tenant.Post(u, e);
+			//Tenant.Post(u, e);
 		}
 
 		public void Delete(Guid component)
 		{
-			var u = Tenant.CreateUrl("SearchDevelopment", "Delete");
-			var e = new JObject
-			{
-				{"component", component }
-			};
+			//var u = Tenant.CreateUrl("SearchDevelopment", "Delete");
+			//var e = new JObject
+			//{
+			//	{"component", component }
+			//};
 
-			Tenant.Post(u, e);
+			//Tenant.Post(u, e);
 		}
 
 		public List<ISysSearchResult> Search(ISearchOptions options)

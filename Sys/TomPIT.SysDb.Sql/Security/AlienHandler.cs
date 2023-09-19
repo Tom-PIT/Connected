@@ -19,7 +19,7 @@ namespace TomPIT.SysDb.Sql.Security
 			w.Execute();
 		}
 
-		public void Insert(Guid token, string firstName, string lastName, string email, string mobile, string phone, ILanguage language, string timezone)
+		public void Insert(Guid token, string firstName, string lastName, string email, string mobile, string phone, ILanguage language, string timezone, string resourceType, string resourcePrimaryKey)
 		{
 			using var w = new Writer("tompit.alien_ins");
 
@@ -31,6 +31,8 @@ namespace TomPIT.SysDb.Sql.Security
 			w.CreateParameter("@phone", phone, true);
 			w.CreateParameter("@language", language == null ? 0 : language.GetId(), true);
 			w.CreateParameter("@timezone", timezone, true);
+			w.CreateParameter("@resource_type", resourceType, true);
+			w.CreateParameter("@resource_primary_key", resourcePrimaryKey, true);
 
 			w.Execute();
 		}
@@ -51,7 +53,7 @@ namespace TomPIT.SysDb.Sql.Security
 			return r.ExecuteSingleRow();
 		}
 
-		public void Update(IAlien alien, string firstName, string lastName, string email, string mobile, string phone, ILanguage language, string timezone)
+		public void Update(IAlien alien, string firstName, string lastName, string email, string mobile, string phone, ILanguage language, string timezone, string resourceType, string resourcePrimaryKey)
 		{
 			using var w = new Writer("tompit.alien_ud");
 
@@ -63,6 +65,8 @@ namespace TomPIT.SysDb.Sql.Security
 			w.CreateParameter("@phone", phone, true);
 			w.CreateParameter("@language", language == null ? 0 : language.GetId(), true);
 			w.CreateParameter("@timezone", timezone, true);
+			w.CreateParameter("@resource_type", resourceType, true);
+			w.CreateParameter("@resource_primary_key", resourcePrimaryKey, true);
 
 			w.Execute();
 		}

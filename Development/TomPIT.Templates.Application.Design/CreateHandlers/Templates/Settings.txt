@@ -1,0 +1,46 @@
+﻿#load "Common/Reflection"
+#load "Common/DatabaseSettings"
+
+using System;
+using System.Linq;
+using System.Collections.Generic;
+using TomPIT.Configuration;
+using TomPIT.Annotations;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel;
+using TomPIT.Security;
+using System.Runtime.CompilerServices;
+
+public class [NAME] : SettingsMiddleware
+{
+   public [NAME]()
+   {
+      NameSpace = "[NAME]";
+   }
+   
+   [LocalizedDisplay("Common/Configuration", "UseDefaultConnectionStringAttribute")]
+   [LocalizedDescription("Common/Configuration", "UseDefaultConnectionStringDescription")]
+   [LocalizedCategory("Common/Configuration", "ConnectivityConfigurationCategory")]
+   [DefaultValue(true)]
+   public bool UseDefaultConnectionString
+   {
+      get => Get<bool>();
+      set => Set(value);
+   }
+   
+   [ScriptPropertyEditor(PropertyEditor.TextArea)]
+   [LocalizedDisplay("Common/Configuration", "ConnectionStringAttribute")]
+   [LocalizedDescription("Common/Configuration", "ConnectionStringDescription")]
+   [LocalizedCategory("Common/Configuration", "ConnectivityConfigurationCategory")]
+   [MaxLength(1024)]
+   public string ConnectionString
+   {
+      get => UseDefaultConnectionString ? DefaultConnectionString : Get<string>();
+      set => Set(value);
+   }
+   
+   private string DefaultConnectionString => new DatabaseSettings().ConnectionString;
+
+   private T Get<T>([CallerMemberName] string propertyName = null) => base.GetValue<T>(propertyName);
+   private void Set<T>(T value, [CallerMemberName] string propertyName = null) => base.SetValue(propertyName, value);
+}

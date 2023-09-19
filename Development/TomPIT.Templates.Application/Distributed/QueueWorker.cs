@@ -11,6 +11,7 @@ namespace TomPIT.MicroServices.Distributed
 {
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	[Syntax(SyntaxAttribute.CSharp)]
+	[ComponentCreatedHandler("TomPIT.MicroServices.Design.CreateHandlers.QueueWorker, TomPIT.MicroServices.Design")]
 	[ClassRequired]
 	public class QueueWorker : TextElement, IQueueWorker
 	{

@@ -6,14 +6,10 @@ namespace TomPIT.SysDb.Printing
 {
 	public interface IPrintingHandler
 	{
-		void Insert(Guid token, DateTime created, Guid component, PrintJobStatus status, string provider, string arguments, string user, long serialNumber, string category);
-		IPrintJob Select(Guid token);
+		void Update(List<IPrintJob> items);
 		List<IPrintJob> QueryJobs();
 
-		void Delete(Guid token);
-		void Update(Guid token, PrintJobStatus status, string error);
-
-		void InsertSpooler(Guid token, DateTime created, string mime, string printer, string content);
+		void InsertSpooler(Guid token, DateTime created, string mime, string printer, string content, Guid identity, int copyCount = 1);
 		IPrintSpoolerJob SelectSpooler(Guid token);
 		void DeleteSpooler(IPrintSpoolerJob job);
 

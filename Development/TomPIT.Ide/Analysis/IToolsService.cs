@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using TomPIT.Analysis;
 
 namespace TomPIT.Ide.Analysis
 {
+	[Obsolete]
 	public interface IToolsService
 	{
 		void Register(IToolMiddleware middleware);

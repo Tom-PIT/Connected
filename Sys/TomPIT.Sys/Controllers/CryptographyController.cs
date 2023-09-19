@@ -12,7 +12,7 @@ namespace TomPIT.Sys.Controllers
 
 			var plainText = body.Required<string>("plainText");
 
-			return Shell.GetService<ICryptographyService>().Encrypt(this, plainText);
+			return Shell.GetService<ISysCryptographyService>().Encrypt(this, plainText);
 		}
 
 		[HttpPost]
@@ -22,7 +22,7 @@ namespace TomPIT.Sys.Controllers
 
 			var cipherText = body.Required<string>("cipherText");
 
-			return Shell.GetService<ICryptographyService>().Decrypt(this, cipherText);
+			return Shell.GetService<ISysCryptographyService>().Decrypt(this, cipherText);
 		}
 
 		[HttpPost]
@@ -32,7 +32,7 @@ namespace TomPIT.Sys.Controllers
 
 			var value = b.Required<string>("value");
 
-			return Shell.GetService<ICryptographyService>().Hash(value);
+			return Shell.GetService<ISysCryptographyService>().Hash(value);
 		}
 
 		[HttpPost]
@@ -43,7 +43,7 @@ namespace TomPIT.Sys.Controllers
 			var value = b.Required<string>("value");
 			var existing = b.Required<string>("existing");
 
-			return Shell.GetService<ICryptographyService>().VerifyHash(value, existing);
+			return Shell.GetService<ISysCryptographyService>().VerifyHash(value, existing);
 		}
 	}
 }

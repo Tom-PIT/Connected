@@ -1,10 +1,12 @@
-﻿using System;
-using System.Text;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Text;
+using TomPIT.Environment;
+using TomPIT.Middleware;
 using TomPIT.Models;
 using TomPIT.Runtime;
 using TomPIT.Security;
@@ -29,7 +31,7 @@ namespace TomPIT.Controllers
 			if (Request.Cookies.ContainsKey(key))
 				Response.Cookies.Delete(key);
 
-			if (Shell.GetService<IRuntimeService>().Type == Environment.InstanceType.Application)
+			if (Shell.GetService<IRuntimeService>().Features.HasFlag(InstanceFeatures.Application))
 				return new RedirectResult("~/login");
 
 			return View(LoginView, CreateModel(this));
@@ -180,18 +182,18 @@ namespace TomPIT.Controllers
 			var expiration = model.RememberMe ? DateTimeOffset.UtcNow.AddDays(30) : DateTimeOffset.UtcNow.AddMinutes(20);
 
 			var content = new JObject
-				{
-					 { "jwt",token },
-					 { "endpoint",model.Endpoint   },
-					 { "expiration",expiration.Ticks   }
-				};
+					 {
+							{ "jwt",token },
+							{ "endpoint",MiddlewareDescriptor.Current.Tenant.Url   },
+							{ "expiration",expiration.Ticks   }
+					 };
 
 			Response.Cookies.Append(key, Convert.ToBase64String(Encoding.UTF8.GetBytes(Serializer.Serialize(content))), new CookieOptions
 			{
 				HttpOnly = true,
 				Expires = expiration
 			}
-							);
+								 );
 		}
 	}
 }

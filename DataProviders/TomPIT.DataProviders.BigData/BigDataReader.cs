@@ -1,8 +1,9 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections;
 using System.Data.Common;
 using System.Linq;
-using Newtonsoft.Json.Linq;
+using TomPIT.Connectivity;
 using TomPIT.Diagnostics;
 using TomPIT.Environment;
 using TomPIT.Exceptions;
@@ -24,7 +25,7 @@ namespace TomPIT.DataProviders.BigData
 		private void GetData()
 		{
 			if (string.IsNullOrWhiteSpace(Command.Connection.DataSource))
-				throw new RuntimeException($"{SR.ErrNoServer} ({InstanceType.BigData}, {InstanceVerbs.Post})");
+				throw new RuntimeException($"{SR.ErrNoServer} ({InstanceFeatures.BigData}, {InstanceVerbs.Post})");
 
 			if (string.IsNullOrWhiteSpace(Command.CommandText))
 				throw new RuntimeException(nameof(BigDataCommand), SR.ErrCommandTextNull, LogCategories.BigData);
@@ -42,13 +43,20 @@ namespace TomPIT.DataProviders.BigData
 				});
 			};
 
-			_data = MiddlewareDescriptor.Current.Tenant.Post<JArray>(u, args);
+			HttpRequestArgs credentialArgs = null;
+
+			if (MiddlewareDescriptor.Current?.Identity?.IsAuthenticated ?? false)
+			{
+				credentialArgs = new HttpRequestArgs().WithCurrentCredentials(MiddlewareDescriptor.Current.User.AuthenticationToken);
+			}
+
+			_data = MiddlewareDescriptor.Current.Tenant.Post<JArray>(u, args, credentialArgs);
 		}
 		private BigDataCommand Command { get; }
 		private JObject Current => ReadIndex == -1 || ReadIndex > _data.Count ? null : _data[ReadIndex] as JObject;
 		public override object this[int ordinal] => ((JValue)Current.Properties().ElementAt(ordinal).Value).Value;
 		public override object this[string name] => ((JValue)Current.Property(name, StringComparison.OrdinalIgnoreCase).Value).Value;
-
+		private JObject First => _data is null || _data.Count == 0 ? null : _data[0] as JObject;
 		public override int Depth => 1;
 
 		public override int FieldCount
@@ -152,14 +160,17 @@ namespace TomPIT.DataProviders.BigData
 
 		public override string GetName(int ordinal)
 		{
-			return Current.Properties().ElementAt(ordinal).Name;
+			return First?.Properties().ElementAt(ordinal).Name;
 		}
 
 		public override int GetOrdinal(string name)
 		{
+			if (First is null)
+				return -1;
+
 			var index = 0;
 
-			foreach (JProperty property in Current.Properties())
+			foreach (JProperty property in First.Properties())
 			{
 				if (string.Compare(property.Name, name, true) == 0)
 					return index;

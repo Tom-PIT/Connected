@@ -22,7 +22,7 @@ namespace TomPIT.DataProviders.BigData
 				if (_dataSource == null)
 				{
 					if (string.IsNullOrWhiteSpace(ConnectionString) || string.Compare(ConnectionString, "local", true) == 0)
-						_dataSource = MiddlewareDescriptor.Current.Tenant.GetService<IInstanceEndpointService>().Url(InstanceType.BigData, InstanceVerbs.Post);
+						_dataSource = MiddlewareDescriptor.Current.Tenant.GetService<IInstanceEndpointService>().Url(InstanceFeatures.BigData, InstanceVerbs.Post);
 					else
 						_dataSource = ConnectionString;
 				}

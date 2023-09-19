@@ -1,9 +1,4 @@
-﻿using System;
-using System.Net;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -11,6 +6,12 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Net;
+using System.Reflection;
+using System.Runtime.ExceptionServices;
+using System.Text;
+using System.Threading.Tasks;
 using TomPIT.ComponentModel;
 using TomPIT.Diagnostics;
 using TomPIT.Environment;
@@ -55,21 +56,24 @@ namespace TomPIT.Exceptions
 			{
 				if (tp.InnerException is MiddlewareValidationException val)
 				{
-					var valType = Shell.GetService<IRuntimeService>().Type;
+					var valType = Shell.GetService<IRuntimeService>().Features;
 
-					val.LogWarning($"{LogCategories.Unhandled} - {valType}");
+					//Do not log badrequest errors
+					if (!valType.HasFlag(InstanceFeatures.Rest))
+						val.LogWarning($"{LogCategories.Unhandled} - {valType}");
+
 					return;
 
 				}
 
-				var type = Shell.GetService<IRuntimeService>().Type;
+				var type = Shell.GetService<IRuntimeService>().Features;
 
 				tp.LogError($"{LogCategories.Unhandled} - {type}");
 				return;
 			}
 			else if (ex is MiddlewareValidationException validation)
 			{
-				var type = Shell.GetService<IRuntimeService>().Type;
+				var type = Shell.GetService<IRuntimeService>().Features;
 
 				validation.LogWarning($"{LogCategories.Unhandled} - {type}");
 				return;
@@ -99,12 +103,12 @@ namespace TomPIT.Exceptions
 		{
 			await Task.CompletedTask;
 
-			throw ex;
+			ExceptionDispatchInfo.Throw(ex);
 		}
 
 		protected virtual async Task OnHandleException(HttpContext context, Exception ex)
 		{
-			if(context.Response.StatusCode == (int)HttpStatusCode.InternalServerError)
+			if (context.Response.StatusCode == (int)HttpStatusCode.InternalServerError)
 			{
 				await ErrorResult(context, ex);
 				return;
@@ -132,7 +136,7 @@ namespace TomPIT.Exceptions
 
 			var sb = new StringBuilder();
 			var tenant = MiddlewareDescriptor.Current.Tenant;
-			var devUrl = tenant.GetService<IInstanceEndpointService>().Url(InstanceType.Development, InstanceVerbs.All);
+			var devUrl = tenant.GetService<IInstanceEndpointService>().Url(InstanceFeatures.Development, InstanceVerbs.All);
 
 			if (ex is ScriptException script)
 			{
@@ -174,14 +178,16 @@ namespace TomPIT.Exceptions
 			sb.AppendLine(ex.Message);
 
 			if (Shell.GetService<IRuntimeService>().Stage != EnvironmentStage.Production)
+			{
 				sb.Append(ex.StackTrace);
 
-			r.ViewData.Add("exMessage", sb.ToString());
+				if (ex is TomPITException tp)
+					r.ViewData.Add("exDiagnosticTrace", tp.DiagnosticsTrace);
+				else if (ex is MiddlewareValidationException mw)
+					r.ViewData.Add("exDiagnosticTrace", mw.DiagnosticsTrace);
+			}
 
-			if (ex is TomPITException tp)
-				r.ViewData.Add("exDiagnosticTrace", tp.DiagnosticsTrace);
-			else if (ex is MiddlewareValidationException mw)
-				r.ViewData.Add("exDiagnosticTrace", mw.DiagnosticsTrace);
+			r.ViewData.Add("exMessage", sb.ToString());
 
 			var exec = context.RequestServices.GetRequiredService<IActionResultExecutor<ViewResult>>();
 			var desc = new ActionDescriptor

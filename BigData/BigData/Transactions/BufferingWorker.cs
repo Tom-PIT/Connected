@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using TomPIT.Distributed;
+using TomPIT.Environment;
 using TomPIT.Middleware;
-using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.BigData.Transactions
 {
@@ -22,8 +22,8 @@ namespace TomPIT.BigData.Transactions
 			if (Instance.State == InstanceState.Initializing)
 				return false;
 
-			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-				Dispatchers.Add(new BufferingDispatcher(i));
+			foreach (var i in MiddlewareDescriptor.Current.Tenant.GetService<IResourceGroupService>().QuerySupported())
+				Dispatchers.Add(new BufferingDispatcher(i.Name));
 
 			return true;
 		}

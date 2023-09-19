@@ -20,7 +20,7 @@ namespace TomPIT.Design
 		string Category { get; }
 		string Namespace { get; }
 		Guid RuntimeConfiguration { get; }
-		ComponentVerb Verb { get; }
+		ComponentVerb Verb { get; set; }
 
 		List<IPullRequestFile> Files { get; }
 	}

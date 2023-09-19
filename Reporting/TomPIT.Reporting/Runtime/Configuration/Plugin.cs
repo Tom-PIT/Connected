@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
+
 using DevExpress.AspNetCore;
 using DevExpress.AspNetCore.Reporting;
 using DevExpress.XtraReports.Expressions;
@@ -20,7 +22,10 @@ namespace TomPIT.MicroServices.Reporting.Runtime.Configuration
 	{
 		public void ConfigureServices(IServiceCollection services)
 		{
-			services.AddDevExpressControls();
+         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            DevExpress.Drawing.Internal.DXDrawingEngine.ForceSkia();
+         
+         services.AddDevExpressControls();
 
 			services.ConfigureReportingServices(configurator =>
 			{
@@ -47,7 +52,7 @@ namespace TomPIT.MicroServices.Reporting.Runtime.Configuration
 			return new List<string>
 			{
 				"TomPIT.MicroServices.Reporting",
-				"TomPIT.MicroServices.Reporting.Views"
+				//"TomPIT.MicroServices.Reporting.Views"
 			};
 		}
 

@@ -1,0 +1,27 @@
+﻿using System;
+using System.Linq;
+using System.Collections.Generic;
+using TomPIT.Management;
+
+public class [NAME] : ManagementMiddleware
+{
+   protected override List<IConfigurationDescriptor> OnCreateConfiguration()
+   {
+      return new List<IConfigurationDescriptor>
+      {
+         new ConfigurationTypeDescriptor
+         {           
+         }
+      };
+   }
+
+   protected override List<IAuthorizationPolicyDescriptor> OnCreateAuthorizationPolicies()
+   {
+      return new List<IAuthorizationPolicyDescriptor>
+      {
+         new AuthorizationPolicyDescriptor
+         {            
+         }
+      };
+   }
+}

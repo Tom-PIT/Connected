@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 using TomPIT.Annotations.Design;
 using TomPIT.Design;
 using TomPIT.Design.Ide;
@@ -58,7 +58,7 @@ namespace TomPIT.Management.Designers
 			var existing = Owner.Existing;
 			var name = Environment.Context.Tenant.GetService<INamingService>().Create("Endpoint", existing.Select(f => f.Name), true);
 
-			var id = Environment.Context.Tenant.GetService<IInstanceEndpointManagementService>().Insert(name, InstanceType.Application, string.Empty, string.Empty, InstanceStatus.Disabled, InstanceVerbs.All);
+			var id = Environment.Context.Tenant.GetService<IInstanceEndpointManagementService>().Insert(name, InstanceFeatures.Application, string.Empty, string.Empty, InstanceStatus.Disabled, InstanceVerbs.All);
 			var endpoint = Environment.Context.Tenant.GetService<IInstanceEndpointService>().Select(id);
 			var r = Result.SectionResult(this, EnvironmentSection.Designer | EnvironmentSection.Explorer);
 

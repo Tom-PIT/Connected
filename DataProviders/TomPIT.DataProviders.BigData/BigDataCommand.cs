@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Data;
 using System.Data.Common;
-using Newtonsoft.Json.Linq;
+using System.Threading;
 using TomPIT.Diagnostics;
 using TomPIT.Environment;
 using TomPIT.Exceptions;
@@ -64,7 +65,7 @@ namespace TomPIT.DataProviders.BigData
 		public override int ExecuteNonQuery()
 		{
 			if (string.IsNullOrWhiteSpace(Connection.DataSource))
-				throw new RuntimeException($"{SR.ErrNoServer} ({InstanceType.BigData}, {InstanceVerbs.Post})");
+				throw new RuntimeException($"{SR.ErrNoServer} ({InstanceFeatures.BigData}, {InstanceVerbs.Post})");
 
 			if (string.IsNullOrWhiteSpace(CommandText))
 				throw new RuntimeException(nameof(BigDataCommand), SR.ErrCommandTextNull, LogCategories.BigData);
@@ -80,6 +81,32 @@ namespace TomPIT.DataProviders.BigData
 		}
 
 		public void Commit()
+		{
+			var interval = 0;
+
+			for (var i = 0; i < 3; i++)
+			{
+				try
+				{
+					TryCommit();
+
+					break;
+				}
+				catch
+				{
+					if (i == 2)
+						throw;
+					else
+					{
+						interval = interval == 0 ? 1 : interval *= 3;
+
+						Thread.Sleep(interval);
+					}
+				}
+			}
+		}
+
+		private void TryCommit()
 		{
 			if (PostData.Count == 0)
 				return;

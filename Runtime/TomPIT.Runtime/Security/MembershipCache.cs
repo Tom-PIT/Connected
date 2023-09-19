@@ -2,7 +2,6 @@
 using System.Collections.Immutable;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
-using TomPIT.Middleware;
 
 namespace TomPIT.Security
 {
@@ -14,10 +13,10 @@ namespace TomPIT.Security
 
 		protected override void OnInitializing()
 		{
-			var ds = Tenant.Get<ImmutableList<Membership>>(CreateUrl("QueryMembership"));
+			var ds = Instance.SysProxy.Security.QueryMembership();
 
 			foreach (var i in ds)
-				Set(GenerateRandomKey(), i, TimeSpan.Zero);
+				Set(GenerateKey(i), i, TimeSpan.Zero);
 		}
 
 		public ImmutableList<IMembership> QueryForRole(Guid role)
@@ -36,14 +35,10 @@ namespace TomPIT.Security
 
 		public void Add(Guid user, Guid role)
 		{
-			var u = Tenant.CreateUrl("User", "SelectMembership")
-				.AddParameter("user", user)
-				.AddParameter("role", role);
+			var d = Instance.SysProxy.Users.SelectMembership(user, role);
 
-			var d = Tenant.Get<Membership>(u);
-
-			if (d != null)
-				Set(GenerateRandomKey(), d, TimeSpan.Zero);
+			if (d is not null)
+				Set(GenerateKey(d), d, TimeSpan.Zero);
 		}
 
 		public IMembership Select(Guid user, Guid role)
@@ -51,9 +46,9 @@ namespace TomPIT.Security
 			return Get(f => f.User == user && f.Role == role);
 		}
 
-		private ServerUrl CreateUrl(string action)
+		private static string GenerateKey(IMembership membership)
 		{
-			return Tenant.CreateUrl("Security", action);
+			return $"{membership.Role}{membership.User}";
 		}
 	}
 }

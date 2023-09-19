@@ -2,7 +2,6 @@
 using System.Collections.Immutable;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
-using TomPIT.Middleware;
 
 namespace TomPIT.Security
 {
@@ -15,7 +14,7 @@ namespace TomPIT.Security
 
 		protected override void OnInitializing()
 		{
-			var ds = Tenant.Get<ImmutableList<Role>>(CreateUrl("Query"));
+			var ds = Instance.SysProxy.Roles.Query();
 
 			Set(SecurityUtils.FullControlRole, new SystemRole(SecurityUtils.FullControlRole, "Full control", RoleBehavior.Explicit, RoleVisibility.Hidden), TimeSpan.Zero);
 			Set(SecurityUtils.AuthenticatedRole, new SystemRole(SecurityUtils.AuthenticatedRole, "Authenticated", RoleBehavior.Implicit, RoleVisibility.Hidden), TimeSpan.Zero);
@@ -44,23 +43,40 @@ namespace TomPIT.Security
 		{
 			Remove(e.Role);
 
-			var u = Tenant.CreateUrl("Role", "Select")
-				.AddParameter("token", e.Role);
+			var role = Instance.SysProxy.Roles.Select(e.Role);
 
-			var role = Tenant.Get<Role>(u);
-
-			if (role != null)
+			if (role is not null)
 				Set(role.Token, role, TimeSpan.Zero);
 		}
 
 		public IRole Select(string name)
 		{
-			return Get(f => string.Compare(f.Name, name, true) == 0);
+			return Get(f => string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase));
 		}
 
-		private ServerUrl CreateUrl(string action)
+		public void Delete(Guid token)
 		{
-			return Tenant.CreateUrl("Role", action);
+			Instance.SysProxy.Management.Roles.Delete(token);
+
+			if (Tenant.GetService<IRoleService>() is IRoleNotification n)
+				n.NotifyChanged(this, new RoleEventArgs(token));
+		}
+
+		public Guid Insert(string name)
+		{
+			var id = Instance.SysProxy.Management.Roles.Insert(name);
+
+			if (Tenant.GetService<IRoleService>() is IRoleNotification n)
+				n.NotifyChanged(this, new RoleEventArgs(id));
+
+			return id;
+		}
+		public void Update(Guid token, string name)
+		{
+			Instance.SysProxy.Management.Roles.Update(token, name);
+
+			if (Tenant.GetService<IRoleService>() is IRoleNotification n)
+				n.NotifyChanged(this, new RoleEventArgs(token));
 		}
 	}
 }

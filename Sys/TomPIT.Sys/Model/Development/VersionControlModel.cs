@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using TomPIT.ComponentModel;
 using TomPIT.Development;
 using TomPIT.Exceptions;
+using TomPIT.Security;
 using TomPIT.Sys.Api.Database;
 using TomPIT.Sys.Model.Data;
 
 namespace TomPIT.Sys.Model.Development
 {
-	internal class VersionControlModel
+	public class VersionControlModel
 	{
 		public void DeleteCommit(Guid token)
 		{
@@ -91,7 +93,7 @@ namespace TomPIT.Sys.Model.Development
 			var c = DataModel.Components.Select(component);
 
 			if (c == null)
-				throw new RuntimeException(SR.ErrComponentNotFound);
+				return;
 
 			c.DemandDevelopmentStage();
 
@@ -195,15 +197,24 @@ namespace TomPIT.Sys.Model.Development
 
 		public List<ICommit> QueryCommits(Guid microService, Guid user)
 		{
-			var ms = DataModel.MicroServices.Select(microService);
+			IMicroService ms = null;
+			IUser u = null;
 
-			if (ms == null)
-				throw new SysException(SR.ErrMicroServiceNotFound);
+			if (microService != Guid.Empty)
+			{
+				ms = DataModel.MicroServices.Select(microService);
 
-			var u = DataModel.Users.Select(user);
+				if (ms == null)
+					throw new SysException(SR.ErrMicroServiceNotFound);
+			}
 
-			if (u == null)
-				throw new SysException(SR.ErrUserNotFound);
+			if (user != Guid.Empty)
+			{
+				u = DataModel.Users.Select(user);
+
+				if (u == null)
+					throw new SysException(SR.ErrUserNotFound);
+			}
 
 			return Shell.GetService<IDatabaseService>().Proxy.Development.VersionControl.QueryCommits(ms, u);
 		}

@@ -4,21 +4,21 @@ namespace TomPIT.Middleware.Interop
 {
 	public interface IOperation<TReturnValue> : IMiddlewareOperation
 	{
-		TReturnValue Invoke(IMiddlewareContext context);
+		TReturnValue? Invoke(IMiddlewareContext? context);
 
-		T Invoke<T>(IMiddlewareContext context);
+		T? Invoke<T>(IMiddlewareContext? context);
 
-		TReturnValue Invoke();
+		TReturnValue? Invoke();
 
-		T Invoke<T>();
+		T? Invoke<T>();
 
 		[CIP(CIP.ExtenderProvider)]
-		string Extender { get; set; }
+		string? Extender { get; set; }
 	}
 
 	public interface IOperation : IMiddlewareOperation
 	{
 		void Invoke();
-		void Invoke(IMiddlewareContext context);
+		void Invoke(IMiddlewareContext? context);
 	}
 }

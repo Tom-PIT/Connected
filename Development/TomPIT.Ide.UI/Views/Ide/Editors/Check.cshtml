@@ -15,6 +15,7 @@
 <script>
         $('[name="@Model.Name"]').dxCheckBox({
         value: @val,
+        disabled: @Html.TP().JavaScript.Render(Model.IsReadOnly),
         onValueChanged: function (e) {
             ide.saveProperty({
                 data: {

@@ -1,25 +1,32 @@
 ﻿@using TomPIT.Navigation;
+@using System.Linq;
+@using System.Collections.Generic;
 
 @{
-    ViewBag.Title = "";
-    
-    Model.Navigation.Breadcrumbs.FromBreadcrumbs(Model, "");
-    Model.Navigation.Menu.FromSiteMap(Model, "");
+   ViewBag.Title = "";
+   
+   Model.Navigation.Breadcrumbs.FromBreadcrumbs(Model, "");
+   Model.Navigation.Menu.FromSiteMap(Model, "");
 }
 
 <tp-view>
-    <div class="container">
-        <div class="row">
-            <div class="col">
-            </div>
-        </div>
-    </div>
+   <div class="container-fluid">
+      <div class="row">
+         <div class="col">
+         </div>
+      </div>
+   </div>
 </tp-view>
 
 <script type="module">
-    import {[NAME]} from '@Html.TP().JavaScript.BundlePath("[MICROSERVICE]/[NAME]")';
+   import {[NAME]} from '@Html.TP().JavaScript.BundlePath("[MICROSERVICE]/[NAME]")';
 
-    new [NAME]({
-
-    });
+   new [NAME]({
+      data: {
+      },
+      dataSources: {
+      },
+      localization: {
+      }
+   });
 </script>

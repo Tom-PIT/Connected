@@ -26,7 +26,7 @@ namespace TomPIT.Sys.Model.Environment
 				Set(i.Token, i, TimeSpan.Zero);
 
 				if (i.Status == InstanceStatus.Enabled)
-					Register(i.Type, i.Verbs, i.Token);
+					Register(i.Features, i.Verbs, i.Token);
 			}
 		}
 
@@ -45,7 +45,7 @@ namespace TomPIT.Sys.Model.Environment
 			Set(id, r, TimeSpan.Zero);
 
 			if (r.Status == InstanceStatus.Enabled)
-				Register(r.Type, r.Verbs, r.Token);
+				Register(r.Features, r.Verbs, r.Token);
 		}
 
 		public ImmutableList<IInstanceEndpoint> Query()
@@ -63,15 +63,15 @@ namespace TomPIT.Sys.Model.Environment
 					var r = Shell.GetService<IDatabaseService>().Proxy.Environment.SelectInstanceEndpoint(token);
 
 					if (r != null && r.Status == InstanceStatus.Enabled)
-						Register(r.Type, r.Verbs, r.Token);
+						Register(r.Features, r.Verbs, r.Token);
 
 					return r;
 				});
 		}
 
-		public string Url(InstanceType type, InstanceVerbs verb)
+		public string Url(InstanceFeatures features, InstanceVerbs verb)
 		{
-			var r = Next(type, verb);
+			var r = Next(features, verb);
 
 			if (r == null)
 				return null;
@@ -79,21 +79,27 @@ namespace TomPIT.Sys.Model.Environment
 			return r.Url;
 		}
 
-		private void Register(InstanceType type, InstanceVerbs verbs, Guid endpoint)
+		private void Register(InstanceFeatures features, InstanceVerbs verbs, Guid endpoint)
 		{
-			if ((InstanceVerbs.Get & verbs) == InstanceVerbs.Get)
-				Register(CreateRobinKey(type, InstanceVerbs.Get), endpoint);
+			foreach (InstanceFeatures value in Enum.GetValues(typeof(InstanceFeatures)))
+			{
+				if (value != InstanceFeatures.Unknown && !features.HasFlag(value))
+					continue;
 
-			if ((InstanceVerbs.Post & verbs) == InstanceVerbs.Post)
-				Register(CreateRobinKey(type, InstanceVerbs.Post), endpoint);
+				if ((InstanceVerbs.Get & verbs) == InstanceVerbs.Get)
+					Register(CreateRobinKey(value, InstanceVerbs.Get), endpoint);
 
-			if (verbs == InstanceVerbs.All)
-				Register(CreateRobinKey(type, InstanceVerbs.All), endpoint);
+				if ((InstanceVerbs.Post & verbs) == InstanceVerbs.Post)
+					Register(CreateRobinKey(value, InstanceVerbs.Post), endpoint);
+
+				if (verbs == InstanceVerbs.All)
+					Register(CreateRobinKey(value, InstanceVerbs.All), endpoint);
+			}
 		}
 
 		private void Register(string key, Guid endpoint)
 		{
-			RoundRobin robin = null;
+			RoundRobin robin;
 
 			if (_rr.ContainsKey(key))
 				robin = _rr[key];
@@ -113,14 +119,14 @@ namespace TomPIT.Sys.Model.Environment
 				_rr[i].Remove(endpoint);
 		}
 
-		private string CreateRobinKey(InstanceType type, InstanceVerbs verbs)
+		private static string CreateRobinKey(InstanceFeatures features, InstanceVerbs verbs)
 		{
-			return string.Format("{0}.{1}", type, verbs);
+			return $"{features}.{verbs}";
 		}
 
-		public IInstanceEndpoint Next(InstanceType type, InstanceVerbs verb)
+		public IInstanceEndpoint Next(InstanceFeatures features, InstanceVerbs verb)
 		{
-			var key = CreateRobinKey(type, verb);
+			var key = CreateRobinKey(features, verb);
 
 			if (!_rr.ContainsKey(key))
 				return null;
@@ -133,11 +139,11 @@ namespace TomPIT.Sys.Model.Environment
 			return Get(id);
 		}
 
-		public Guid Insert(InstanceType type, string name, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs)
+		public Guid Insert(InstanceFeatures features, string name, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs)
 		{
 			var token = Guid.NewGuid();
 
-			Shell.GetService<IDatabaseService>().Proxy.Environment.InsertInstanceEndpoint(token, type, name, url, reverseProxyUrl, status, verbs);
+			Shell.GetService<IDatabaseService>().Proxy.Environment.InsertInstanceEndpoint(token, features, name, url, reverseProxyUrl, status, verbs);
 
 			Refresh(token);
 
@@ -146,14 +152,14 @@ namespace TomPIT.Sys.Model.Environment
 			return token;
 		}
 
-		public void Update(Guid token, InstanceType type, string name, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs)
+		public void Update(Guid token, InstanceFeatures features, string name, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs)
 		{
 			var target = GetByToken(token);
 
 			if (target == null)
 				throw new SysException(SR.ErrInstanceEndpointNotFound);
 
-			Shell.GetService<IDatabaseService>().Proxy.Environment.UpdateInstanceEndpoint(target, type, name, url, reverseProxyUrl, status, verbs);
+			Shell.GetService<IDatabaseService>().Proxy.Environment.UpdateInstanceEndpoint(target, features, name, url, reverseProxyUrl, status, verbs);
 
 			Refresh(token);
 

@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using Newtonsoft.Json;
 using TomPIT.Annotations;
 using TomPIT.Data;
 using TomPIT.Exceptions;
@@ -11,7 +11,7 @@ namespace TomPIT.Middleware
 {
 	public abstract class MiddlewareComponent : MiddlewareObject, IMiddlewareComponent
 	{
-		private MiddlewareValidator _validator = null;
+		private MiddlewareValidator? _validator = null;
 		protected MiddlewareComponent()
 		{
 
@@ -26,15 +26,16 @@ namespace TomPIT.Middleware
 
 		}
 
-		protected virtual List<object> OnProvideUniqueValues(string propertyName)
+		protected virtual List<object>? OnProvideUniqueValues(string propertyName)
 		{
-			return null;
+			return default;
 		}
 
 		bool IUniqueValueProvider.IsUnique(IMiddlewareContext context, string propertyName)
 		{
 			return IsValueUnique(propertyName);
 		}
+
 		[EditorBrowsable(EditorBrowsableState.Advanced)]
 		protected virtual bool IsValueUnique(string propertyName)
 		{
@@ -43,12 +44,12 @@ namespace TomPIT.Middleware
 
 		public void Validate()
 		{
-			Validator.Validate();
+			AsyncUtils.RunSync(Validator.Validate);
 		}
 
 		protected void Validate(object instance)
 		{
-			Validator.Validate(instance, false);
+			AsyncUtils.RunSync(() => Validator.Validate(instance, false));
 		}
 
 		[SkipValidation]
@@ -57,7 +58,7 @@ namespace TomPIT.Middleware
 		{
 			get
 			{
-				if (_validator == null)
+				if (_validator is null)
 				{
 					_validator = new MiddlewareValidator(this);
 
@@ -74,7 +75,7 @@ namespace TomPIT.Middleware
 			{
 				OnValidate(results);
 			}
-			catch(Exception ex)
+			catch (Exception ex)
 			{
 				throw TomPITException.Unwrap(this, ex);
 			}
@@ -82,12 +83,13 @@ namespace TomPIT.Middleware
 
 		protected override void OnDisposing()
 		{
-			if (_validator != null)
+			if (_validator is not null)
 			{
 				_validator.Validating -= OnValidating;
 				_validator.Dispose();
 				_validator = null;
 			}
+
 			base.OnDisposing();
 		}
 	}

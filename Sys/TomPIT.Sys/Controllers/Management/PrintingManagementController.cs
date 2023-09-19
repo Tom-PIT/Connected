@@ -10,7 +10,7 @@ namespace TomPIT.Sys.Controllers.Management
 	public class PrintingManagementController : SysController
 	{
 		[HttpPost]
-		public ImmutableList<IQueueMessage> Dequeue()
+		public ImmutableList<IPrintQueueMessage> Dequeue()
 		{
 			var body = FromBody();
 
@@ -88,9 +88,11 @@ namespace TomPIT.Sys.Controllers.Management
 			var content = body.Required<string>("content");
 			var printer = body.Required<string>("printer");
 			var mime = body.Required<string>("mime");
+			var identity = body.Optional<Guid>("identity", default);
 			var serialNumber = body.Optional("serialNumber", 0L);
+			var copyCount = body.Optional("copyCount", 1);
 
-			return DataModel.PrintingSpooler.Insert(mime, printer, content, serialNumber);
+			return DataModel.PrintingSpooler.Insert(mime, printer, content, serialNumber, identity, copyCount);
 		}
 
 		[HttpPost]

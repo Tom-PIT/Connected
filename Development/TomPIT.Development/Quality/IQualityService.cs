@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace TomPIT.Development.Quality
 {
+	[Obsolete]
 	public interface IQualityService
 	{
 		List<IApiTest> Query();

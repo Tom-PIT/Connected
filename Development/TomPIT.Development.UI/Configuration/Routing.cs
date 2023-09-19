@@ -1,6 +1,6 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
+using System.Threading.Tasks;
 using TomPIT.Development.Routing;
 using TomPIT.Routing;
 
@@ -10,7 +10,7 @@ namespace TomPIT.Development.Configuration
 	{
 		public static void Register(IEndpointRouteBuilder routes)
 		{
-			routes.MapControllerRoute("home", "", new { controller = "Home", action = "Index" });
+			routes.MapControllerRoute("sys.dev", "sys/dev", new { controller = "DevHome", action = "Index" });
 			routes.MapControllerRoute("home.tool", "sys/tool/{tool}", new { controller = "Home", action = "Tool" });
 			routes.MapControllerRoute("home.runtool", "sys/run-tool/{tool}", new { controller = "Home", action = "Action" });
 			routes.MapControllerRoute("home.data", "sys/get-data/{tool}", new { controller = "Home", action = "Data" });
@@ -23,6 +23,7 @@ namespace TomPIT.Development.Configuration
 			routes.MapControllerRoute("sys.apitest.body", "sys/apitest/selectbody", new { controller = "ApiTest", action = "SelectBody" });
 			routes.MapControllerRoute("sys.apitest.delete", "sys/apitest/delete", new { controller = "ApiTest", action = "Delete" });
 			routes.MapControllerRoute("sys.apitest.provideitems", "sys/apitest/provideitems", new { controller = "ApiTest", action = "ProvideItems" });
+			routes.MapControllerRoute("sys.apitest.selectDefaultOperationBody", "sys/apitest/selectdefaultoperationbody", new { controller = "ApiTest", action = "SelectDefaultOperationBody" });
 			routes.MapControllerRoute("sys.selectuserstate", "sys/select-user-state", new { controller = "Ide", action = "SelectUserState" });
 			routes.MapControllerRoute("sys.updateuserstate", "sys/update-user-state", new { controller = "Ide", action = "UpdateUserState" });
 
@@ -33,12 +34,12 @@ namespace TomPIT.Development.Configuration
 				return Task.CompletedTask;
 			});
 
-			routes.Map("sys/media/{id}/{version}", (t) =>
-			{
-				new MediaHandler().ProcessRequest(t);
+			//routes.Map("sys/media/{id}/{version}", (t) =>
+			//{
+			//	new MediaHandler().ProcessRequest(t);
 
-				return Task.CompletedTask;
-			});
+			//	return Task.CompletedTask;
+			//});
 		}
 	}
 }

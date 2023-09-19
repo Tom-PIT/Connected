@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using TomPIT.BigData;
 using TomPIT.Caching;
 using TomPIT.Sys.Api.Database;
+using TomPIT.Sys.Caching;
 
 namespace TomPIT.Sys.Model.BigData
 {
-	internal class PartitionBufferingModel : SynchronizedRepository<IPartitionBuffer, Guid>
+	public class PartitionBufferingModel : IdentityRepository<PartitionBuffer, Guid>
 	{
-		private object _sync = new object();
+		private readonly object _sync = new object();
 		public PartitionBufferingModel(IMemoryCache container) : base(container, "bigdatabuffers")
 		{
 		}
@@ -18,25 +21,34 @@ namespace TomPIT.Sys.Model.BigData
 			var ds = Shell.GetService<IDatabaseService>().Proxy.BigData.Buffer.Query();
 
 			foreach (var i in ds)
-				Set(i.Partition, i, TimeSpan.Zero);
+			{
+				if (i.Id > Identity)
+					Seed(i.Id);
+
+				Set(i.Partition, new PartitionBuffer(i), TimeSpan.Zero);
+			}
 		}
 
-		protected override void OnInvalidate(Guid id)
+		public List<PartitionBuffer> Dequeue(int count, TimeSpan nextVisible)
 		{
-			var r = Shell.GetService<IDatabaseService>().Proxy.BigData.Buffer.Select(id);
+			var result = new List<PartitionBuffer>();
 
-			if (r == null)
+			foreach (var item in All().OrderBy(f => f.NextVisible))
 			{
-				Remove(id);
-				return;
+				if (item.NextVisible > DateTime.UtcNow)
+					continue;
+
+				item.NextVisible = DateTime.UtcNow.Add(nextVisible);
+
+				result.Add(item);
+
+				Dirty();
+
+				if (result.Count >= count)
+					break;
 			}
 
-			Set(id, r, TimeSpan.Zero);
-		}
-
-		public List<IPartitionBuffer> Dequeue(int count, TimeSpan nextVisible)
-		{
-			return Shell.GetService<IDatabaseService>().Proxy.BigData.Buffer.Dequeue(count, DateTime.UtcNow, DateTime.UtcNow.Add(nextVisible));
+			return result;
 		}
 
 		public void Enqueue(Guid partition, TimeSpan duration, byte[] data)
@@ -44,38 +56,48 @@ namespace TomPIT.Sys.Model.BigData
 			if (data == null || data.Length == 0)
 				return;
 
-			var p = Select(partition);
-
-			if (p == null)
+			if (Select(partition) is not IPartitionBuffer buffer)
 			{
 				lock (_sync)
 				{
-					p = Select(partition);
-
-					if (p == null)
+					if (Select(partition) is not IPartitionBuffer innerBuffer)
 					{
 						Insert(partition, DateTime.UtcNow.Add(duration));
-						p = Select(partition);
+						buffer = Select(partition);
 					}
+					else
+						buffer = innerBuffer;
 				}
 			}
 
-			Shell.GetService<IDatabaseService>().Proxy.BigData.Buffer.InsertData(p, data);
+			Shell.GetService<IDatabaseService>().Proxy.BigData.Buffer.InsertData(buffer, data);
 		}
 		private void Insert(Guid partition, DateTime nextVisible)
 		{
-			Shell.GetService<IDatabaseService>().Proxy.BigData.Buffer.Insert(partition, nextVisible);
-			Refresh(partition);
+			var buffer = new PartitionBuffer
+			{
+				Id = Convert.ToInt32(Increment()),
+				NextVisible = nextVisible,
+				Partition = partition
+			};
+
+			Set(buffer.Partition, buffer, TimeSpan.Zero);
+
+			Dirty();
+			/*
+			 * We need to flush it immediatelly because 
+			 * data is waiting for the inserted parent record
+			 */
+			OnFlushing().Wait();
 		}
 		public void Update(Guid partition, TimeSpan nextVisible)
 		{
-			var p = Select(partition);
-
-			if (p == null)
+			if (Select(partition) is not PartitionBuffer buffer)
 				return;
 
-			Shell.GetService<IDatabaseService>().Proxy.BigData.Buffer.Update(p, DateTime.UtcNow.Add(nextVisible));
-			Refresh(partition);
+			buffer.NextVisible = DateTime.UtcNow.Add(nextVisible);
+
+			Dirty();
 		}
 		private IPartitionBuffer Select(Guid partition)
 		{
@@ -84,12 +106,10 @@ namespace TomPIT.Sys.Model.BigData
 
 		public List<IPartitionBufferData> QueryData(Guid partition)
 		{
-			var p = Select(partition);
-
-			if (p == null)
+			if (Select(partition) is not IPartitionBuffer buffer)
 				return null;
 
-			return Shell.GetService<IDatabaseService>().Proxy.BigData.Buffer.QueryData(p);
+			return Shell.GetService<IDatabaseService>().Proxy.BigData.Buffer.QueryData(buffer);
 		}
 
 		public void Clear(Guid partition, TimeSpan nextVisible, long id)
@@ -100,6 +120,13 @@ namespace TomPIT.Sys.Model.BigData
 				Shell.GetService<IDatabaseService>().Proxy.BigData.Buffer.Clear(p, id);
 
 			Update(partition, nextVisible);
+		}
+
+		protected override async Task OnFlushing()
+		{
+			Shell.GetService<IDatabaseService>().Proxy.BigData.Buffer.Update(All().ToList<IPartitionBuffer>());
+
+			await Task.CompletedTask;
 		}
 	}
 }

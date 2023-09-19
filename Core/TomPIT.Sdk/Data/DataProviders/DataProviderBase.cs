@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
+using System.Threading;
 using TomPIT.Middleware;
 
 namespace TomPIT.Data.DataProviders
@@ -9,6 +10,7 @@ namespace TomPIT.Data.DataProviders
 	public abstract class DataProviderBase<T> : IDataProvider where T : class, IDataConnection
 	{
 		private object _sync = new object();
+		private SemaphoreSlim _semaphore;
 		private ConcurrentDictionary<IDataCommandDescriptor, IDbCommand> _commands = null;
 
 		public Guid Id { get; }
@@ -16,6 +18,8 @@ namespace TomPIT.Data.DataProviders
 
 		protected DataProviderBase(string name, Guid id)
 		{
+			_semaphore = new(1);
+
 			Id = id;
 			Name = name;
 		}
@@ -50,7 +54,7 @@ namespace TomPIT.Data.DataProviders
 			foreach (var i in command.Parameters)
 				SetParameterValue(connection, com, i.Name, i.Value);
 
-			var recordsAffected = Execute(command, com);
+			var recordsAffected = Execute(command, com, (context as MiddlewareContext)?.CancellationToken);
 
 			foreach (var i in command.Parameters)
 			{
@@ -66,7 +70,7 @@ namespace TomPIT.Data.DataProviders
 
 		}
 
-		protected virtual object GetParameterValue(IDbCommand command, string parameterName)
+		protected virtual object? GetParameterValue(IDbCommand command, string parameterName)
 		{
 			return null;
 		}
@@ -75,7 +79,7 @@ namespace TomPIT.Data.DataProviders
 		{
 		}
 
-		protected virtual int Execute(IDataCommandDescriptor command, IDbCommand cmd)
+		protected virtual int Execute(IDataCommandDescriptor command, IDbCommand cmd, CancellationToken? cancellationToken = null)
 		{
 			return cmd.ExecuteNonQuery();
 		}
@@ -116,12 +120,17 @@ namespace TomPIT.Data.DataProviders
 			}
 			finally
 			{
-				if (rdr != null && !rdr.IsClosed)
-					rdr.Close();
+				if (rdr is not null && !rdr.IsClosed)
+					CloseReader(rdr);
 			}
 		}
 
-		public virtual R Select<R>(IMiddlewareContext context, IDataCommandDescriptor command, IDataConnection connection)
+		protected virtual void CloseReader(IDataReader reader)
+		{
+			reader.Close();
+		}
+
+		public virtual R? Select<R>(IMiddlewareContext context, IDataCommandDescriptor command, IDataConnection connection)
 		{
 			EnsureOpen(connection);
 
@@ -146,8 +155,8 @@ namespace TomPIT.Data.DataProviders
 			}
 			finally
 			{
-				if (rdr != null && !rdr.IsClosed)
-					rdr.Close();
+				if (rdr is not null && !rdr.IsClosed)
+					CloseReader(rdr);
 			}
 		}
 
@@ -184,15 +193,27 @@ namespace TomPIT.Data.DataProviders
 			}
 		}
 
-		private static void EnsureOpen(IDataConnection connection)
+		private void EnsureOpen(IDataConnection connection)
 		{
-			if (connection == null)
+			if (connection is null)
 				return;
 
 			if (connection.State == ConnectionState.Open)
 				return;
 
-			connection.Open();
+			_semaphore.WaitAsync();
+
+			try
+			{
+				if (connection.State == ConnectionState.Open)
+					return;
+
+				connection.Open();
+			}
+			finally
+			{
+				_semaphore.Release();
+			}
 		}
 
 		protected virtual void Dispose(bool disposing)
@@ -203,6 +224,8 @@ namespace TomPIT.Data.DataProviders
 					command.Value.Dispose();
 
 				Commands.Clear();
+
+				_semaphore?.Dispose();
 			}
 		}
 

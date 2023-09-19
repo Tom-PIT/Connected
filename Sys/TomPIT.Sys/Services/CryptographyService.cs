@@ -6,7 +6,7 @@ using TomPIT.Security;
 
 namespace TomPIT.Sys.Services
 {
-	internal class CryptographyService : ICryptographyService
+	internal class CryptographyService : ISysCryptographyService
 	{
 		private const string PassPhrase = "p7sfecd2t9l09mn9030j3ekl9i4rt6gt";
 		private const string SaltValue = "l0stwqhjbf53ipss776189007sbgtww2";
@@ -99,18 +99,11 @@ namespace TomPIT.Sys.Services
 
 			var decryptor = symmetricKey.CreateDecryptor(keyBytes, initVectorBytes);
 
-			using (var ms = new MemoryStream(cipherTextBytes))
-			{
-				using (var cryptoStream = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
-				{
-					var plainTextBytes = new byte[cipherTextBytes.Length];
-					var decryptedByteCount = cryptoStream.Read(plainTextBytes, 0, plainTextBytes.Length);
-					var plainText = Encoding.UTF8.GetString(plainTextBytes, 0, decryptedByteCount);
-
-					return plainText;
-				}
-			}
-		}
+         using var ms = new MemoryStream(cipherTextBytes);
+         using var cryptoStream = new CryptoStream(ms, decryptor, CryptoStreamMode.Read);
+         
+			return new StreamReader(cryptoStream).ReadToEnd();
+      }
 
 		public string Hash(string value)
 		{

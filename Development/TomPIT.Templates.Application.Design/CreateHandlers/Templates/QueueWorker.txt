@@ -1,0 +1,22 @@
+﻿using System;
+using System.Linq;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using TomPIT.Annotations;
+using TomPIT.Distributed;
+using TomPIT.Middleware;
+using TomPIT.Cdn;
+
+[ProcessBehavior(Behavior = ProcessBehavior.Parallel, QueueName = nameof(QueueWorker))]
+public class QueueWorker : QueueMiddleware
+{
+   public override QueueValidationBehavior ValidationFailed => QueueValidationBehavior.Retry;
+
+   protected override void OnInvoke()
+   {
+   }
+
+   protected override void OnCommit()
+   {
+   }
+}

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Text;
 using DevExpress.DataAccess.Json;
@@ -141,10 +142,10 @@ namespace TomPIT.MicroServices.Reporting.Storage
 					ds
 				};
 
-				serializedDs = $"{{{dataMember}:{JsonConvert.SerializeObject(list)}}}";
+				serializedDs = $"{{\"{dataMember}\":{JsonConvert.SerializeObject(list)}}}";
 			}
 			else
-				serializedDs = $"{{{dataMember}:{JsonConvert.SerializeObject(ds)}}}";
+				serializedDs = $"{{\"{dataMember}\":{JsonConvert.SerializeObject(ds)}}}";
 
 			dataSource.Schema = null;
 			dataSource.JsonSource = new CustomJsonSource(serializedDs);
@@ -158,9 +159,9 @@ namespace TomPIT.MicroServices.Reporting.Storage
 		{
 			var ms = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(config.MicroService());
 
-			XtraReport r = null;
+			XtraReport r = new XtraReport();
 			var url = $"{ms.Name}/{config.ComponentName()}";
-
+					
 			if (arguments != null)
 				url += $"?{Convert.ToBase64String(Encoding.UTF8.GetBytes(Serializer.Serialize(arguments)))}";
 
@@ -169,8 +170,6 @@ namespace TomPIT.MicroServices.Reporting.Storage
 				var tenant = MiddlewareDescriptor.Current.Tenant;
 				var content = tenant.GetService<IComponentService>().SelectText(((IConfiguration)config).MicroService(), config);
 
-				r = new XtraReport();
-
 				using var loadStream = new MemoryStream(Encoding.UTF8.GetBytes(content));
 
 				r.LoadLayoutFromXml(loadStream);
@@ -178,99 +177,102 @@ namespace TomPIT.MicroServices.Reporting.Storage
 				BindDataSources(r, url, null);
 			}
 
-			if (r == null)
-				r = new XtraReport();
-
 			r.RequestParameters = false;
 
 			foreach (var parameter in r.Parameters)
 				parameter.Visible = false;
+			
+			r.Name = url;
+			r.SourceUrl = url;
 
 			var subreports = r.AllControls<XRSubreport>();
-
+			
 			foreach (var subreport in subreports)
-				subreport.BeforePrint += OnBindSubreportDataSources;
-
+			{
+				subreport.BeforePrint += (s, e) => OnBindSubreportDataSources(s as XRSubreport);		
+			}
 			return r;
 		}
 
-		private void OnBindSubreportDataSources(object sender, System.Drawing.Printing.PrintEventArgs e)
-		{
-			var subReport = sender as XRSubreport;
-
-			subReport.ApplyParameterBindings();
-			/*
+		private void OnBindSubreportDataSources(XRSubreport subReport)
+        {
+            subReport.ApplyParameterBindings();
+            /*
 			 * this is workaround for the issue related to parameter bindings.
 			 * it seems devexpress doesn't know how to bind parameters from json data source
 			 * so we're gonna do it manually.
 			 */
-			var bindings = subReport.ParameterBindings;
-			var newBindings = new List<ParameterBinding>();
+            var bindings = subReport.ParameterBindings;
+            var newBindings = new List<ParameterBinding>();
 
-			foreach (var binding in bindings)
-			{
-				ReportParameterTag tag = null;
+			subReport.ReportSource.SourceUrl = subReport.ReportSourceUrl;
+			subReport.ReportSource.Name = subReport.ReportSourceUrl;
 
-				if (binding.Parameter != null && !(binding.Parameter.Tag is ReportParameterTag))
-				{
-					newBindings.Add(binding);
-					continue;
-				}
+            foreach (var binding in bindings)
+            {
+                ReportParameterTag tag = null;
 
-				tag = binding.Parameter?.Tag as ReportParameterTag;
+                if (binding.Parameter != null && !(binding.Parameter.Tag is ReportParameterTag))
+                {
+                    newBindings.Add(binding);
+                    continue;
+                }
 
-				if (subReport.ReportSource.DataSource == null)
-					continue;
+                tag = binding.Parameter?.Tag as ReportParameterTag;
 
-				if (tag == null)
-				{
-					tag = new ReportParameterTag
-					{
-						DataSource = binding.DataSource as JsonDataSource,
-						DataMember = binding.DataMember
-					};
-				}
+                if (subReport.ReportSource.DataSource == null)
+                    continue;
 
-				var entity = tag.DataMember.Split('.')[0];
-				var property = tag.DataMember.Split('.')[1];
-				var index = subReport.Report.CurrentRowIndex;
-				var en = tag.DataSource.GetEnumerator();
+                if (tag == null)
+                {
+                    tag = new ReportParameterTag
+                    {
+                        DataSource = binding.DataSource as JsonDataSource,
+                        DataMember = binding.DataMember
+                    };
+                }
 
-				if (!en.MoveNext())
-					continue;
+                var entity = tag.DataMember.Split('.')[0];
+                var property = tag.DataMember.Split('.')[1];
+                var index = subReport.Report.CurrentRowIndex;
+                var en = tag.DataSource.GetEnumerator();
 
-				var pi = en.Current.GetType().GetProperty(entity);
+                if (!en.MoveNext())
+                    continue;
 
-				if (pi == null)
-					continue;
+                var pi = en.Current.GetType().GetProperty(entity);
 
-				if (pi.GetValue(en.Current) is not IList list)
-					continue;
+                if (pi == null)
+                    continue;
 
-				if (list.Count - 1 < index)
-					continue;
+                if (pi.GetValue(en.Current) is not IList list)
+                    continue;
 
-				var item = list[index];
-				pi = item.GetType().GetProperty(property);
+                if (list.Count - 1 < index)
+                    continue;
 
-				if (pi == null)
-					continue;
+                var item = list[index];
+                pi = item.GetType().GetProperty(property);
 
-				newBindings.Add(new ParameterBinding(binding.ParameterName, new DevExpress.XtraReports.Parameters.Parameter
-				{
-					Tag = tag,
-					Name = binding.ParameterName,
-					Type = pi.PropertyType,
-					Value = pi.GetValue(item),
-				}));
-			}
+                if (pi == null)
+                    continue;
 
-			subReport.ParameterBindings.Clear();
+                newBindings.Add(new ParameterBinding(binding.ParameterName, new DevExpress.XtraReports.Parameters.Parameter
+                {
+                    Tag = tag,
+                    Name = binding.ParameterName,
+                    Type = pi.PropertyType,
+                    Value = pi.GetValue(item),
+                }));
+            }
 
-			foreach (var binding in newBindings)
-				subReport.ParameterBindings.Add(binding);
+            subReport.ParameterBindings.Clear();
 
-			BindDataSources(subReport.ReportSource, subReport.ReportSourceUrl, subReport.ParameterBindings);
-		}
+            foreach (var binding in newBindings)
+                subReport.ParameterBindings.Add(binding);
+
+            BindDataSources(subReport.ReportSource, subReport.ReportSourceUrl, subReport.ParameterBindings);
+
+        }
 	}
 }

@@ -40,6 +40,7 @@
 		public const string FeaturesItems = "TomPIT.MicroServices.Design.Items.FeaturesCollection, " + DesignAssembly;
 		public const string ScriptSourceItems = "TomPIT.MicroServices.Design.Items.ScriptSourceCollection, " + DesignAssembly;
 		public const string StylesheetItems = "TomPIT.MicroServices.Design.Items.StylesheetCollection, " + DesignAssembly;
+		public const string ThemeItems = "TomPIT.MicroServices.Design.Items.ThemeItems, " + DesignAssembly;
 		public const string ScriptItems = "TomPIT.MicroServices.Design.Items.ScriptCollection, " + DesignAssembly;
 		public const string EventItems = "TomPIT.MicroServices.Design.Items.EventItems, " + DesignAssembly;
 		public const string DistributedEventItems = "TomPIT.MicroServices.Design.Items.DistributedEventCollection, " + DesignAssembly;
@@ -80,6 +81,7 @@
 		public const string MediaResourceFileUploadDesigner = "TomPIT.MicroServices.Design.Designers.MediaResourceFileUploadDesigner, " + DesignAssembly;
 		public const string MediaDesigner = "TomPIT.MicroServices.Design.Designers.MediaDesigner, " + DesignAssembly;
 		public const string ScriptUploadDesigner = "TomPIT.MicroServices.Design.Designers.ScriptUploadDesigner, " + DesignAssembly;
+		public const string StaticResourceDesigner = "TomPIT.MicroServices.Design.Designers.StaticResourceDesigner, " + DesignAssembly;
 		public const string StringTableDesigner = "TomPIT.MicroServices.Design.Designers.StringTable, " + DesignAssembly;
 
 	}

@@ -8,18 +8,20 @@ namespace TomPIT.Environment
 		Enabled = 1,
 	}
 
-	public enum InstanceType
+	[Flags]
+	public enum InstanceFeatures
 	{
 		Unknown = 0,
 		Management = 1,
 		Development = 2,
-		Application = 3,
-		Worker = 4,
-		Cdn = 5,
-		IoT = 6,
-		BigData = 7,
-		Search = 8,
-		Rest = 9
+		Application = 4,
+		Worker = 8,
+		Cdn = 16,
+		IoT = 32,
+		BigData = 64,
+		Search = 128,
+		Rest = 256,
+		Sys = 512
 	}
 
 	[Flags]
@@ -35,7 +37,7 @@ namespace TomPIT.Environment
 		string Url { get; }
 		InstanceStatus Status { get; }
 		string Name { get; }
-		InstanceType Type { get; }
+		InstanceFeatures Features { get; }
 		Guid Token { get; }
 		InstanceVerbs Verbs { get; }
 		string ReverseProxyUrl { get; }

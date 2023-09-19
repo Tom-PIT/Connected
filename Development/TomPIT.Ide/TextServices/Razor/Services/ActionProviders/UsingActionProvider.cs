@@ -105,7 +105,7 @@ namespace TomPIT.Ide.TextServices.Razor.Services.ActionProviders
 				ModelVersionId = Editor.Model.Version
 			};
 
-			textEdit.Edit = new TextEdit
+			textEdit.TextEdit = new TextEdit
 			{
 				Text = $"@{title};\n",
 				Eol = EndOfLineSequence.CRLF,
@@ -123,7 +123,7 @@ namespace TomPIT.Ide.TextServices.Razor.Services.ActionProviders
 
 			var rte = result.Edit.Edits[0] as ResourceTextEdit;
 
-			rte.Edit = new TextEdit
+			rte.TextEdit = new TextEdit
 			{
 				Text = type.Name,
 				Range = new Range

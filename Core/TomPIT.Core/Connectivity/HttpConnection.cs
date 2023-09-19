@@ -1,220 +1,263 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
 using System.Text;
-using Newtonsoft.Json.Linq;
+using System.Threading.Tasks;
 using TomPIT.Exceptions;
 using TomPIT.Serialization;
 
 namespace TomPIT.Connectivity
 {
-	public class HttpConnection : IHttpConnection
-	{
-		public HttpConnection()
-		{
-		}
+    public class HttpConnection : IHttpConnection
+    {
+        public HttpConnection()
+        {
+        }
 
-		public HttpConnection(string authenticationToken)
-		{
-			AuthenticationToken = authenticationToken;
-		}
+        public HttpConnection(string authenticationToken)
+        {
+            AuthenticationToken = authenticationToken;
+        }
 
-		public string AuthenticationToken { get; }
+        public string AuthenticationToken { get; }
 
-		public T Get<T>(string url, HttpRequestArgs e = null)
-		{
-			try
-			{
-				var client = e == null || e.Credentials == null
-					? HttpClientPool.Get(AuthenticationToken, this as IInstanceMetadataProvider)
-					: HttpClientPool.Get(e.Credentials, this as IInstanceMetadataProvider);
+        public HttpClient GetClient(ICredentials credentials = null)
+        {
+            return credentials is null
+                 ? HttpClientPool.Get(AuthenticationToken, this as IInstanceMetadataProvider)
+                 : HttpClientPool.Get(credentials, this as IInstanceMetadataProvider);
+        }
 
-				var response = client.GetAsync(url).GetAwaiter().GetResult();
+        public HttpClient GetClient(Guid authenticationToken) => GetClient(GetCredentials(authenticationToken));
 
-				return HandleResponse<T>(response, e);
-			}
-			catch (Exception ex)
-			{
-				throw Unwrap(ex);
-			}
-		}
+        public HttpClient GetClient(string authenticationToken) => GetClient(GetCredentials(authenticationToken));
 
-		public T Post<T>(string url, HttpRequestArgs e = null)
-		{
-			return Post<T>(url, null, e);
-		}
+        public HttpClient GetClient(string username, string password) => GetClient(GetCredentials(username, password));
 
-		public T Post<T>(string url, object content, HttpRequestArgs e = null)
-		{
-			return Post<T>(url, CreateContent(content), e);
-		}
+        protected static ICredentials GetCredentials(Guid authenticationToken) => new CurrentCredentials { Token = authenticationToken };
+        protected static ICredentials GetCredentials(string authenticationToken) => new BearerCredentials { Token = authenticationToken };
+        protected static ICredentials GetCredentials(string username, string password) => new BasicCredentials
+        {
+            UserName = username,
+            Password = password
+        };
 
-		public void Post(string url, HttpRequestArgs e = null)
-		{
-			Post(url, null, e);
-		}
 
-		public void Post(string url, object content, HttpRequestArgs e = null)
-		{
-			var client = e == null || e.Credentials == null
-				 ? HttpClientPool.Get(AuthenticationToken, this as IInstanceMetadataProvider)
-				 : HttpClientPool.Get(e.Credentials, this as IInstanceMetadataProvider);
+        public T Get<T>(string url, HttpRequestArgs e = null)
+        {
+            try
+            {
+                var client = e == null || e.Credentials == null
+                    ? HttpClientPool.Get(AuthenticationToken, this as IInstanceMetadataProvider)
+                    : HttpClientPool.Get(e.Credentials, this as IInstanceMetadataProvider);
 
-			HandleResponse(client.PostAsync(url, CreateContent(content)).GetAwaiter().GetResult(), e);
-		}
+                var response = client.GetAsync(url).GetAwaiter().GetResult();
 
-		public void Post(string url, HttpContent httpContent, HttpRequestArgs e = null)
-		{
-			var client = e == null || e.Credentials == null
-				? HttpClientPool.Get(AuthenticationToken, this as IInstanceMetadataProvider)
-				: HttpClientPool.Get(e.Credentials, this as IInstanceMetadataProvider);
+                return HandleResponse<T>(response, e);
+            }
+            catch (Exception ex)
+            {
+                throw Unwrap(ex);
+            }
+        }
 
-			HandleResponse(client.PostAsync(url, httpContent).GetAwaiter().GetResult(), e);
-		}
+        public T Post<T>(string url, HttpRequestArgs e = null)
+        {
+            return Post<T>(url, null, e);
+        }
 
-		public T Post<T>(string url, HttpContent httpContent, HttpRequestArgs e)
-		{
-			var client = e == null || e.Credentials == null
-				? HttpClientPool.Get(AuthenticationToken, this as IInstanceMetadataProvider)
-				: HttpClientPool.Get(e.Credentials, this as IInstanceMetadataProvider);
+        public T Post<T>(string url, object content, HttpRequestArgs e = null)
+        {
+            return Post<T>(url, CreateContent(content), e);
+        }
 
-			return HandleResponse<T>(client.PostAsync(url, httpContent).GetAwaiter().GetResult(), e);
-		}
+        public async Task<T> PostAsync<T>(string url, object content, HttpRequestArgs e = null)
+        {
+            return await PostAsync<T>(url, CreateContent(content), e);
+        }
 
-		private void HandleResponse(HttpResponseMessage response, HttpRequestArgs e)
-		{
-			if (!response.IsSuccessStatusCode)
-				HandleResponseException(response);
-		}
+        public void Post(string url, HttpRequestArgs e = null)
+        {
+            Post(url, null, e);
+        }
 
-		private T HandleResponse<T>(HttpResponseMessage response, HttpRequestArgs e)
-		{
-			if (!response.IsSuccessStatusCode)
-				HandleResponseException(response);
+        public void Post(string url, object content, HttpRequestArgs e = null)
+        {
+            var client = e == null || e.Credentials == null
+                 ? HttpClientPool.Get(AuthenticationToken, this as IInstanceMetadataProvider)
+                 : HttpClientPool.Get(e.Credentials, this as IInstanceMetadataProvider);
 
-			var content = response.Content.ReadAsStringAsync().Result;
+            HandleResponse(client.PostAsync(url, CreateContent(content)).GetAwaiter().GetResult(), e);
+        }
 
-			if (IsNull(content))
-				return default(T);
+        public void Post(string url, HttpContent httpContent, HttpRequestArgs e = null)
+        {
+            var client = e == null || e.Credentials == null
+                ? HttpClientPool.Get(AuthenticationToken, this as IInstanceMetadataProvider)
+                : HttpClientPool.Get(e.Credentials, this as IInstanceMetadataProvider);
 
-			if (e != null && e.ReadRawResponse)
-			{
-				if (Types.TryConvert<T>(content, out T result))
-					return result;
+            HandleResponse(client.PostAsync(url, httpContent).GetAwaiter().GetResult(), e);
+        }
+        public async Task PostAsync(string url, HttpContent httpContent, HttpRequestArgs e = null)
+        {
+            var client = e == null || e.Credentials == null
+                ? HttpClientPool.Get(AuthenticationToken, this as IInstanceMetadataProvider)
+                : HttpClientPool.Get(e.Credentials, this as IInstanceMetadataProvider);
 
-				return default(T);
-			}
+            HandleResponse(await client.PostAsync(url, httpContent), e);
+        }
 
-			return Serializer.Deserialize<T>(content);
-		}
 
-		private void HandleResponseException(HttpResponseMessage response)
-		{
-			var rt = string.Empty;
+        public T Post<T>(string url, HttpContent httpContent, HttpRequestArgs e)
+        {
+            var client = e == null || e.Credentials == null
+                ? HttpClientPool.Get(AuthenticationToken, this as IInstanceMetadataProvider)
+                : HttpClientPool.Get(e.Credentials, this as IInstanceMetadataProvider);
 
-			if (response.Content != null)
-				rt = response.Content.ReadAsStringAsync().Result;
+            return HandleResponse<T>(client.PostAsync(url, httpContent).GetAwaiter().GetResult(), e);
+        }
 
-			JObject ex = null;
+        private void HandleResponse(HttpResponseMessage response, HttpRequestArgs e)
+        {
+            if (!response.IsSuccessStatusCode)
+                HandleResponseException(response);
+        }
 
-			try
-			{
-				ex = Serializer.Deserialize<JObject>(rt);
-			}
-			catch
-			{
+        private T HandleResponse<T>(HttpResponseMessage response, HttpRequestArgs e)
+        {
+            if (!response.IsSuccessStatusCode)
+                HandleResponseException(response);
 
-				throw new Exception(response.ReasonPhrase);
-			}
+            var content = response.Content.ReadAsStringAsync().Result;
 
-			if (ex == null)
-				throw new Exception(response.ReasonPhrase);
+            if (IsNull(content))
+                return default(T);
 
-			var source = string.Empty;
-			var message = string.Empty;
+            if (e != null && e.ReadRawResponse)
+            {
+                if (Types.TryConvert<T>(content, out T result))
+                    return result;
 
-			if (ex.ContainsKey("source"))
-				source = ex.Value<string>("source");
+                return default(T);
+            }
 
-			if (ex.ContainsKey("message"))
-				message = ex.Value<string>("message");
+            return Serializer.Deserialize<T>(content);
+        }
 
-			throw new TomPITException(source, message);
-		}
+        private void HandleResponseException(HttpResponseMessage response)
+        {
+            if (!TryParseException(response.Content, out var ex))
+                throw new Exception(response.ReasonPhrase);
 
-		private Exception Unwrap(Exception ex)
-		{
-			if (ex is AggregateException)
-			{
-				var baseEx = ex.InnerException;
+            var source = string.Empty;
+            var message = string.Empty;
 
-				if (baseEx == null)
-					return ex;
+            if (ex.ContainsKey("source"))
+                source = ex.Value<string>("source");
 
-				while (baseEx != null)
-				{
-					var be = baseEx.InnerException;
+            if (ex.ContainsKey("message"))
+                message = ex.Value<string>("message");
 
-					if (be == null)
-						return baseEx;
+            throw new TomPITException(source, message);
+        }
 
-					baseEx = be;
-				}
+        private static bool TryParseException(HttpContent responseContent, out JObject exceptionData)
+        {
+            exceptionData = null;
 
-				return baseEx;
-			}
+            if (responseContent is null)
+                return false;
 
-			return ex;
-		}
+            try
+            {
+                var rt = responseContent.ReadAsStringAsync().Result;
 
-		private HttpContent CreateContent(object content)
-		{
-			if (content == null || Convert.IsDBNull(content))
-				return new StringContent(string.Empty);
+                exceptionData = Serializer.Deserialize<JObject>(rt);
 
-			var c = Serializer.Serialize(content);
+                if (exceptionData is null)
+                    return false;
 
-			content = CompressString(c);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
 
-			var sc = new StringContent(c, Encoding.UTF8, "application/json");
+        private Exception Unwrap(Exception ex)
+        {
+            if (ex is AggregateException)
+            {
+                var baseEx = ex.InnerException;
 
-			sc.Headers.Add("Content-Encoding", "gzip");
+                if (baseEx == null)
+                    return ex;
 
-			return sc;
-		}
+                while (baseEx != null)
+                {
+                    var be = baseEx.InnerException;
 
-		private string CompressString(string text)
-		{
-			var buffer = Encoding.UTF8.GetBytes(text);
+                    if (be == null)
+                        return baseEx;
 
-			using (var ms = new MemoryStream())
-			{
-				using (var gZipStream = new GZipStream(ms, CompressionMode.Compress, true))
-				{
-					gZipStream.Write(buffer, 0, buffer.Length);
-				}
+                    baseEx = be;
+                }
 
-				ms.Position = 0;
+                return baseEx;
+            }
 
-				var compressedData = new byte[ms.Length];
+            return ex;
+        }
 
-				ms.Read(compressedData, 0, compressedData.Length);
+        private HttpContent CreateContent(object content)
+        {
+            if (content == null || Convert.IsDBNull(content))
+                return new StringContent(string.Empty);
 
-				var gZipBuffer = new byte[compressedData.Length + 4];
+            var c = Serializer.Serialize(content);
 
-				Buffer.BlockCopy(compressedData, 0, gZipBuffer, 4, compressedData.Length);
-				Buffer.BlockCopy(BitConverter.GetBytes(buffer.Length), 0, gZipBuffer, 0, 4);
+            content = CompressString(c);
 
-				return Convert.ToBase64String(gZipBuffer);
-			}
-		}
+            var sc = new StringContent(c, Encoding.UTF8, "application/json");
 
-		private static bool IsNull(string content)
-		{
-			return string.Compare(content, "null", true) == 0
-				|| string.IsNullOrWhiteSpace(content);
-		}
+            sc.Headers.Add("Content-Encoding", "gzip");
 
-	}
+            return sc;
+        }
+
+        private string CompressString(string text)
+        {
+            var buffer = Encoding.UTF8.GetBytes(text);
+
+            using (var ms = new MemoryStream())
+            {
+                using (var gZipStream = new GZipStream(ms, CompressionMode.Compress, true))
+                {
+                    gZipStream.Write(buffer, 0, buffer.Length);
+                }
+
+                ms.Position = 0;
+
+                var compressedData = new byte[ms.Length];
+
+                ms.Read(compressedData, 0, compressedData.Length);
+
+                var gZipBuffer = new byte[compressedData.Length + 4];
+
+                Buffer.BlockCopy(compressedData, 0, gZipBuffer, 4, compressedData.Length);
+                Buffer.BlockCopy(BitConverter.GetBytes(buffer.Length), 0, gZipBuffer, 0, 4);
+
+                return Convert.ToBase64String(gZipBuffer);
+            }
+        }
+
+        private static bool IsNull(string content)
+        {
+            return string.Compare(content, "null", true) == 0
+                || string.IsNullOrWhiteSpace(content);
+        }
+    }
 }

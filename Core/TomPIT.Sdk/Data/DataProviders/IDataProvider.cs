@@ -47,6 +47,8 @@ namespace TomPIT.Data.DataProviders
 		/// to connect to.</param>
 		/// <returns></returns>
 		IDataConnection OpenConnection(IMiddlewareContext context, string connectionString, ConnectionBehavior behavior);
+
+		[Obsolete]
 		void TestConnection(IMiddlewareContext context, string connectionString);
 	}
 }

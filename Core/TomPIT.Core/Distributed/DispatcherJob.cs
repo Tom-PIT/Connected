@@ -18,32 +18,29 @@ namespace TomPIT.Distributed
 
 			cancel.Register(() =>
 			{
-				Worker.CancelAsync();
+				if (Worker.IsBusy)
+					Worker.CancelAsync();
 			});
 
+			_worker = new BackgroundWorker
+			{
+				WorkerSupportsCancellation = true
+			};
+
+			_worker.RunWorkerCompleted += OnCompleted;
+			_worker.DoWork += Dequeue;
 		}
 
+		public bool IsRunning => Worker.IsBusy;
+		private int Counter { get; set; }
+		private BackgroundWorker Worker => _worker;
+		protected IDispatcher<T> Owner { get; }
+		protected CancellationToken Cancel { get; }
+		private DateTime LastRun { get; set; }
+		public T Current { get; set; }
 		public void Run()
 		{
 			Worker.RunWorkerAsync();
-		}
-
-		public Guid Id => Guid.NewGuid();
-		public bool IsRunning => Worker.IsBusy;
-		public string Stack { get; set; }
-		private BackgroundWorker Worker
-		{
-			get
-			{
-				if (_worker == null)
-				{
-					_worker = new BackgroundWorker();
-					_worker.RunWorkerCompleted += OnCompleted;
-					_worker.DoWork += Dequeue;
-				}
-
-				return _worker;
-			}
 		}
 
 		private void OnCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -51,10 +48,12 @@ namespace TomPIT.Distributed
 			Completed?.Invoke(this, EventArgs.Empty);
 		}
 
-		protected IDispatcher<T> Owner { get; }
-		protected CancellationToken Cancel { get; }
-
 		private void Dequeue(object sender, DoWorkEventArgs e)
+		{
+			DoWork();
+		}
+
+		private void DoWork()
 		{
 			T item = default;
 
@@ -62,9 +61,13 @@ namespace TomPIT.Distributed
 			{
 				while (Owner.Dequeue(out item))
 				{
-					if (item is IPopReceiptRecord pr && pr.NextVisible <= DateTime.UtcNow)
+					Counter++;
+					Current = item;
+
+					if (item is null || item is IPopReceiptRecord pr && pr.NextVisible <= DateTime.UtcNow)
 						continue;
 
+					LastRun = DateTime.UtcNow;
 					DoWork(item);
 				}
 			}
@@ -79,7 +82,6 @@ namespace TomPIT.Distributed
 				}
 			}
 		}
-
 		protected abstract void DoWork(T item);
 		protected abstract void OnError(T item, Exception ex);
 
@@ -94,7 +96,7 @@ namespace TomPIT.Distributed
 			if (_disposed)
 				return;
 
-			if (_worker != null)
+			if (_worker is not null)
 			{
 				try
 				{
@@ -116,6 +118,16 @@ namespace TomPIT.Distributed
 		protected virtual void OnDisposing()
 		{
 
+		}
+
+		public string State => ToString();
+		public override string ToString()
+		{
+			var name = Current is null ? "null" : Current.GetType().GetProperty("Name")?.GetValue(Current).ToString();
+			var id = Current is null ? "null" : Current.GetType().GetProperty("Id")?.GetValue(Current).ToString();
+			var elapsed = LastRun == DateTime.MinValue ? 0 : DateTime.UtcNow.Subtract(LastRun).TotalMilliseconds;
+
+			return $"name:{name}, id:{id}, count:{Counter}, elapsed:{elapsed}";
 		}
 	}
 }

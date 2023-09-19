@@ -1,4 +1,7 @@
-﻿using TomPIT.Sys.Api.Database;
+﻿using System.Configuration;
+using System.Text.Json;
+using TomPIT.Sys.Api.Database;
+using TomPIT.Sys.Configuration;
 using TomPIT.SysDb;
 
 namespace TomPIT.Sys.Services
@@ -12,22 +15,24 @@ namespace TomPIT.Sys.Services
 
 		private void Configure()
 		{
-			var sys = Shell.GetConfiguration<IServerSys>();
+			if (!Shell.Configuration.RootElement.TryGetProperty("database", out JsonElement element))
+				throw new ConfigurationErrorsException("'database' configuration element does not exist.");
 
-			if (!string.IsNullOrWhiteSpace(sys.Database))
-			{
-				var type = Reflection.TypeExtensions.GetType(sys.Database);
+			var database = element.GetString();
 
-				if (type != null)
-					Proxy = type.Assembly.CreateInstance(type.FullName) as ISysDbProxy;
-			}
+			if (string.IsNullOrWhiteSpace(database))
+				throw new ConfigurationErrorsException("'database' configuration element does not have a value.");
 
-			Proxy.Initialize(sys.ConnectionStrings.Sys);
+			var type = Reflection.TypeExtensions.GetType(database);
+
+			if (type is null)
+				throw new ConfigurationErrorsException($"{SR.ErrTypeNull} (Sys Database '{database}')");
+
+			Proxy = type.Assembly.CreateInstance(type.FullName) as ISysDbProxy;
+
+			Proxy.Initialize(ConnectionStringsConfiguration.Sys);
 		}
 
-		public ISysDbProxy Proxy
-		{
-			get; set;
-		}
+		public ISysDbProxy Proxy { get; set; }
 	}
 }

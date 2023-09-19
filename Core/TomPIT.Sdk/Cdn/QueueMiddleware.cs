@@ -5,7 +5,7 @@ using TomPIT.Middleware;
 
 namespace TomPIT.Cdn
 {
-	public abstract class QueueMiddleware : MiddlewareOperation, IQueueMiddleware
+	public abstract class QueueMiddleware : LifetimeMiddleware, IQueueMiddleware
 	{
 		public virtual QueueValidationBehavior ValidationFailed => QueueValidationBehavior.Retry;
 

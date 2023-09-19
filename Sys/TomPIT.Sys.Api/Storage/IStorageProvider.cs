@@ -1,7 +1,8 @@
-﻿namespace TomPIT.Api.Storage
+﻿using TomPIT.Storage;
+
+namespace TomPIT.Api.Storage;
+
+public interface IStorageProvider : IClientStorageProvider
 {
-	public interface IStorageProvider : IClientStorageProvider
-	{
-		IBlobProvider Blobs { get; }
-	}
+    IBlobProvider Blobs { get; }
 }

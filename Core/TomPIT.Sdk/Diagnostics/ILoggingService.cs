@@ -4,5 +4,7 @@
 	{
 		void Write(ILogEntry d);
 		void Dump(string text);
+
+		bool DumpEnabled { get; }
 	}
 }

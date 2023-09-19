@@ -9,14 +9,18 @@ using TomPIT.Connectivity;
 using TomPIT.Diagnostics;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
+using TomPIT.Runtime;
 using TomPIT.Serialization;
 
 namespace TomPIT.Caching
 {
 	internal class DataCachingService : TenantObject, IDataCachingService, IDataCachingNotification
 	{
-		private const string DataCacheController = "DataCache";
+		private readonly Lazy<SingletonProcessor<string>> _cacheItemProcessor = new(System.Threading.LazyThreadSafetyMode.ExecutionAndPublication);
+
 		private MemoryCache _cache;
+
+		private SingletonProcessor<string> CacheItemProcessor => _cacheItemProcessor.Value;
 
 		public DataCachingService(ITenant tenant) : this(tenant, CacheScope.Shared)
 		{
@@ -35,12 +39,7 @@ namespace TomPIT.Caching
 			Cache.Clear(cacheKey);
 
 			if (Scope == CacheScope.Shared)
-			{
-				Tenant.Post(CreateUrl("Clear"), new
-				{
-					key = cacheKey
-				});
-			}
+				Instance.SysProxy.DataCache.Clear(cacheKey);
 		}
 
 		public void Invalidate(string cacheKey, List<string> ids)
@@ -49,13 +48,7 @@ namespace TomPIT.Caching
 				Cache.Refresh(cacheKey, i);
 
 			if (Scope == CacheScope.Shared)
-			{
-				Tenant.Post(CreateUrl("Invalidate"), new
-				{
-					key = cacheKey,
-					ids
-				});
-			}
+				Instance.SysProxy.DataCache.Invalidate(cacheKey, ids);
 		}
 
 		public void Remove<T>(IMiddlewareContext context, string key, Func<dynamic, bool> predicate) where T : class
@@ -94,13 +87,7 @@ namespace TomPIT.Caching
 		private void PublishRemove(string key, List<string> ids)
 		{
 			if (Scope == CacheScope.Shared)
-			{
-				Tenant.Post(CreateUrl("Remove"), new
-				{
-					key,
-					ids
-				});
-			}
+				Instance.SysProxy.DataCache.Remove(key, ids);
 		}
 
 		public bool Exists(string key)
@@ -133,27 +120,10 @@ namespace TomPIT.Caching
 		{
 			var item = Cache.Get<CacheValue>(key, id);
 
-			if (item is null)
-			{
-				if (retrieve is null)
-					return default;
+			if (item is CacheValue value)
+				return Deserialize<T>(context, value.Value);
 
-				var options = new EntryOptions
-				{
-					AllowNull = false,
-					Duration = TimeSpan.Zero,
-					SlidingExpiration = true
-				};
-
-				var result = retrieve(options);
-
-				if (result is not null || options.AllowNull)
-					Set(key, id, result, options.Duration, options.SlidingExpiration);
-
-				return result;
-			}
-
-			return Deserialize<T>(context, item.Value);
+			return RetrieveAndSet(context, key, id, retrieve);
 		}
 
 		public T Get<T>(IMiddlewareContext context, string key, Func<dynamic, bool> predicate, CacheRetrieveHandler<T> retrieve) where T : class
@@ -164,71 +134,22 @@ namespace TomPIT.Caching
 					return Deserialize<T>(context, target.Value);
 			}
 
-			if (retrieve is null)
-				return default;
-
-			var options = new EntryOptions
-			{
-				AllowNull = false,
-				Duration = TimeSpan.FromMinutes(2),
-				SlidingExpiration = true
-			};
-
-			var result = retrieve(options);
-
-			if (result is not null || options.AllowNull)
-			{
-				if (string.IsNullOrWhiteSpace(options.Key) && result is not null)
-					options.Key = ReflectionExtensions.ResolveCacheKey(result);
-
-				if (string.IsNullOrWhiteSpace(options.Key))
-					context.Tenant.LogWarning(nameof(DataCachingService), $"{SR.ErrCacheKeyNull} ({result?.GetType().Name})", LogCategories.Middleware);
-				else
-					Set(key, options.Key, result, options.Duration, options.SlidingExpiration);
-			}
-
-			return result;
+			return RetrieveAndSet(context, key, null, retrieve);
 		}
 
 		public T Get<T>(IMiddlewareContext context, string key, Func<T, bool> evaluator, CacheRetrieveHandler<T> retrieve) where T : class
 		{
 			var enumerator = Cache.GetEnumerator<CacheValue>(key);
 
-			if (enumerator is not null)
+			while (enumerator?.MoveNext() ?? false)
 			{
-				while (enumerator.MoveNext())
-				{
-					var instance = Deserialize<T>(context, enumerator.Current.Value);
+				var instance = Deserialize<T>(context, enumerator.Current.Value);
 
-					if (evaluator(instance))
-						return instance;
-				}
+				if (evaluator(instance))
+					return instance;
 			}
 
-			if (retrieve is null)
-				return default;
-
-			var options = new EntryOptions
-			{
-				AllowNull = false,
-				Duration = TimeSpan.Zero,
-				SlidingExpiration = true
-			};
-
-			var result = retrieve(options);
-
-			if (CanStore(options) && result is not null || options.AllowNull)
-			{
-				if (string.IsNullOrWhiteSpace(options.Key) && result is not null)
-					options.Key = ReflectionExtensions.ResolveCacheKey(result);
-
-				if (string.IsNullOrWhiteSpace(options.Key))
-					context.Tenant.LogWarning(nameof(DataCachingService), $"{SR.ErrCacheKeyNull} ({result?.GetType().Name})", LogCategories.Middleware);
-				else
-					Set(key, options.Key, result, options.Duration, options.SlidingExpiration);
-			}
-
-			return result;
+			return RetrieveAndSet(context, key, null, retrieve);
 		}
 
 		public T Get<T>(IMiddlewareContext context, string key, string id) where T : class
@@ -245,7 +166,7 @@ namespace TomPIT.Caching
 		{
 			var items = Where<T>(context, key, predicate);
 
-			if (items == null || items.Count == 0)
+			if (items is null || items.Count == 0)
 				return default;
 
 			return items.FirstOrDefault(predicate);
@@ -346,6 +267,76 @@ namespace TomPIT.Caching
 			Cache.Clear(cacheKey);
 		}
 
+		private T RetrieveAndSet<T>(IMiddlewareContext context, string key, string id, CacheRetrieveHandler<T> retrieve) where T : class
+		{
+			if (retrieve is null)
+				return default;
+
+			T entity = default;
+
+			//Predicate was used 
+			if (string.IsNullOrWhiteSpace(id))
+			{
+				var result = Retrieve(id, retrieve, out var options);
+				TryStoring(context, key, result, options);
+				return result;
+			}
+
+			CacheItemProcessor.Start($"{key}_{id}",
+				 () =>
+				 {
+					 var result = Retrieve(id, retrieve, out var options);
+					 TryStoring(context, key, result, options);
+					 entity = result;
+				 },
+				 () =>
+				 {
+					 entity = Get<T>(context, key, id);
+				 });
+
+			return entity;
+		}
+
+		private static T Retrieve<T>(string key, CacheRetrieveHandler<T> retrieve, out EntryOptions options) where T : class
+		{
+			options = new EntryOptions
+			{
+				AllowNull = false,
+				Duration = TimeSpan.FromMinutes(2),
+				SlidingExpiration = true,
+				Key = key
+			};
+
+			var result = retrieve(options);
+
+			if (result is not null || options.AllowNull)
+			{
+				if (string.IsNullOrWhiteSpace(options.Key))
+					options.Key = ReflectionExtensions.ResolveCacheKey(result);
+			}
+
+			return result;
+		}
+
+		private bool TryStoring<T>(IMiddlewareContext context, string key, T item, EntryOptions options) where T : class
+		{
+			if (CanStore(options) && item is not null || options.AllowNull)
+			{
+				if (string.IsNullOrWhiteSpace(options.Key))
+				{
+					context.Tenant.LogWarning(nameof(DataCachingService), $"{SR.ErrCacheKeyNull} ({item?.GetType().Name})", LogCategories.Middleware);
+					return false;
+				}
+				else
+				{
+					Set(key, options.Key, item, options.Duration, options.SlidingExpiration);
+					return true;
+				}
+			}
+
+			return false;
+		}
+
 		private static dynamic CreateKey(object instance)
 		{
 			if (instance == null)
@@ -411,11 +402,6 @@ namespace TomPIT.Caching
 			return result;
 		}
 
-		private ServerUrl CreateUrl(string action)
-		{
-			return Tenant.CreateUrl(DataCacheController, action);
-		}
-
 		public IDataCachingService CreateService(ITenant tenant)
 		{
 			return new DataCachingService(tenant, CacheScope.Context);
@@ -435,6 +421,15 @@ namespace TomPIT.Caching
 				return true;
 
 			return options.Scope != CacheScope.Context;
+		}
+
+		public void Dispose()
+		{
+			if (_cache is null)
+				return;
+
+			_cache.Dispose();
+			_cache = null;
 		}
 
 		private MemoryCache Cache => _cache;

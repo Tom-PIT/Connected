@@ -69,7 +69,6 @@ namespace TomPIT.IoC
 
 		protected virtual void OnAuthorize()
 		{
-
 		}
 
 		public void Validate()
@@ -89,7 +88,6 @@ namespace TomPIT.IoC
 
 		protected virtual void OnCommit()
 		{
-
 		}
 
 		public void Rollback()
@@ -99,7 +97,6 @@ namespace TomPIT.IoC
 
 		protected virtual void OnRollback()
 		{
-
 		}
 	}
 
@@ -113,7 +110,6 @@ namespace TomPIT.IoC
 
 		protected virtual void OnInvoke(object e)
 		{
-
 		}
 	}
 	[Obsolete]
@@ -136,7 +132,7 @@ namespace TomPIT.IoC
 
 		protected virtual T OnInvoke(T e)
 		{
-			return default;
+			return e;
 		}
 	}
 }

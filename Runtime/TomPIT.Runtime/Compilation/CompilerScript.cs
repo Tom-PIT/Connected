@@ -1,15 +1,20 @@
-﻿using System;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Scripting;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Scripting;
+using Microsoft.CodeAnalysis.Scripting.Hosting;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Text;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Scripting;
-using Microsoft.CodeAnalysis.Scripting;
-using Microsoft.CodeAnalysis.Scripting.Hosting;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
+using TomPIT.Reflection;
+using TomPIT.Runtime;
 
 namespace TomPIT.Compilation
 {
@@ -26,10 +31,14 @@ namespace TomPIT.Compilation
 		private IScriptContext ScriptContext { get; set; }
 		public void Create()
 		{
-			var code = Tenant.GetService<IComponentService>().SelectText(MicroService, SourceCode);
+			string code = Tenant.GetService<IComponentService>().SelectText(MicroService, SourceCode);
 
 			if (string.IsNullOrWhiteSpace(code))
 				return;
+
+			var scriptName = ResolveScriptName();
+			code = $"#load \"{scriptName}\"{System.Environment.NewLine}";
+
 			var msv = Tenant.GetService<IMicroServiceService>().Select(MicroService);
 
 			using var loader = new InteractiveAssemblyLoader();
@@ -44,13 +53,13 @@ namespace TomPIT.Compilation
 				ScriptReferences = refs;
 
 			var options = ScriptOptions.Default
-				 .WithImports(Usings)
-				 .WithReferences(References)
-				 .WithSourceResolver(new ScriptResolver(Tenant, MicroService))
-				 .WithMetadataResolver(new AssemblyResolver(Tenant, MicroService, true))
-				 .WithEmitDebugInformation(msv.Status != MicroServiceStatus.Production)
-				 .WithFilePath(SourceCode.FileName)
-				 .WithFileEncoding(Encoding.UTF8);
+					.WithImports(Usings)
+					.WithReferences(References)
+					.WithSourceResolver(new ScriptResolver(Tenant, MicroService))
+					.WithMetadataResolver(new AssemblyResolver(Tenant, MicroService, true))
+					.WithEmitDebugInformation(Tenant.GetService<IRuntimeService>().Stage != EnvironmentStage.Production)
+					.WithFilePath(SourceCode.FileName)
+					.WithFileEncoding(Encoding.UTF8);
 
 			foreach (var reference in ScriptContext.References)
 			{
@@ -60,8 +69,8 @@ namespace TomPIT.Compilation
 				foreach (var executable in reference.Value)
 				{
 					/*
-					 * in memory assembly
-					 */
+		* in memory assembly
+		*/
 					if (string.IsNullOrEmpty(executable.FilePath))
 					{
 						var tokens = reference.Key.Split('/');
@@ -97,18 +106,40 @@ namespace TomPIT.Compilation
 			Script = CreateScript($"{code};{System.Environment.NewLine}{GenerateStaticCode()}", options, loader);
 		}
 
+		private bool ResolveRequiresSyntaxRoot()
+		{
+			var component = Tenant.GetService<IComponentService>().SelectComponent(SourceCode.Configuration().Component);
+			/*
+			 * There is a bug in the configuration files. IoC containers have PublicScript namespace which is wrong because they
+			 * can't be references thus we are handling IoC containers separately.
+			 */
+			return !string.Equals(component.Category, ComponentCategories.IoCContainer, StringComparison.OrdinalIgnoreCase)
+				&& string.Equals(component.NameSpace, ComponentCategories.NameSpacePublicScript, StringComparison.OrdinalIgnoreCase);
+		}
+
+		private string ResolveScriptName()
+		{
+			var element = Tenant.GetService<IDiscoveryService>().Configuration.Find(SourceCode.Configuration().Component, SourceCode.Id) as IText;
+			var ms = Tenant.GetService<IMicroServiceService>().Select(element.Configuration().MicroService());
+
+			if (element is IConfiguration config)
+				return $"{ms.Name}/{element.Configuration().ComponentName()}.csx";
+			else
+				return $"{ms.Name}/{element.Configuration().ComponentName()}/{element.FileName}";
+		}
+
 		protected virtual Script<object> CreateScript(string sourceCode, ScriptOptions options, InteractiveAssemblyLoader loader)
 		{
 			return CSharpScript.Create(sourceCode, options: options, assemblyLoader: loader);
 		}
 		protected virtual List<Assembly> References => new List<Assembly>
-				{
-					 CompilerService.LoadSystemAssembly("TomPIT.Core"),
-					 CompilerService.LoadSystemAssembly("TomPIT.ComponentModel"),
-					 CompilerService.LoadSystemAssembly("TomPIT.Sdk"),
-					 CompilerService.LoadSystemAssembly("TomPIT.Runtime"),
-					 CompilerService.LoadSystemAssembly("Newtonsoft.Json")
-				};
+							{
+									 CompilerService.LoadSystemAssembly("TomPIT.Core"),
+									 CompilerService.LoadSystemAssembly("TomPIT.ComponentModel"),
+									 CompilerService.LoadSystemAssembly("TomPIT.Sdk"),
+									 CompilerService.LoadSystemAssembly("TomPIT.Runtime"),
+									 CompilerService.LoadSystemAssembly("Newtonsoft.Json")
+							};
 		protected virtual string[] Usings => Array.Empty<string>();
 
 		public void Dispose()
@@ -124,24 +155,63 @@ namespace TomPIT.Compilation
 
 			sb.AppendLine($"public static class {CompilerService.ScriptInfoClassName}");
 			sb.AppendLine("{");
-			sb.AppendLine("private static readonly System.Collections.Generic.List<TomPIT.Compilation.SourceFileDescriptor> _sourceFiles = new System.Collections.Generic.List<TomPIT.Compilation.SourceFileDescriptor>{");
+			sb.AppendLine("private static readonly System.Collections.Generic.List<TomPIT.Compilation.SourceTypeDescriptor> _sourceTypes = new System.Collections.Generic.List<TomPIT.Compilation.SourceTypeDescriptor>{");
 
 			foreach (var file in ScriptContext.SourceFiles)
 			{
 				var config = file.Value.Configuration();
 				var component = Tenant.GetService<IComponentService>().SelectComponent(config.Component);
+				var declaredTypes = SyntaxBrowser.QueryDeclaredTypes(DocumentIdentity.From(config.MicroService(), component.Token, file.Value.Id));
 
-				sb.AppendLine($"new TomPIT.Compilation.SourceFileDescriptor{{FileName=\"{file.Key}\", Category=\"{component.Category}\", Component=new System.Guid(\"{component.Token.ToString()}\")}},");
+				foreach (var declaredType in declaredTypes)
+				{
+					var resolved = ResolveTypeDeclaration(declaredType);
+
+					if (string.IsNullOrEmpty(resolved.Item1))
+						continue;
+
+					sb.AppendLine("new TomPIT.Compilation.SourceTypeDescriptor{");
+					sb.AppendLine($"Component = new System.Guid(\"{component.Token}\"),");
+					sb.AppendLine($"ContainingType = \"{resolved.Item2}\",");
+					sb.AppendLine($"TypeName = \"{resolved.Item1}\",");
+					sb.AppendLine($"Script = new System.Guid(\"{file.Value.Id}\")");
+					sb.AppendLine("},");
+				}
 			}
 
 			sb.AppendLine("};");
-			sb.AppendLine($"public static System.Guid MicroService => new System.Guid(\"{MicroService.ToString()}\");");
-			sb.AppendLine($"public static System.Guid SourceCode => new System.Guid(\"{SourceCode.Id.ToString()}\");");
-			sb.AppendLine($"public static System.Guid Component => new System.Guid(\"{SourceCode.Configuration().Component.ToString()}\");");
-			sb.AppendLine($"public static System.Collections.Generic.List<TomPIT.Compilation.SourceFileDescriptor> SourceFiles => _sourceFiles;");
+			sb.AppendLine($"public static System.Guid MicroService => new System.Guid(\"{MicroService}\");");
+			sb.AppendLine($"public static System.Guid SourceCode => new System.Guid(\"{SourceCode.Id}\");");
+			sb.AppendLine($"public static System.Guid Component => new System.Guid(\"{SourceCode.Configuration().Component}\");");
+			sb.AppendLine($"public static System.Collections.Generic.List<TomPIT.Compilation.SourceTypeDescriptor> SourceTypes => _sourceTypes;");
 			sb.AppendLine("}");
 
 			return sb.ToString();
+		}
+
+		private static (string, string) ResolveTypeDeclaration(TypeDeclarationSyntax syntax)
+		{
+			if (syntax.Modifiers.Any(f => f.IsKind(SyntaxKind.PartialKeyword)))
+				return (null, null);
+
+			var name = syntax.Identifier.Text;
+			var containingTypeChain = new List<string>();
+
+			var parent = syntax.Parent;
+
+			while (parent is not null && parent.IsKind(SyntaxKind.ClassDeclaration))
+			{
+				var declaration = parent as ClassDeclarationSyntax;
+
+				containingTypeChain.Add(declaration.Identifier.Text);
+
+				parent = parent.Parent;
+			}
+
+			if (containingTypeChain.Any())
+				containingTypeChain.Reverse();
+
+			return (name, string.Join('.', containingTypeChain));
 		}
 	}
 }

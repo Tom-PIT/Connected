@@ -7,7 +7,7 @@ using TomPIT.Sys.Notifications;
 
 namespace TomPIT.Sys.Model.Security
 {
-	internal class RolesModel : SynchronizedRepository<IRole, Guid>
+	public class RolesModel : SynchronizedRepository<IRole, Guid>
 	{
 		public RolesModel(IMemoryCache container) : base(container, "role")
 		{

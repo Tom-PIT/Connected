@@ -11,6 +11,7 @@ namespace TomPIT.Cdn
 	{
 		string Name { get; }
 		string Client { get; }
+		string Recipient { get; }
 		EventSubscriptionBehavior Behavior { get; }
 		JObject Authorization { get; }
 		JObject Arguments { get; }

@@ -6,14 +6,25 @@ namespace TomPIT.Distributed
 {
 	public sealed class TimeoutTask : IDisposable
 	{
-		private readonly Func<Task> _action;
-		private Task _task;
-		private readonly TimeSpan _interval;
+		private readonly Func<Task> _pingAction;
+		private Task _pingTask;
+		private readonly TimeSpan _pingInterval;
 
-		public TimeoutTask(Func<Task> scheduledAction, TimeSpan interval, CancellationToken cancel)
+		private readonly Func<Task> _lifespanAction;
+		private Task _lifespanTask;
+		private readonly TimeSpan _lifespan;
+
+		public TimeoutTask(Func<Task> pingAction, TimeSpan pingInterval, Func<Task> lifespanAction, TimeSpan lifespan, CancellationToken cancel)
+			: this(pingAction, pingInterval, cancel)
 		{
-			_action = scheduledAction;
-			_interval = interval;
+			_lifespanAction = lifespanAction;
+			_lifespan = lifespan;
+		}
+		public TimeoutTask(Func<Task> pingAction, TimeSpan pingInterval, CancellationToken cancel)
+		{
+			_pingAction = pingAction;
+			_pingInterval = pingInterval;
+
 			CancelSource = new CancellationTokenSource();
 
 			cancel.Register(() =>
@@ -29,7 +40,11 @@ namespace TomPIT.Distributed
 			if (IsRunning)
 				return;
 
-			_task = Timeout();
+			if (_pingInterval > TimeSpan.Zero)
+				_pingTask = Timeout();
+
+			if (_lifespan > TimeSpan.Zero)
+				_lifespanTask = Lifespan();
 
 			IsRunning = true;
 		}
@@ -44,7 +59,6 @@ namespace TomPIT.Distributed
 			try
 			{
 				CancelSource.Cancel();
-
 			}
 			catch (OperationCanceledException)
 			{
@@ -64,12 +78,46 @@ namespace TomPIT.Distributed
 				{
 					while (!CancelSource.IsCancellationRequested || IsRunning)
 					{
-						if (_task != null)
+						if (_pingTask is not null)
 						{
-							await Task.Delay(_interval, CancelSource.Token).ConfigureAwait(false);
-							await _action().ConfigureAwait(false);
+							await Task.Delay(_pingInterval, CancelSource.Token).ConfigureAwait(false);
+							await _pingAction().ConfigureAwait(false);
 						}
 					}
+				}
+				catch (TaskCanceledException)
+				{
+					/*
+					 * Do nothing, it is expected to fire when a timeout is cancelled. 
+					 */
+				}
+				finally
+				{
+					IsRunning = false;
+				}
+			}, CancelSource.Token);
+		}
+
+		private Task Lifespan()
+		{
+			return Task.Run(async () =>
+			{
+				try
+				{
+					while (!CancelSource.IsCancellationRequested || IsRunning)
+					{
+						if (_lifespanTask is not null)
+						{
+							await Task.Delay(_lifespan, CancelSource.Token).ConfigureAwait(false);
+							await _lifespanAction().ConfigureAwait(false);
+						}
+					}
+				}
+				catch (TaskCanceledException)
+				{
+					/*
+					 * Do nothing, it is expected to fire when a timeout is cancelled. 
+					 */
 				}
 				finally
 				{
@@ -83,10 +131,16 @@ namespace TomPIT.Distributed
 			Stop();
 			CancelSource.Dispose();
 
-			if (_task != null)
+			if (_pingTask is not null)
 			{
-				_task.Dispose();
-				_task = null;
+				_pingTask.Dispose();
+				_pingTask = null;
+			}
+
+			if (_lifespanTask is not null)
+			{
+				_lifespanTask.Dispose();
+				_lifespanTask = null;
 			}
 		}
 	}

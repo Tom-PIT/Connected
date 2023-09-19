@@ -4,6 +4,6 @@ namespace TomPIT.Security
 {
 	public interface IAuthenticationTokenProvider
 	{
-		string RequestToken(InstanceType type);
+		string RequestToken(InstanceFeatures features);
 	}
 }

@@ -8,7 +8,7 @@ using TomPIT.SysDb.BigData;
 
 namespace TomPIT.Sys.Model.BigData
 {
-	internal class BigDataTransactionsModel : SynchronizedRepository<IServerTransaction, Guid>
+	public class BigDataTransactionsModel : SynchronizedRepository<IServerTransaction, Guid>
 	{
 		public BigDataTransactionsModel(IMemoryCache container) : base(container, "bigdatatransactions")
 		{
@@ -63,15 +63,25 @@ namespace TomPIT.Sys.Model.BigData
 			return All();
 		}
 
-		public Guid Insert(Guid partition, int blockCount)
+		public Guid Insert(Guid partition, Guid timezone, int blockCount)
 		{
 			var part = DataModel.BigDataPartitions.Select(partition);
 
-			if (part == null)
+			if (part is null)
 				throw new SysException(SR.ErrBigDataPartitionNotFound);
 
+			ITimeZone tz = null;
+
+			if (timezone != Guid.Empty)
+			{
+				tz = DataModel.BigDataTimeZones.Select(timezone);
+
+				if (tz is null)
+					throw new SysException(SR.ErrBigDataTimezoneNotFound);
+			}
+
 			var token = Guid.NewGuid();
-			Shell.GetService<IDatabaseService>().Proxy.BigData.Transactions.Insert(part, token, blockCount, DateTime.UtcNow);
+			Shell.GetService<IDatabaseService>().Proxy.BigData.Transactions.Insert(part, tz, token, blockCount, DateTime.UtcNow);
 
 			Refresh(token);
 

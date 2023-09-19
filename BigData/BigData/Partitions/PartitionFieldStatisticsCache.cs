@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
-using TomPIT.Middleware;
 using TomPIT.Reflection;
 
 namespace TomPIT.BigData.Partitions
@@ -23,8 +21,7 @@ namespace TomPIT.BigData.Partitions
 
 		protected override void OnInitializing()
 		{
-			var u = Tenant.CreateUrl("BigDataManagement", "QueryFieldStatistics");
-			var fields = Tenant.Get<List<PartitionFieldStatistics>>(u);
+			var fields = Instance.SysProxy.Management.BigData.QueryFieldStatistics();
 
 			foreach (var field in fields)
 				Set(GenerateKey(field.File, field.FieldName), field, TimeSpan.Zero);
@@ -33,17 +30,9 @@ namespace TomPIT.BigData.Partitions
 		protected override void OnInvalidate(string id)
 		{
 			var tokens = id.Split('.');
+			var field = Instance.SysProxy.Management.BigData.SelectFieldStatistic(Guid.Parse(tokens[0]), tokens[1]);
 
-			var u = Tenant.CreateUrl("BigDataManagement", "SelectFieldStatistic");
-			var e = new JObject
-			{
-				{"file", tokens[0] },
-				{"fieldName", tokens[1] }
-			};
-
-			var field = Tenant.Post<PartitionFieldStatistics>(u, e);
-
-			if (field != null)
+			if (field is not null)
 				Set(GenerateKey(field.File, field.FieldName), field, TimeSpan.Zero);
 		}
 

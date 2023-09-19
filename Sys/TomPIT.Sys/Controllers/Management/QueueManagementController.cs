@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using Microsoft.AspNetCore.Mvc;
 using TomPIT.Storage;
 using TomPIT.Sys.Model;
+using TomPIT.Sys.Model.Cdn;
 
 namespace TomPIT.Sys.Controllers.Management
 {
@@ -15,14 +16,14 @@ namespace TomPIT.Sys.Controllers.Management
 
 			var count = body.Required<int>("count");
 
-			return DataModel.Queue.Dequeue(count, TimeSpan.FromMinutes(5), QueueScope.Content, null);
+			return DataModel.Queue.Dequeue(count, TimeSpan.FromMinutes(5), QueueScope.Content, QueueingModel.Queue);
 		}
 
 		[HttpPost]
 		public void Ping()
 		{
 			var body = FromBody();
-
+			
 			var popReceipt = body.Required<Guid>("popReceipt");
 			var nextVisible = body.Optional("nextVisible", TimeSpan.FromMinutes(2));
 

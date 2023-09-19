@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+
 using TomPIT.Caching;
 using TomPIT.Connectivity;
 using TomPIT.Design.Serialization;
@@ -13,6 +14,7 @@ using TomPIT.Environment;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
+using TomPIT.Runtime;
 using TomPIT.Storage;
 
 namespace TomPIT.ComponentModel
@@ -20,9 +22,11 @@ namespace TomPIT.ComponentModel
 	internal class ComponentService : SynchronizedClientRepository<IComponent, Guid>, IComponentService, IComponentNotification
 	{
 		private readonly Lazy<ConcurrentDictionary<Guid, ConfigurationSerializationState>> _configurationCache = new Lazy<ConcurrentDictionary<Guid, ConfigurationSerializationState>>();
+		private Lazy<SingletonProcessor<Guid>> _configurationProcessor = new Lazy<SingletonProcessor<Guid>>();
 		public event ComponentChangedHandler ComponentChanged;
 		public event ComponentChangedHandler ComponentAdded;
 		public event ComponentChangedHandler ComponentRemoved;
+		public event ComponentChangedHandler Deleting;
 		public event ConfigurationChangedHandler ConfigurationChanged;
 		public event ConfigurationChangedHandler ConfigurationAdded;
 		public event ConfigurationChangedHandler ConfigurationRemoved;
@@ -35,6 +39,8 @@ namespace TomPIT.ComponentModel
 			Folders = new FolderCache(Tenant);
 		}
 
+		private FolderCache Folders { get; }
+
 		protected override void OnInitialized()
 		{
 			var resourceGroups = Tenant.GetService<IResourceGroupService>().Query();
@@ -43,13 +49,7 @@ namespace TomPIT.ComponentModel
 			foreach (var rg in resourceGroups)
 				sb.Append($"{rg.Name},");
 
-			var u = Tenant.CreateUrl("Component", "QueryByResourceGroups");
-			var args = new
-			{
-				resourceGroups = sb.ToString()
-			};
-
-			var components = Tenant.Post<List<Component>>(u, args).ToList<IComponent>();
+			var components = Instance.SysProxy.Components.QueryByResourceGroups(sb.ToString(), null);
 
 			foreach (var component in components)
 				Set(component.Token, component, TimeSpan.Zero);
@@ -57,13 +57,13 @@ namespace TomPIT.ComponentModel
 
 		protected override void OnInvalidate(Guid id)
 		{
-			var u = Tenant.CreateUrl("Component", "SelectByToken")
-				.AddParameter("component", id);
+			var component = Instance.SysProxy.Components.SelectByToken(id);
 
-			var component = Tenant.Get<Component>(u);
-
-			if (component != null)
+			if (component is not null)
+			{
 				Set(component.Token, component, TimeSpan.Zero);
+				ConfigurationCache.TryRemove(component.Token, out var _);
+			}
 		}
 
 		private void OnMicroServiceRemoved(object sender, MicroServiceEventArgs e)
@@ -73,7 +73,9 @@ namespace TomPIT.ComponentModel
 			foreach (var i in components)
 			{
 				if (i.MicroService == e.MicroService)
+				{
 					Remove(i.Token);
+				}
 			}
 		}
 
@@ -81,8 +83,6 @@ namespace TomPIT.ComponentModel
 		{
 			Folders.RefreshMicroService(e.MicroService);
 		}
-
-		private FolderCache Folders { get; }
 
 		public ImmutableList<IComponent> QueryComponents(Guid microService, string category)
 		{
@@ -102,15 +102,15 @@ namespace TomPIT.ComponentModel
 		public IComponent SelectComponent(Guid microService, string category, string name)
 		{
 			return Get(f => f.MicroService == microService
-				&& string.Compare(f.Category, category, true) == 0
-				&& string.Compare(f.Name, name, true) == 0);
+				 && string.Compare(f.Category, category, true) == 0
+				 && string.Compare(f.Name, name, true) == 0);
 		}
 
 		public IComponent SelectComponentByNameSpace(Guid microService, string nameSpace, string name)
 		{
 			return Get(f => f.MicroService == microService
-				&& string.Compare(f.NameSpace, nameSpace, true) == 0
-				&& string.Compare(f.Name, name, true) == 0);
+				 && string.Compare(f.NameSpace, nameSpace, true) == 0
+				 && string.Compare(f.Name, name, true) == 0);
 		}
 
 		public IComponent SelectComponent(Guid component)
@@ -130,20 +130,15 @@ namespace TomPIT.ComponentModel
 			ComponentChanged?.Invoke(Tenant, e);
 		}
 
-		public string CreateName(Guid microService, string category, string prefix)
-		{
-			var u = Tenant.CreateUrl("Component", "CreateName")
-				.AddParameter("microService", microService)
-				.AddParameter("category", category)
-				.AddParameter("prefix", prefix);
-
-			return Tenant.Get<string>(u);
-		}
-
 		public void NotifyRemoved(object sender, ComponentEventArgs e)
 		{
 			Remove(e.Component);
 			ComponentRemoved?.Invoke(Tenant, e);
+		}
+
+		public void NotifyDeleting(object sender, ComponentEventArgs e)
+		{
+			Deleting?.Invoke(Tenant, e);
 		}
 
 		public ImmutableList<IConfiguration> QueryConfigurations(ImmutableList<IComponent> components)
@@ -152,7 +147,7 @@ namespace TomPIT.ComponentModel
 			var ids = components.Select(f => f.Token).Distinct().ToList();
 			var contents = Tenant.GetService<IStorageService>().Download(ids);
 
-			foreach(var content in contents)
+			foreach (var content in contents)
 			{
 				var component = components.FirstOrDefault(f => f.Token == content.Blob);
 
@@ -217,7 +212,7 @@ namespace TomPIT.ComponentModel
 					if (rs == null)
 						throw new RuntimeException($"{SR.ErrResourceGroupNotFound} ({i})");
 
-					var sols = Tenant.GetService<IMicroServiceService>().Query().Where(f=>f.ResourceGroup==rs.Token).ToList();
+					var sols = Tenant.GetService<IMicroServiceService>().Query().Where(f => f.ResourceGroup == rs.Token).ToList();
 
 					if (sols.Count > 0)
 						microServices.AddRange(sols);
@@ -251,6 +246,13 @@ namespace TomPIT.ComponentModel
 			return QueryConfigurations(r.Where(f => f.LockVerb != LockVerb.Delete).ToImmutableList());
 		}
 
+		public ImmutableList<IConfiguration> QueryConfigurations(params string[] categories)
+		{
+			var r = QueryComponents(categories);
+
+			return QueryConfigurations(r.Where(f => f.LockVerb != LockVerb.Delete).ToImmutableList());
+		}
+
 		public IConfiguration SelectConfiguration(Guid microService, string category, string name)
 		{
 			var cmp = SelectComponent(microService, category, name);
@@ -273,26 +275,39 @@ namespace TomPIT.ComponentModel
 
 		private IConfiguration SelectConfiguration(IComponent component, IBlobContent blob, bool throwException)
 		{
-			if (component == null)
+			if (component is null)
 				throw new RuntimeException(SR.ErrComponentNotFound);
 
-			if (ConfigurationCache.ContainsKey(component.Token))
-			{
-				var state = ConfigurationCache[component.Token];
-
+			if (ConfigurationCache.TryGetValue(component.Token, out ConfigurationSerializationState state))
 				return state.Instance;
-				//return Tenant.GetService<ISerializationService>().Deserialize(state.State, state.Type) as IConfiguration;
-			}
 
+			IConfiguration result = null;
+
+			ConfigurationProcessor.Start(component.Token,
+				 () =>
+				 {
+					 result = LoadConfiguration(component, blob, throwException);
+				 },
+				 () =>
+				 {
+					 if (ConfigurationCache.TryGetValue(component.Token, out ConfigurationSerializationState state))
+						 result = state.Instance;
+				 });
+
+			return result;
+		}
+
+		private IConfiguration LoadConfiguration(IComponent component, IBlobContent blob, bool throwException)
+		{
 			var content = blob ?? Tenant.GetService<IStorageService>().Download(component.Token);
 
-			if (content == null)
+			if (content is null)
 				return null;
 
-			var type = Reflection.TypeExtensions.GetType(component.Type);
+			var type = TypeExtensions.GetType(component.Type);
 
-			if (type == null)
-				return throwException ? throw new RuntimeException(string.Format("{0} ({1})", SR.ErrCannotCreateComponentInstance, component.Type)) : (IConfiguration)null;
+			if (type is null)
+				return throwException ? throw new RuntimeException($"{SR.ErrCannotCreateComponentInstance} ({component.Type})") : null;
 
 			var t = Reflection.TypeExtensions.GetType(component.Type);
 			IConfiguration r = null;
@@ -309,7 +324,7 @@ namespace TomPIT.ComponentModel
 					Tenant.LogError(GetType().ShortName(), ex.Message, LogCategories.Services);
 			}
 
-			if (r != null)
+			if (r is not null)
 			{
 				ConfigurationCache.TryAdd(component.Token, new ConfigurationSerializationState
 				{
@@ -317,6 +332,8 @@ namespace TomPIT.ComponentModel
 					Instance = r,
 					State = Tenant.GetService<ISerializationService>().Serialize(r)
 				});
+
+				Tenant.GetService<IStorageService>().Release(component.Token);
 			}
 
 			return r;
@@ -389,21 +406,14 @@ namespace TomPIT.ComponentModel
 		}
 
 		private ConcurrentDictionary<Guid, ConfigurationSerializationState> ConfigurationCache => _configurationCache.Value;
+		private SingletonProcessor<Guid> ConfigurationProcessor => _configurationProcessor.Value;
 
-		public ImmutableList<IComponent> QueryComponents(List<string> resourceGroups, string categories)
+		public ImmutableList<IComponent> QueryComponents(params string[] categories)
 		{
-			var sb = new StringBuilder();
-
-			foreach (var i in resourceGroups)
-				sb.AppendFormat("{0},", i.ToString());
-
-			var u = Tenant.CreateUrl("Component", "QueryByResourceGroups");
-
-			return Tenant.Post<ImmutableList<Component>>(u, new
-			{
-				resourceGroups = sb.ToString().TrimEnd(','),
-				categories
-			}).ToImmutableList<IComponent>();
+			if (categories.Any())
+				return Instance.SysProxy.Components.QueryByCategories(categories);
+			else
+				return Instance.SysProxy.Components.Query();
 		}
 	}
 }

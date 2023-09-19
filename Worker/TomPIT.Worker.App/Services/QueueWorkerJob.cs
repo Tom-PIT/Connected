@@ -1,130 +1,94 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Distributed;
 using TomPIT.Diagnostics;
 using TomPIT.Distributed;
 using TomPIT.Middleware;
+using TomPIT.Serialization;
 using TomPIT.Storage;
 using TomPIT.Worker.Workers;
 
 namespace TomPIT.Worker.Services
 {
-	public class QueueWorkerJob : DispatcherJob<IQueueMessage>
-	{
-		private TimeoutTask _timeout = null;
-		public QueueWorkerJob(IDispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
-		{
-		}
+    public class QueueWorkerJob : DispatcherJob<IQueueMessage>
+    {
+        private readonly IQueueMonitoringService _queueMonitoringService;
+        private TimeoutTask _timeout = null;
+        public QueueWorkerJob(IDispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
+        {
+            _queueMonitoringService = Tenant.GetService<IQueueMonitoringService>();
+        }
 
-		protected override void DoWork(IQueueMessage item)
-		{
-			var m = JsonConvert.DeserializeObject(item.Message) as JObject;
+        protected override void DoWork(IQueueMessage item)
+        {
+            using var queue = new Queue(item);
 
-			_timeout = new TimeoutTask(() =>
-			{
-				MiddlewareDescriptor.Current.Tenant.Post(MiddlewareDescriptor.Current.Tenant.CreateUrl("QueueManagement", "Ping"), new
-				{
-					item.PopReceipt
-				});
+            _timeout = new TimeoutTask(() =>
+            {
+                Instance.SysProxy.Management.Queue.Ping(item.PopReceipt, TimeSpan.FromSeconds(60));
 
-				return Task.CompletedTask;
-			}, TimeSpan.FromSeconds(90), Cancel);
+                return Task.CompletedTask;
+            }, TimeSpan.FromSeconds(90), Cancel);
 
 
-			_timeout.Start();
+            _timeout.Start();
 
-			try
-			{
-				if (!Invoke(item, m))
-					return;
-			}
-			finally
-			{
-				_timeout.Stop();
-				_timeout = null;
-			}
+            try
+            {
+                if (!Invoke(queue))
+                    return;
+            }
+            finally
+            {
+                _timeout.Stop();
+                _timeout = null;
+            }
 
-			MiddlewareDescriptor.Current.Tenant.Post(MiddlewareDescriptor.Current.Tenant.CreateUrl("QueueManagement", "Complete"), new
-			{
-				item.PopReceipt
-			});
-		}
+            Instance.SysProxy.Management.Queue.Complete(item.PopReceipt);
 
-		private bool Invoke(IQueueMessage queue, JObject data)
-		{
-			var component = data.Required<Guid>("component");
-			var worker = data.Required<string>("worker");
-			var arguments = data.Optional<string>("arguments", null);
+            _queueMonitoringService?.SignalProcessed();
 
-			if (!(MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(component) is IQueueConfiguration configuration))
-			{
-				MiddlewareDescriptor.Current.Tenant.LogError(nameof(Invoke), $"{SR.ErrCannotFindConfiguration} ({component})", nameof(QueueWorkerJob));
-				return true;
-			}
+            MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"{typeof(QueueWorkerJob).FullName.PadRight(64)}| Completed queue entry: {Serializer.Serialize(item)}");
+        }
 
-			var w = configuration.Workers.FirstOrDefault(f => string.Compare(f.Name, worker, true) == 0);
+        private bool Invoke(Queue queue)
+        {
+            try
+            {
+                if (!queue.Invoke(Owner.Behavior))
+                {
+                    Owner.Enqueue($"{queue.QueueName}_{queue.Message.BufferKey}", queue.Message);
+                    return false;
+                }
 
-			if (w == null)
-			{
-				MiddlewareDescriptor.Current.Tenant.LogError(nameof(Invoke), $"{SR.ErrQueueWorkerNotFound} ({component})", nameof(QueueWorkerJob));
-				return true;
-			}
+                return true;
+            }
+            catch (ValidationException ex)
+            {
+                if (queue.HandlerInstance.ValidationFailed == Cdn.QueueValidationBehavior.Complete)
+                {
+                    MiddlewareDescriptor.Current.Tenant.LogWarning(ex.Source, ex.Message, LogCategories.Worker);
+                    return true;
+                }
+                else
+                    throw;
+            }
+        }
 
-			using var ctx = new MicroServiceContext(configuration.MicroService());
-			var metricId = ctx.Services.Diagnostic.StartMetric(configuration.Metrics, null);
-			Queue q = null;
+        protected override void OnError(IQueueMessage item, Exception ex)
+        {
+            MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, nameof(QueueWorkerJob));
 
-			try
-			{
-				q = new Queue(arguments, w);
+            var m = JsonConvert.DeserializeObject(item.Message) as JObject;
 
-				if (!q.Invoke(Owner.Behavior))
-				{
-					Owner.Enqueue(q.QueueName, queue);
-					return false;
-				}
+            Instance.SysProxy.Management.Queue.Ping(item.PopReceipt, TimeSpan.FromSeconds(10));
 
-				ctx.Services.Diagnostic.StopMetric(metricId, SessionResult.Success, null);
+            MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"{typeof(QueueWorkerJob).FullName.PadRight(64)}| Error processing entry: {Serializer.Serialize(item)} => {ex}");
 
-				return true;
-			}
-			catch (ValidationException ex)
-			{
-				if (q.HandlerInstance.ValidationFailed == Cdn.QueueValidationBehavior.Complete)
-				{
-					MiddlewareDescriptor.Current.Tenant.LogWarning(ex.Source, ex.Message, LogCategories.Worker);
-					return true;
-				}
-				else
-					throw;
-			}
-			catch
-			{
-				ctx.Services.Diagnostic.StopMetric(metricId, SessionResult.Fail, null);
-
-				throw;
-			}
-		}
-
-		protected override void OnError(IQueueMessage item, Exception ex)
-		{
-			MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, nameof(QueueWorkerJob));
-
-			var m = JsonConvert.DeserializeObject(item.Message) as JObject;
-
-			var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("QueueManagement", "Ping");
-			var d = new JObject
-			{
-				{"popReceipt", item.PopReceipt }
-			};
-
-			MiddlewareDescriptor.Current.Tenant.Post(url, d);
-		}
-	}
+            _queueMonitoringService?.SignalError();
+        }
+    }
 }

@@ -10,7 +10,7 @@ namespace TomPIT.Storage
 
 	public interface IQueueMessage
 	{
-		string Id { get; }
+		long Id { get; }
 		string Message { get; }
 		DateTime Created { get; }
 		DateTime Expire { get; }

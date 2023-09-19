@@ -4,29 +4,8 @@ namespace TomPIT.SysDb.Sql.Messaging
 {
 	internal class MessagingHandler : IMessagingHandler
 	{
-		private IReliableMessagingHandler _messaging = null;
-		private IQueueHandler _queue = null;
+		private IQueueHandler _queue;
 
-		public IReliableMessagingHandler ReliableMessaging
-		{
-			get
-			{
-				if (_messaging == null)
-					_messaging = new ReliableMessagingHandler();
-
-				return _messaging;
-			}
-		}
-
-		public IQueueHandler Queue
-		{
-			get
-			{
-				if (_queue == null)
-					_queue = new QueueHandler();
-
-				return _queue;
-			}
-		}
+		public IQueueHandler Queue => _queue ??= new QueueHandler();
 	}
 }

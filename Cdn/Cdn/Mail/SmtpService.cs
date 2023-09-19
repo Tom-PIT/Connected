@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Immutable;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TomPIT.Configuration;
@@ -43,10 +45,24 @@ namespace TomPIT.Cdn.Mail
 		public static string HostName { get; private set; }
 		public static string Greeting { get; private set; }
 		public static string Endpoint { get; private set; }
+		internal static ImmutableArray<byte> DkimPrivateKey { get; private set; }
+		internal static string DkimSelector { get; private set; }
+		internal static string DkimDomain { get; private set; }
+		internal static string DefaultEmailSender { get; private set; }
 		private void Run()
 		{
 			var tenant = MiddlewareDescriptor.Current.Tenant;
 			var token = Cancel.Token;
+
+			var dkim = tenant.GetService<ISettingService>().GetValue<string>("DkimPrivateKey", null, null, null);
+
+			if (!string.IsNullOrWhiteSpace(dkim))
+				DkimPrivateKey = Encoding.UTF8.GetBytes(dkim).ToImmutableArray();
+
+			DkimSelector = tenant.GetService<ISettingService>().GetValue<string>("DkimSelector", null, null, null);//_tompitsmtp
+			DkimDomain = tenant.GetService<ISettingService>().GetValue<string>("DkimDomain", null, null, null);
+			DefaultEmailSender = tenant.GetService<ISettingService>().GetValue<string>("DefaultEmailSender", null, null, null);
+
 			Endpoint = tenant.GetService<ISettingService>().GetValue<string>("SmtpEndpoint", null, null, null);
 
 			if (string.IsNullOrWhiteSpace(Endpoint))

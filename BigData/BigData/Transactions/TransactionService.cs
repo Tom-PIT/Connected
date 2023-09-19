@@ -1,13 +1,14 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Newtonsoft.Json.Linq;
 using TomPIT.BigData.Partitions;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.BigData;
 using TomPIT.Connectivity;
-using TomPIT.Distributed;
+using TomPIT.Diagnostics;
+using TomPIT.Diagnostics.Tracing;
 using TomPIT.Environment;
 using TomPIT.Middleware;
 using TomPIT.Serialization;
@@ -15,181 +16,167 @@ using TomPIT.Storage;
 
 namespace TomPIT.BigData.Transactions
 {
-	internal class TransactionService : TenantObject, ITransactionService
-	{
-		public TransactionService(ITenant tenant) : base(tenant)
-		{
-		}
+    internal class TransactionService : TenantObject, ITransactionService
+    {
+        private readonly ITraceService _traceService;
+        private readonly ITraceEndpoint _createTransactionEndpoint = new TraceEndpoint("BigData.Transactions", "CreateTransaction");
 
-		public void Complete(Guid popReceipt, Guid block)
-		{
-			var transactionBlock = Select(block);
+        public TransactionService(ITenant tenant) : base(tenant)
+        {
+            _traceService = MiddlewareDescriptor.Current.Tenant.GetService<ITraceService>();
+            _traceService?.AddEndpoint(_createTransactionEndpoint);
+        }
 
-			var u = Tenant.CreateUrl("BigDataManagement", "CompleteTransactionBlock");
-			var e = new JObject
-			{
-				{"popReceipt", popReceipt }
-			};
+        public void Complete(Guid popReceipt, Guid block)
+        {
+            var transactionBlock = Select(block);
 
-			Tenant.Post(u, e);
+            Instance.SysProxy.Management.BigData.CompleteTransactionBlock(popReceipt);
 
-			if (transactionBlock == null)
-				return;
+            if (transactionBlock is null)
+                return;
 
-			var configuration = Tenant.GetService<IComponentService>().SelectConfiguration(transactionBlock.Partition) as IPartitionConfiguration;
-			var partition = Tenant.GetService<IPartitionService>().Select(configuration);
-			var microService = Tenant.GetService<IMicroServiceService>().Select(((IConfiguration)configuration).MicroService());
-			var blobs = Tenant.GetService<IStorageService>().Query(microService.Token, BlobTypes.BigDataTransactionBlock, microService.ResourceGroup, block.ToString());
+            var configuration = Tenant.GetService<IComponentService>().SelectConfiguration(transactionBlock.Partition) as IPartitionConfiguration;
+            var microService = Tenant.GetService<IMicroServiceService>().Select(((IConfiguration)configuration).MicroService());
+            var blobs = Tenant.GetService<IStorageService>().Query(microService.Token, BlobTypes.BigDataTransactionBlock, microService.ResourceGroup, block.ToString());
 
-			foreach (var blob in blobs)
-				Tenant.GetService<IStorageService>().Delete(blob.Token);
-		}
+            foreach (var blob in blobs)
+                Tenant.GetService<IStorageService>().Delete(blob.Token);
+        }
 
-		public List<IQueueMessage> Dequeue(int count)
-		{
-			if (count == 0)
-				return new List<IQueueMessage>();
+        public List<IQueueMessage> Dequeue(int count)
+        {
+            if (count == 0)
+                return new List<IQueueMessage>();
 
-			var u = Tenant.CreateUrl("BigDataManagement", "DequeueTransactionBlocks");
-			var e = new JObject
-			{
-				{"count", count },
-				{"nextVisible", 600 }
-			};
+            return Instance.SysProxy.Management.BigData.DequeueTransactionBlocks(count, 600).ToList();
+        }
 
-			return Tenant.Post<List<QueueMessage>>(u, e).ToList<IQueueMessage>();
-		}
+        public void Ping(Guid popReceipt, TimeSpan delay)
+        {
+            Instance.SysProxy.Management.BigData.PingTransactionBlock(popReceipt, Convert.ToInt32(delay.TotalSeconds));
+        }
 
-		public void Ping(Guid popReceipt, TimeSpan delay)
-		{
-			var u = Tenant.CreateUrl("BigDataManagement", "PingTransactionBlock");
-			var e = new JObject
-			{
-				{"popReceipt", popReceipt },
-				{"nextVisible", Convert.ToInt32(delay.TotalSeconds) }
-			};
+        public ITransactionBlock Select(Guid token)
+        {
+            return Instance.SysProxy.Management.BigData.SelectTransactionBlock(token);
+        }
 
-			Tenant.Post(u, e);
-		}
+        public void Prepare(IPartitionConfiguration partition, JArray items)
+        {
+            using var ctx = new MicroServiceContext(partition.MicroService());
+            var middleware = partition.Middleware(ctx);
 
-		public ITransactionBlock Select(Guid token)
-		{
-			var u = Tenant.CreateUrl("BigDataManagement", "SelectTransactionBlock");
-			var e = new JObject
-			{
-				{"token", token }
-			};
+            if (middleware is null)
+                CreateTransactions(partition, items);
+            else
+            {
+                var instance = ctx.CreateMiddleware<IPartitionComponent>(middleware);
 
-			return Tenant.Post<TransactionBlock>(u, e);
-		}
+                if (instance is null || !instance.Buffered)
+                    CreateTransactions(partition, items);
+                else
+                    BufferItems(instance, partition, items);
+            }
+        }
 
-		public void Prepare(IPartitionConfiguration partition, JArray items)
-		{
-			using var ctx = new MicroServiceContext(partition.MicroService(), Tenant.Url);
-			var middleware = partition.Middleware(ctx);
+        private void BufferItems(IPartitionComponent middleware, IPartitionConfiguration configuration, JArray items)
+        {
+            Tenant.GetService<IBufferingService>().Enqueue(configuration.Component, middleware.BufferTimeout, items);
+        }
 
-			if (middleware == null)
-				CreateTransaction(partition, items);
-			else
-			{
-				var instance = ctx.CreateMiddleware<IPartitionComponent>(middleware);
+        public void CreateTransactions(IPartitionConfiguration partition, JArray items)
+        {
+            var parser = new TransactionParser(partition, items);
 
-				if (instance == null || !instance.Buffered)
-					CreateTransaction(partition, items);
-				else
-					BufferItems(instance, partition, items);
-			}
-		}
+            parser.Execute();
 
-		private void BufferItems(IPartitionComponent middleware, IPartitionConfiguration configuration, JArray items)
-		{
-			Tenant.GetService<IBufferingService>().Enqueue(configuration.Component, middleware.BufferTimeout, items);
-		}
+            var supportsTimezone = partition.SupportsTimezone();
+            var timezones = supportsTimezone ? Tenant.GetService<ITimeZoneService>().Query() : null;
+            var blobs = new Dictionary<Guid, List<Guid>>();
 
-		public void CreateTransaction(IPartitionConfiguration partition, JArray items)
-		{
-			var parser = new TransactionParser(partition, items);
+            _traceService?.Trace(new TraceMessage(_createTransactionEndpoint, Serializer.Serialize(new
+            {
+                Partition = partition.FileName,
+                ItemCount = items?.Count,
+                SupportsTimezone = supportsTimezone,
+                Timezones = timezones?.Select(e => e.Name)
+            })));
 
-			parser.Execute();
+            try
+            {
+                CreateTransaction(partition, null, parser, blobs);
 
-			var transactionId = InsertTransaction(partition, parser.BlockCount);
-			var blobs = new List<Guid>();
+                if (supportsTimezone)
+                {
+                    foreach (var timezone in timezones)
+                        CreateTransaction(partition, timezone, parser, blobs);
+                }
 
-			try
-			{
-				foreach (var block in parser.Blocks)
-					blobs.Add(InsertBlock(parser.MicroService.Token, transactionId, block));
+                foreach (var transaction in blobs)
+                    ActivateTransaction(transaction.Key);
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    Tenant.LogError($"Big data - {nameof(TransactionService)}/{nameof(CreateTransactions)}", ex.ToString());
+                }
+                finally
+                {
+                    foreach (var transaction in blobs)
+                        DeleteTransaction(transaction.Key, transaction.Value);
+                }
+            }
+        }
 
-				ActivateTransaction(transactionId);
-			}
-			catch
-			{
-				DeleteTransaction(transactionId, blobs);
+        private void CreateTransaction(IPartitionConfiguration partition, ITimeZone timezone, TransactionParser parser, Dictionary<Guid, List<Guid>> transactions)
+        {
+            var transactionId = InsertTransaction(partition, timezone, parser.BlockCount);
+            var blocks = new List<Guid>();
 
-				throw;
-			}
-		}
+            transactions.Add(transactionId, blocks);
 
-		private Guid InsertTransaction(IPartitionConfiguration configuration, int blockCount)
-		{
-			var partition = Tenant.GetService<IPartitionService>().Select(configuration);
-			var u = Tenant.CreateUrl("BigDataManagement", "InsertTransaction");
-			var e = new JObject
-			{
-				{"partition", partition.Configuration},
-				{"blockCount", blockCount }
-			};
+            foreach (var block in parser.Blocks)
+                blocks.Add(InsertBlock(parser.MicroService.Token, transactionId, block));
+        }
 
-			return Tenant.Post<Guid>(u, e);
-		}
+        private Guid InsertTransaction(IPartitionConfiguration configuration, ITimeZone timezone, int blockCount)
+        {
+            var partition = Tenant.GetService<IPartitionService>().Select(configuration);
 
-		private Guid InsertBlock(Guid microService, Guid transaction, List<object> items)
-		{
-			var u = Tenant.CreateUrl("BigDataManagement", "InsertTransactionBlock");
-			var e = new JObject
-					{
-						{"transaction", transaction }
-					};
+            return Instance.SysProxy.Management.BigData.InsertTransaction(partition.Configuration, blockCount, timezone is null ? Guid.Empty : timezone.Token);
+        }
 
-			var blockId = Tenant.Post<Guid>(u, e);
+        private Guid InsertBlock(Guid microService, Guid transaction, List<object> items)
+        {
+            var blockId = Instance.SysProxy.Management.BigData.InsertTransactionBlock(transaction);
 
-			Tenant.GetService<IStorageService>().Upload(new TransactionBlockBlob
-			{
-				ContentType = "application/json",
-				FileName = $"{blockId.ToString()}.json",
-				MicroService = microService,
-				PrimaryKey = blockId.ToString(),
-				Token = blockId,
-				ResourceGroup = Tenant.GetService<IResourceGroupService>().Default.Token,
-				Type = BlobTypes.BigDataTransactionBlock
-			}, Encoding.UTF8.GetBytes(Serializer.Serialize(items)), StoragePolicy.Singleton);
+            Tenant.GetService<IStorageService>().Upload(new TransactionBlockBlob
+            {
+                ContentType = "application/json",
+                FileName = $"{blockId}.json",
+                MicroService = microService,
+                PrimaryKey = blockId.ToString(),
+                Token = blockId,
+                ResourceGroup = Tenant.GetService<IResourceGroupService>().Default.Token,
+                Type = BlobTypes.BigDataTransactionBlock
+            }, Encoding.UTF8.GetBytes(Serializer.Serialize(items)), StoragePolicy.Singleton);
 
-			return blockId;
-		}
+            return blockId;
+        }
 
-		private void ActivateTransaction(Guid transaction)
-		{
-			var u = Tenant.CreateUrl("BigDataManagement", "ActivateTransaction");
-			var e = new JObject
-			{
-				{"transaction", transaction}
-			};
+        private void ActivateTransaction(Guid transaction)
+        {
+            Instance.SysProxy.Management.BigData.ActivateTransaction(transaction);
+        }
 
-			Tenant.Post(u, e);
-		}
+        private void DeleteTransaction(Guid transaction, List<Guid> blobs)
+        {
+            Instance.SysProxy.Management.BigData.DeleteTransaction(transaction);
 
-		private void DeleteTransaction(Guid transaction, List<Guid> blobs)
-		{
-			var u = Tenant.CreateUrl("BigDataManagement", "DeleteTransaction");
-			var e = new JObject
-			{
-				{"transaction", transaction }
-			};
-
-			Tenant.Post(u, e);
-
-			foreach (var blob in blobs)
-				Tenant.GetService<IStorageService>().Delete(blob);
-		}
-	}
+            foreach (var blob in blobs)
+                Tenant.GetService<IStorageService>().Delete(blob);
+        }
+    }
 }

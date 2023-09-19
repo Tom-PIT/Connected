@@ -1,14 +1,14 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.StaticFiles;
+using Newtonsoft.Json.Linq;
+using SkiaSharp;
+using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
-using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.StaticFiles;
-using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
 using TomPIT.Design;
@@ -58,8 +58,8 @@ namespace TomPIT.MicroServices.Design.Media
 					string args = Context.Request.Form["arguments"];
 
 					Arguments = string.IsNullOrEmpty(args)
-						? new JObject()
-						: Serializer.Deserialize<JObject>(args);
+						 ? new JObject()
+						 : Serializer.Deserialize<JObject>(args);
 				}
 			}
 			else
@@ -132,8 +132,6 @@ namespace TomPIT.MicroServices.Design.Media
 
 		private void UploadChunk()
 		{
-			Tenant.GetService<IDesignService>().VersionControl.Lock(Media.Component, Development.LockVerb.Edit);
-
 			var metaData = Serializer.Deserialize<ChunkMetaData>(Arguments.Required<string>("chunkMetadata"));
 			var files = Context.Request.Form.Files;
 
@@ -185,8 +183,8 @@ namespace TomPIT.MicroServices.Design.Media
 			{
 				var folder = ResolveFolder(Arguments.Required<string>("destinationId"));
 				var targetFile = folder == null
-					? Media.Files.FirstOrDefault(f => string.Compare(f.FileName, metaData.FileName, true) == 0)
-					: folder.Files.FirstOrDefault(f => string.Compare(f.FileName, metaData.FileName, true) == 0);
+					 ? Media.Files.FirstOrDefault(f => string.Compare(f.FileName, metaData.FileName, true) == 0)
+					 : folder.Files.FirstOrDefault(f => string.Compare(f.FileName, metaData.FileName, true) == 0);
 
 				if (targetFile == null)
 				{
@@ -223,8 +221,6 @@ namespace TomPIT.MicroServices.Design.Media
 
 		private void Rename()
 		{
-			Tenant.GetService<IDesignService>().VersionControl.Lock(Media.Component, Development.LockVerb.Edit);
-
 			var path = PathInfo;
 			var name = Arguments.Required<string>("name");
 			var tokens = path.Split("/");
@@ -280,8 +276,6 @@ namespace TomPIT.MicroServices.Design.Media
 
 		private void Remove()
 		{
-			Tenant.GetService<IDesignService>().VersionControl.Lock(Media.Component, Development.LockVerb.Edit);
-
 			var path = PathInfo;
 
 			if (IsFolder(path))
@@ -355,8 +349,6 @@ namespace TomPIT.MicroServices.Design.Media
 
 		private void Move()
 		{
-			Tenant.GetService<IDesignService>().VersionControl.Lock(Media.Component, Development.LockVerb.Edit);
-
 			var sourcePath = SourcePathInfo;
 			var destinationPath = DestinationPathInfo;
 
@@ -512,7 +504,7 @@ namespace TomPIT.MicroServices.Design.Media
 
 				if (blob != null)
 				{
-					using var ctx = new MicroServiceContext(Tenant.GetService<IMicroServiceService>().Select(blob.MicroService), Tenant.Url);
+					using var ctx = new MicroServiceContext(Tenant.GetService<IMicroServiceService>().Select(blob.MicroService));
 
 					descriptor.Icon = $"{ctx.Services.Routing.RootUrl}/sys/media/{blob.Token}/{blob.Version}";
 				}
@@ -535,8 +527,6 @@ namespace TomPIT.MicroServices.Design.Media
 
 		private void CreateDir()
 		{
-			Tenant.GetService<IDesignService>().VersionControl.Lock(Media.Component, Development.LockVerb.Edit);
-
 			var path = PathInfo;
 			var name = Arguments.Required<string>("name");
 
@@ -580,8 +570,6 @@ namespace TomPIT.MicroServices.Design.Media
 
 		private void Copy()
 		{
-			Tenant.GetService<IDesignService>().VersionControl.Lock(Media.Component, Development.LockVerb.Edit);
-
 			var sourcePath = SourcePathInfo;
 			var destinationPath = DestinationPathInfo;
 
@@ -845,9 +833,9 @@ namespace TomPIT.MicroServices.Design.Media
 			_responseStarted = true;
 
 			var r = new JObject
-			{
-				{"success", success },
-			};
+				{
+					 {"success", success },
+				};
 
 			var a = new JArray();
 
@@ -856,14 +844,14 @@ namespace TomPIT.MicroServices.Design.Media
 			foreach (var descriptor in result)
 			{
 				var o = new JObject
-				{
-					{ "name", descriptor.Name },
-					{ "dateModified", descriptor.Modified },
-					{ "isDirectory", descriptor.IsDirectory },
-					{ "size", descriptor.Size },
-					{ "hasSubDirectories", descriptor.HasSubDirectories },
-					{ "icon", descriptor.Icon }
-				};
+					 {
+						  { "name", descriptor.Name },
+						  { "dateModified", descriptor.Modified },
+						  { "isDirectory", descriptor.IsDirectory },
+						  { "size", descriptor.Size },
+						  { "hasSubDirectories", descriptor.HasSubDirectories },
+						  { "icon", descriptor.Icon }
+					 };
 
 				a.Add(o);
 			}
@@ -872,6 +860,8 @@ namespace TomPIT.MicroServices.Design.Media
 
 			Context.Response.ContentLength = content.Length;
 			Context.Response.Body.WriteAsync(content, 0, content.Length).Wait();
+
+			Context.Response.CompleteAsync().Wait();
 		}
 
 		private void RenderResult(bool success, ExceptionKind ex = ExceptionKind.None)
@@ -882,9 +872,9 @@ namespace TomPIT.MicroServices.Design.Media
 			_responseStarted = true;
 
 			var r = new JObject
-			{
-				{"success", success }
-			};
+				{
+					 {"success", success }
+				};
 
 			if (ex != ExceptionKind.None)
 				r.Add("errorId", (int)ex);
@@ -893,6 +883,8 @@ namespace TomPIT.MicroServices.Design.Media
 
 			Context.Response.ContentLength = content.Length;
 			Context.Response.Body.WriteAsync(content, 0, content.Length).Wait();
+
+			Context.Response.CompleteAsync().Wait();
 		}
 
 		private void CreateThumbnail(IMediaResourceFile file)
@@ -915,11 +907,11 @@ namespace TomPIT.MicroServices.Design.Media
 					{
 						using (var ms = new MemoryStream(content.Content))
 						{
-							var image = Image.FromStream(ms);
+							var image = SKBitmap.Decode(ms);
 
 							if (image != null)
 							{
-								var thumbnail = Tenant.GetService<IGraphicsService>().Resize(image, 100, 100, true);
+								var thumbnail = Tenant.GetService<IGraphicsService>().Imaging.Resize(image, 100, 100, true);
 
 								file.Thumb = Tenant.GetService<IStorageService>().Upload(new Blob
 								{
@@ -937,9 +929,9 @@ namespace TomPIT.MicroServices.Design.Media
 				catch
 				{
 					/*
-					 * could be unsupported image type. we don't really care because it just that
-					 * thumbnail won't be created
-					 */
+			  * could be unsupported image type. we don't really care because it just that
+			  * thumbnail won't be created
+			  */
 				}
 			}
 		}

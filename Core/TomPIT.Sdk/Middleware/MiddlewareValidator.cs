@@ -1,59 +1,89 @@
-﻿using System.Collections;
+﻿using Microsoft.AspNetCore.Antiforgery;
+
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-using Microsoft.AspNetCore.Antiforgery;
+
 using TomPIT.Annotations;
 using TomPIT.Data;
+using TomPIT.Diagnostics;
+using TomPIT.Environment;
 using TomPIT.Exceptions;
+using TomPIT.Globalization;
 using TomPIT.Reflection;
+using TomPIT.Runtime;
+using TomPIT.Security;
 
 namespace TomPIT.Middleware
 {
 	internal delegate void ValidatingHandler(object sender, List<ValidationResult> results);
 	internal class MiddlewareValidator : MiddlewareObject
 	{
-		public event ValidatingHandler Validating;
+		public event ValidatingHandler? Validating;
+
+		private ITraceService _traceService;
+		private Guid _validationId = Guid.NewGuid();
+
 		public MiddlewareValidator(IMiddlewareComponent instance)
-			: base(instance.Context)
+			  : base(instance.Context)
 		{
 			Instance = instance;
+			_traceService = Context.Tenant.GetService<ITraceService>();
 		}
 
 		private IMiddlewareComponent Instance { get; }
 
-		public void Validate()
+		public async Task Validate()
 		{
-			ValidateRoot();
-			Validate(Instance, true);
+			await ValidateRoot();
+			await Validate(Instance, true);
 		}
 
-		private void ValidateRoot()
+		private async Task ValidateRoot()
 		{
-			var af = Instance.GetType().FindAttribute<ValidateAntiforgeryAttribute>();
+			var sw = Stopwatch.StartNew();
 
-			if (af == null)
+			if (Instance.Context is IElevationContext elevation && elevation.State == ElevationContextState.Granted)
 				return;
 
-			if (Shell.HttpContext == null || !Context.Environment.IsInteractive)
+			if (Instance.GetType().FindAttribute<ValidateAntiforgeryAttribute>() is ValidateAntiforgeryAttribute attribute && !attribute.ValidateRequest)
 				return;
 
-			if (!(Shell.HttpContext.RequestServices.GetService(typeof(IAntiforgery)) is IAntiforgery service))
+			if (Shell.HttpContext is null || !Context.Tenant.GetService<IRuntimeService>().Features.HasFlag(InstanceFeatures.Application))
 				return;
 
-			if (Task.Run(async () =>
+			if (!Shell.HttpContext.Request.IsAjaxRequest())
+				return;
+
+			if (Shell.HttpContext.RequestServices.GetService(typeof(IAntiforgery)) is not IAntiforgery service)
+				return;
+
+			try
 			{
-				return await service.IsRequestValidAsync(Shell.HttpContext);
-			}).Result)
-				return;
+				Trace($"Validating antiforgery {sw.ElapsedMilliseconds}");
+				//if (AsyncUtils.RunSync(() => service.IsRequestValidAsync(Shell.HttpContext)))
+				//{
+				//    Trace($"Validation exited due to valid antiforgery found after {sw.ElapsedMilliseconds}");
+				//    return;
+				//}
+				await Task.CompletedTask;
+			}
+			catch (Exception ex)
+			{
+				Trace($"Antiforgery request validation failed due to error {ex}");
+			}
 
-			throw new MiddlewareValidationException(Instance, SR.ValAntiForgery);
+			//throw new MiddlewareValidationException(Instance, SR.ValAntiForgery);
 		}
 
-		public void Validate(object instance, bool triggerValidating)
+		public async Task Validate(object instance, bool triggerValidating)
 		{
 			var results = new List<ValidationResult>();
 			var refs = new List<object>();
@@ -61,27 +91,35 @@ namespace TomPIT.Middleware
 			ValidateProperties(results, instance, refs);
 
 			if (!results.Any() && triggerValidating)
-				Validating?.Invoke(this, results);
+				TriggerValidating(this, results);
 
 			if (results.Any())
 				throw new MiddlewareValidationException(instance, results);
+
+			await Task.CompletedTask;
 		}
+
+		private void TriggerValidating(object sender, List<ValidationResult> results)
+		{
+			Validating?.Invoke(sender, results);
+		}
+
 		private void ValidateProperties(List<ValidationResult> results, object instance, List<object> references)
 		{
-			if (instance == null)
+			if (instance is null)
 				return;
 
 			if (instance.GetType().IsTypePrimitive())
 				return;
 
-			if (instance == null || references.Contains(instance))
+			if (instance is null || references.Contains(instance))
 				return;
 
 			references.Add(instance);
 
 			var properties = instance.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
-			if (properties.Length == 0)
+			if (!properties.Any())
 				return;
 
 			var publicProps = new List<PropertyInfo>();
@@ -89,12 +127,12 @@ namespace TomPIT.Middleware
 
 			foreach (var property in properties)
 			{
-				if (property.GetMethod == null)
+				if (property.GetMethod is null)
 					continue;
 
 				var skipAtt = property.FindAttribute<SkipValidationAttribute>();
 
-				if (skipAtt != null)
+				if (skipAtt is not null)
 					continue;
 
 				if (property.GetMethod.IsPublic)
@@ -113,7 +151,7 @@ namespace TomPIT.Middleware
 			 * If root validation failed we won't go deep because this would probably cause
 			 * duplicate and/or confusing validation messages
 			 */
-			if (results.Count > 0)
+			if (results.Any())
 				return;
 			/*
 			 * Second step is to validate complex public members and collections. 
@@ -122,14 +160,14 @@ namespace TomPIT.Middleware
 			{
 				if (property.PropertyType.IsCollection())
 				{
-					if (!(GetValue(instance, property) is IEnumerable ien))
+					if (GetValue(instance, property) is not IEnumerable ien)
 						continue;
 
 					var en = ien.GetEnumerator();
 
 					while (en.MoveNext())
 					{
-						if (en.Current == null)
+						if (en.Current is null)
 							continue;
 
 						ValidateProperties(results, en.Current, references);
@@ -139,7 +177,7 @@ namespace TomPIT.Middleware
 				{
 					var value = GetValue(instance, property);
 
-					if (value == null)
+					if (value is null)
 						continue;
 
 					ValidateProperties(results, value, references);
@@ -149,7 +187,7 @@ namespace TomPIT.Middleware
 			 * If any complex validation failed we won't validate private members because
 			 * it is possible that initialization would fail for the reason of validation being failed.
 			 */
-			if (results.Count > 0)
+			if (results.Any())
 				return;
 			/*
 			 * Now that validation of the public properties succeed we can go validate nonpublic members
@@ -162,7 +200,7 @@ namespace TomPIT.Middleware
 		{
 			var property = instance.GetType().GetProperty(propertyName);
 
-			if (property == null)
+			if (property is null)
 				return;
 
 			var attributes = property.GetCustomAttributes(false);
@@ -170,7 +208,7 @@ namespace TomPIT.Middleware
 			if (!ValidateRequestValue(results, instance, property, proposedValue))
 				return;
 
-			if (property.PropertyType.IsEnum && !property.PropertyType.IsEnumDefined(proposedValue))
+			if (property.PropertyType.IsEnum && !Enum.TryParse(property.PropertyType, Types.Convert<string>(proposedValue), out _))
 				results.Add(new MiddlewareValidationResult(instance, $"{SR.ValEnumValueNotDefined} ({property.PropertyType.ShortName()}, {property.GetValue(instance)})"));
 
 			foreach (var attribute in attributes)
@@ -184,10 +222,10 @@ namespace TomPIT.Middleware
 						serviceProvider.AddService(typeof(IMiddlewareContext), context);
 						serviceProvider.AddService(typeof(IUniqueValueProvider), instance);
 
-						var ctx = new ValidationContext(instance, serviceProvider, new Dictionary<object, object>
-						{
-							{ "entity", instance }
-						})
+						var ctx = new ValidationContext(instance, serviceProvider, new Dictionary<object, object?>
+										  {
+												 { "entity", instance }
+										  })
 						{
 							DisplayName = property.Name,
 							MemberName = property.Name
@@ -207,10 +245,12 @@ namespace TomPIT.Middleware
 		{
 			var attributes = property.GetCustomAttributes(false);
 
+			var localizeAttribute = attributes.FirstOrDefault(e => e is LocalizedDisplayAttribute);
+
 			if (!ValidateRequestValue(results, instance, property))
 				return;
 
-			if (property.PropertyType.IsEnum && !property.PropertyType.IsEnumDefined(property.GetValue(instance)))
+			if (property.PropertyType.IsEnum && !Enum.TryParse(property.PropertyType, Types.Convert<string>(property.GetValue(instance)), out _))
 				results.Add(new MiddlewareValidationResult(instance, $"{SR.ValEnumValueNotDefined} ({property.PropertyType.ShortName()}, {property.GetValue(instance)})"));
 
 			foreach (var attribute in attributes)
@@ -224,14 +264,34 @@ namespace TomPIT.Middleware
 						serviceProvider.AddService(typeof(IMiddlewareContext), Context);
 						serviceProvider.AddService(typeof(IUniqueValueProvider), Instance);
 
-						var ctx = new ValidationContext(instance, serviceProvider, new Dictionary<object, object>
+						var displayName = property.Name;
+
+						if (localizeAttribute is LocalizedDisplayAttribute lda && instance is MiddlewareApiOperation operationInstance)
 						{
-							{ "entity", this }
-						})
+							var localizationService = MiddlewareDescriptor.Current.Tenant.GetService<ILocalizationService>();
+
+							try
+							{
+								var msTokens = lda.StringTable.Split('/');
+
+								displayName = localizationService?.GetString(msTokens[0], msTokens[1], lda.Key, Thread.CurrentThread.CurrentCulture.LCID, false);
+							}
+							catch
+							{
+								displayName = property.Name;
+							}
+						}
+
+						var ctx = new ValidationContext(instance, serviceProvider, new Dictionary<object, object?>
+								{
+									  { "entity", this }
+								})
 						{
-							DisplayName = property.Name,
-							MemberName = property.Name
+							DisplayName = displayName.ToLower(),
+							MemberName = property.Name,
 						};
+
+						val = LocalizeAttribute(val);
 
 						val.Validate(GetValue(instance, property), ctx);
 					}
@@ -246,19 +306,50 @@ namespace TomPIT.Middleware
 			}
 		}
 
-		private static bool ValidateRequestValue(List<ValidationResult> results, object instance, PropertyInfo property, object value)
+		private static ValidationAttribute LocalizeAttribute(ValidationAttribute attribute)
 		{
-			if (value == null)
+			var attributeName = (attribute.TypeId as Type)?.Name ?? null;
+
+			if (string.IsNullOrEmpty(attributeName))
+				return attribute;
+
+			var property = typeof(SR).GetProperty(attributeName, BindingFlags.Static | BindingFlags.Public);
+
+			if (property is null)
+				return attribute;
+
+			var value = property.GetValue(null) as string;
+
+			if (string.IsNullOrWhiteSpace(value))
+				return attribute;
+
+			attribute.ErrorMessageResourceName = attributeName;
+			attribute.ErrorMessageResourceType = typeof(SR);
+
+			return attribute;
+		}
+
+		private void Trace(string message)
+		{
+			if (!Context.Tenant.GetService<IRuntimeService>().Features.HasFlag(InstanceFeatures.Application))
+				return;
+
+			_traceService?.Trace(nameof(MiddlewareValidator), "RootValidation", $"[{DateTimeOffset.UtcNow}] [{_validationId}] {message}");
+		}
+
+		private static bool ValidateRequestValue(List<ValidationResult> results, object instance, PropertyInfo property, object? value)
+		{
+			if (value is null)
 				return true;
 
 			var att = property.FindAttribute<ValidateRequestAttribute>();
 
-			if (att != null && !att.ValidateRequest)
+			if (att is not null && !att.ValidateRequest)
 				return true;
 
 			var decoded = HttpUtility.HtmlDecode(value.ToString());
 
-			if (decoded.Replace(" ", string.Empty).Contains("<script>"))
+			if (decoded is not null && decoded.Replace(" ", string.Empty).Contains("<script>"))
 			{
 				results.Add(new MiddlewareValidationResult(instance, SR.ValScriptTagNotAllowed));
 				return false;
@@ -277,7 +368,7 @@ namespace TomPIT.Middleware
 			return ValidateRequestValue(results, instance, property, GetValue(instance, property));
 		}
 
-		private static object GetValue(object component, PropertyInfo property)
+		private static object? GetValue(object component, PropertyInfo property)
 		{
 			try
 			{

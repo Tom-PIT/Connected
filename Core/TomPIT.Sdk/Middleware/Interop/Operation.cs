@@ -10,9 +10,10 @@ namespace TomPIT.Middleware.Interop
 		{
 			Invoke(null);
 		}
-		public void Invoke(IMiddlewareContext context)
+
+		public void Invoke(IMiddlewareContext? context)
 		{
-			if (context != null)
+			if (context is not null)
 				this.WithContext(context);
 
 			try

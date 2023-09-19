@@ -11,29 +11,31 @@
         text.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
 
 
-    var path = "Assets/Libraries/monaco/vs";
+    var path = "Assets/Libraries/Monaco/vs";
 
     var ctx = Model as TomPIT.Middleware.IMiddlewareContext;
     if (ctx != null)
     {
-        path = ctx.Services.Routing.MapPath("~/Assets/Libraries/monaco/vs");
+        path = ctx.Services.Routing.MapPath("~/Assets/Libraries/Monaco/vs");
     }
 }
 
 @section head {
+    <partial name="~/Views/Shared/DevHeader.cshtml" />
+    
     <environment names="Staging,Production">
         <link rel="stylesheet" type="text/css" href="~/Assets/ide.min.css" />
         <script src="~/Assets/ide.min.js"></script>
     </environment>
 
     <environment names="Development">
-		<link rel="stylesheet" type="text/css" href="~/Assets/Styles/development.css" />
+        <link rel="stylesheet" type="text/css" href="~/Assets/Styles/development.css" />
         <script src="~/Assets/Scripts/ide.js"></script>
         <script src="~/Assets/Scripts/textEditor.js"></script>
     </environment>
 }
 
-<script src="~/Assets/Libraries/monaco/vs/loader.js"></script>
+<script src="~/Assets/Libraries/Monaco/vs/loader.js"></script>
 
 
 <div id="ide">
@@ -82,6 +84,9 @@
                         </div>
                         <div class="form-group pt-1">
                             <button type="button" class="btn btn-primary" id="buttonSubmit">Submit</button>
+                            <button type="button" class="btn btn-light" data-tp-tag="toolbar-action" id="btnResetBody">
+                                Reset body
+                            </button>
                             <div class="float-right">
                                 <div class="btn-toolbar">
                                     <div class="btn-group">
@@ -145,13 +150,6 @@
 </div>
 
 
-@section Scripts {
-    <script>
-        DevExpress.ui.setTemplateEngine("underscore");
-    </script>
-}
-
-
 <script>
     var selectedTest = null,
         saveAs = false,
@@ -204,6 +202,7 @@
         language: 'json',
         onCreated: function (sender, instance) {
             textEditorRequestBody = instance;
+            sender.registerForObservation(document.querySelector('#navRequestBody'));
         }
     });
 
@@ -214,6 +213,7 @@
         onCreated: function (sender, instance) {
             instance.updateOptions({ readOnly: true });
             textEditorResponseBody = instance;
+            sender.registerForObservation(document.querySelector('#navResponseBody'));
         }
     });
 
@@ -241,6 +241,25 @@
                     .then(() => {
                         textEditorResponseBody.updateOptions({ readOnly: true });
                     });
+            }
+        });
+    });
+
+    $('#btnResetBody').click(function () {
+        var api = $('#editApi').dxSelectBox('instance').option('value');
+
+        tompit.post({
+            url: '@Url.RouteUrl("sys.apitest.SelectDefaultOperationBody")',
+            data: {
+                'operation': api
+            },
+            progress: tompit.findProgress('#ide'),
+            onSuccess: function (data) {
+                $('#tabRequest').tab('show');
+                textEditorRequestBody.setValue(JSON.stringify(data));
+
+                textEditorRequestBody.updateOptions({ readOnly: false });
+                textEditorRequestBody.getAction('editor.action.formatDocument').run();
             }
         });
     });
@@ -273,8 +292,14 @@
         }
     });
 
+    const operationsList = @Html.Raw(Html.TP().JavaScript.Array(Model.Operations));
+
 	$('#editApi').dxSelectBox({
-		items: @Html.Raw(Html.TP().JavaScript.Array(Model.Operations)),
+        dataSource: new DevExpress.data.DataSource({
+            store: operationsList,
+            paginate: true,
+            pageSize: 10
+        }),
 		searchEnabled: true
     }).dxValidator({
         validationRules: [{
@@ -282,6 +307,7 @@
         }],
         validationGroup: 'form'
     });
+
 
     $('#editTitle').dxTextBox({
         maxLength: 128,
@@ -335,7 +361,6 @@
             }
         });
     });
-
 
     function refreshExisting() {
         tompit.post({

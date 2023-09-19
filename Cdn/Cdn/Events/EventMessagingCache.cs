@@ -1,116 +1,119 @@
-﻿using System;
+﻿using Org.BouncyCastle.Cms;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
+using TomPIT.Environment;
+using TomPIT.UI.Theming.Utils;
 
 namespace TomPIT.Cdn.Events
 {
-	internal static class EventMessagingCache
-	{
-		private static readonly ConcurrentDictionary<string, List<EventMessage>> _clients;
+    internal static class EventMessagingCache
+    {
+        private static readonly ConcurrentDictionary<string, EventMessages> _clients;
 
-		static EventMessagingCache()
-		{
-			_clients = new ConcurrentDictionary<string, List<EventMessage>>();
-		}
+        static EventMessagingCache()
+        {
+            _clients = new ConcurrentDictionary<string, EventMessages>(StringComparer.OrdinalIgnoreCase);
+        }
 
-		private static ConcurrentDictionary<string, List<EventMessage>> Clients => _clients;
+        public static ConcurrentDictionary<string, EventMessages> Clients => _clients;
 
-		public static void Clean()
-		{
-			foreach(var client in Clients)
-			{
-				var items = client.Value.Where(f => f.Expire <= DateTime.UtcNow).ToImmutableList();
+        public static void Clean()
+        {
+            foreach (var client in Clients)
+            {
+                client.Value.Scave();
 
-				foreach (var item in items)
-					client.Value.Remove(item);
+                if (client.Value.IsEmpty)
+                    Clients.TryRemove(client.Key, out _);
+            }
+        }
 
-				if (client.Value.Count == 0)
-					Clients.TryRemove(client.Key, out _);
-			}
-		}
-		public static ImmutableList<EventMessage> Dequeue()
-		{
-			var result = ImmutableList<EventMessage>.Empty;
+        public static ImmutableList<EventMessage> Dequeue()
+        {
+            var result = ImmutableList<EventMessage>.Empty;
 
-			foreach (var client in Clients)
-			{
-				var items = client.Value.Where(f => f.NextVisible <= DateTime.UtcNow);
+            foreach (var client in Clients)
+            {
+                var items = client.Value.Dequeue();
 
-				if (items.Any())
-					result.AddRange(items);
-			}
+                if (!items.IsDefaultOrEmpty)
+                    result = result.AddRange(items);
+            }
 
-			foreach (var item in result)
-				item.NextVisible = item.NextVisible.AddSeconds(5);
+            return result;
+        }
 
-			return result;
-		}
+        public static void Remove(string connectionId)
+        {
+            foreach (var client in Clients)
+            {
+                client.Value.Remove(connectionId);
 
-		public static void Remove(string connectionId)
-		{
-			foreach(var client in Clients)
-			{
-				var items = client.Value.Where(f => string.Compare(f.Connection, connectionId, true) == 0).ToImmutableArray();
+                if (client.Value.IsEmpty)
+                    Clients.TryRemove(client.Key, out _);
+            }
+        }
+        public static void Remove(EventAcknowledgeArgs e)
+        {
+            if (!Clients.TryGetValue(e.Client, out EventMessages items))
+                return;
 
-				foreach (var item in items)
-					client.Value.Remove(item);
+            items.Remove(e.Id);
 
-				if (client.Value.Count == 0)
-					Clients.TryRemove(client.Key, out _);
-			}
-		}
-		public static void Remove(EventAcknowledgeArgs e)
-		{
-			if (!Clients.TryGetValue(e.Client.ToLowerInvariant(), out List<EventMessage> items))
-				return;
+            if (items.IsEmpty)
+            {
+                lock (items)
+                {
+                    if (items.IsEmpty)
+                    {
+                        if (Clients.TryRemove(e.Client, out EventMessages removed))
+                        {
+                            if (!removed.IsEmpty)
+                                Clients.TryAdd(e.Client, removed);
+                        }
+                    }
+                }
+            }
+        }
 
-			var item = items.FirstOrDefault(f => f.Id == e.Id);
+        public static void Remove(string client, string eventName, string recipient)
+        {
+            if (string.IsNullOrEmpty(client))
+                return;
 
-			if (item != null)
-				items.Remove(item);
+            if (!Clients.TryGetValue(client, out EventMessages items))
+                return;
 
-			if (items.Count == 0)
-				Clients.TryRemove(e.Client.ToLowerInvariant(), out _);
-		}
+            lock (items)
+            {
+                items.RemoveEvents(eventName, recipient);
 
-		public static void Remap(string client, string connection)
-		{
-			if (!Clients.TryGetValue(client.ToLowerInvariant(), out List<EventMessage> items))
-				return;
+                if (items.IsEmpty)
+                {
+                    if (Clients.TryRemove(client, out EventMessages removed))
+                    {
+                        if (!removed.IsEmpty)
+                            Clients.TryAdd(client, removed);
+                    }
+                }
+            }
+        }
 
-			foreach (var item in items)
-				item.Connection = connection;
-		}
-		public static void Remove(string client, string eventName)
-		{
-			if (string.IsNullOrEmpty(client))
-				return;
+        public static void Add(string client, EventMessage message)
+        {
+            if (!Clients.TryGetValue(client, out EventMessages items))
+            {
+                items = new EventMessages();
 
-			if (!Clients.TryGetValue(client.ToLowerInvariant(), out List<EventMessage> items))
-				return;
+                if (!Clients.TryAdd(client, items))
+                    Clients.TryGetValue(client, out items);
+            }
 
-			var obsolete = items.Where(f => string.Compare(f.Event, eventName, true) == 0).ToImmutableList();
-
-			foreach (var o in obsolete)
-				items.Remove(o);
-
-			if (items.Count == 0)
-				Clients.Remove(client.ToLowerInvariant(), out _);
-		}
-
-		public static void Add(string client, EventMessage message)
-		{
-			if(!Clients.TryGetValue(client.ToLowerInvariant(), out List<EventMessage> items))
-			{
-				items = new List<EventMessage>();
-
-				if (!Clients.TryAdd(client.ToLowerInvariant(), items))
-					Clients.TryGetValue(client.ToLowerInvariant(), out items);
-			}
-
-			items.Add(message);
-		}
-	}
+            items.Add(message);
+        }
+    }
 }

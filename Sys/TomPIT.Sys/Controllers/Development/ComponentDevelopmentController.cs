@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
@@ -42,6 +43,7 @@ namespace TomPIT.Sys.Controllers.Development
 		[HttpPost]
 		public void UpdateIndexStates()
 		{
+			return;
 			var body = FromBody();
 			var items = body.Required<JArray>("items");
 			var parameters = new List<IComponentIndexState>();
@@ -62,12 +64,13 @@ namespace TomPIT.Sys.Controllers.Development
 				});
 			}
 
-			DataModel.Components.Update(parameters);
+			DataModel.DevelopmentStates.Update(parameters);
 		}
 
 		[HttpPost]
 		public void UpdateAnalyzerStates()
 		{
+			return;
 			var body = FromBody();
 			var items = body.Required<JArray>("items");
 			var parameters = new List<IComponentAnalyzerState>();
@@ -83,12 +86,20 @@ namespace TomPIT.Sys.Controllers.Development
 				{
 					Component = cmp,
 					Element = item.Optional("element", Guid.Empty),
-					State = item.Required<AnalyzerState>("index_state"),
-					TimeStamp = item.Required<DateTime>("indextimestamp")
+					State = item.Required<AnalyzerState>("state"),
+					TimeStamp = item.Required<DateTime>("timestamp")
 				});
 			}
 
-			DataModel.Components.Update(parameters);
+			DataModel.DevelopmentStates.Update(parameters);
+		}
+
+		public ImmutableArray<IComponentDevelopmentState> DequeueDevelopmentStates()
+		{
+			var body = FromBody();
+			var count = body.Required<int>("count");
+
+			return DataModel.DevelopmentStates.Dequeue(count);
 		}
 
 		[HttpPost]

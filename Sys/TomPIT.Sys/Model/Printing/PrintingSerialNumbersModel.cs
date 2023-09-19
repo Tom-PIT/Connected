@@ -5,7 +5,7 @@ using TomPIT.SysDb.Printing;
 
 namespace TomPIT.Sys.Model.Printing
 {
-	internal class PrintingSerialNumbersModel : SynchronizedRepository<ISerialNumber, string>
+	public class PrintingSerialNumbersModel : SynchronizedRepository<ISerialNumber, string>
 	{
 		public PrintingSerialNumbersModel(IMemoryCache container) : base(container, "printSerialNumber")
 		{
@@ -50,7 +50,7 @@ namespace TomPIT.Sys.Model.Printing
 		{
 			var existing = Get(category.ToLowerInvariant());
 
-			if(existing == null)
+			if (existing == null)
 			{
 				try
 				{
@@ -62,7 +62,7 @@ namespace TomPIT.Sys.Model.Printing
 				}
 
 				Refresh(category);
-				
+
 				return Ensure(category);
 			}
 

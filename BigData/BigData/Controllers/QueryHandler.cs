@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Net;
-using System.Text;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
+using System.Net;
+using System.Text;
 using TomPIT.BigData.Persistence;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.BigData;
@@ -12,79 +12,87 @@ using TomPIT.Serialization;
 
 namespace TomPIT.BigData.Controllers
 {
-	internal class QueryHandler : MicroServiceContext
-	{
-		public QueryHandler(HttpContext context)
-		{
-			Context = context;
+    internal class QueryHandler : MicroServiceContext
+    {
+        private readonly bool _successfullyInitialized = false;
 
-			var ms = context.GetRouteValue("microService");
-			var partition = context.GetRouteValue("partition");
+        public QueryHandler(HttpContext context)
+        {
+            Context = context;
 
-			var microService = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(ms.ToString());
+            var ms = context.GetRouteValue("microService");
+            var partition = context.GetRouteValue("partition");
 
-			if (microService == null)
-			{
-				context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-				return;
-			}
+            var microService = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(ms.ToString());
 
-			Configuration = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(microService.Token, ComponentCategories.BigDataPartition, partition.ToString()) as IPartitionConfiguration;
+            if (microService == null)
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                return;
+            }
 
-			if (Configuration == null)
-			{
-				context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-				return;
-			}
+            Configuration = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(microService.Token, ComponentCategories.BigDataPartition, partition.ToString()) as IPartitionConfiguration;
 
-			MicroService = microService;
+            if (Configuration == null)
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                return;
+            }
 
-			Initialize(MiddlewareDescriptor.Current.Tenant.Url);
+            MicroService = microService;
 
-			Body = Context.Request.Body.ToType<JArray>();
-		}
+            Initialize();
 
-		public void ProcessRequest()
-		{
-			var parameters = new List<QueryParameter>();
+            Body = Context.Request.Body.ToType<JArray>();
+            _successfullyInitialized = true;
+        }
 
-			foreach (JObject parameter in Body)
-			{
-				var property = parameter.First as JProperty;
+        public void ProcessRequest()
+        {
+            if (!_successfullyInitialized)
+                return;
 
-				var value = ((JValue)property.Value).Value;
+            var parameters = new List<QueryParameter>();
 
-				try
-				{
-					value = Serializer.Deserialize<JArray>(value);
-				}
-				catch { }
+            foreach (JObject parameter in Body)
+            {
+                var property = parameter.First as JProperty;
 
-				parameters.Add(new QueryParameter
-				{
-					Name = property.Name,
-					Value = value
-				});
-			}
+                var value = ((JValue)property.Value).Value;
 
-			var result = MiddlewareDescriptor.Current.Tenant.GetService<IPersistenceService>().Query(Configuration, parameters);
+                try
+                {
+                    value = Serializer.Deserialize<JArray>(value);
+                }
+                catch { }
 
-			if (result != null)
-			{
-				var content = Serializer.Serialize(result);
-				var buffer = Encoding.UTF8.GetBytes(content);
+                parameters.Add(new QueryParameter
+                {
+                    Name = property.Name,
+                    Value = value
+                });
+            }
 
-				Shell.HttpContext.Response.Clear();
-				Shell.HttpContext.Response.ContentLength = buffer.Length;
-				Shell.HttpContext.Response.ContentType = "application/json";
-				Shell.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
+            var result = MiddlewareDescriptor.Current.Tenant.GetService<IPersistenceService>().Query(Configuration, parameters);
 
-				Shell.HttpContext.Response.Body.WriteAsync(buffer, 0, buffer.Length);
-			}
-		}
+            if (result != null)
+            {
+                var content = Serializer.Serialize(result);
+                var buffer = Encoding.UTF8.GetBytes(content);
 
-		private IPartitionConfiguration Configuration { get; }
-		private HttpContext Context { get; }
-		private JArray Body { get; set; }
-	}
+                Shell.HttpContext.Response.Clear();
+                Shell.HttpContext.Response.ContentLength = buffer.Length;
+                Shell.HttpContext.Response.ContentType = "application/json";
+                Shell.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
+
+                Shell.HttpContext.Response.Body.WriteAsync(buffer, 0, buffer.Length).Wait();
+
+                Shell.HttpContext.Response.CompleteAsync().Wait();
+            }
+        }
+
+        private IPartitionConfiguration Configuration { get; }
+        private HttpContext Context { get; }
+        private JArray Body { get; set; }
+    }
 }

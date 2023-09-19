@@ -9,5 +9,6 @@ namespace TomPIT.IoC
 		public string Selector { get; set; }
 		public UIInjectionMode InjectionMode { get; set; } = UIInjectionMode.Append;
 		public int Order { get; set; }
+		public string ContainerCss { get; set; }
 	}
 }

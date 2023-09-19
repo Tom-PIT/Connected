@@ -261,3 +261,16 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+/TomPIT.RemoteDebugger
+/installer
+/Build/execs
+/Management/TomPIT.Management.UI/wwwroot/Assets/styles.min.css
+/Management/TomPIT.Management.UI/wwwroot/Assets/Libraries/stylestmp.min.css
+/Management/TomPIT.Management.UI/wwwroot/Assets/scripts.min.js
+/Reporting/TomPIT.Reporting/wwwroot/Assets/reporting.design.min.css
+/Reporting/TomPIT.Reporting/wwwroot/Assets/reporting.design.min.js
+/Reporting/TomPIT.Reporting/wwwroot/Assets/reporting.min.css
+/App/TomPIT.App.UI/wwwroot/Assets/styles.min.css
+/Development/TomPIT.Development.UI/wwwroot/Assets/devscripts.min.js
+/Development/TomPIT.Development.UI/wwwroot/Assets/devstyles.min.css
+/TomPIT.Connected/sys.json

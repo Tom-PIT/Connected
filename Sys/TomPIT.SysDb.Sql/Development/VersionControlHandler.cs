@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Data.Sql;
 using TomPIT.Development;
@@ -10,200 +10,203 @@ using TomPIT.SysDb.Development;
 
 namespace TomPIT.SysDb.Sql.Development
 {
-	internal class VersionControlHandler : IVersionControlHandler
-	{
-		public void DeleteCommit(ICommit commit)
-		{
-			using var w = new Writer("tompit.version_control_commit_del");
+    internal class VersionControlHandler : IVersionControlHandler
+    {
+        public void DeleteCommit(ICommit commit)
+        {
+            using var w = new Writer("tompit.version_control_commit_del");
 
-			w.CreateParameter("@id", commit.GetId());
+            w.CreateParameter("@id", commit.GetId());
 
-			w.Execute();
-		}
+            w.Execute();
+        }
 
-		public void InsertCommit(Guid token, IMicroService service, IUser user, DateTime created, string comment, List<IComponent> components)
-		{
-			using var w = new Writer("tompit.version_control_commit_ins");
+        public void InsertCommit(Guid token, IMicroService service, IUser user, DateTime created, string comment, List<IComponent> components)
+        {
+            using var w = new Writer("tompit.version_control_commit_ins");
 
-			w.CreateParameter("@token", token);
-			w.CreateParameter("@service", service.Token);
-			w.CreateParameter("@user", user.GetId());
-			w.CreateParameter("@created", created);
-			w.CreateParameter("@comment", comment);
+            w.CreateParameter("@token", token);
+            w.CreateParameter("@service", service.Token);
+            w.CreateParameter("@user", user.GetId());
+            w.CreateParameter("@created", created);
+            w.CreateParameter("@comment", comment);
 
-			var a = new JArray();
+            var a = new JArray();
 
-			foreach (var i in components)
-			{
-				a.Add(new JObject
-					 {
-						  {"token", i.Token }
-					 });
-			}
+            foreach (var i in components)
+            {
+                a.Add(new JObject
+                     {
+                          {"token", i.Token }
+                     });
+            }
 
-			w.CreateParameter("@components", a);
+            w.CreateParameter("@components", a);
 
-			w.Execute();
-		}
+            w.Execute();
+        }
 
-		public void InsertComponentHistory(IUser user, IComponent component, string name, LockVerb verb, DateTime created, Guid blob)
-		{
-			using var w = new Writer("tompit.component_history_ins");
+        public void InsertComponentHistory(IUser user, IComponent component, string name, LockVerb verb, DateTime created, Guid blob)
+        {
+            using var w = new Writer("tompit.component_history_ins");
 
-			w.CreateParameter("@user", user.GetId());
-			w.CreateParameter("@component", component.Token);
-			w.CreateParameter("@name", name);
-			w.CreateParameter("@created", created);
-			w.CreateParameter("@configuration", blob);
-			w.CreateParameter("@verb", verb);
+            w.CreateParameter("@user", user.GetId());
+            w.CreateParameter("@component", component.Token);
+            w.CreateParameter("@name", name);
+            w.CreateParameter("@created", created);
+            w.CreateParameter("@configuration", blob);
+            w.CreateParameter("@verb", verb);
 
-			w.Execute();
-		}
+            w.Execute();
+        }
 
-		public void UndoComponentHistory(IComponent component)
-		{
-			using var w = new Writer("tompit.component_history_undo");
+        public void UndoComponentHistory(IComponent component)
+        {
+            using var w = new Writer("tompit.component_history_undo");
 
-			w.CreateParameter("@component", component.Token);
+            w.CreateParameter("@component", component.Token);
 
-			w.Execute();
-		}
+            w.Execute();
+        }
 
-		public List<IComponent> QueryCommitComponents(ICommit commit)
-		{
-			using var r = new Reader<Component>("tompit.component_commit_que");
+        public List<IComponent> QueryCommitComponents(ICommit commit)
+        {
+            using var r = new Reader<Component>("tompit.component_commit_que");
 
-			r.CreateParameter("@commit", commit.GetId());
+            r.CreateParameter("@commit", commit.GetId());
 
-			return r.Execute().ToList<IComponent>();
-		}
+            return r.Execute().ToList<IComponent>();
+        }
 
-		public List<ICommit> LookupCommits(List<Guid> tokens)
-		{
-			using var r = new Reader<Commit>("tompit.version_control_commit_lookup");
+        public List<ICommit> LookupCommits(List<Guid> tokens)
+        {
+            using var r = new Reader<Commit>("tompit.version_control_commit_lookup");
 
-			var a = new JArray();
+            var a = new JArray();
 
-			foreach (var token in tokens)
-			{
-				a.Add(new JObject
-				{
-					{"token", token },
-				});
-			};
+            foreach (var token in tokens)
+            {
+                a.Add(new JObject
+                {
+                    {"token", token },
+                });
+            };
 
-			r.CreateParameter("tokens", a);
+            r.CreateParameter("tokens", a);
 
-			return r.Execute().ToList<ICommit>();
-		}
+            return r.Execute().ToList<ICommit>();
+        }
 
-		public List<ICommit> QueryCommits()
-		{
-			using var r = new Reader<Commit>("tompit.version_control_commit_que");
+        public List<ICommit> QueryCommits()
+        {
+            using var r = new Reader<Commit>("tompit.version_control_commit_que");
 
-			return r.Execute().ToList<ICommit>();
-		}
+            return r.Execute().ToList<ICommit>();
+        }
 
-		public List<ICommit> QueryCommits(IMicroService service)
-		{
-			using var r = new Reader<Commit>("tompit.version_control_commit_que");
+        public List<ICommit> QueryCommits(IMicroService service)
+        {
+            using var r = new Reader<Commit>("tompit.version_control_commit_que");
 
-			r.CreateParameter("@service", service.Token);
+            r.CreateParameter("@service", service.Token);
 
-			return r.Execute().ToList<ICommit>();
-		}
+            return r.Execute().ToList<ICommit>();
+        }
 
-		public List<ICommit> QueryCommits(IMicroService service, IComponent component)
-		{
-			using var r = new Reader<Commit>("tompit.version_control_commit_que");
+        public List<ICommit> QueryCommits(IMicroService service, IComponent component)
+        {
+            using var r = new Reader<Commit>("tompit.version_control_commit_que");
 
-			r.CreateParameter("@service", service.Token);
-			r.CreateParameter("@component", component.Token);
+            r.CreateParameter("@service", service.Token);
+            r.CreateParameter("@component", component.Token);
 
-			return r.Execute().ToList<ICommit>();
-		}
+            return r.Execute().ToList<ICommit>();
+        }
 
-		public List<ICommit> QueryCommits(IMicroService service, IUser user)
-		{
-			using var r = new Reader<Commit>("tompit.version_control_commit_que");
+        public List<ICommit> QueryCommits(IMicroService service, IUser user)
+        {
+            using var r = new Reader<Commit>("tompit.version_control_commit_que");
 
-			r.CreateParameter("@service", service.Token);
-			r.CreateParameter("@user", user.GetId(), true);
+            if (service is not null)
+                r.CreateParameter("@service", service.Token);
 
-			return r.Execute().ToList<ICommit>();
-		}
+            if (user is not null)
+                r.CreateParameter("@user", user.GetId(), true);
 
-		public ICommit SelectCommit(Guid token)
-		{
-			using var r = new Reader<Commit>("tompit.version_control_commit_sel");
+            return r.Execute().ToList<ICommit>();
+        }
 
-			r.CreateParameter("@token", token);
+        public ICommit SelectCommit(Guid token)
+        {
+            using var r = new Reader<Commit>("tompit.version_control_commit_sel");
 
-			return r.ExecuteSingleRow();
-		}
+            r.CreateParameter("@token", token);
 
-		public IComponentHistory SelectNonCommited(Guid component)
-		{
-			using var r = new Reader<ComponentHistory>("tompit.component_history_open_sel");
+            return r.ExecuteSingleRow();
+        }
 
-			r.CreateParameter("@component", component);
+        public IComponentHistory SelectNonCommited(Guid component)
+        {
+            using var r = new Reader<ComponentHistory>("tompit.component_history_open_sel");
 
-			return r.ExecuteSingleRow();
-		}
+            r.CreateParameter("@component", component);
 
-		public List<IComponentHistory> QueryHistory(IComponent component)
-		{
-			using var r = new Reader<ComponentHistory>("tompit.component_history_que");
+            return r.ExecuteSingleRow();
+        }
 
-			r.CreateParameter("@component", component.Token);
+        public List<IComponentHistory> QueryHistory(IComponent component)
+        {
+            using var r = new Reader<ComponentHistory>("tompit.component_history_que");
 
-			return r.Execute().ToList<IComponentHistory>();
-		}
+            r.CreateParameter("@component", component.Token);
 
-		public List<IComponentHistory> QueryMicroServiceHistory(IMicroService microService)
-		{
-			using var r = new Reader<ComponentHistory>("tompit.component_history_que");
+            return r.Execute().ToList<IComponentHistory>();
+        }
 
-			r.CreateParameter("@service", microService.Token);
+        public List<IComponentHistory> QueryMicroServiceHistory(IMicroService microService)
+        {
+            using var r = new Reader<ComponentHistory>("tompit.component_history_que");
 
-			return r.Execute().ToList<IComponentHistory>();
-		}
+            r.CreateParameter("@service", microService.Token);
 
-		public List<IComponentHistory> QueryCheckout(IMicroService microService)
-		{
-			using var r = new Reader<ComponentHistory>("tompit.component_checkout_que");
+            return r.Execute().ToList<IComponentHistory>();
+        }
 
-			r.CreateParameter("@service", microService.Token);
+        public List<IComponentHistory> QueryCheckout(IMicroService microService)
+        {
+            using var r = new Reader<ComponentHistory>("tompit.component_checkout_que");
 
-			return r.Execute().ToList<IComponentHistory>();
-		}
+            r.CreateParameter("@service", microService.Token);
 
-		public List<IComponentHistory> QueryCommitDetails(ICommit commit)
-		{
-			using var r = new Reader<ComponentHistory>("tompit.component_history_que");
+            return r.Execute().ToList<IComponentHistory>();
+        }
 
-			r.CreateParameter("@commit", commit.GetId());
+        public List<IComponentHistory> QueryCommitDetails(ICommit commit)
+        {
+            using var r = new Reader<ComponentHistory>("tompit.component_history_que");
 
-			return r.Execute().ToList<IComponentHistory>();
-		}
+            r.CreateParameter("@commit", commit.GetId());
 
-		public IComponentHistory SelectCommitDetail(ICommit commit, Guid component)
-		{
-			using var r = new Reader<ComponentHistory>("tompit.component_history_sel");
+            return r.Execute().ToList<IComponentHistory>();
+        }
 
-			r.CreateParameter("@commit", commit.GetId());
-			r.CreateParameter("@component", component);
+        public IComponentHistory SelectCommitDetail(ICommit commit, Guid component)
+        {
+            using var r = new Reader<ComponentHistory>("tompit.component_history_sel");
 
-			return r.ExecuteSingleRow();
-		}
+            r.CreateParameter("@commit", commit.GetId());
+            r.CreateParameter("@component", component);
 
-		public void DeleteHistory(IComponentHistory history)
-		{
-			using var w = new Writer("tompit.component_history_del");
+            return r.ExecuteSingleRow();
+        }
 
-			w.CreateParameter("@id", history.GetId());
+        public void DeleteHistory(IComponentHistory history)
+        {
+            using var w = new Writer("tompit.component_history_del");
 
-			w.Execute();
-		}
-	}
+            w.CreateParameter("@id", history.GetId());
+
+            w.Execute();
+        }
+    }
 }

@@ -4,103 +4,104 @@ using System.Threading;
 
 namespace TomPIT.Distributed
 {
-	internal class QueuedDispatcher<T> : IDispatcher<T>
-	{
-		private ConcurrentQueue<T> _items = null;
-		private bool _disposed = false;
-		private readonly CancellationTokenSource _cancel = new CancellationTokenSource();
+   public class QueuedDispatcher<T> : IDispatcher<T>
+   {
+      private bool _disposed = false;
+      private readonly CancellationTokenSource _cancel = new CancellationTokenSource();
+      public event EventHandler Completed;
 
-		public QueuedDispatcher(IDispatcher<T> owner)
-		{
-			Worker = owner.CreateWorker(this, Cancel.Token);
+      public QueuedDispatcher(IDispatcher<T> owner, string queueName)
+      {
+         QueueName = queueName;
+         Queue = new();
+         Worker = owner.CreateWorker(this, Cancel.Token);
 
-			Worker.Completed += OnCompleted;
-		}
+         Worker.Completed += OnCompleted;
+      }
 
-		private CancellationTokenSource Cancel => _cancel;
+      public string QueueName { get; }
+      private CancellationTokenSource Cancel => _cancel;
+      private DispatcherJob<T> Worker { get; set; }
+      private IDispatcher<T> Owner { get; set; }
+      public int Count => Queue.Count;
+      private ConcurrentQueue<T> Queue { get; }
+      public bool Disposed => _disposed;
+      public ProcessBehavior Behavior => ProcessBehavior.Queued;
 
-		private DispatcherJob<T> Worker { get; set; }
-		private IDispatcher<T> Owner { get; set; }
+      public bool Dequeue(out T item)
+      {
+         return Queue.TryDequeue(out item);
+      }
 
-		public int Count => Queue.Count;
+      public bool Enqueue(T item)
+      {
+         if (Disposed)
+            return false;
 
-		private ConcurrentQueue<T> Queue
-		{
-			get
-			{
-				if (_items == null)
-					_items = new ConcurrentQueue<T>();
+         Queue.Enqueue(item);
 
-				return _items;
-			}
-		}
+         if (!Worker.IsRunning)
+            Worker.Run();
 
-		public bool Dequeue(out T item)
-		{
-			return Queue.TryDequeue(out item);
-		}
+         return true;
+      }
 
-		public bool Enqueue(T item)
-		{
-			if (Disposed)
-				return false;
+      private void OnCompleted(object sender, EventArgs e)
+      {
+         try
+         {
+            if (sender is not DispatcherJob<T> job)
+               return;
 
-			Queue.Enqueue(item);
+            if (!Queue.IsEmpty)
+            {
+               job.Run();
+               return;
+            }
 
-			if (!Worker.IsRunning)
-				Worker.Run();
+            Completed?.Invoke(this, EventArgs.Empty);
+         }
+         catch { }
+      }
 
-			return true;
-		}
+      protected virtual void Dispose(bool disposing)
+      {
+         if (!_disposed)
+         {
+            _disposed = true;
 
-		private void OnCompleted(object sender, EventArgs e)
-		{
-			try
-			{
-				if (sender is not DispatcherJob<T> job)
-					return;
+            if (disposing)
+            {
+               try
+               {
+                  Cancel.Cancel();
+               }
+               catch { }
 
-				Dispose();
-			}
-			catch { }
-		}
+               try
+               {
+                  Worker.Dispose();
+               }
+               catch { }
 
-		public bool Disposed => _disposed;
-		public ProcessBehavior Behavior => ProcessBehavior.Queued;
-		
-		protected virtual void Dispose(bool disposing)
-		{
-			if (!_disposed)
-			{
-				_disposed = true;
+               Cancel.Dispose();
+            }
+         }
+      }
 
-				if (disposing)
-				{
+      public void Dispose()
+      {
+         Dispose(true);
+      }
 
-					try
-					{
-						Cancel.Cancel();
-						Worker.Dispose();
-						Cancel.Dispose();
-					}
-					catch { }
-				}
-			}
-		}
+      public DispatcherJob<T> CreateWorker(IDispatcher<T> owner, CancellationToken cancel)
+      {
+         return Owner.CreateWorker(owner, cancel);
+      }
 
-		public void Dispose()
-		{
-			Dispose(true);
-		}
-
-		public DispatcherJob<T> CreateWorker(IDispatcher<T> owner, CancellationToken cancel)
-		{
-			return Owner.CreateWorker(owner, cancel);
-		}
-
-		public bool Enqueue(string queue, T item)
-		{
-			return Owner.Enqueue(queue, item);
-		}
-	}
+      public bool Enqueue(string queue, T item)
+      {
+         return Owner.Enqueue(queue, item);
+      }
+   }
 }

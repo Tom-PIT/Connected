@@ -3,123 +3,146 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using TomPIT.Collections;
 
 namespace TomPIT.Cdn.Events
 {
-	internal static class EventClients
-	{
-		private static ConcurrentDictionary<string, List<EventClient>> _clients = null;
-		private static object _sync = new object();
+    internal static class EventClients
+    {
+        private static ConcurrentDictionary<string, List<EventClient>> _clients = null;
 
-		static EventClients()
-		{
-			_clients = new ConcurrentDictionary<string, List<EventClient>>();
-		}
+        static EventClients()
+        {
+            _clients = new ConcurrentDictionary<string, List<EventClient>>();
+        }
 
-		private static ConcurrentDictionary<string, List<EventClient>> Clients => _clients;
+        private static ConcurrentDictionary<string, List<EventClient>> Clients => _clients;
 
-		public static void AddOrUpdate(EventClient client)
-		{
-			if (!Clients.TryGetValue(client.EventName.ToLowerInvariant(), out List<EventClient> clients))
-			{
-				clients = new List<EventClient>();
+        public static void AddOrUpdate(EventClient client)
+        {
+            if (!Clients.TryGetValue(client.EventName.ToLowerInvariant(), out List<EventClient> clients))
+            {
+                clients = new List<EventClient>();
 
-				lock (_sync)
-					if (!Clients.TryAdd(client.EventName.ToLowerInvariant(), clients))
-						Clients.TryGetValue(client.EventName.ToLowerInvariant(), out clients);
-			}
+                if (!Clients.TryAdd(client.EventName.ToLowerInvariant(), clients))
+                    Clients.TryGetValue(client.EventName.ToLowerInvariant(), out clients);
+            }
 
-			var existing = clients.ToImmutableList();
+            var existing = clients.ToImmutableList(true);
 
-			foreach (var c in existing)
-			{
-				if (c.CompareTo(client) == 0)
-				{
-					c.ConnectionId = client.ConnectionId;
-					c.RetentionDeadline = DateTime.MinValue;
+            foreach (var c in existing)
+            {
+                if (c is null)
+                    continue;
 
-					return;
-				}
-			}
+                if (c.CompareTo(client) == 0)
+                {
+                    c.ConnectionId = client.ConnectionId;
+                    c.RetentionDeadline = DateTime.MinValue;
 
-			lock (clients)
-				clients.Add(client);
-		}
+                    return;
+                }
+            }
 
-		public static void Clean()
-		{
-			foreach(var client in Clients)
-			{
-				var items = client.Value.Where(f => f.RetentionDeadline != DateTime.MinValue && f.RetentionDeadline <= DateTime.UtcNow).ToImmutableList();
+            lock (clients)
+                clients.Add(client);
+        }
 
-				foreach (var item in items)
-					client.Value.Remove(item);
+        public static void Clean()
+        {
+            foreach (var client in Clients)
+            {
+                var items = client.Value.Where(f => f is not null && f.RetentionDeadline != DateTime.MinValue && f.RetentionDeadline <= DateTime.UtcNow).ToImmutableList(true);
 
-				if (!client.Value.Any())
-					RemoveClient(client.Key);
-			}
-		}
-		public static void Remove(string connectionId)
-		{
-			foreach (var eventList in Clients)
-			{
-				var items = eventList.Value.ToImmutableArray();
+                lock (client.Value)
+                {
+                    foreach (var item in items)
+                        client.Value.Remove(item);
 
-				foreach (var item in items)
-				{
-					if (string.Compare(item.ConnectionId, connectionId, true) == 0)
-					{
-						if (item.Behavior == EventSubscriptionBehavior.FireForget)
-							eventList.Value.Remove(item);
-						else
-							item.RetentionDeadline = DateTime.UtcNow.AddMinutes(5);
-					}
-				}
+                    if (!client.Value.Any())
+                        RemoveEvent(client.Key);
+                }
+            }
+        }
+        public static void Remove(string connectionId)
+        {
+            foreach (var eventList in Clients)
+            {
+                var items = eventList.Value.ToImmutableArray(true);
 
-				if (!eventList.Value.Any())
-					RemoveClient(eventList.Key);
-			}
-		}
+                foreach (var item in items)
+                {
+                    if (item is null)
+                        continue;
 
-		public static ImmutableList<EventClient> Query(string eventName)
-		{
-			if (!Clients.TryGetValue(eventName.ToLowerInvariant(), out List<EventClient> result))
-				return null;
+                    if (string.Compare(item.ConnectionId, connectionId, true) == 0)
+                    {
+                        if (item.Behavior == EventSubscriptionBehavior.FireForget)
+                        {
+                            lock (eventList.Value)
+                                eventList.Value.Remove(item);
+                        }
+                        else
+                            item.RetentionDeadline = DateTime.UtcNow.AddMinutes(2);
+                    }
+                }
 
-			return result.ToImmutableList();
-		}
+                if (!eventList.Value.Any())
+                    RemoveEvent(eventList.Key);
+            }
+        }
 
-		public static void Remove(string connectionId, string eventName)
-		{
-			foreach (var eventList in Clients)
-			{
-				var items = eventList.Value.ToImmutableList();
+        public static ImmutableList<EventClient> Query(string eventName)
+        {
+            if (!Clients.TryGetValue(eventName.ToLowerInvariant(), out List<EventClient> result))
+                return null;
 
-				foreach (var item in items)
-				{
-					if (string.Compare(item.ConnectionId, connectionId, true) == 0
-						&& string.Compare(item.EventName, eventName, true) == 0)
-						eventList.Value.Remove(item);
-				}
+            return result.Where(f => f is not null).ToImmutableList(true);
+        }
 
-				if (!eventList.Value.Any())
-					RemoveClient(eventList.Key);
-			}
-		}
+        public static void Remove(string connectionId, string eventName, string recipient)
+        {
+            foreach (var clientList in Clients)
+            {
+                var items = clientList.Value.ToImmutableList(true);
 
-		private static void RemoveClient(string key)
-		{
-			lock (_sync)
-			{
-				if (Clients.Values.Count > 0)
-					return;
+                foreach (var item in items)
+                {
+                    if (item is null)
+                        continue;
 
-				if(Clients.TryRemove(key, out List<EventClient> value))
-				{
-					if (value.Count > 0)
-						Clients.TryAdd(key, value);
-				}
-			}
-		}
-	}
+                    if (string.Compare(item.ConnectionId, connectionId, true) == 0
+                        && string.Compare(item.EventName, eventName, true) == 0
+                        && string.Compare(item.Recipient, recipient, true) == 0)
+                    {
+                        lock (clientList.Value)
+                        {
+                            clientList.Value.Remove(item);
+
+                            if (!clientList.Value.Any(f => f is not null))
+                                RemoveEvent(clientList.Key);
+                        }
+                    }
+                }
+            }
+        }
+
+        private static void RemoveEvent(string key)
+        {
+            if (!Clients.TryGetValue(key, out List<EventClient> items))
+                return;
+
+            if (items.Any())
+                return;
+
+            /*
+			 * check if someone has registered in the meantime
+			 */
+            if (Clients.TryRemove(key, out items))
+            {
+                if (items.Any(f => f is not null))
+                    Clients.TryAdd(key, items);
+            }
+        }
+    }
 }

@@ -43,11 +43,10 @@ namespace TomPIT.Ide.TextServices.CSharp.Services
 				if (_providers is null)
 				{
 					_providers = new List<ICodeLensProvider>
-					{
-						new ManifestLensProvider(),
+			 {
 						new ApiInjectionLensProvider(),
 						new IoCLensProvider()
-					};
+			 };
 				}
 
 				return _providers;

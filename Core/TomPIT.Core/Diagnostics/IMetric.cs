@@ -15,7 +15,7 @@ namespace TomPIT.Diagnostics
 		DateTime Start { get; }
 		DateTime End { get; }
 		SessionResult Result { get; }
-		InstanceType Instance { get; }
+		InstanceFeatures Features { get; }
 		string IP { get; }
 		Guid Component { get; }
 		Guid Element { get; }

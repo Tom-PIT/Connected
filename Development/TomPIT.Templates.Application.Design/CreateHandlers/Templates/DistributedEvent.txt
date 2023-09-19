@@ -1,19 +1,22 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Linq;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
 using TomPIT.Distributed;
 
 /*
  * You should set authorization policy on this class. If the middleware is not secured
- * anyone with a valid credentials will be able to listen to this event regardless of
+ * anyone with valid credentials will be able to listen to this event regardless of
  * the client. 
  */
 //[YourPolicyAttribute(Policy = YourPolicy)]
 public class [NAME] : DistributedEventMiddleware
 {
-    /*
-     * Set some properties on the middleware so the clients will be
-     * able to know to which record(s) is event bound to.
-     */
-    [Range(1, int.MaxValue)]
-    public int Id {get; set;}
+   /*
+    * Set some properties on the middleware so the clients will be
+    * able to know to which record(s) is event bound to.
+    */
+   [Range(1, int.MaxValue)]
+   public int Id {get; set;}
 }

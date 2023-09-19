@@ -26,6 +26,8 @@ namespace TomPIT.Navigation
 
 		[CIP(CIP.NavigationContextProvider)]
 		[AA(AA.NavigationContextAnalyzer)]
-		public string NavigationContext {get;set;}
+		public string NavigationContext { get; set; }
+
+		public NavigationContextBehavior NavigationContextBehavior { get; set; } = NavigationContextBehavior.Inherit;
 	}
 }

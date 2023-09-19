@@ -2,40 +2,38 @@
 using System.Threading;
 using TomPIT.BigData.Nodes;
 using TomPIT.BigData.Persistence;
-using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
-using TomPIT.Middleware;
 
 namespace TomPIT.BigData.Partitions
 {
 	internal class PartitionFileManager
 	{
-		public Guid CreateFile(Guid partition, string partitionKey, DateTime timestamp)
+		public Guid CreateFile(Guid partition, Guid timezone, string partitionKey, DateTime timestamp)
 		{
-			var node = MiddlewareDescriptor.Current.Tenant.GetService<INodeService>().SelectSmallest();
+			var node = Tenant.GetService<INodeService>().SelectSmallest();
 
-			if (node == null)
+			if (node is null)
 				throw new RuntimeException(SR.ErrBigDataNoNodes);
 
 			IPartitionFile file = null;
 
 			try
 			{
-				var fileId = MiddlewareDescriptor.Current.Tenant.GetService<IPartitionService>().InsertFile(partition, node.Token, partitionKey, timestamp);
+				var fileId = Tenant.GetService<IPartitionService>().InsertFile(partition, node.Token, timezone, partitionKey, timestamp);
 
 				if (fileId == Guid.Empty)
 					return Guid.Empty;
 
-				file = MiddlewareDescriptor.Current.Tenant.GetService<IPartitionService>().SelectFile(fileId);
+				file = Tenant.GetService<IPartitionService>().SelectFile(fileId);
 
-				MiddlewareDescriptor.Current.Tenant.GetService<IPersistenceService>().SynchronizeSchema(node, file);
-				MiddlewareDescriptor.Current.Tenant.GetService<IPartitionService>().UpdateFile(file.FileName, file.StartTimestamp, file.EndTimestamp, file.Count, PartitionFileStatus.Open);
+				Tenant.GetService<IPersistenceService>().SynchronizeSchema(node, file);
+				Tenant.GetService<IPartitionService>().UpdateFile(file.FileName, file.StartTimestamp, file.EndTimestamp, file.Count, PartitionFileStatus.Open);
 
 				return fileId;
 			}
 			catch (Exception ex)
 			{
-				MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, "BigData");
+				Tenant.LogError(ex.Source, ex.Message, "BigData");
 
 				if (file != null)
 					TryRollbackFileCreate(file.FileName);
@@ -48,11 +46,11 @@ namespace TomPIT.BigData.Partitions
 		{
 			try
 			{
-				MiddlewareDescriptor.Current.Tenant.GetService<IPartitionService>().DeleteFile(file);
+				Tenant.GetService<IPartitionService>().DeleteFile(file);
 			}
 			catch (Exception ex)
 			{
-				MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, "BigData");
+				Tenant.LogError(ex.Source, ex.Message, "BigData");
 			}
 		}
 
@@ -60,7 +58,7 @@ namespace TomPIT.BigData.Partitions
 		{
 			for (var i = 1; i < 10; i++)
 			{
-				var result = MiddlewareDescriptor.Current.Tenant.GetService<IPartitionService>().LockFile(file);
+				var result = Tenant.GetService<IPartitionService>().LockFile(file);
 
 				if (result != Guid.Empty)
 					return result;
@@ -73,7 +71,7 @@ namespace TomPIT.BigData.Partitions
 
 		public void Release(Guid file)
 		{
-			MiddlewareDescriptor.Current.Tenant.GetService<IPartitionService>().ReleaseFile(file);
+			Tenant.GetService<IPartitionService>().ReleaseFile(file);
 		}
 	}
 }

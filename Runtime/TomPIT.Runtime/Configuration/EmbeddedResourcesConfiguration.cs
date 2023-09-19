@@ -1,80 +1,83 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Runtime.Loader;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
-using TomPIT.Runtime.Configuration;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Runtime.Loader;
+using TomPIT.Design;
 
 namespace TomPIT.Configuration
 {
-	internal static class EmbeddedResourcesConfiguration
-	{
-		public static void Configure(IWebHostEnvironment environment, StaticFileOptions options)
-		{
-			var assemblies = new List<Assembly>();
+    internal static class EmbeddedResourcesConfiguration
+    {
+        public static void Configure(IWebHostEnvironment environment, StaticFileOptions options, List<Assembly> embeddedResources)
+        {
+            var assemblies = new List<Assembly>();
 
-			foreach (var i in Shell.GetConfiguration<IClientSys>().Designers)
-				RegisterAssembly(assemblies, i);
+            foreach (var assembly in embeddedResources)
+                assemblies.Add(assembly);
 
-			foreach (var i in Instance.Plugins)
-			{
-				foreach (var j in i.GetEmbeddedResources())
-					RegisterAssemblyFromName(assemblies, j);
-			}
+            foreach (var i in Tenant.GetService<IDesignService>().QueryDesigners())
+                RegisterAssembly(assemblies, i);
 
-			options = options ?? throw new ArgumentNullException(nameof(options));
+            foreach (var i in Instance.Plugins)
+            {
+                foreach (var j in i.GetEmbeddedResources())
+                    RegisterAssemblyFromName(assemblies, j);
+            }
 
-			options.ContentTypeProvider = options.ContentTypeProvider ?? new FileExtensionContentTypeProvider();
+            options = options ?? throw new ArgumentNullException(nameof(options));
 
-			if (options.FileProvider == null && environment.WebRootFileProvider == null)
-				throw new InvalidOperationException("Missing FileProvider.");
+            options.ContentTypeProvider = options.ContentTypeProvider ?? new FileExtensionContentTypeProvider();
 
-			options.FileProvider = options.FileProvider ?? environment.WebRootFileProvider;
+            if (options.FileProvider == null && environment.WebRootFileProvider == null)
+                throw new InvalidOperationException("Missing FileProvider.");
 
-			var basePath = "wwwroot";
+            options.FileProvider = options.FileProvider ?? environment.WebRootFileProvider;
 
-			var fileProviders = new List<IFileProvider>
-			{
-				options.FileProvider
-			};
+            var basePath = "wwwroot";
 
-			foreach (var i in assemblies)
-			{
-				try
-				{
-					fileProviders.Add(new ManifestEmbeddedFileProvider(i, basePath));
-				}
-				catch { }
-			}
+            var fileProviders = new List<IFileProvider>
+            {
+                options.FileProvider
+            };
 
-			options.FileProvider = new CompositeFileProvider(fileProviders.ToArray());
-		}
+            foreach (var i in assemblies)
+            {
+                try
+                {
+                    fileProviders.Add(new ManifestEmbeddedFileProvider(i, basePath));
+                }
+                catch { }
+            }
 
-		private static void RegisterAssemblyFromName(List<Assembly> assemblies, string j)
-		{
-			var path = Shell.ResolveAssemblyPath(j);
+            options.FileProvider = new CompositeFileProvider(fileProviders.ToArray());
+        }
 
-			if (path == null)
-				return;
+        private static void RegisterAssemblyFromName(List<Assembly> assemblies, string j)
+        {
+            var path = Shell.ResolveAssemblyPath(j);
 
-			var asmName = AssemblyName.GetAssemblyName(path);
-			var asm = AssemblyLoadContext.Default.LoadFromAssemblyName(asmName);
+            if (path == null)
+                return;
 
-			if (asm != null)
-				assemblies.Add(asm);
-		}
+            var asmName = AssemblyName.GetAssemblyName(path);
+            var asm = AssemblyLoadContext.Default.LoadFromAssemblyName(asmName);
 
-		private static void RegisterAssembly(List<Assembly> assemblies, string type)
-		{
-			var t = Reflection.TypeExtensions.GetType(type);
+            if (asm != null)
+                assemblies.Add(asm);
+        }
 
-			if (t == null)
-				return;
+        private static void RegisterAssembly(List<Assembly> assemblies, string type)
+        {
+            var t = Reflection.TypeExtensions.GetType(type);
 
-			assemblies.Add(t.Assembly);
-		}
-	}
+            if (t == null)
+                return;
+
+            assemblies.Add(t.Assembly);
+        }
+    }
 }

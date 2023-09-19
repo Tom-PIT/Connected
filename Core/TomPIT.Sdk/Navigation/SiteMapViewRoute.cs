@@ -5,42 +5,43 @@ using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Navigation
 {
-	public class SiteMapViewRoute : SiteMapViewElement, ISiteMapRoute
-	{
-		private ConnectedList<ISiteMapRoute, ISiteMapRoute> _items = null;
+    public class SiteMapViewRoute : SiteMapViewElement, ISiteMapRoute
+    {
+        private ConnectedList<ISiteMapRoute, ISiteMapRoute> _items = null;
 
-		private string _template = null;
+        private string _template = null;
 
-		public bool BeginGroup { get; set; }
-		public object Parameters { get; set; }
-		public string QueryString { get; set; }
-		string ISiteMapRoute.Template
-		{
-			get
-			{
-				if (_template == null)
-				{
-					using var context = new MiddlewareContext(MiddlewareDescriptor.Current.Tenant.Url);
-					
-					_template = NavigationExtensions.ResolveRouteTemplate(context, View);
-				}
-				return _template;
-			}
-		}
+        public bool BeginGroup { get; set; }
+        public object Parameters { get; set; }
+        public string QueryString { get; set; }
+        string ISiteMapRoute.Template
+        {
+            get
+            {
+                if (_template == null)
+                {
+                    using var context = new MiddlewareContext();
 
-		public ConnectedList<ISiteMapRoute, ISiteMapRoute> Routes
-		{
-			get
-			{
-				if (_items == null)
-					_items = new ConnectedList<ISiteMapRoute, ISiteMapRoute> { Parent = this };
+                    _template = NavigationExtensions.ResolveRouteTemplate(context, View);
+                }
+                return _template;
+            }
+        }
 
-				return _items;
-			}
-		}
+        public ConnectedList<ISiteMapRoute, ISiteMapRoute> Routes
+        {
+            get
+            {
+                if (_items == null)
+                    _items = new ConnectedList<ISiteMapRoute, ISiteMapRoute> { Parent = this };
 
-		[CIP(CIP.NavigationContextProvider)]
-		[AA(AA.NavigationContextAnalyzer)]
-		public string NavigationContext {get;set;}
-	}
+                return _items;
+            }
+        }
+
+        [CIP(CIP.NavigationContextProvider)]
+        [AA(AA.NavigationContextAnalyzer)]
+        public string NavigationContext { get; set; }
+        public NavigationContextBehavior NavigationContextBehavior { get; set; } = NavigationContextBehavior.Context;
+    }
 }

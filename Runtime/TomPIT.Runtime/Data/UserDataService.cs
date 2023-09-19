@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
-using TomPIT.Middleware;
 using TomPIT.Security;
 
 namespace TomPIT.Data
@@ -82,34 +80,7 @@ namespace TomPIT.Data
 			if (user == Guid.Empty)
 				return;
 
-			var u = Tenant.CreateUrl("UserData", "Update");
-			var e = new JObject
-			{
-				{"user", user }
-			};
-
-			var a = new JArray();
-
-			e.Add("items", a);
-
-			foreach (var i in data)
-			{
-				var item = new JObject
-				{
-					{"primaryKey", i.PrimaryKey }
-				};
-
-				if (!string.IsNullOrWhiteSpace(i.Topic))
-					item.Add("topic", i.Topic);
-
-				if (!string.IsNullOrWhiteSpace(i.Value))
-					item.Add("value", i.Value);
-
-				a.Add(item);
-			};
-
-			Tenant.Post(u, e);
-
+			Instance.SysProxy.UserData.Update(user, data);
 			Remove(user);
 		}
 
@@ -118,13 +89,7 @@ namespace TomPIT.Data
 			return Get(user,
 				(f) =>
 				{
-					var u = Tenant.CreateUrl("UserData", "Query");
-					var e = new JObject
-					{
-						{"user", user }
-					};
-
-					return Tenant.Post<List<UserData>>(u, e).ToList<IUserData>();
+					return Instance.SysProxy.UserData.Query(user).ToList();
 				});
 		}
 	}

@@ -1,68 +1,51 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 using TomPIT.Distributed;
-using TomPIT.Middleware;
-using TomPIT.Runtime.Configuration;
+using TomPIT.Environment;
 
 namespace TomPIT.Search.Services
 {
 	internal class IndexingService : HostedService
 	{
-		private Lazy<List<IndexingDispatcher>> _dispatchers = new Lazy<List<IndexingDispatcher>>();
-
 		public IndexingService()
 		{
 			IntervalTimeout = TimeSpan.FromMilliseconds(490);
-
-			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-				Dispatchers.Add(new IndexingDispatcher(i));
 		}
+
+		private IndexingDispatcher Dispatcher { get; set; }
 
 		protected override bool OnInitialize(CancellationToken cancel)
 		{
-			return Instance.State == InstanceState.Running;
+			if (Instance.State == InstanceState.Initializing)
+				return false;
+
+			Dispatcher = new IndexingDispatcher(Tenant.GetService<IResourceGroupService>().Default.Name);
+
+			return true;
 		}
 
-		protected override Task OnExecute(CancellationToken cancel)
+		protected override async Task OnExecute(CancellationToken cancel)
 		{
-			Parallel.ForEach(Dispatchers, (f) =>
+			var jobs = Instance.SysProxy.Management.Search.Dequeue(Dispatcher.Available);
+
+			if (jobs is null)
+				return;
+
+			foreach (var i in jobs)
 			{
-				var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("SearchManagement", "Dequeue");
-
-				var e = new JObject
-				{
-					{ "count", f.Available },
-					{ "resourceGroup", f.ResourceGroup }
-				};
-
-				var jobs = MiddlewareDescriptor.Current.Tenant.Post<List<QueueMessage>>(url, e);
-
-				if (jobs == null)
+				if (cancel.IsCancellationRequested)
 					return;
 
-				foreach (var i in jobs)
-				{
-					if (cancel.IsCancellationRequested)
-						return;
+				Dispatcher.Enqueue(i);
+			}
 
-					f.Enqueue(i);
-				}
-			});
-
-			return Task.CompletedTask;
+			await Task.CompletedTask;
 		}
-
-		private List<IndexingDispatcher> Dispatchers { get { return _dispatchers.Value; } }
 
 		public override void Dispose()
 		{
-			foreach (var dispatcher in Dispatchers)
-				dispatcher.Dispose();
-
-			Dispatchers.Clear();
+			Dispatcher?.Dispose();
 
 			base.Dispose();
 		}

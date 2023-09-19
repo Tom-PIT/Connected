@@ -1,62 +1,31 @@
 ﻿using System;
-using Newtonsoft.Json.Linq;
 using TomPIT.Connectivity;
-using TomPIT.Middleware;
 
-namespace TomPIT.Worker.Services
+namespace TomPIT.Worker.Services;
+
+internal class WorkerProxyService : TenantObject, IWorkerProxyService
 {
-	internal class WorkerProxyService : TenantObject, IWorkerProxyService
-	{
-		public WorkerProxyService(ITenant tenant) : base(tenant)
-		{
-		}
+    public WorkerProxyService(ITenant tenant) : base(tenant)
+    {
+    }
 
-		public void Ping(Guid microService, Guid popReceipt)
-		{
-			var url = Tenant.CreateUrl("WorkerManagement", "Ping");
-			var d = new JObject
-			{
-				{"microService", microService },
-				{"popReceipt", popReceipt }
-			};
+    public void Ping(Guid microService, Guid popReceipt)
+    {
+        Instance.SysProxy.Management.Workers.Ping(microService, popReceipt);
+    }
 
-			MiddlewareDescriptor.Current.Tenant.Post(url, d);
-		}
+    public void Error(Guid microService, Guid popReceipt)
+    {
+        Instance.SysProxy.Management.Workers.Error(microService, popReceipt);
+    }
 
-		public void Error(Guid microService, Guid popReceipt)
-		{
-			var url = Tenant.CreateUrl("WorkerManagement", "Error");
-			var d = new JObject
-			{
-				{"microService", microService },
-				{"popReceipt", popReceipt }
-			};
+    public void Complete(Guid microService, Guid popReceipt, Guid worker)
+    {
+        Instance.SysProxy.Management.Workers.Complete(microService, worker, popReceipt);
+    }
 
-			MiddlewareDescriptor.Current.Tenant.Post(url, d);
-		}
-
-		public void Complete(Guid microService, Guid popReceipt)
-		{
-			var url = Tenant.CreateUrl("WorkerManagement", "Complete");
-			var d = new JObject
-			{
-				{"microService", microService },
-				{"popReceipt", popReceipt }
-			};
-
-			MiddlewareDescriptor.Current.Tenant.Post(url, d);
-		}
-
-		public void AttachState(Guid worker, Guid state)
-		{
-			var url = Tenant.CreateUrl("WorkerManagement", "AttachState");
-			var d = new JObject
-			{
-				{"worker", worker },
-				{"state", state }
-			};
-
-			MiddlewareDescriptor.Current.Tenant.Post(url, d);
-		}
-	}
+    public void AttachState(Guid worker, Guid state)
+    {
+        Instance.SysProxy.Management.Workers.AttachState(worker, state);
+    }
 }

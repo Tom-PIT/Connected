@@ -8,8 +8,8 @@
     "inputFile": "wwwroot/Assets/Styles/development.less"
   },
   {
-    "outputFile": "wwwroot/Assets/Styles/tompit.css",
-    "inputFile": "wwwroot/Assets/Styles/tompit.less"
+    "outputFile": "wwwroot/Assets/Styles/tompitdev.css",
+    "inputFile": "wwwroot/Assets/Styles/tompitdev.less"
   },
   {
     "outputFile": "wwwroot/Assets/Styles/bootstrap/bootstrap.css",

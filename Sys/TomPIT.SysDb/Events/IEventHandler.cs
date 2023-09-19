@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using TomPIT.ComponentModel;
+﻿using System.Collections.Generic;
+using System.Collections.Immutable;
+using TomPIT.Cdn;
 
-namespace TomPIT.SysDb.Events
+namespace TomPIT.SysDb.Events;
+
+public interface IEventHandler
 {
-	public interface IEventHandler
-	{
-		void Insert(IMicroService microService, string name, Guid identifier, DateTime created, string arguments, string callback);
-		List<IEventDescriptor> Query();
-		IEventDescriptor Select(Guid identifier);
-		void Delete(IEventDescriptor d);
-	}
+    void Update(ImmutableList<IEventDescriptor> events);
+    List<IEventDescriptor> Query();
 }

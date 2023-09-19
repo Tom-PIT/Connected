@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using Newtonsoft.Json.Linq;
 using TomPIT.Connectivity;
-using TomPIT.Development.Distributed;
-using TomPIT.Middleware;
 using TomPIT.Storage;
 
 namespace TomPIT.Development.Analysis
@@ -17,36 +13,37 @@ namespace TomPIT.Development.Analysis
 
 		public void Complete(Guid popReceipt)
 		{
-			var u = Tenant.CreateUrl("DevelopmentErrors", "Complete");
-			var e = new JObject
-			{
-				{"popReceipt", popReceipt }
-			};
+			//var u = Tenant.CreateUrl("DevelopmentErrors", "Complete");
+			//var e = new JObject
+			//{
+			//	{"popReceipt", popReceipt }
+			//};
 
-			Tenant.Post(u, e);
+			//Tenant.Post(u, e);
 		}
 
 		public List<IQueueMessage> Dequeue(int count)
 		{
-			var u = Tenant.CreateUrl("DevelopmentErrors", "Dequeue");
-			var e = new JObject
-			{
-				{"count", count }
-			};
+			return new();
+			//var u = Tenant.CreateUrl("DevelopmentErrors", "Dequeue");
+			//var e = new JObject
+			//{
+			//	{"count", count }
+			//};
 
-			return Tenant.Post<List<QueueMessage>>(u, e).ToList<IQueueMessage>();
+			//return Tenant.Post<List<QueueMessage>>(u, e).ToList<IQueueMessage>();
 		}
 
 		public void Ping(Guid popReceipt)
 		{
-			var u = Tenant.CreateUrl("DevelopmentErrors", "Ping");
-			var e = new JObject
-			{
-				{"popReceipt", popReceipt },
-				{"nextVisible", 300 }
-			};
+			//var u = Tenant.CreateUrl("DevelopmentErrors", "Ping");
+			//var e = new JObject
+			//{
+			//	{"popReceipt", popReceipt },
+			//	{"nextVisible", 300 }
+			//};
 
-			Tenant.Post(u, e);
+			//Tenant.Post(u, e);
 		}
 	}
 }

@@ -27,7 +27,8 @@ namespace TomPIT.BigData.Data
 			typeof(string),
 			typeof(char),
 			typeof(DateTime),
-			typeof(bool),
+         typeof(DateTimeOffset),
+         typeof(bool),
 			typeof(Guid)
 		};
 
@@ -47,6 +48,7 @@ namespace TomPIT.BigData.Data
 		public string PartitionKeyField { get; set; }
 		public string KeyField { get; set; }
 		public IPartitionComponent Middleware { get; private set; }
+		public bool SupportsTimezone { get; private set; }
 		public List<PartitionSchemaField> Fields
 		{
 			get
@@ -102,10 +104,9 @@ namespace TomPIT.BigData.Data
 				field.Key = IsKey(property);
 				field.Index = IsIndex(property);
 
-				var aggregate = property.FindAttribute<BigDataAggregateAttribute>();
+				var attributes = property.GetCustomAttributes().Where(e=> e.GetType().Name.StartsWith("BigData"));
 
-				if (aggregate != null)
-					field.Attributes.Add(aggregate);
+				field.Attributes.AddRange(attributes);
 
 				Fields.Add(field);
 
@@ -125,6 +126,9 @@ namespace TomPIT.BigData.Data
 					Type = typeof(DateTime)
 				});
 			}
+
+			if (Configuration is not null)
+				SupportsTimezone = Configuration.SupportsTimezone();
 		}
 
 		private bool IsIndex(PropertyInfo property)
@@ -183,8 +187,15 @@ namespace TomPIT.BigData.Data
 					Type = typeof(DateTime)
 				};
 			}
+         else if (property.PropertyType == typeof(DateTimeOffset))
+         {
+            return new PartitionSchemaDateField
+            {
+               Type = typeof(DateTime)
+            };
+         }
 
-			return null;
+         return null;
 		}
 
 		private int ResolveLength(PropertyInfo property)

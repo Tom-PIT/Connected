@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 
 namespace TomPIT.Sys.Exceptions
@@ -26,15 +27,17 @@ namespace TomPIT.Sys.Exceptions
 				if (context.Response.HasStarted)
 					throw;
 
-				await HandleException(context, ex);
+				var exceptionDispatchInfo = ExceptionDispatchInfo.Capture(ex);
+
+				await HandleException(context, exceptionDispatchInfo);
 			}
 		}
 
-		protected virtual async Task OnHandleAjaxException(HttpContext context, Exception ex)
+		protected virtual async Task OnHandleAjaxException(HttpContext context, ExceptionDispatchInfo ex)
 		{
 			await Task.CompletedTask;
 
-			throw ex;
+			ex.Throw();
 		}
 
 		protected virtual async Task OnHandleException(HttpContext context, Exception ex)
@@ -53,14 +56,15 @@ namespace TomPIT.Sys.Exceptions
 
 			await context.Response.WriteAsync(JsonConvert.SerializeObject(jsonEx));
 
+			await context.Response.CompleteAsync();
 		}
 
-		protected virtual async Task HandleException(HttpContext context, Exception ex)
+		protected virtual async Task HandleException(HttpContext context, ExceptionDispatchInfo ex)
 		{
 			if (context.Request.IsAjaxRequest())
 				await OnHandleAjaxException(context, ex);
 			else
-				await OnHandleException(context, ex);
+				await OnHandleException(context, ex.SourceException);
 		}
 	}
 }

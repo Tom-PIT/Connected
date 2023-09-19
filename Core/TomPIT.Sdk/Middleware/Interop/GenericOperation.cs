@@ -20,23 +20,24 @@ namespace TomPIT.Middleware.Interop
 		}
 
 		[CIP(CIP.ExtenderProvider)]
-		public string Extender { get; set; }
+		public string? Extender { get; set; }
 
-		public T Invoke<T>()
+		public T? Invoke<T>()
 		{
 			return Invoke<T>(null);
 		}
-		public T Invoke<T>(IMiddlewareContext context)
+
+		public T? Invoke<T>(IMiddlewareContext? context)
 		{
-			if (context != null)
+			if (context is not null)
 				this.WithContext(context);
 
 			var r = Invoke();
 
-			if (r == null)
+			if (r is null)
 				return default;
 
-			if (r.GetType().IsCollection())
+			if (r.GetType().IsCollection() && !r.GetType().IsArray)
 			{
 				var listResult = (IList)r;
 				var genericArguments = typeof(T).GenericTypeArguments;
@@ -51,24 +52,22 @@ namespace TomPIT.Middleware.Interop
 				return (T)Convert.ChangeType(r, typeof(T));
 		}
 
-		public TReturnValue Invoke()
+		public TReturnValue? Invoke()
 		{
 			return Invoke(null);
 		}
-		public TReturnValue Invoke(IMiddlewareContext context)
+
+		public TReturnValue? Invoke(IMiddlewareContext? context)
 		{
-			if (context != null)
+			if (context is not null)
 				this.WithContext(context);
-
-			ValidateExtender();
-			Validate();
-			OnValidating();
-
-			var metrics = StartMetrics();
-			var success = true;
 
 			try
 			{
+				ValidateExtender();
+				Validate();
+				OnValidating();
+
 				if (Context.Environment.IsInteractive)
 				{
 					AuthorizePolicies();
@@ -78,8 +77,16 @@ namespace TomPIT.Middleware.Interop
 
 				var result = DependencyInjections.Invoke(OnInvoke());
 
-				if (result != null && !string.IsNullOrWhiteSpace(Extender))
-					result = Extend(result);
+				if (result is not null)
+				{
+					if (!string.IsNullOrWhiteSpace(Extender))
+						result = Extend(result);
+					else
+					{
+						if (Context.Environment.IsInteractive)
+							OnAuthorize(result);
+					}
+				}
 
 				Invoked();
 
@@ -87,29 +94,26 @@ namespace TomPIT.Middleware.Interop
 			}
 			catch (ValidationException)
 			{
-				success = false;
 				Rollback();
 
 				throw;
 			}
 			catch (Exception ex)
 			{
-				success = false;
 				Rollback();
 
 				throw TomPITException.Unwrap(this, ex);
-			}
-			finally
-			{
-				StopMetrics(metrics, success, null);
 			}
 		}
 
 		private TReturnValue Extend(TReturnValue items)
 		{
 			var ext = ResolveExtenderType();
-			using var ctx = new MicroServiceContext(Context.Tenant.GetService<ICompilerService>().ResolveMicroService(this), Context);
+			using var ctx = new MicroServiceContext(Context.Tenant.GetService<ICompilerService>().ResolveMicroService(this));
 			var extenderInstance = Context.Tenant.GetService<ICompilerService>().CreateInstance<object>(ctx, ext);
+
+			if (extenderInstance is IMiddlewareObject mo)
+				mo.SetContext(Context);
 
 			if (extenderInstance is IMiddlewareProxy proxy)
 				proxy.Proxy = this;
@@ -161,19 +165,19 @@ namespace TomPIT.Middleware.Interop
 
 			throw new RuntimeException($"{SR.ErrCannotResolveExtender} ({GetType().ShortName()})");
 		}
-		protected virtual TReturnValue OnInvoke()
+
+		protected virtual TReturnValue? OnInvoke()
 		{
 			return default;
 		}
 
-		protected virtual TReturnValue OnAuthorize(TReturnValue e)
+		protected virtual TReturnValue? OnAuthorize(TReturnValue e)
 		{
 			return e;
 		}
 
 		protected virtual void OnAuthorize()
 		{
-
 		}
 
 		private void ValidateExtender()
@@ -201,7 +205,7 @@ namespace TomPIT.Middleware.Interop
 
 		private TReturnValue AuthorizePolicies(TReturnValue e)
 		{
-			if (e == null)
+			if (e is null)
 				return e;
 
 			var attributes = GetType().GetCustomAttributes(true);
@@ -209,7 +213,7 @@ namespace TomPIT.Middleware.Interop
 
 			foreach (var attribute in attributes)
 			{
-				if (!(attribute is AuthorizationPolicyAttribute policy) || policy.MiddlewareStage != AuthorizationMiddlewareStage.Result)
+				if (attribute is not AuthorizationPolicyAttribute policy || policy.MiddlewareStage != AuthorizationMiddlewareStage.Result)
 					continue;
 
 				targets.Add(policy);

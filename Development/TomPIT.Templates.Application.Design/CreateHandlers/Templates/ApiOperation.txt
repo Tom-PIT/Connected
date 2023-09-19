@@ -1,11 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Linq;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
 using TomPIT.Middleware.Interop;
 
 public class [NAME] : Operation
 {
-    protected override void OnInvoke()
-    {
+   protected override void OnInvoke()
+   {
 
-    }
+   }
 }

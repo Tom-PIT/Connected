@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using System;
+using System.Text.Json;
 using TomPIT.Environment;
-using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.Runtime
 {
@@ -13,7 +14,7 @@ namespace TomPIT.Runtime
 		public string WebRoot { get; set; }
 		public RuntimeEnvironment Environment { get; set; } = RuntimeEnvironment.SingleTenant;
 		public bool SupportsUI { get; set; }
-		public InstanceType Type { get; set; }
+		public InstanceFeatures Features { get; set; }
 		public EnvironmentStage Stage { get; set; }
 		public EnvironmentMode Mode { get; set; } = EnvironmentMode.Runtime;
 
@@ -23,49 +24,37 @@ namespace TomPIT.Runtime
 
 		public EnvironmentConnectivity Connectivity { get; private set; }
 
-		public void Initialize(InstanceType type, Platform platform, IWebHostEnvironment environment)
+		public EnvironmentIOBehavior IOBehavior { get; private set; } = EnvironmentIOBehavior.ReadWrite;
+		public bool IsInitialized { get; internal set; }
+
+		public RuntimeService()
 		{
-			Type = type;
+			Features = Instance.Features;
+
+			if (Features.HasFlag(InstanceFeatures.Management) || Features.HasFlag(InstanceFeatures.Development) || Features.HasFlag(InstanceFeatures.Application))
+				SupportsUI = true;
+			else if (Features.HasFlag(InstanceFeatures.Development))
+				Mode = EnvironmentMode.Design;
+			else if (Features.HasFlag(InstanceFeatures.Application))
+				SupportsUI = true;
+
+			if (Shell.Configuration.RootElement.TryGetProperty("stage", out JsonElement stageElement))
+				Stage = Enum.Parse<EnvironmentStage>(stageElement.GetString());
+
+			if (Shell.Configuration.RootElement.TryGetProperty("connectivity", out JsonElement connectivityElement))
+				Connectivity = Enum.Parse<EnvironmentConnectivity>(connectivityElement.GetString());
+
+			if (Shell.Configuration.RootElement.TryGetProperty("ioBehavior", out JsonElement ioElement))
+				IOBehavior = Enum.Parse<EnvironmentIOBehavior>(ioElement.GetString());
+
+			if (Shell.Configuration.RootElement.TryGetProperty("platform", out JsonElement platformElement))
+				Platform = Enum.Parse<Platform>(platformElement.GetString());
+		}
+
+		public void Initialize(IWebHostEnvironment environment)
+		{
 			ContentRoot = environment.ContentRootPath;
 			WebRoot = environment.WebRootPath;
-			Platform = platform;
-
-			switch (Type)
-			{
-				case InstanceType.Unknown:
-					break;
-				case InstanceType.Management:
-					SupportsUI = true;
-					Environment = RuntimeEnvironment.MultiTenant;
-					break;
-				case InstanceType.Development:
-					SupportsUI = true;
-					Environment = RuntimeEnvironment.MultiTenant;
-					Mode = EnvironmentMode.Design;
-					break;
-				case InstanceType.Application:
-					SupportsUI = true;
-					break;
-				case InstanceType.Worker:
-					break;
-				case InstanceType.Cdn:
-					break;
-				case InstanceType.IoT:
-					break;
-				case InstanceType.BigData:
-					break;
-				case InstanceType.Search:
-					break;
-				case InstanceType.Rest:
-					break;
-				default:
-					break;
-			}
-
-			var sys = Shell.GetConfiguration<IClientSys>();
-
-			Stage = sys.Stage;
-			Connectivity = sys.Connectivity;
 		}
 	}
 }

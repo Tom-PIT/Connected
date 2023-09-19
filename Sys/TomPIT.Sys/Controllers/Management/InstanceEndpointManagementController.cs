@@ -1,5 +1,5 @@
-﻿using System;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using System;
 using TomPIT.Environment;
 using TomPIT.Sys.Model;
 
@@ -12,7 +12,7 @@ namespace TomPIT.Sys.Controllers.Management
 		{
 			var body = FromBody();
 
-			var instanceType = body.Required<InstanceType>("type");
+			var instanceType = body.Required<InstanceFeatures>("type");
 			var name = body.Required<string>("name");
 			var url = body.Optional("url", string.Empty);
 			var reverseProxyUrl = body.Optional("reverseProxyUrl", string.Empty);
@@ -28,7 +28,7 @@ namespace TomPIT.Sys.Controllers.Management
 			var body = FromBody();
 
 			var token = body.Required<Guid>("token");
-			var instanceType = body.Required<InstanceType>("type");
+			var instanceType = body.Required<InstanceFeatures>("type");
 			var name = body.Required<string>("name");
 			var url = body.Optional("url", string.Empty);
 			var reverseProxyUrl = body.Optional("reverseProxyUrl", string.Empty);

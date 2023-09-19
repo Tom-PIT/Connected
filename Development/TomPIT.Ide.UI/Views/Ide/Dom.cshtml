@@ -23,14 +23,21 @@
         var node = Model.Dom.Select(path, depth);
 
         if (node != null)
-        { nodes = new List<TomPIT.Design.Ide.Dom.IDomElement>() { { node } }; }
+            nodes = new List<TomPIT.Design.Ide.Dom.IDomElement>() { { node } };
+    }
+
+    //TODO quick hack to order view only
+    if (nodes.FirstOrDefault()?.Parent?.Title == "Scripts")
+    {
+        nodes = nodes.OrderBy(e => e.Title).ToList();
     }
 }
 
+@{
+    foreach (var i in nodes)
+    {
+        ViewBag.CurrentNode = i;
 
-@foreach (var i in nodes)
-{
-    ViewBag.CurrentNode = i;
-
-    @await Html.PartialAsync("~/Views/Ide/DomNode.cshtml", Model)
+        @await Html.PartialAsync("~/Views/Ide/DomNode.cshtml", Model)
+    }
 }

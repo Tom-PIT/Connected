@@ -1,9 +1,11 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Reflection;
-using Newtonsoft.Json;
+
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
 using TomPIT.Connectivity;
@@ -18,20 +20,30 @@ namespace TomPIT.Reflection
 
 		public IElement Find(Guid component, Guid id)
 		{
+			return Find(component, id, SearchMode.Element);
+		}
+
+		public IElement Find(Guid component, Guid blob, SearchMode mode)
+		{
 			var config = Tenant.GetService<IComponentService>().SelectConfiguration(component);
 
-			if (config == null)
+			if (config is null)
 				return null;
 
-			return Find(config, id, new List<object>());
+			return Find(config, blob, mode, new List<object>());
+		}
+
+		public IText Find(string path)
+		{
+			return new TextElementResolver(path).Resolve();
 		}
 
 		public IElement Find(IConfiguration configuration, Guid id)
 		{
-			return Find(configuration, id, new List<object>());
+			return Find(configuration, id, SearchMode.Element, new List<object>());
 		}
 
-		private IElement Find(object instance, Guid id, List<object> referenceTrail)
+		private IElement Find(object instance, Guid id, SearchMode mode, List<object> referenceTrail)
 		{
 			if (instance == null)
 				return null;
@@ -41,8 +53,21 @@ namespace TomPIT.Reflection
 
 			referenceTrail.Add(instance);
 
-			if (instance is IElement el && el.Id == id)
-				return el;
+			switch (mode)
+			{
+				case SearchMode.Element:
+					if (instance is IElement el && el.Id == id)
+						return el;
+					break;
+				case SearchMode.Blob:
+					if (instance is IText text && text.TextBlob == id)
+						return text;
+					else if (instance is IUploadResource upload && upload.Blob == id)
+						return upload;
+					break;
+				default:
+					throw new NotSupportedException();
+			}
 
 			if (instance.GetType().IsCollection())
 			{
@@ -57,7 +82,7 @@ namespace TomPIT.Reflection
 						return element;
 					else
 					{
-						var r = Find(enm.Current, id, referenceTrail);
+						var r = Find(enm.Current, id, mode, referenceTrail);
 
 						if (r != null)
 							return r;
@@ -79,7 +104,7 @@ namespace TomPIT.Reflection
 					if (i.FindAttribute<JsonIgnoreAttribute>() != null)
 						continue;
 
-					var r = Find(value, id, referenceTrail);
+					var r = Find(value, id, mode, referenceTrail);
 
 					if (r != null)
 						return r;
@@ -180,7 +205,10 @@ namespace TomPIT.Reflection
 					continue;
 
 				foreach (var k in items)
-					r.Add(k);
+				{
+					if (k != Guid.Empty)
+						r.Add(k);
+				}
 			}
 
 			return r.ToImmutableList();

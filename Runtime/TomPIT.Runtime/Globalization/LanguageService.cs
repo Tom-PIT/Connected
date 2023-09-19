@@ -1,47 +1,50 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
 using TomPIT.Caching;
+using TomPIT.Collections;
 using TomPIT.Connectivity;
-using TomPIT.Middleware;
 
 namespace TomPIT.Globalization
 {
 	internal class LanguageService : SynchronizedClientRepository<ILanguage, Guid>, ILanguageService, ILanguageNotification
 	{
+		private readonly Lazy<ConcurrentDictionary<string, ILanguage>> _mappings = new(() => { return new ConcurrentDictionary<string, ILanguage>(StringComparer.OrdinalIgnoreCase); });
 		public LanguageService(ITenant tenant) : base(tenant, "language")
 		{
 			Initialize();
 		}
 
+		private ConcurrentDictionary<string, ILanguage> Mappings => _mappings.Value;
+
 		protected override void OnInitializing()
 		{
-			var u = Tenant.CreateUrl("Language", "Query");
-			var languages = Tenant.Get<List<Language>>(u).ToList<ILanguage>();
+			var languages = Instance.SysProxy.Languages.Query();
 
 			foreach (var language in languages)
-			{
 				Set(language.Token, language, TimeSpan.Zero);
-				AddCulture(language);
-			}
+		}
+
+		protected override void OnInitialized()
+		{
+			ApplySupportedCultures();
+			ResetMappings();
 		}
 
 		protected override void OnInvalidate(Guid id)
 		{
-			RemoveCulture(Select(id));
+			Remove(id);
 
-			var u = Tenant.CreateUrl("Language", "Select")
-			.AddParameter("language", id);
+			var r = Instance.SysProxy.Languages.Select(id);
 
-			var r = Tenant.Get<Language>(u);
-
-			if (r != null)
-			{
+			if (r is not null)
 				Set(r.Token, r, TimeSpan.Zero);
-				AddCulture(r);
-			}
+
+			ApplySupportedCultures();
+
+			ResetMappings();
 		}
 
 		public ImmutableList<ILanguage> Query()
@@ -54,6 +57,14 @@ namespace TomPIT.Globalization
 			return Get(language);
 		}
 
+		public ILanguage Match(string languageString)
+		{
+			if (!Mappings.TryGetValue(languageString, out ILanguage language))
+				return null;
+
+			return language;
+		}
+
 		public ILanguage Select(int lcid)
 		{
 			return Get(f => f.Lcid == lcid);
@@ -62,43 +73,48 @@ namespace TomPIT.Globalization
 		public void NotifyChanged(object sender, LanguageEventArgs e)
 		{
 			Refresh(e.Language);
+			ApplySupportedCultures();
 		}
 
 		public void NotifyRemoved(object sender, LanguageEventArgs e)
 		{
-			RemoveCulture(Select(e.Language));
 			Remove(e.Language);
+			ApplySupportedCultures();
 		}
 
-		private void RemoveCulture(ILanguage language)
+		public void ApplySupportedCultures()
 		{
-			var culture = GetCulture(language);
-
-			if (culture == null)
+			if (Instance.RequestLocalizationOptions is null)
 				return;
 
-			if (Instance.RequestLocalizationOptions.SupportedCultures.Contains(culture))
+			lock (Instance.RequestLocalizationOptions)
 			{
-				Instance.RequestLocalizationOptions.SupportedCultures.Remove(culture);
-				Instance.RequestLocalizationOptions.SupportedUICultures.Remove(culture);
+				var languages = All();
+				var cultures = languages
+					.Where(e => e.Status == LanguageStatus.Visible)
+					.Select(e => GetCulture(e))
+					.Where(e => e is not null)
+					.ToImmutableList(true);
+
+				foreach (var culture in cultures)
+				{
+					if (!Instance.RequestLocalizationOptions.SupportedCultures.Contains(culture))
+						Instance.RequestLocalizationOptions.SupportedCultures.Add(culture);
+
+					if (!Instance.RequestLocalizationOptions.SupportedUICultures.Contains(culture))
+						Instance.RequestLocalizationOptions.SupportedUICultures.Add(culture);
+				}
+
+				var supportedCultures = Instance.RequestLocalizationOptions.SupportedCultures.ToImmutableList(true);
+				foreach (var culture in supportedCultures)
+				{
+					if (!cultures.Contains(culture))
+					{
+						Instance.RequestLocalizationOptions.SupportedCultures.Remove(culture);
+						Instance.RequestLocalizationOptions.SupportedUICultures.Remove(culture);
+					}
+				}
 			}
-		}
-
-		private void AddCulture(ILanguage language)
-		{
-			if (language == null || language.Status == LanguageStatus.Hidden)
-				return;
-
-			var culture = GetCulture(language);
-
-			if (culture == null)
-				return;
-
-			if (!Instance.RequestLocalizationOptions.SupportedCultures.Contains(culture))
-				Instance.RequestLocalizationOptions.SupportedCultures.Add(culture);
-
-			if (!Instance.RequestLocalizationOptions.SupportedUICultures.Contains(culture))
-				Instance.RequestLocalizationOptions.SupportedUICultures.Add(culture);
 		}
 
 		private CultureInfo GetCulture(ILanguage language)
@@ -107,6 +123,27 @@ namespace TomPIT.Globalization
 				return null;
 
 			return CultureInfo.GetCultureInfo(language.Lcid);
+		}
+
+		private void ResetMappings()
+		{
+			Mappings.Clear();
+
+			foreach (var language in All())
+			{
+				if (string.IsNullOrWhiteSpace(language.Mappings) || language.Status == LanguageStatus.Hidden)
+					continue;
+
+				var tokens = language.Mappings.Split(',');
+
+				foreach (var token in tokens)
+				{
+					if (string.IsNullOrWhiteSpace(token))
+						continue;
+
+					Mappings.TryAdd(token, language);
+				}
+			}
 		}
 	}
 }

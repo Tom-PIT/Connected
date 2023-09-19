@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.Net;
 using TomPIT.Data;
 using TomPIT.Environment;
 using TomPIT.Exceptions;
@@ -53,12 +53,12 @@ namespace TomPIT.Middleware.Services
 			return false;
 		}
 
-		public string GetServer(InstanceType type, InstanceVerbs verbs)
+		public string GetServer(InstanceFeatures features, InstanceVerbs verbs)
 		{
-			var r = Context.Tenant.GetService<IInstanceEndpointService>().Url(type, verbs);
+			var r = Context.Tenant.GetService<IInstanceEndpointService>().Url(features, verbs);
 
 			if (string.IsNullOrWhiteSpace(r))
-				throw new RuntimeException(string.Format("{0} ({1}, {2})", SR.ErrNoServer, type, verbs));
+				throw new RuntimeException(string.Format("{0} ({1}, {2})", SR.ErrNoServer, features, verbs));
 
 			return r;
 		}
@@ -85,7 +85,7 @@ namespace TomPIT.Middleware.Services
 
 			if (u.Avatar == Guid.Empty)
 			{
-				var image = Context.Tenant.GetService<IGraphicsService>().CreateImage(u.DisplayName(), 512, 512);
+				var image = Context.Tenant.GetService<IGraphicsService>().Avatars.Create(u.DisplayName(), 512, 512);
 
 				Context.Tenant.GetService<IUserService>().ChangeAvatar(u.Token, image, "Image/png", $"{u.DisplayName()}.png");
 
@@ -122,6 +122,7 @@ namespace TomPIT.Middleware.Services
 				throw new RuntimeException(SR.ErrHttpRequestNotAvailable);
 
 			Shell.HttpContext.Response.StatusCode = (int)HttpStatusCode.TemporaryRedirect;
+			Shell.HttpContext.Response.Headers.Add("Cache-Control", "no-store");
 			Shell.HttpContext.Response.Redirect(url, false);
 		}
 
@@ -135,7 +136,7 @@ namespace TomPIT.Middleware.Services
 
 		public string RestUrl(string route)
 		{
-			var appUrl = GetServer(InstanceType.Rest, InstanceVerbs.All);
+			var appUrl = GetServer(InstanceFeatures.Rest, InstanceVerbs.All);
 
 			if (appUrl == null)
 				throw new RuntimeException(SR.ErrNoRestServer);
@@ -145,7 +146,7 @@ namespace TomPIT.Middleware.Services
 
 		public string IoTUrl(string route)
 		{
-			var appUrl = GetServer(InstanceType.IoT, InstanceVerbs.All);
+			var appUrl = GetServer(InstanceFeatures.IoT, InstanceVerbs.All);
 
 			if (appUrl == null)
 				throw new RuntimeException(SR.ErrNoIoTServer);
@@ -155,7 +156,7 @@ namespace TomPIT.Middleware.Services
 
 		public string ApplicationUrl(string route)
 		{
-			var appUrl = GetServer(InstanceType.Application, InstanceVerbs.All);
+			var appUrl = GetServer(InstanceFeatures.Application, InstanceVerbs.All);
 
 			if (appUrl == null)
 				throw new RuntimeException(SR.ErrNoAppServer);
@@ -165,7 +166,7 @@ namespace TomPIT.Middleware.Services
 
 		public string CdnUrl(string route)
 		{
-			var appUrl = GetServer(InstanceType.Cdn, InstanceVerbs.All);
+			var appUrl = GetServer(InstanceFeatures.Cdn, InstanceVerbs.All);
 
 			if (appUrl == null)
 				throw new RuntimeException(SR.ErrNoAppServer);
@@ -175,7 +176,7 @@ namespace TomPIT.Middleware.Services
 
 		public string SearchUrl(string route)
 		{
-			var appUrl = GetServer(InstanceType.Search, InstanceVerbs.All);
+			var appUrl = GetServer(InstanceFeatures.Search, InstanceVerbs.All);
 
 			if (appUrl == null)
 				throw new RuntimeException(SR.ErrNoSearchServer);
@@ -185,7 +186,7 @@ namespace TomPIT.Middleware.Services
 
 		public string BigDataUrl(string route)
 		{
-			var appUrl = GetServer(InstanceType.BigData, InstanceVerbs.All);
+			var appUrl = GetServer(InstanceFeatures.BigData, InstanceVerbs.All);
 
 			if (appUrl == null)
 				throw new RuntimeException(SR.ErrNoBigDataServer);
@@ -390,7 +391,7 @@ namespace TomPIT.Middleware.Services
 				var request = Shell.HttpContext?.Request;
 
 				if (request == null)
-					return GetServer(InstanceType.Application, InstanceVerbs.All);
+					return GetServer(InstanceFeatures.Application, InstanceVerbs.All);
 
 				var forwardedScheme = request.Headers["X-Forwarded-Proto"].ToString();
 				var scheme = request.Scheme;

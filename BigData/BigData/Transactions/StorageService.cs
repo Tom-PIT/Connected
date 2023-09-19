@@ -4,8 +4,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using TomPIT.Diagnostics;
 using TomPIT.Distributed;
+using TomPIT.Environment;
 using TomPIT.Middleware;
-using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.BigData.Transactions
 {
@@ -25,8 +25,8 @@ namespace TomPIT.BigData.Transactions
 
 			StoragePool.Cancel = cancel;
 
-			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-				Dispatchers.Add(new StorageDispatcher(i));
+			foreach (var i in MiddlewareDescriptor.Current.Tenant.GetService<IResourceGroupService>().QuerySupported())
+				Dispatchers.Add(new StorageDispatcher(i.Name));
 
 			return true;
 		}
@@ -48,7 +48,7 @@ namespace TomPIT.BigData.Transactions
 					return;
 
 				MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"StorageService, {jobs.Count} jobs dequeued.");
-				
+
 				foreach (var i in jobs)
 				{
 					if (cancel.IsCancellationRequested)

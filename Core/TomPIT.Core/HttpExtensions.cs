@@ -1,11 +1,14 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.WebUtilities;
+
 using Newtonsoft.Json.Linq;
+
 using TomPIT.Serialization;
 
 namespace TomPIT
@@ -52,17 +55,31 @@ namespace TomPIT
 
 		public static JObject ToJObject(this Stream s)
 		{
-			using var reader = new StreamReader(s, Encoding.UTF8);
-			var body = reader.ReadToEndAsync().Result;
+			//Not using using so stream only gets disposed when request goes out of scope
+			var reader = new StreamReader(s, Encoding.UTF8);
 
+			var body = reader.ReadToEndAsync().Result;
+			
 			if (string.IsNullOrWhiteSpace(body))
 				return new JObject();
 
-			var result = Serializer.Deserialize<JObject>(body);
+			try
+			{
+				var result = Serializer.Deserialize<JObject>(body);
 
-			SetRequestArguments(Shell.HttpContext, result);
+				SetRequestArguments(Shell.HttpContext, result);
 
-			return result;
+				return result;
+			}
+			catch
+			{
+				return null;
+			}
+			finally
+			{
+				if (s.CanSeek)
+					s.Position = 0;
+			}
 		}
 
 		public static T ToType<T>(this Stream s)
@@ -91,7 +108,7 @@ namespace TomPIT
 		{
 			return ParseArguments(context, staticArguments, null, refererRouteMatcher);
 		}
-		
+
 		public static JObject ParseArguments(this HttpContext context, object staticArguments)
 		{
 			return ParseArguments(context, staticArguments, null, null);
@@ -103,8 +120,8 @@ namespace TomPIT
 		public static JObject ParseArguments(this HttpContext context, object staticArguments, string queryString, Action<string> refererRouteMatcher)
 		{
 			var result = staticArguments == null
-				? new JObject()
-				: staticArguments is JObject ? staticArguments as JObject : Serializer.Deserialize<JObject>(Serializer.Serialize(staticArguments));
+				 ? new JObject()
+				 : staticArguments is JObject ? staticArguments as JObject : Serializer.Deserialize<JObject>(Serializer.Serialize(staticArguments));
 
 			if (!string.IsNullOrWhiteSpace(queryString))
 			{

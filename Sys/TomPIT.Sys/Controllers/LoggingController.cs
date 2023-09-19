@@ -7,6 +7,8 @@ using TomPIT.Diagnostics;
 using TomPIT.Sys.Model;
 using TomPIT.Sys.Model.Diagnostics;
 
+using LogEntry = TomPIT.Sys.Model.Diagnostics.LogEntry;
+
 namespace TomPIT.Sys.Controllers
 {
 	public class LoggingController : SysController

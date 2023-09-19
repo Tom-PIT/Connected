@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using TomPIT.Storage;
 
 namespace TomPIT.Cdn.Printing
 {
@@ -10,6 +9,6 @@ namespace TomPIT.Cdn.Printing
 		void Complete(Guid popReceipt);
 		void Error(Guid popReceipt, string error);
 
-		List<IQueueMessage> Dequeue(int count);
+		List<IPrintQueueMessage> Dequeue(int count);
 	}
 }

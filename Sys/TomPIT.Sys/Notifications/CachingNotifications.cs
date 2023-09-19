@@ -1,6 +1,6 @@
-﻿using System;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
+using System;
 using TomPIT.ComponentModel;
 using TomPIT.Configuration;
 using TomPIT.Environment;
@@ -13,7 +13,7 @@ using TomPIT.Sys.Model;
 
 namespace TomPIT.Sys.Notifications
 {
-	internal static class CachingNotifications
+	public static class CachingNotifications
 	{
 		internal static IHubContext<CacheHub> Cache { get; set; }
 
@@ -84,6 +84,7 @@ namespace TomPIT.Sys.Notifications
 		public static void ComponentChanged(Guid microService, Guid folder, Guid component, string nameSpace, string category, string name) { Notify(nameof(ComponentChanged), new ComponentEventArgs(microService, folder, component, nameSpace, category, name)); }
 		public static void ComponentRemoved(Guid microService, Guid folder, Guid component, string nameSpace, string category, string name) { Notify(nameof(ComponentRemoved), new ComponentEventArgs(microService, folder, component, nameSpace, category, name)); }
 		public static void ComponentAdded(Guid microService, Guid folder, Guid component, string nameSpace, string category, string name) { Notify(nameof(ComponentAdded), new ComponentEventArgs(microService, folder, component, nameSpace, category, name)); }
+		public static void XmlKeyChanged(string id) { Notify(nameof(XmlKeyChanged), new XmlKeyEventArgs(id)); }
 		/*
 		 * Configuration
 		 */

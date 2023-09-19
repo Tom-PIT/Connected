@@ -6,5 +6,6 @@ namespace TomPIT.Design
 	{
 		string Text { get; }
 		List<bool> Patches { get; }
+		bool Success { get; }
 	}
 }

@@ -1,8 +1,9 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.ExceptionServices;
-using Newtonsoft.Json;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.Diagnostics;
@@ -69,7 +70,7 @@ namespace TomPIT.Middleware.Interop
 		{
 			get
 			{
-				if (_callback == null)
+				if (_callback is null)
 				{
 					if (string.IsNullOrWhiteSpace(CallbackPath))
 						throw new RuntimeException(SR.ErrAsyncPathExpected).WithMetrics(Context);
@@ -99,16 +100,17 @@ namespace TomPIT.Middleware.Interop
 		{
 			Invoke(null);
 		}
-		public void Invoke(IMiddlewareContext context)
-		{
-			if (context != null)
-				this.WithContext(context);
 
-			Validate();
-			OnValidating();
+		public void Invoke(IMiddlewareContext? context)
+		{
+			if (context is not null)
+				this.WithContext(context);
 
 			try
 			{
+				Validate();
+				OnValidating();
+
 				if (OperationTarget == DistributedOperationTarget.Distributed)
 				{
 					if (Context.Environment.IsInteractive)
@@ -122,7 +124,14 @@ namespace TomPIT.Middleware.Interop
 				}
 				else
 				{
-					OnInvoke();
+					try
+					{
+						OnInvoke();
+					}
+					catch (Exception ex)
+					{
+						throw;
+					}
 					DependencyInjections.Invoke<object>(null);
 				}
 
@@ -147,7 +156,15 @@ namespace TomPIT.Middleware.Interop
 			base.OnCommitting();
 
 			if (OperationTarget == DistributedOperationTarget.Distributed && !((MiddlewareCallback)Callback).Attached)
+			{
+				if (Context.Services.Identity.IsAuthenticated)
+				{
+					var args = JObject.FromObject(this);
+					args["user$"] = Context.Services.Identity.User.Token;
+				}
+
 				Context.Services.Cdn.Events.TriggerEvent("$", this, Callback);
+			}
 		}
 
 		protected virtual void OnInvoke()

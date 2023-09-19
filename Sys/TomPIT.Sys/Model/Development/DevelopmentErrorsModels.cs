@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Development;
 using TomPIT.Serialization;
@@ -10,7 +10,7 @@ using TomPIT.Sys.Api.Database;
 
 namespace TomPIT.Sys.Model.Development
 {
-	internal class DevelopmentErrorsModels
+	public class DevelopmentErrorsModels
 	{
 		private const string Queue = "devautofix";
 		public void AutoFix(string provider, Guid error)

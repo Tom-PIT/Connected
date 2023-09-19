@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="Properties\launchSettings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_WebToolingArtifacts Remove="Properties\launchSettings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Properties\launchSettings.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.6.0" />
+		<PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="7.0.9" />
+	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\App\TomPIT.App.UI\App.csproj" />
+    <ProjectReference Include="..\BigData\BigData\BigData.csproj" />
+    <ProjectReference Include="..\Cdn\Cdn\Cdn.csproj" />
+    <ProjectReference Include="..\Development\TomPIT.Development.UI\Development.csproj" />
+    <ProjectReference Include="..\IoT\TomPIT.IoT.App\IoT.csproj" />
+    <ProjectReference Include="..\Management\TomPIT.Management.UI\Management.csproj" />
+    <ProjectReference Include="..\Rest\TomPIT.Rest.Api\Rest.csproj" />
+    <ProjectReference Include="..\Search\Search\Search.csproj" />
+    <ProjectReference Include="..\Sys\TomPIT.Sys\Sys.csproj" />
+    <ProjectReference Include="..\TomPIT.Proxy.Local\TomPIT.Proxy.Local.csproj" />
+    <ProjectReference Include="..\TomPIT.ServiceProviders.HealthMonitoring\TomPIT.ServiceProviders.HealthMonitoring.csproj" />
+    <ProjectReference Include="..\Worker\TomPIT.Worker.App\Worker.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="sys.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>

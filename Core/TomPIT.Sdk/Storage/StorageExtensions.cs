@@ -8,26 +8,26 @@ namespace TomPIT.Storage
 {
 	public static class StorageExtensions
 	{
-		public static void SaveUploadedFiles(this IMiddlewareStorageService service, string primaryKey, string topic)
+		public static void SaveUploadedFiles(this IMiddlewareStorageService service, string primaryKey, string topic, StoragePolicy storagePolicy = StoragePolicy.Singleton)
 		{
-			SaveUploadedFiles(service, primaryKey, null, topic);
+			SaveUploadedFiles(service, primaryKey, null, topic, storagePolicy);
 		}
-		public static void SaveUploadedFileAsDrafts(this IMiddlewareStorageService service, string draft, string topic)
+		public static void SaveUploadedFileAsDrafts(this IMiddlewareStorageService service, string draft, string topic, StoragePolicy storagePolicy = StoragePolicy.Singleton)
 		{
-			SaveUploadedFiles(service, null, draft, topic);
-		}
-
-		public static Guid SaveUploadedFile(this IMiddlewareStorageService service, string primaryKey, string topic, IFormFile file)
-		{
-			return SaveUploadedFile(service, file, primaryKey, null, topic);
+			SaveUploadedFiles(service, null, draft, topic, storagePolicy);
 		}
 
-		public static Guid SaveUploadedFileAsDraft(this IMiddlewareStorageService service, string draft, string topic, IFormFile file)
+		public static Guid SaveUploadedFile(this IMiddlewareStorageService service, string primaryKey, string topic, IFormFile file, StoragePolicy storagePolicy = StoragePolicy.Singleton)
 		{
-			return SaveUploadedFile(service, file, null, draft, topic);
+			return SaveUploadedFile(service, file, primaryKey, null, topic, storagePolicy);
 		}
 
-		private static void SaveUploadedFiles(this IMiddlewareStorageService service, string primaryKey, string draft, string topic)
+		public static Guid SaveUploadedFileAsDraft(this IMiddlewareStorageService service, string draft, string topic, IFormFile file, StoragePolicy storagePolicy = StoragePolicy.Singleton)
+		{
+			return SaveUploadedFile(service, file, null, draft, topic, storagePolicy);
+		}
+
+		private static void SaveUploadedFiles(this IMiddlewareStorageService service, string primaryKey, string draft, string topic, StoragePolicy storagePolicy = StoragePolicy.Singleton)
 		{
 			if (Shell.HttpContext == null)
 				return;
@@ -38,10 +38,10 @@ namespace TomPIT.Storage
 				return;
 
 			foreach (var file in files)
-				SaveUploadedFile(service, file, primaryKey, draft, topic);
+				SaveUploadedFile(service, file, primaryKey, draft, topic, storagePolicy);
 		}
 
-		private static Guid SaveUploadedFile(this IMiddlewareStorageService service, IFormFile file, string primaryKey, string draft, string topic)
+		private static Guid SaveUploadedFile(this IMiddlewareStorageService service, IFormFile file, string primaryKey, string draft, string topic, StoragePolicy storagePolicy = StoragePolicy.Singleton)
 		{
 			var b = new Blob
 			{
@@ -54,17 +54,16 @@ namespace TomPIT.Storage
 				Topic = topic
 			};
 
-			using (var s = new MemoryStream())
-			{
-				file.CopyTo(s);
+            using var s = new MemoryStream();
+            
+			file.CopyTo(s);
 
-				var buffer = new byte[file.Length];
+            var buffer = new byte[file.Length];
 
-				s.Seek(0, SeekOrigin.Begin);
-				s.Read(buffer, 0, buffer.Length);
+            s.Seek(0, SeekOrigin.Begin);
+            s.Read(buffer, 0, buffer.Length);
 
-				return MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Upload(b, buffer, StoragePolicy.Singleton);
-			}
-		}
+		    return MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Upload(b, buffer, storagePolicy);
+        }
 	}
 }

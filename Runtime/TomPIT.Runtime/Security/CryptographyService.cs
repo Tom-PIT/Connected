@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using TomPIT.Connectivity;
-using TomPIT.Middleware;
+﻿using TomPIT.Connectivity;
 
 namespace TomPIT.Security
 {
@@ -12,47 +10,22 @@ namespace TomPIT.Security
 		}
 		public string Decrypt(string cipherText)
 		{
-			var u = Tenant.CreateUrl("Cryptography", "Decrypt");
-			var e = new JObject
-			{
-				{"cipherText", cipherText}
-			};
-
-			return Tenant.Post<string>(u, e);
+			return Instance.SysProxy.Cryptography.Decrypt(cipherText);
 		}
 
 		public string Encrypt(string plainText)
 		{
-			var u = Tenant.CreateUrl("Cryptography", "Encrypt");
-			var e = new JObject
-			{
-				{"plainText", plainText}
-			};
-
-			return Tenant.Post<string>(u, e);
+			return Instance.SysProxy.Cryptography.Encrypt(plainText);
 		}
 
 		public string Hash(string value)
 		{
-			var u = Tenant.CreateUrl("Cryptography", "Hash");
-			var e = new JObject
-			{
-				{"value", value}
-			};
-
-			return Tenant.Post<string>(u, e);
+			return Instance.SysProxy.Cryptography.Hash(value);
 		}
 
 		public bool VerifyHash(string value, string existing)
 		{
-			var u = Tenant.CreateUrl("Cryptography", "VerifyHash");
-			var e = new JObject
-			{
-				{"value", value},
-				{"existing", existing}
-			};
-
-			return Tenant.Post<bool>(u, e);
+			return Instance.SysProxy.Cryptography.VerifyHash(value, existing);
 		}
 	}
 }

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using TomPIT.Data.Sql;
 using TomPIT.Environment;
 using TomPIT.Security;
@@ -7,61 +8,63 @@ using TomPIT.SysDb.Security;
 
 namespace TomPIT.SysDb.Sql.Security
 {
-	internal class PermissionHandler : IPermissionHandler
-	{
-		public void Delete(IPermission permission)
-		{
-			using var w = new Writer("tompit.permission_del");
+    internal class PermissionHandler : IPermissionHandler
+    {
+        public void Delete(IPermission permission)
+        {
+            using var w = new Writer("tompit.permission_del");
 
-			w.CreateParameter("@id", permission.GetId());
+            w.CreateParameter("@id", permission.GetId());
 
-			w.Execute();
-		}
+            w.Execute();
+        }
 
-		public void Insert(IResourceGroup resourceGroup, string evidence, string schema, string claim, string descriptor, string primaryKey, PermissionValue value, string component)
-		{
-			using var w = new Writer("tompit.permission_ins");
+        public async Task Insert(IResourceGroup resourceGroup, string evidence, string schema, string claim, string descriptor, string primaryKey, PermissionValue value, string component)
+        {
+            using var w = new Writer("tompit.permission_ins");
 
-			w.CreateParameter("@evidence", evidence);
-			w.CreateParameter("@schema", schema);
-			w.CreateParameter("@claim", claim);
-			w.CreateParameter("@descriptor", descriptor);
-			w.CreateParameter("@primary_key", primaryKey);
-			w.CreateParameter("@value", value);
-			w.CreateParameter("@resource_group", resourceGroup == null ? 0 : resourceGroup.GetId(), true);
-			w.CreateParameter("@component", component, true);
+            w.CreateParameter("@evidence", evidence);
+            w.CreateParameter("@schema", schema);
+            w.CreateParameter("@claim", claim);
+            w.CreateParameter("@descriptor", descriptor);
+            w.CreateParameter("@primary_key", primaryKey);
+            w.CreateParameter("@value", value);
+            w.CreateParameter("@resource_group", resourceGroup == null ? 0 : resourceGroup.GetId(), true);
+            w.CreateParameter("@component", component, true);
 
-			w.Execute();
-		}
+            w.Execute();
 
-		public void Update(IPermission permission, PermissionValue value)
-		{
-			using var w = new Writer("tompit.permission_upd");
+            await Task.CompletedTask;
+        }
 
-			w.CreateParameter("@id", permission.GetId());
-			w.CreateParameter("@value", value);
+        public void Update(IPermission permission, PermissionValue value)
+        {
+            using var w = new Writer("tompit.permission_upd");
 
-			w.Execute();
-		}
+            w.CreateParameter("@id", permission.GetId());
+            w.CreateParameter("@value", value);
 
-		public List<IPermission> Query()
-		{
-			using var r = new Reader<Permission>("tompit.permission_que");
+            w.Execute();
+        }
 
-			return r.Execute().ToList<IPermission>();
-		}
+        public List<IPermission> Query()
+        {
+            using var r = new Reader<Permission>("tompit.permission_que");
 
-		public IPermission Select(string evidence, string schema, string claim, string primaryKey, string descriptor)
-		{
-			using var r = new Reader<Permission>("tompit.permission_sel");
+            return r.Execute().ToList<IPermission>();
+        }
 
-			r.CreateParameter("@evidence", evidence, true);
-			r.CreateParameter("@schema", schema, true);
-			r.CreateParameter("@claim", claim, true);
-			r.CreateParameter("@primary_key", primaryKey);
-			r.CreateParameter("@descriptor", descriptor);
+        public IPermission Select(string evidence, string schema, string claim, string primaryKey, string descriptor)
+        {
+            using var r = new Reader<Permission>("tompit.permission_sel");
 
-			return r.ExecuteSingleRow();
-		}
-	}
+            r.CreateParameter("@evidence", evidence, true);
+            r.CreateParameter("@schema", schema, true);
+            r.CreateParameter("@claim", claim, true);
+            r.CreateParameter("@primary_key", primaryKey);
+            r.CreateParameter("@descriptor", descriptor);
+
+            return r.ExecuteSingleRow();
+        }
+    }
 }

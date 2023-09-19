@@ -9,7 +9,7 @@ using TomPIT.Sys.Notifications;
 
 namespace TomPIT.Sys.Model.Components
 {
-	internal class FoldersModel : SynchronizedRepository<IFolder, Guid>
+	public class FoldersModel : SynchronizedRepository<IFolder, Guid>
 	{
 		public FoldersModel(IMemoryCache container) : base(container, "folder")
 		{

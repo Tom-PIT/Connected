@@ -96,12 +96,14 @@ namespace TomPIT.Data.DataProviders
 					case DateKind.DateTime2:
 					case DateKind.SmallDateTime:
 					case DateKind.Time:
-						value = Context.Services.Globalization.FromUtc((DateTimeOffset)value);
+						value = Context.Services.Globalization.FromUtc(new DateTimeOffset(DateTime.SpecifyKind((DateTime)value, DateTimeKind.Utc)));
 						break;
 				}
 			}
 			else if (property.Value.PropertyType == typeof(DateTime))
 				value = DateTime.SpecifyKind((DateTime)value, DateTimeKind.Utc);
+			else
+				value = Types.Convert(value, property.Value.PropertyType);
 
 			property.Value.SetValue(instance, value);
 		}

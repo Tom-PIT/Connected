@@ -117,5 +117,8 @@ namespace TomPIT.Distributed
 		int FailCount { get; }
 		bool Logging { get; }
 		WorkerKind Kind { get; }
+
+		int RetryInterval { get; }
+		int DisableTreshold { get; }
 	}
 }

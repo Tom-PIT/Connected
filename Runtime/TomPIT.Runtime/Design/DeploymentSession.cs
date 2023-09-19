@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Linq;
+
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Data;
 using TomPIT.ComponentModel.Deployment;
 using TomPIT.Connectivity;
 using TomPIT.Data;
 using TomPIT.Deployment;
+using TomPIT.Diagnostics;
 using TomPIT.Environment;
+using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Runtime;
 
@@ -25,16 +28,30 @@ namespace TomPIT.Design
 		public void Deploy(DeployArgs e)
 		{
 			if (e.ResetMicroService)
+			{
+				foreach (var component in Request.Components)
+				{
+					if (component?.Files is null)
+						continue;
+
+					if (!component.Files.Any())
+						continue;
+
+					component.Verb = ComponentVerb.Add;
+
+					foreach (var file in component.Files)
+						file.Verb = ComponentVerb.Add;
+				}
+
 				DropMicroService();
+			}
 
 			SynchronizeMicroService();
 			Drop();
 			DeployFolders();
 			DeployComponents();
-
 			SynchronizeEntities();
 			RunInstallers();
-
 			CommitMicroService();
 		}
 
@@ -55,7 +72,7 @@ namespace TomPIT.Design
 		{
 			var ms = Tenant.GetService<IMicroServiceService>().Select(Request.Token);
 
-			Tenant.GetService<IDesignService>().MicroServices.Update(Request.Token, Request.Name, ms.ResourceGroup, Request.Template, ResolveStatus(),  UpdateStatus.UpToDate, CommitStatus.Synchronized);
+			Tenant.GetService<IDesignService>().MicroServices.Update(Request.Token, Request.Name, ms.ResourceGroup, Request.Template, ResolveStatus(), UpdateStatus.UpToDate, CommitStatus.Synchronized);
 		}
 
 		private void SynchronizeMicroService()
@@ -106,7 +123,14 @@ namespace TomPIT.Design
 				if (Tenant.GetService<IComponentService>().SelectConfiguration(component.Token) is not IModelConfiguration config)
 					continue;
 
-				Tenant.GetService<IModelService>().SynchronizeEntity(config);
+				try
+				{
+					Tenant.GetService<IModelService>().SynchronizeEntity(config);
+				}
+				catch (TomPITException ex)
+				{
+					ex.LogError(LogCategories.Deployment);
+				}
 			}
 		}
 
@@ -116,21 +140,28 @@ namespace TomPIT.Design
 
 			foreach (var component in components)
 			{
-				if (Tenant.GetService<IComponentService>().SelectConfiguration(component.Token) is not IInstallerConfiguration config)
-					continue;
+				try
+				{
+					if (Tenant.GetService<IComponentService>().SelectConfiguration(component.Token) is not IInstallerConfiguration config)
+						continue;
 
-				using var ctx = new MicroServiceContext(Request.Token);
-				var type = config.Middleware(ctx);
+					using var ctx = new MicroServiceContext(Request.Token);
+					var type = config.Middleware(ctx);
 
-				if (type == null)
-					continue;
+					if (type == null)
+						continue;
 
-				var middleware = ctx.CreateMiddleware<IInstallerMiddleware>(type);
+					var middleware = ctx.CreateMiddleware<IInstallerMiddleware>(type);
 
-				if (middleware == null)
-					continue;
+					if (middleware == null)
+						continue;
 
-				middleware.Invoke();
+					middleware.Invoke();
+				}
+				catch (TomPITException ex)
+				{
+					ex.LogError(LogCategories.Deployment);
+				}
 			}
 		}
 
@@ -139,7 +170,7 @@ namespace TomPIT.Design
 			if (Request.Components == null)
 				return;
 
-			foreach(var component in Request.Components)
+			foreach (var component in Request.Components)
 			{
 				if (component.Verb == ComponentVerb.Delete)
 					ComponentModel.Delete(component.Token, true);
@@ -153,7 +184,10 @@ namespace TomPIT.Design
 
 			foreach (var component in Request.Components)
 			{
-				if (component.Verb == ComponentVerb.Delete || component.Verb == ComponentVerb.NotModified)
+				/*
+				 * Empty components are corrupted and we don't want to restore them.
+				 */
+				if (component.Files is null || !component.Files.Any())
 					continue;
 
 				ComponentModel.Restore(Request.Token, component);
@@ -164,18 +198,18 @@ namespace TomPIT.Design
 		{
 			var folders = Tenant.GetService<IComponentService>().QueryFolders(Request.Token);
 			/*
-			 * remove
-			 */
+		 * remove
+		 */
 			foreach (var folder in folders)
 			{
 				if (Request.Folders?.FirstOrDefault(f => f.Id == folder.Token) != null)
 					continue;
-				
+
 				ComponentModel.DeleteFolder(Request.Token, folder.Token, false);
 			}
 			/*
-			 * add and modify
-			 */
+		 * add and modify
+		 */
 			DeployFolders(Guid.Empty, folders);
 		}
 
@@ -186,13 +220,13 @@ namespace TomPIT.Design
 
 			var folders = Request.Folders.Where(f => f.Parent == parent);
 
-			foreach(var folder in folders)
+			foreach (var folder in folders)
 			{
 				var existingFolder = existing.FirstOrDefault(f => f.Token == folder.Id);
 				/*
-				 * update
-				 */
-				if(existingFolder != null)
+				* update
+				*/
+				if (existingFolder != null)
 				{
 					ComponentModel.UpdateFolder(Request.Token, existingFolder.Token, folder.Name, folder.Parent);
 				}
@@ -200,16 +234,31 @@ namespace TomPIT.Design
 				{
 					/*
 					 * insert
+					 * There is one tricky scenario. Remote folder with the same name (but different token) could be created meaning
+					 * we wouldn't be able to create local folder. In this case we will create folder with indexed name instead thus
+					 * enabling deployment process to succeed.
 					 */
-					ComponentModel.RestoreFolder(Request.Token, folder.Id, folder.Name, folder.Parent);
+					ComponentModel.RestoreFolder(Request.Token, folder.Id, EnumerateFolder(folder, existing, 0), folder.Parent);
 
 					existing.Add(Tenant.GetService<IComponentService>().SelectFolder(folder.Id));
 				}
 				/*
-				 * deploy children
-				 */
+				* deploy children
+				*/
 				DeployFolders(folder.Id, existing);
 			}
+		}
+
+		private string EnumerateFolder(IPullRequestFolder folder, ImmutableList<IFolder> existing, int index)
+		{
+			var name = index == 0 ? folder.Name : $"{folder}{index}";
+
+			var target = existing.FirstOrDefault(f => string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase) && f.Parent == folder.Parent);
+
+			if (target is null)
+				return name;
+
+			return EnumerateFolder(folder, existing, index + 1);
 		}
 
 		private IComponentModel ComponentModel => Tenant.GetService<IDesignService>().Components;

@@ -7,7 +7,7 @@ using TomPIT.Storage;
 
 namespace TomPIT.Sys.Model.Blobs
 {
-	internal class BlobsContentsModel : CacheRepository<IBlobContent, string>
+	public class BlobsContentsModel : CacheRepository<IBlobContent, string>
 	{
 		public BlobsContentsModel(IMemoryCache container) : base(container, "blobcontent")
 		{
@@ -29,7 +29,7 @@ namespace TomPIT.Sys.Model.Blobs
 
 					var data = sp.Blobs.Download(rg, types);
 
-					if(data!=null&&data.Count>0)
+					if (data != null && data.Count > 0)
 					{
 						lock (result)
 						{
@@ -86,7 +86,7 @@ namespace TomPIT.Sys.Model.Blobs
 			var rg = resourceGroup == Guid.Empty
 				? DataModel.ResourceGroups.Default
 				: DataModel.ResourceGroups.Select(resourceGroup);
-			
+
 			if (rg == null)
 				throw new SysException(string.Format("{0} ({1})", SR.ErrResourceGroupNotFound, resourceGroup));
 

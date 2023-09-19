@@ -15,7 +15,9 @@ namespace TomPIT.Data
 		void Close();
 
 		int Execute(IDataCommandDescriptor command);
+
 		List<T> Query<T>(IDataCommandDescriptor command);
+
 		T Select<T>(IDataCommandDescriptor command);
 
 		IDbCommand CreateCommand();

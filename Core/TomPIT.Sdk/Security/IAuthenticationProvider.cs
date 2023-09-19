@@ -11,6 +11,6 @@ namespace TomPIT.Security
 
 		IClientAuthenticationResult AuthenticateByPin(string user, string pin);
 
-		string RequestToken(InstanceType type);
+		string RequestToken(InstanceFeatures features);
 	}
 }

@@ -1,30 +1,38 @@
 ﻿using System;
+using System.ComponentModel;
+
 using TomPIT.Data.Sql;
 using TomPIT.Environment;
 
 namespace TomPIT.SysDb.Sql.Environment
 {
-	internal class InstanceEndpoint : PrimaryKeyRecord, IInstanceEndpoint
-	{
-		public string Url { get; set; }
-		public InstanceStatus Status { get; set; }
-		public string Name { get; set; }
-		public InstanceType Type { get; set; }
-		public Guid Token { get; set; }
-		public InstanceVerbs Verbs { get; set; }
-		public string ReverseProxyUrl { get; set; }
+   internal class InstanceEndpoint : PrimaryKeyRecord, IInstanceEndpoint
+   {
+      public string Url { get; set; }
+      public InstanceStatus Status { get; set; }
+      public string Name { get; set; }
+      public InstanceFeatures Features { get; set; }
+      [Browsable(false)]
+      public Guid Token { get; set; }
+      public InstanceVerbs Verbs { get; set; }
+      public string ReverseProxyUrl { get; set; }
 
-		protected override void OnCreate()
-		{
-			base.OnCreate();
+      protected override void OnCreate()
+      {
+         base.OnCreate();
 
-			Url = GetString("url");
-			Status = GetValue("status", InstanceStatus.Disabled);
-			Name = GetString("name");
-			Type = GetValue("type", InstanceType.Unknown);
-			Token = GetGuid("token");
-			Verbs = GetValue("verbs", InstanceVerbs.Get);
-			ReverseProxyUrl = GetString("reverse_proxy_url");
-		}
-	}
+         Url = GetString("url");
+         Status = GetValue("status", InstanceStatus.Disabled);
+         Name = GetString("name");
+         Features = GetValue("type", InstanceFeatures.Unknown);
+         Token = GetGuid("token");
+         Verbs = GetValue("verbs", InstanceVerbs.Get);
+         ReverseProxyUrl = GetString("reverse_proxy_url");
+      }
+
+      public override string ToString()
+      {
+         return string.IsNullOrWhiteSpace(Name) ? base.ToString() : Name;
+      }
+   }
 }

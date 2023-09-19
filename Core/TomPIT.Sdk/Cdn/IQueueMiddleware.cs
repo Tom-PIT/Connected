@@ -7,7 +7,7 @@ namespace TomPIT.Cdn
 		Retry = 1,
 		Complete = 2
 	}
-	public interface IQueueMiddleware : IMiddlewareComponent
+	public interface IQueueMiddleware : IMiddlewareComponent, ILifetimeMiddleware
 	{
 		void Invoke();
 		void Invoke(IMiddlewareContext context);

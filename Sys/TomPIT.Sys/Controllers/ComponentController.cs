@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Sys.Model;
 
@@ -10,6 +10,12 @@ namespace TomPIT.Sys.Controllers
 {
 	public class ComponentController : SysController
 	{
+		[HttpGet]
+		public ImmutableList<IComponent> Query(bool includeDeleted = false)
+		{
+			return DataModel.Components.Query(includeDeleted);
+		}
+
 		[HttpGet]
 		public ImmutableList<IComponent> Query(Guid microService)
 		{
@@ -42,6 +48,15 @@ namespace TomPIT.Sys.Controllers
 			var categories = body.Optional("categories", string.Empty);
 
 			return DataModel.Components.Query(resourceGroups, categories);
+		}
+
+		[HttpPost]
+		public ImmutableList<IComponent> QueryByCategories()
+		{
+			var body = FromBody();
+			var categories = body.Optional("categories", string.Empty);
+
+			return DataModel.Components.QueryByCategories(categories);
 		}
 
 		[HttpGet]

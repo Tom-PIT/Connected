@@ -22,17 +22,14 @@ namespace TomPIT.ComponentModel
 		{
 			var component = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(configuration.Component);
 
-			if (component == null)
-				return Guid.Empty;
-
-			return component.MicroService;
+			return component?.MicroService ?? default;
 		}
 
 		public static string ComponentName(this IConfiguration configuration)
 		{
 			var c = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(configuration.Component);
 
-			return c == null ? string.Empty : c.Name;
+			return c?.Name ?? string.Empty;
 		}
 
 		public static void ValidateMicroServiceReference(this IMicroService service, string reference)
@@ -45,44 +42,21 @@ namespace TomPIT.ComponentModel
 
 			var refs = MiddlewareDescriptor.Current.Tenant.GetService<IDiscoveryService>().MicroServices.References.Select(service.Name);
 
-			if (refs == null || refs.MicroServices.FirstOrDefault(f => string.Compare(f.MicroService, reference, true) == 0) == null)
+			if (refs is null || refs.MicroServices.FirstOrDefault(f => string.Compare(f.MicroService, reference, true) == 0) is null)
 				throw new RuntimeException(SR.ErrReferenceMissingSource, string.Format("{0} ({1}->{2})", SR.ErrReferenceMissing, service.Name, reference));
 		}
 
 		public static Guid ResourceGroup(this IComponent component)
 		{
-			if (MiddlewareDescriptor.Current.Tenant == null)
+			if (MiddlewareDescriptor.Current.Tenant is null)
 				return Guid.Empty;
 
 			var ms = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(component.MicroService);
 
-			if (ms == null)
+			if (ms is null)
 				return Guid.Empty;
 
 			return ms.ResourceGroup;
-		}
-
-		public static IComponentManifest Manifest(this IComponent component)
-		{
-			return Manifest(component, Guid.Empty);
-		}
-		public static IComponentManifest Manifest(this IComponent component, Guid element)
-		{
-			var config = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(component.Token);
-
-			if (config == null)
-				return null;
-
-			var att = config.GetType().FindAttribute<Annotations.Design.ManifestAttribute>();
-
-			if (att == null)
-				return null;
-
-			var provider = att.Type == null ?
-				Type.GetType(att.TypeName).CreateInstance<IComponentManifestProvider>()
-				: att.Type.CreateInstance<IComponentManifestProvider>();
-
-			return provider.CreateManifest(MiddlewareDescriptor.Current.Tenant, component.Token, element);
 		}
 	}
 }

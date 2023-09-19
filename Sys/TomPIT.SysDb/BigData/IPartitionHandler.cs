@@ -14,7 +14,7 @@ namespace TomPIT.SysDb.BigData
 		void Update(IPartition partition, string name, PartitionStatus status, int fileCount);
 		void Delete(IPartition partition);
 
-		void InsertFile(IPartition partition, INode node, string key, DateTime timestamp, Guid fileToken, PartitionFileStatus status);
+		void InsertFile(IPartition partition, INode node, ITimeZone timezone, string key, DateTime timestamp, Guid fileToken, PartitionFileStatus status);
 		Guid LockFile(IPartitionFile file);
 		void UnlockFile(Guid unlockKey);
 		void DeleteFile(IPartitionFile file);

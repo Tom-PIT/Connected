@@ -5,7 +5,7 @@ namespace TomPIT.Distributed
 {
 	public class QueueMessage : IQueueMessage
 	{
-		public string Id { get; set; }
+		public long Id { get; set; }
 		public string Message { get; set; }
 		public DateTime Created { get; set; }
 		public DateTime Expire { get; set; }

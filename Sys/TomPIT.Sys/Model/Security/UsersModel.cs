@@ -15,7 +15,7 @@ using TomPIT.Sys.Security;
 
 namespace TomPIT.Sys.Model.Security
 {
-	internal class UsersModel : SynchronizedRepository<IUser, Guid>
+	public class UsersModel : SynchronizedRepository<IUser, Guid>
 	{
 		public UsersModel(IMemoryCache container) : base(container, "user")
 		{
@@ -119,7 +119,10 @@ namespace TomPIT.Sys.Model.Security
 
 		public IUser SelectByLoginName(string loginName)
 		{
-			var r = Get(f => string.Compare(loginName, f.LoginName, true) == 0);
+			if (string.IsNullOrWhiteSpace(loginName))
+				return null;
+
+			var r = Get(f => string.Compare(loginName, f?.LoginName, true) == 0);
 
 			if (r != null)
 				return r;
@@ -149,7 +152,10 @@ namespace TomPIT.Sys.Model.Security
 			IUser r = null;
 
 			if (Guid.TryParse(identifier, out Guid g))
-				r = Select(g);
+			{
+				if (g != default)
+					r = Select(g);
+			}
 
 			if (r != null)
 				return r;
@@ -323,7 +329,7 @@ namespace TomPIT.Sys.Model.Security
 				if (u.PasswordChange != DateTime.MinValue && u.PasswordChange < DateTime.UtcNow)
 					return AuthenticationResult.Fail(AuthenticationResultReason.PasswordExpired);
 
-				if (!Shell.GetService<ICryptographyService>().VerifyHash(password, pwd))
+				if (!Shell.GetService<ISysCryptographyService>().VerifyHash(password, pwd))
 					return AuthenticationResult.Fail(AuthenticationResultReason.InvalidPassword);
 			}
 			else
@@ -394,7 +400,7 @@ namespace TomPIT.Sys.Model.Security
 			if (u == null)
 				throw SysException.UserNotFound();
 
-			Shell.GetService<IDatabaseService>().Proxy.Security.Users.UpdatePassword(u, Shell.GetService<ICryptographyService>().Hash(newPassword));
+			Shell.GetService<IDatabaseService>().Proxy.Security.Users.UpdatePassword(u, Shell.GetService<ISysCryptographyService>().Hash(newPassword));
 
 			Update(u.Token, u.LoginName, u.Email, u.Status, u.FirstName, u.LastName, u.Description, u.Pin, u.Language,
 				 u.TimeZone, u.NotificationEnabled, u.Mobile, u.Phone, DateTime.UtcNow, u.SecurityCode);
@@ -418,7 +424,7 @@ namespace TomPIT.Sys.Model.Security
 					throw new SysException(ar.GetDescription());
 			}
 
-			Shell.GetService<IDatabaseService>().Proxy.Security.Users.UpdatePassword(u, Shell.GetService<ICryptographyService>().Hash(newPassword));
+			Shell.GetService<IDatabaseService>().Proxy.Security.Users.UpdatePassword(u, Shell.GetService<ISysCryptographyService>().Hash(newPassword));
 
 			if (string.IsNullOrWhiteSpace(newPassword))
 			{
@@ -437,7 +443,7 @@ namespace TomPIT.Sys.Model.Security
 			if (string.IsNullOrWhiteSpace(code))
 				return code;
 
-			return Shell.GetService<ICryptographyService>().Encrypt(this, code);
+			return Shell.GetService<ISysCryptographyService>().Encrypt(this, code);
 		}
 
 		private void DecryptSecurityCode(IUser user)
@@ -452,7 +458,7 @@ namespace TomPIT.Sys.Model.Security
 			if (string.IsNullOrEmpty(value))
 				return;
 
-			property.SetValue(user, Shell.GetService<ICryptographyService>().Decrypt(this, value));
+			property.SetValue(user, Shell.GetService<ISysCryptographyService>().Decrypt(this, value));
 		}
 
 		private void ValidateSecurityCode(Guid user, string code)

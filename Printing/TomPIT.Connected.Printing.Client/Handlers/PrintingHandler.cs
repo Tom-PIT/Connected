@@ -5,8 +5,10 @@
  */
 
 using DevExpress.XtraPrinting;
+using DevExpress.XtraReports.Expressions;
 using DevExpress.XtraReports.UI;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -19,341 +21,393 @@ using System.Threading;
 using System.Threading.Tasks;
 using TomPIT.Connected.Printing.Client.Configuration;
 using TomPIT.Connected.Printing.Client.Printing;
+using Microsoft.Extensions.Caching.Memory;
+using DevExpress.XtraReports.Services;
+using System.ComponentModel.Design;
 
 namespace TomPIT.Connected.Printing.Client.Handlers
 {
-    internal class PrintingHandler
-    {
-        private HubConnection _connection;
+	internal class PrintingHandler : BackgroundService
+	{
+		private readonly LocalizationProvider _localizationProvider;
 
-        private PrinterHandler _printerHandler = new PrinterHandler();
+		private readonly SemaphoreSlim _functionLock;
 
-        private bool _keepAlive;
+		private HubConnection _connection;
 
-        private Uri _baseCdnUri;
+		private PrinterHandler _printerHandler;
 
-        private void CreateConnection()
-        {
-            var printingUri = new Uri(_baseCdnUri, "printing");
+		private IMemoryCache _memoryCache;
 
-            Logging.Debug($"Creating connection to {printingUri}");
+		private Uri _baseCdnUri;
 
-            _connection = new HubConnectionBuilder().WithUrl(printingUri, (o) =>
-            {
-                o.AccessTokenProvider = () =>
-                {
-                    return Task.FromResult(Settings.Token);
-                };
-            }).WithAutomaticReconnect(new ConnectionRetryPolicy()).Build();
+		private static int counter = 0;
 
-            _connection.Reconnecting += async (error) =>
-            {
-                if (error is null)
-                {
-                    Logging.Debug("Connection closed, no error. Reconnecting.");
-                }
-                else
-                {
-                    Logging.Debug($"Connection closed due to error. Reconnecting. Error = {error}");
-                }
-            };
+		public PrintingHandler(LocalizationProvider localizationProvider, IMemoryCache memoryCache)
+		{
+			_printerHandler = new PrinterHandler(Settings.PrinterNameMappings);
+			_localizationProvider = localizationProvider;
+			_memoryCache = memoryCache;
+			_functionLock = new SemaphoreSlim(1, 1);
+		}
 
-            _connection.Reconnected += async (arg) =>
-            {
-                Logging.Debug($"Reconnected, Connection Id = {arg}");
-                RegisterPrinters();
-            };
+		private void CreateConnection()
+		{
+			var printingUri = new Uri(_baseCdnUri, "printing");
 
-            _connection.KeepAliveInterval = TimeSpan.FromSeconds(20);
+			Logging.Debug($"Creating connection to {printingUri}");
 
-            _connection.Closed += async (error) =>
-            {
-                if (error is null)
-                {
-                    Logging.Debug("Connection closed normally.");
-                }
-                else
-                {
-                    Logging.Debug($"Connection closed due to error: {error}");
-                }
+			_connection = new HubConnectionBuilder().WithUrl(printingUri, (o) =>
+			{
+				o.AccessTokenProvider = () =>
+					{
+						return Task.FromResult(Settings.Token);
+					};
+			})
+			.WithAutomaticReconnect(new ConnectionRetryPolicy())
+			.Build();
 
-                if (!_keepAlive)
-                    return;
+			_connection.Reconnecting += async (error) =>
+			{
+				if (error is null)
+				{
+					Logging.Debug("Connection closed, no error. Reconnecting.");
+				}
+				else
+				{
+					Logging.Debug($"Connection closed due to error. Reconnecting. Error = {error}");
+				}
+			};
 
-                await Task.Delay(1000);
-                await _connection.StartAsync();
-                RegisterPrinters();
+			_connection.Reconnected += async (arg) =>
+			{
+				Logging.Debug($"Reconnected, Connection Id = {arg}");
+				await RegisterPrinters();
+			};
 
-                Logging.Debug("Connection re-established.");
-            };
+			_connection.KeepAliveInterval = TimeSpan.FromSeconds(20);
 
-            _connection.On<Guid, Guid>(Constants.RequestPrint, (id, receipt) =>
-            {
-                Logging.Debug($"Print request {id}");
-                try
-                {
-                    RunWithTimeout(() =>
-                    {
-                        try
-                        {
-                            var job = SelectJob(id);
+			_connection.Closed += async (error) =>
+			{
+				if (error is null)
+				{
+					Logging.Debug("Connection closed normally.");
+				}
+				else
+				{
+					Logging.Debug($"Connection closed due to error: {error}. Connection will attempt to restart.");
 
-                            if (job != null)
-                            {
-                                Print(job);
-                                Complete(receipt);
-                            }
-                            else
-                            {
-                                Logging.Error($"Print Job {id} not found.");
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Logging.Exception(ex, LoggingLevel.Error);
-                        }
-                    }, TimeSpan.FromMinutes(10)); //Should the worst happen and it gets stuck
-                }
-                catch (Exception ex)
-                {
-                    Logging.Exception(ex, LoggingLevel.Fatal);
-                }
+					await Task.Delay(5000);
+					await _connection.StartAsync();
+					await RegisterPrinters();
 
-            });
-        }
+					Logging.Debug("Connection re-established.");
+				}
+			};
 
-        public void Start()
-        {
-            Logging.Debug("Starting print spooler...");
+			_connection.On<Guid, Guid>(Constants.RequestPrint, async (id, receipt) =>
+			{
+				Logging.Debug($"Print request {id}");
 
-            Settings.ResetSettings();
+				bool exists = true;
+				_memoryCache.GetOrCreate<Guid>(id, (item) =>
+					{
+						exists = false;
+						item.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(10);
+						return id;
+					});
 
-            _baseCdnUri = new Uri(Settings.CdnUrl);
+				if (exists)
+				{
+					Logging.Debug($"Print request {id} was duplicate, ignoring.");
+					return;
+				}
 
-            try
-            {
-                if (_connection is null)
-                    CreateConnection();
+				try
+				{
+					try
+					{
+						if (await SelectJob(id) is SpoolerJob job)
+						{
+							Logging.Debug($"Issuing request for printing request {id}.");
+							await Print(job);
+							Logging.Debug($"Completing job for request {id}.");
+							await Complete(receipt);
+							Logging.Debug($"Job for request {id} completed.");
+						}
+						else
+						{
+							Logging.Error($"Print Job {id} not found.");
+						}
+					}
+					catch (Exception ex)
+					{
+						Logging.Exception(ex, LoggingLevel.Error);
+					}
+				}
+				catch (Exception ex)
+				{
+					Logging.Exception(ex, LoggingLevel.Fatal);
+				}
+			});
+		}
 
-                Logging.Debug("Connection to server");
+		public async Task Start()
+		{
+			Logging.Debug("Starting print spooler...");
 
-                _connection.StartAsync().Wait();
+			Settings.ResetSettings();
 
-                Logging.Debug("Print spooler started");
+			_baseCdnUri = new Uri(Settings.CdnUrl);
 
-                RegisterPrinters();
+			try
+			{
+				if (_connection is null)
+					CreateConnection();
 
-                _keepAlive = true;
-            }
-            catch (Exception ex)
-            {
-                Logging.Exception(ex, LoggingLevel.Fatal);
-            }
-        }
+				Logging.Debug("Connection to server");
 
-        public void Stop()
-        {
-            Logging.Debug("Stopping print spooler...");
+				await _connection.StartAsync();
 
-            try
-            {
-                _keepAlive = false;
+				Logging.Debug("Print spooler started");
 
-                _connection.StopAsync().Wait();
+				await RegisterPrinters();
+			}
+			catch (Exception ex)
+			{
+				Logging.Exception(ex, LoggingLevel.Fatal);
+			}
+		}
 
-                Logging.Debug("Print spooler stopped");
-            }
-            catch (Exception ex)
-            {
-                Logging.Exception(ex, LoggingLevel.Fatal);
-            }
-        }
+		public async Task Stop()
+		{
+			Logging.Debug("Stopping print spooler...");
 
-        private void RegisterPrinters()
-        {
-            Logging.Debug("Registering printers...");
+			try
+			{
+				await _connection.StopAsync();
 
-            var printerList = _printerHandler.GetPrinters(Settings.AvailablePrinters, Settings.PrinterNameMappings);
+				Logging.Debug("Print spooler stopped");
+			}
+			catch (Exception ex)
+			{
+				Logging.Exception(ex, LoggingLevel.Fatal);
+			}
+		}
 
-            try
-            {
-                AddPrinters(printerList);
-                Logging.Trace($"Registered Printers: {string.Join(", ", printerList)}");
-            }
-            catch (Exception ex)
-            {
-                Logging.Exception(ex);
-            }
-        }
+		private async Task RegisterPrinters()
+		{
+			Logging.Debug("Registering printers...");
 
-        private void Print(SpoolerJob job)
-        {
-            Logging.Trace($"Printing requested");
+			var printerList = _printerHandler.GetPrinters();
 
-            try
-            {
-                if (job.Mime.Equals(Constants.MimeTypeReport, StringComparison.OrdinalIgnoreCase))
-                {
-                    Logging.Debug($"Printing Job {job}");
+			try
+			{
+				await AddPrinters(printerList);
+				Logging.Trace($"Registered Printers: {string.Join(", ", printerList)}");
+			}
+			catch (Exception ex)
+			{
+				Logging.Exception(ex);
+			}
+		}
 
-                    var report = new XtraReport();
-                    using (var ms = new MemoryStream(Convert.FromBase64String(job.Content)))
-                    {
-                        report.LoadLayoutFromXml(ms);
+		private async Task Print(SpoolerJob job)
+		{
+			Logging.Trace($"Printing requested");
 
-                        var printerName = _printerHandler.MapToSystemName(job.Printer);
-                        Logging.Debug($"Printing to '{printerName}' (mapped as '{job.Printer}')");
+			try
+			{
+				if (job.Mime.Equals(Constants.MimeTypeReport, StringComparison.OrdinalIgnoreCase))
+				{
+					Logging.Debug($"Printing Job {job}");
 
-                        if (_printerHandler.IsPrinterOnline(printerName, out string queueStatus))
-                        {
-                            report.PrinterName = printerName;
-                            var printTask = RunWithTimeout(() =>
-                            {
-                                report.CreateDocument(false);
-                                report.PrintingSystem.Document.Name = $"TomPIT Printing Doc {job.Token}";
+					var report = new XtraReport();
+					((IServiceContainer)report).RemoveService(typeof(IReportProvider));
+					((IServiceContainer)report).RemoveService(typeof(IReportProviderAsync));
 
-                                var print = new PrintToolBase(report.PrintingSystem);
+					using var ms = new MemoryStream(Convert.FromBase64String(job.Content));				
+										
+					var content = new StreamReader(ms).ReadToEnd();
 
-                                Logging.Trace("Starting printing...");
-                                print.Print(printerName);
-                                Logging.Trace("Printing done...");
-                            }, TimeSpan.FromSeconds(Settings.PrintJobTimeout));
+					ms.Position = 0;
+					
+					((IServiceContainer)report).AddService(typeof(IReportProviderAsync), new ContentSubreportProvider(content));
+									
+					report.LoadLayoutFromXml(ms, true);
 
-                            try
-                            {
-                                printTask.Wait();
-                            }
-                            catch (Exception ex)
-                            {
-                                Logging.Error("There was and error printing the document.");
-                                Logging.Debug(ex.ToString());
-                                throw ex;
-                            }
-                        }
-                        else
-                        {
-                            var message = $"Printer not available. Status: {queueStatus}";
-                            Logging.Debug("Printer not available. See error log for detailed status.");
-                            Logging.Error(message);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Logging.Exception(ex, LoggingLevel.Error);
-                throw ex;
-            }
-        }
+					var localizeFunction = new LocalizeFunction(_localizationProvider, job.Identity);
 
-        private void Complete(Guid id)
-        {
-            Logging.Debug($"Completing Job {id}");
+					var printerName = _printerHandler.MapToSystemName(job.Printer);
 
-            try
-            {
-                if (_connection.State != HubConnectionState.Connected)
-                    return;
+					Logging.Debug($"Printing to '{printerName}' (mapped as '{job.Printer}')");
 
-                _connection.SendAsync(Constants.ServerMethodNameComplete, id).Wait();
+					report.PrinterName = printerName;
 
-                Logging.Trace($"Job {id} Completed");
-            }
-            catch (Exception ex)
-            {
-                Logging.Exception(ex, LoggingLevel.Fatal);
-                throw;
-            }
-        }
+					try
+					{
 
-        private void Ping(Guid id)
-        {
-            if (_connection.State != HubConnectionState.Connected)
-                return;
+						await _functionLock.WaitAsync();
+						try
+						{
+							CustomFunctions.Register(localizeFunction);
 
-            _connection.SendAsync(Constants.ServerMethodNamePing, id).Wait();
-        }
+							await report.CreateDocumentAsync();
 
-        private void AddPrinters(List<string> printers)
-        {
-            var args = new List<object>();
+							CustomFunctions.Unregister(localizeFunction.Name);
+						}
+						finally
+						{
+							_functionLock.Release();
+						}
 
-            foreach (var printer in printers)
-            {
-                args.Add(new
-                {
-                    Name = printer
-                });
-            }
+						report.PrintingSystem.Document.Name = $"TomPIT Printing Doc {job.Token}";
 
-            _connection.SendAsync(Constants.ServerMethodNameAddPrinters, args).Wait();
-        }
+						var print = new PrintToolBase(report.PrintingSystem);
 
-        private Task RunWithTimeout(Action action, TimeSpan timeout)
-        {
-            Task task = null;
-            task = Task.Factory.StartNew(() =>
-            {
-                var thread = new Thread(new ThreadStart(action));
-                Task.Factory.StartNew(() =>
-                {
-                    Thread.Sleep(timeout);
-                    if (!task.IsCompleted)
-                    {
-                        thread.Abort();
-                    }
-                });
-                thread.Start();
-                thread.Join();
-                if (thread.ThreadState == System.Threading.ThreadState.Aborted)
-                {
-                    throw new TimeoutException();
-                }
-            });
-            task.Wait();
-            return task;
-        }
+						Logging.Trace("Starting printing...");
+						if (OperatingSystem.IsWindows())
+						{
+							print.PrinterSettings.Copies = (short)job.CopyCount;
 
-        private SpoolerJob SelectJob(Guid id)
-        {
-            Logging.Debug($"Getting Job {id} from Server");
+							print.Print(printerName);
+						}
+						else
+						{
+							for (int i = 0; i < job.CopyCount; i++)
+							{
+								print.Print(printerName);
+							}
+						}
 
-            var spollerUri = new Uri(_baseCdnUri, "sys/printing-spooler");
+						Logging.Trace("Printing done...");
+					}
+					catch (Exception ex)
+					{
+						Logging.Error("There was and error printing the document.");
+						Logging.Debug(ex.ToString());
+						throw;
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Logging.Exception(ex, LoggingLevel.Error);
+				throw;
+			}
+		}
 
-            Logging.Trace($"HTTP Request to {spollerUri}");
-            Logging.Trace($"Header: {Constants.HttpHeaderBearer} = {Settings.Token}");
-            Logging.Trace($"Mime Type: {Constants.MimeTypeJson}");
+		private async Task Complete(Guid id)
+		{
+			Logging.Debug($"Completing Job {id}");
 
-            try
-            {
-                var client = new HttpClient();
+			try
+			{
+				if (_connection.State != HubConnectionState.Connected)
+					return;
 
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(Constants.HttpHeaderBearer, Settings.Token);
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(Constants.MimeTypeJson));
+				await _connection.SendAsync(Constants.ServerMethodNameComplete, id);
 
-                var result = client.PostAsync(spollerUri, new StringContent(JsonConvert.SerializeObject(new
-                {
-                    Id = id
-                }), Encoding.UTF8, Constants.MimeTypeJson)).Result;
+				Logging.Trace($"Job {id} Completed");
+			}
+			catch (Exception ex)
+			{
+				Logging.Exception(ex, LoggingLevel.Fatal);
+				throw;
+			}
+		}
 
-                var content = result.Content.ReadAsStringAsync().Result;
+		private async Task AddPrinters(List<string> printers)
+		{
+			var args = new List<object>();
 
-                if (string.Compare(content, "null", true) == 0
-                    || string.IsNullOrWhiteSpace(content))
-                    return null;
+			foreach (var printer in printers)
+			{
+				args.Add(new
+				{
+					Name = printer
+				});
+			}
 
-                var spoolerJob = JsonConvert.DeserializeObject<SpoolerJob>(content);
+			await _connection.SendAsync(Constants.ServerMethodNameAddPrinters, args);
+		}
 
-                Logging.Trace($"Returned Info: {spoolerJob}");
+		private HttpClient _client;
+		private object HttpClientLock = new object();
+		private HttpClient Client
+		{
+			get
+			{
+				if (_client is null)
+				{
+					lock (HttpClientLock)
+					{
+						if (_client is null)
+						{
+							var client = new HttpClient();
 
-                return spoolerJob;
-            }
-            catch (Exception ex)
-            {
-                Logging.Exception(ex, LoggingLevel.Fatal);
-                throw;
-            }
-        }
-    }
+							client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(Constants.HttpHeaderBearer, Settings.Token);
+							client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(Constants.MimeTypeJson));
+
+							_client = client;
+						}
+					}
+				}
+
+				return _client;
+			}
+		}
+
+		private async Task<SpoolerJob> SelectJob(Guid id)
+		{
+			Logging.Debug($"Getting Job {id} from Server");
+
+			var spoolerUrl = new Uri(_baseCdnUri, "sys/printing-spooler");
+
+			Logging.Trace($"HTTP Request to {spoolerUrl}");
+			Logging.Trace($"Header: {Constants.HttpHeaderBearer} = {Settings.Token}");
+			Logging.Trace($"Mime Type: {Constants.MimeTypeJson}");
+
+			try
+			{
+				var result = await Client.PostAsync(spoolerUrl, new StringContent(JsonConvert.SerializeObject(new
+				{
+					Id = id
+				}), Encoding.UTF8, Constants.MimeTypeJson));
+
+				var content = await result.Content.ReadAsStringAsync();
+
+				if (string.Compare(content, "null", true) == 0
+					 || string.IsNullOrWhiteSpace(content))
+					return null;
+
+				var spoolerJob = JsonConvert.DeserializeObject<SpoolerJob>(content);
+
+				Logging.Trace($"Returned Info: {spoolerJob}");
+
+				return spoolerJob;
+			}
+			catch (Exception ex)
+			{
+				Logging.Exception(ex, LoggingLevel.Fatal);
+				throw;
+			}
+		}
+
+		protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+		{
+			await Start();
+
+			var taskCompletionSource = new TaskCompletionSource<bool>();
+
+			stoppingToken.Register(async s =>
+			{
+				((TaskCompletionSource<bool>)s).SetResult(true);
+			}, taskCompletionSource);
+
+			await taskCompletionSource.Task;
+			await Stop();
+		}
+	}
 
 }

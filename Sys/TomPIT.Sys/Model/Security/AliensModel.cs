@@ -8,7 +8,7 @@ using TomPIT.Sys.Notifications;
 
 namespace TomPIT.Sys.Model.Security
 {
-	internal class AliensModel : SynchronizedRepository<IAlien, Guid>
+	public class AliensModel : SynchronizedRepository<IAlien, Guid>
 	{
 		public AliensModel(IMemoryCache container) : base(container, "alien")
 		{
@@ -40,6 +40,11 @@ namespace TomPIT.Sys.Model.Security
 			return Get(token);
 		}
 
+		public IAlien Select(string resourceType, string resourcePrimaryKey)
+		{
+			return Get(f => string.Compare(f.ResourceType, resourceType, true) == 0 && string.Compare(f.ResourcePrimaryKey, resourcePrimaryKey, true) == 0);
+		}
+
 		public IAlien Select(string email)
 		{
 			return Get(f => string.Compare(f.Email, email, true) == 0);
@@ -55,7 +60,7 @@ namespace TomPIT.Sys.Model.Security
 			return Get(f => string.Compare(f.Phone, phone, true) == 0);
 		}
 
-		public Guid Insert(string firstName, string lastName, string email, string mobile, string phone, Guid language, string timezone)
+		public Guid Insert(string firstName, string lastName, string email, string mobile, string phone, Guid language, string timezone, string resourceType, string resourcePrimaryKey)
 		{
 			ILanguage l = null;
 
@@ -69,7 +74,7 @@ namespace TomPIT.Sys.Model.Security
 
 			var token = Guid.NewGuid();
 
-			Shell.GetService<IDatabaseService>().Proxy.Security.Aliens.Insert(token, firstName, lastName, email, mobile, phone, l, timezone);
+			Shell.GetService<IDatabaseService>().Proxy.Security.Aliens.Insert(token, firstName, lastName, email, mobile, phone, l, timezone, resourceType, resourcePrimaryKey);
 
 			Refresh(token);
 			CachingNotifications.AlienChanged(token);
@@ -77,7 +82,7 @@ namespace TomPIT.Sys.Model.Security
 			return token;
 		}
 
-		public void Update(Guid token, string firstName, string lastName, string email, string mobile, string phone, Guid language, string timezone)
+		public void Update(Guid token, string firstName, string lastName, string email, string mobile, string phone, Guid language, string timezone, string resourceType, string resourcePrimaryKey)
 		{
 			var alien = Select(token);
 
@@ -94,7 +99,7 @@ namespace TomPIT.Sys.Model.Security
 					throw new SysException(SR.ErrLanguageNotFound);
 			}
 
-			Shell.GetService<IDatabaseService>().Proxy.Security.Aliens.Update(alien, firstName, lastName, email, mobile, phone, l, timezone);
+			Shell.GetService<IDatabaseService>().Proxy.Security.Aliens.Update(alien, firstName, lastName, email, mobile, phone, l, timezone, resourceType, resourcePrimaryKey);
 
 			Refresh(alien.Token);
 			CachingNotifications.AlienChanged(alien.Token);

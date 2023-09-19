@@ -39,7 +39,7 @@ namespace TomPIT.MicroServices.IoT.Design
 		{
 			return new List<string>
 			{
-				"TomPIT.IoT.Design.Views.dll"
+				"TomPIT.IoT.Design.dll"
 			};
 		}
 

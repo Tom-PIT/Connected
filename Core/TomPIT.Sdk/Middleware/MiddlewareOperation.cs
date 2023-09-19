@@ -1,54 +1,29 @@
 ﻿using System.ComponentModel;
-using Newtonsoft.Json;
-using TomPIT.Annotations;
 using TomPIT.Security;
 
 namespace TomPIT.Middleware
 {
-	public abstract class MiddlewareOperation : MiddlewareComponent, IMiddlewareOperation, IMiddlewareTransactionClient
+	public abstract class MiddlewareOperation : MiddlewareComponent, IMiddlewareOperation
 	{
-		[SkipValidation]
-		[EditorBrowsable(EditorBrowsableState.Advanced)]
-		[JsonIgnore]
-		public IMiddlewareTransaction Transaction
+		protected override void OnContextChanged()
 		{
-			get
-			{
-				if (Context is MiddlewareContext mc)
-				{
-					var transaction = mc.Transaction;
-
-					if (transaction != null && transaction is MiddlewareTransaction mt)
-						mt.Notify(this);
-
-					return transaction;
-				}
-
-				return null;
-			}
-			internal set
-			{
-				if (Context is MiddlewareContext mc)
-					mc.Transaction = value;
-
-				if (value is MiddlewareTransaction transaction)
-					transaction.Notify(this);
-			}
+			if (Context is MiddlewareContext middleware)
+				middleware.Transactions.Register(this);
 		}
 
 		protected void Rollback()
 		{
-			if (Transaction is MiddlewareTransaction t)
-				t.Rollback();
+			if (Context is MiddlewareContext middleware)
+				middleware.Transactions.Rollback();
 		}
 
-		void IMiddlewareTransactionClient.CommitTransaction()
+		internal void CommitOperation()
 		{
 			OnCommit();
 			OnCommitting();
 		}
 
-		void IMiddlewareTransactionClient.RollbackTransaction()
+		internal void RollbackOperation()
 		{
 			OnRollbacking();
 			OnRollback();
@@ -56,30 +31,23 @@ namespace TomPIT.Middleware
 
 		protected virtual void OnCommit()
 		{
-
 		}
 
 		protected virtual void OnRollback()
 		{
-
 		}
 
 		protected internal void Invoked()
 		{
-			var mc = Context as MiddlewareContext;
-
-			if (mc?.Owner == null)
-			{
-				if (!(Transaction is MiddlewareTransaction transaction))
-					return;
-
-				transaction.Commit();
-			}
+			if (Context is MiddlewareContext middleware)
+				middleware.Transactions.Commit(this);
 		}
 
 		protected internal virtual void OnCommitting()
 		{
 		}
+
+
 		[EditorBrowsable(EditorBrowsableState.Advanced)]
 		protected internal virtual void OnRollbacking()
 		{
@@ -98,7 +66,7 @@ namespace TomPIT.Middleware
 			if (Context is not IElevationContext elevationContext || elevationContext.AuthorizationOwner != this)
 				return;
 
-			Context.Tenant.GetService<IAuthorizationService>().AuthorizePolicies(Context, this);
+			AsyncUtils.RunSync(() => Context.Tenant.GetService<IAuthorizationService>().AuthorizePoliciesAsync(Context, this));
 
 			if (Context is IElevationContext postElevationContext && postElevationContext.State == ElevationContextState.Revoked)
 				postElevationContext.State = ElevationContextState.Granted;

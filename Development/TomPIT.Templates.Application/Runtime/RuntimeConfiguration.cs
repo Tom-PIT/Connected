@@ -9,6 +9,7 @@ namespace TomPIT.MicroServices.Runtime
 {
 	[DomDesigner(DomDesignerAttribute.TextDesigner)]
 	[Syntax(SyntaxAttribute.CSharp)]
+	[ComponentCreatedHandler("TomPIT.MicroServices.Design.CreateHandlers.Runtime, TomPIT.MicroServices.Design")]
 	[ClassRequired]
 	public class RuntimeConfiguration : TextConfiguration, IRuntimeConfiguration
 	{

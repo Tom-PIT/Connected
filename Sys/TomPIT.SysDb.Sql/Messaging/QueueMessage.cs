@@ -1,13 +1,12 @@
 ﻿using System;
 using TomPIT.Data.Sql;
 using TomPIT.Storage;
-using TomPIT.SysDb.Messaging;
 
 namespace TomPIT.SysDb.Sql.Messaging
 {
-	internal class QueueMessage : DatabaseRecord, IQueueMessage, IQueueMessageModifier
+	internal class QueueMessage : DatabaseRecord, IQueueMessage
 	{
-		public string Id { get; set; }
+		public long Id { get; set; }
 		public string Message { get; set; }
 		public DateTime Created { get; set; }
 		public DateTime Expire { get; set; }
@@ -18,19 +17,12 @@ namespace TomPIT.SysDb.Sql.Messaging
 		public DateTime DequeueTimestamp { get; set; }
 		public QueueScope Scope { get; set; }
 		public string BufferKey { get; set; }
-		public void Modify(DateTime nextVisible, DateTime dequeueTimestamp, int dequeueCount, Guid popReceipt)
-		{
-			NextVisible = nextVisible;
-			DequeueTimestamp = dequeueTimestamp;
-			DequeueCount = dequeueCount;
-			PopReceipt = popReceipt;
-		}
 
 		protected override void OnCreate()
 		{
 			base.OnCreate();
 
-			Id = GetLong("id").ToString();
+			Id = GetLong("id");
 			Message = GetString("message");
 			Created = GetDate("created");
 			Expire = GetDate("expire");

@@ -1,20 +1,23 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Template;
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.Template;
+using TomPIT.App.Models;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Cdn;
 using TomPIT.ComponentModel.Reports;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Connectivity;
+using TomPIT.Environment;
 using TomPIT.Exceptions;
+using TomPIT.Models;
 using TomPIT.Runtime;
-using TomPIT.Runtime.Configuration;
 using TomPIT.Storage;
 using TomPIT.UI;
 
@@ -40,16 +43,21 @@ namespace TomPIT.App.UI
 			if (!IsTargetCategory(e.Category))
 				return;
 
+			if (IsView(e.Category) && !Tenant.IsMicroServiceSupported(e.MicroService))
+				return;
+
 			ChangeState[e.Component] = true;
 			Refresh(e.Component);
 		}
 
 		private void OnMicroServiceInstalled(object sender, MicroServiceEventArgs e)
 		{
-			if (!Tenant.IsMicroServiceSupported(e.MicroService))
-				return;
+			var supportedCategories = "MasterView, Partial, MailTemplate, Report";
 
-			var views = Tenant.GetService<IComponentService>().QueryConfigurations(e.MicroService, "View, MasterView, Partial, MailTemplate, Report");
+			if (Tenant.IsMicroServiceSupported(e.MicroService))
+				supportedCategories += ", View";
+
+			var views = Tenant.GetService<IComponentService>().QueryConfigurations(e.MicroService, supportedCategories);
 
 			foreach (var i in views)
 				Set(i.Component, i, TimeSpan.Zero);
@@ -60,6 +68,9 @@ namespace TomPIT.App.UI
 		private void OnConfigurationRemoved(ITenant sender, ConfigurationEventArgs e)
 		{
 			if (!IsTargetCategory(e.Category))
+				return;
+
+			if (IsView(e.Category) && !Tenant.IsMicroServiceSupported(e.MicroService))
 				return;
 
 			ChangeState[e.Component] = true;
@@ -73,6 +84,9 @@ namespace TomPIT.App.UI
 			if (!IsTargetCategory(e.Category))
 				return;
 
+			if (IsView(e.Category) && !Tenant.IsMicroServiceSupported(e.MicroService))
+				return;
+
 			Refresh(e.Component);
 			//ReplaceLogin();
 		}
@@ -82,24 +96,35 @@ namespace TomPIT.App.UI
 			if (!IsTargetCategory(e.Category))
 				return;
 
+			if (IsView(e.Category) && !Tenant.IsMicroServiceSupported(e.MicroService))
+				return;
+
 			ChangeState[e.Component] = true;
 			Refresh(e.Component);
 
 			//ReplaceLogin();
 		}
 
+		private bool IsView(string category)
+		{
+			return string.Compare(category, "View", true) == 0;
+		}
+
 		private bool IsTargetCategory(string category)
 		{
 			return string.Compare(category, "View", true) == 0
-				|| string.Compare(category, "MasterView", true) == 0
-				|| string.Compare(category, "Partial", true) == 0
-				|| string.Compare(category, "MailTemplate", true) == 0
-				|| string.Compare(category, "Report", true) == 0;
+				 || string.Compare(category, "MasterView", true) == 0
+				 || string.Compare(category, "Partial", true) == 0
+				 || string.Compare(category, "MailTemplate", true) == 0
+				 || string.Compare(category, "Report", true) == 0;
 		}
 
 		protected override void OnInitializing()
 		{
-			var views = Tenant.GetService<IComponentService>().QueryConfigurations(Shell.GetConfiguration<IClientSys>().ResourceGroups, "View, MasterView, Partial, MailTemplate, Report");
+			var views = Tenant.GetService<IComponentService>().QueryConfigurations(Tenant.GetService<IResourceGroupService>().QuerySupported().Select(f => f.Name).ToList(), "View");
+			var commonViews = Tenant.GetService<IComponentService>().QueryConfigurations("MasterView", "Partial", "MailTemplate", "Report");
+
+			views = views.Union(commonViews).ToImmutableList();
 
 			foreach (var i in views)
 			{
@@ -133,13 +158,29 @@ namespace TomPIT.App.UI
 				var template = TemplateParser.Parse(view.Url);
 				var path = url.StartsWith('/') ? url : $"/{url}";
 				var matcher = new TemplateMatcher(template, null);
-				var dictionary = context == null ? new RouteData() : context.RouteData;
+				var dictionary = context?.RouteData ?? new RouteData();
 				var isMatch = matcher.TryMatch(path, dictionary.Values);
 
 				if (isMatch)
+				{
+					var component = Tenant.GetService<IComponentService>().SelectComponent(view.Component);
+					var microService = Tenant.GetService<IMicroServiceService>().Select(view.MicroService());
+
+					var viewResolutionArgs = new ViewResolutionArgs
+					{
+						MicroService = microService.Name,
+						Name = component.Name,
+						Url = url
+					};
+
+					foreach (var runtime in Tenant.GetService<IMicroServiceRuntimeService>().QueryRuntimes())
+					{
+						if (runtime?.Resolver?.ResolveView(viewResolutionArgs) is IViewConfiguration config)
+							return config;
+					}
 					return view;
+				}
 			}
-			var login = views.Where(f => ((IViewConfiguration)f).Url == "login");
 
 			return null;
 		}
@@ -231,7 +272,8 @@ namespace TomPIT.App.UI
 		public IMasterViewConfiguration SelectMaster(string name)
 		{
 			var tokens = name.Split('/');
-			IComponent c = null;
+
+			IComponent c;
 
 			if (tokens.Length > 1)
 			{
@@ -245,8 +287,19 @@ namespace TomPIT.App.UI
 			else
 				throw new RuntimeException(SR.ErrInvalidQualifier);
 
-			if (c == null)
+			if (c is null)
 				return null;
+
+			var masterResolutionArgs = new MasterViewResolutionArgs
+			{
+				Name = name
+			};
+
+			foreach (var runtime in Tenant.GetService<IMicroServiceRuntimeService>().QueryRuntimes())
+			{
+				if (runtime?.Resolver?.ResolveMaster(masterResolutionArgs) is IMasterViewConfiguration config)
+					return config;
+			}
 
 			return Get(c.Token) as IMasterViewConfiguration;
 		}
@@ -260,8 +313,23 @@ namespace TomPIT.App.UI
 
 			var component = Tenant.GetService<IComponentService>().SelectComponent(new Guid(tokens[0]), "MailTemplate", System.IO.Path.GetFileNameWithoutExtension(tokens[1]));
 
-			if (component == null)
+			if (component is null)
 				return null;
+
+			var microService = Tenant.GetService<IMicroServiceService>().Select(component.MicroService);
+
+			var mailTemplateResolutionArgs = new MailTemplateResolutionArgs
+			{
+				MicroService = microService?.Name,
+				Name = component?.Name,
+				Url = url
+			};
+
+			foreach (var runtime in Tenant.GetService<IMicroServiceRuntimeService>().QueryRuntimes())
+			{
+				if (runtime?.Resolver?.ResolveMailTemplate(mailTemplateResolutionArgs) is IMailTemplateConfiguration config)
+					return config;
+			}
 
 			return Get(component.Token) as IMailTemplateConfiguration;
 		}
@@ -269,20 +337,30 @@ namespace TomPIT.App.UI
 		public IPartialViewConfiguration SelectPartial(string name)
 		{
 			var tokens = name.Split('/');
-			IComponent c = null;
 
 			if (tokens.Length == 1)
 				return null;
 
 			var s = Tenant.GetService<IMicroServiceService>().Select(tokens[0].Trim());
 
-			if (s == null)
+			if (s is null)
 				return null;
 
-			c = Tenant.GetService<IComponentService>().SelectComponent(s.Token, ComponentCategories.Partial, tokens[1].Trim());
+			var c = Tenant.GetService<IComponentService>().SelectComponent(s.Token, ComponentCategories.Partial, tokens[1].Trim());
 
-			if (c == null)
+			if (c is null)
 				return null;
+
+			var partialResolutionArgs = new PartialViewResolutionArgs
+			{
+				Name = name
+			};
+
+			foreach (var runtime in Tenant.GetService<IMicroServiceRuntimeService>().QueryRuntimes())
+			{
+				if (runtime?.Resolver?.ResolvePartial(partialResolutionArgs) is IPartialViewConfiguration config)
+					return config;
+			}
 
 			return Get(c.Token) as IPartialViewConfiguration;
 		}
@@ -290,11 +368,10 @@ namespace TomPIT.App.UI
 		public IReportConfiguration SelectReport(string name)
 		{
 			var tokens = name.Split('/');
-			IComponent c = null;
 
 			var s = Tenant.GetService<IMicroServiceService>().Select(tokens[tokens.Length - 2].Trim());
 
-			if (s == null)
+			if (s is null)
 				return null;
 
 			var reportName = tokens[tokens.Length - 1];
@@ -302,25 +379,26 @@ namespace TomPIT.App.UI
 			if (reportName.Contains('.'))
 				reportName = Path.GetFileNameWithoutExtension(reportName);
 
-			c = Tenant.GetService<IComponentService>().SelectComponent(s.Token, "Report", reportName.Trim());
+			var c = Tenant.GetService<IComponentService>().SelectComponent(s.Token, "Report", reportName.Trim());
 
-			if (c == null)
+			if (c is null)
 				return null;
+
+			var reportResolutionArgs = new ReportResolutionArgs
+			{
+				Name = name
+			};
+
+			foreach (var runtime in Tenant.GetService<IMicroServiceRuntimeService>().QueryRuntimes())
+			{
+				if (runtime?.Resolver?.ResolveReport(reportResolutionArgs) is IReportConfiguration config)
+					return config;
+			}
 
 			return Get(c.Token) as IReportConfiguration;
 		}
 
 		private ConcurrentDictionary<Guid, bool> ChangeState => _changeState.Value;
-
-		//private void ReplaceLogin()
-		//{
-		//	var exists = Select("login", null);
-
-		//	if (exists == null)
-		//		Startup.RouteBuilder.AddSystemLogin();
-		//	else
-		//		Startup.RouteBuilder.RemoveSystemLogin();
-		//}
 
 		public ViewKind ResolveViewKind(string url)
 		{
@@ -362,6 +440,14 @@ namespace TomPIT.App.UI
 			var name = url.Trim('/').Split('/')[3];
 
 			return Tenant.GetService<IMicroServiceService>().Select(name);
+		}
+
+		public IRuntimeModel CreateModel(IRuntimeModel owner)
+		{
+			if (owner is RuntimeModel model)
+				return new RuntimeModel(model);
+			else
+				return owner;
 		}
 	}
 }

@@ -14,7 +14,7 @@ namespace TomPIT.Data
 			try
 			{
 				EnsureCommand();
-				
+
 				var result = Connection.Query<T>(Command);
 
 				if (Connection.Behavior == ConnectionBehavior.Isolated)

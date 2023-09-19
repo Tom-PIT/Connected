@@ -22,33 +22,29 @@ namespace TomPIT.Sys.Configuration
 			Shell.RegisterService(typeof(IDatabaseService), typeof(DatabaseService));
 			Shell.RegisterService(typeof(IStorageProviderService), typeof(StorageProviderService));
 			Shell.RegisterService(typeof(INamingService), typeof(NamingService));
-			Shell.RegisterService(typeof(ICryptographyService), typeof(CryptographyService));
+			Shell.RegisterService(typeof(ISysCryptographyService), typeof(CryptographyService));
 		}
 
 		private static void InitializeAuthentication()
 		{
-			var sys = Shell.GetConfiguration<IServerSys>();
-
-			TomPITAuthenticationHandler.IssuerSigningKey = sys.Authentication.JwToken.IssuerSigningKey;
-			TomPITAuthenticationHandler.ValidAudience = sys.Authentication.JwToken.ValidAudience;
-			TomPITAuthenticationHandler.ValidIssuer = sys.Authentication.JwToken.ValidIssuer;
+			TomPITAuthenticationHandler.IssuerSigningKey = AuthenticationConfiguration.JwToken.IssuerSigningKey;
+			TomPITAuthenticationHandler.ValidAudience = AuthenticationConfiguration.JwToken.ValidAudience;
+			TomPITAuthenticationHandler.ValidIssuer = AuthenticationConfiguration.JwToken.ValidIssuer;
 		}
 
 		private static void InitializeData()
 		{
-			var sys = Shell.GetConfiguration<IServerSys>();
-
-			foreach (var i in sys.StorageProviders)
+			foreach (var i in StorageProviders.Items)
 			{
 				var t = TypeExtensions.GetType(i);
 
-				if (t == null)
-					throw new SysException(string.Format("{0} ({1})", SR.ErrInvalidStorageProviderType, i));
+				if (t is null)
+					throw new SysException($"{SR.ErrInvalidStorageProviderType} ({i})");
 
 				var instance = t.CreateInstance<IStorageProvider>();
 
-				if (instance == null)
-					throw new SysException(string.Format("{0} ({1})", SR.ErrInvalidStorageProviderType, i));
+				if (instance is null)
+					throw new SysException($"{SR.ErrInvalidStorageProviderType} ({i})", SR.ErrInvalidStorageProviderType, i);
 
 				Shell.GetService<IStorageProviderService>().Register(instance);
 			}

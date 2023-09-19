@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 using TomPIT.Caching;
 using TomPIT.Messaging;
 using TomPIT.Reflection;
@@ -9,7 +9,7 @@ using TomPIT.Sys.Model;
 
 namespace TomPIT.Sys.Notifications
 {
-	internal static class DataCachingNotifications
+	public static class DataCachingNotifications
 	{
 		internal static IHubContext<DataCacheHub> Cache { get; set; }
 

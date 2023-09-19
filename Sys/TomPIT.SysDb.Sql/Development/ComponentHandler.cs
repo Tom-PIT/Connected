@@ -120,7 +120,7 @@ namespace TomPIT.SysDb.Sql.Development
 				itemsParameter.Add(parameter);
 			}
 
-			using var w = new Writer("tompit.component_upd_index_state");
+			using var w = new Writer("tompit.component_upd_state");
 
 			w.CreateParameter("@items", itemsParameter);
 
@@ -146,7 +146,7 @@ namespace TomPIT.SysDb.Sql.Development
 				itemsParameter.Add(parameter);
 			}
 
-			using var w = new Writer("tompit.component_upd_analyzer_state");
+			using var w = new Writer("tompit.component_upd_state");
 
 			w.CreateParameter("@items", itemsParameter);
 
@@ -155,7 +155,7 @@ namespace TomPIT.SysDb.Sql.Development
 
 		public List<IComponentDevelopmentState> QueryActiveAnalyzerStates(DateTime timeStamp)
 		{
-			using var r = new Reader<ComponentState>("tompit.component_state_analyzer_que");
+			using var r = new Reader<ComponentState>("tompit.component_state_que");
 
 			r.CreateParameter("@timestamp", timeStamp, true);
 

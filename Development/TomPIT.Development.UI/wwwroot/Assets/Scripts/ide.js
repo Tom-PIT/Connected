@@ -10,8 +10,8 @@ $.widget('tompit.tpIde', {
             active: null,
             errorListState: {
                 error: true,
-                warning: true,
-                info: true
+                warning: false,
+                info: false
             }
         },
         globalization: {
@@ -192,11 +192,40 @@ $.widget('tompit.tpIde', {
 
         var instance = this;
 
-        $('[data-kind="toggler"]', d).click(function () {
+        $('[data-kind="toggler"]', d).click(function (event) {
+            event.stopPropagation();
             var target = $(this);
             var icon = target.find('[data-fa-i2svg]');
             var node = target.closest('[data-id]');
             var id = node.attr('data-id');
+            var path = instance._resolvePath(target);
+
+            icon.toggleClass('fa-chevron-right')
+                .toggleClass('fa-chevron-down');
+
+            var group = node.children('[data-kind="explorer-group"][data-group]');
+
+            if (icon.hasClass('fa-chevron-down')) {
+                group.removeClass('collapse');
+
+                var loaded = group.attr('data-loaded');
+
+                if (loaded !== 'true')
+                    instance._loadExplorerChildren({ path: path });
+            }
+            else
+                group.addClass('collapse');
+        });
+
+        $('[data-kind="toggler-double"]', d).dblclick(function () {
+            var target = $(this);
+            var toggle = target.find('[data-kind="toggler"]');
+            if (!toggle)
+                return;
+
+            target = toggle;
+            var icon = target.find('[data-fa-i2svg]');
+            var node = target.closest('[data-id]');
             var path = instance._resolvePath(target);
 
             icon.toggleClass('fa-chevron-right')
@@ -280,7 +309,21 @@ $.widget('tompit.tpIde', {
                 var path = instance.options.selection.dragPath;
 
                 if (origin === folder)
-                    return;
+                  return;
+
+               if (origin !== null)
+                  var originTarget = $('[data-kind="explorer-node"][data-id="' + origin + '"]');
+
+               var target = $('[data-kind="explorer-node"][data-id="' + folder + '"]');
+
+               var originPath = instance._resolvePath(originTarget);
+               var targetPath = instance._resolvePath(target);
+
+               if (originPath.indexOf('/') > -1)
+                  originPath = originPath.substr(0, originPath.lastIndexOf('/'));
+
+               if (originPath === targetPath)
+                  return;
 
                 ide.ideAction({
                     data: {
@@ -289,17 +332,6 @@ $.widget('tompit.tpIde', {
                         'folder': folder,
                         'path': path
                     }, onComplete: function (data) {
-                        if (origin !== null)
-                            var originTarget = $('[data-kind="explorer-node"][data-id="' + origin + '"]');
-
-                        var target = $('[data-kind="explorer-node"][data-id="' + folder + '"]');
-
-                        var originPath = instance._resolvePath(originTarget);
-                        var targetPath = instance._resolvePath(target);
-
-                        if (originPath.indexOf('/') > -1)
-                            originPath = originPath.substr(0, originPath.lastIndexOf('/'));
-
                         instance.refreshExplorer({ 'path': originPath, 'mode': 'item' });
                         $(this).remove();
                         instance.refreshExplorer({ 'path': targetPath, 'mode': 'item' });

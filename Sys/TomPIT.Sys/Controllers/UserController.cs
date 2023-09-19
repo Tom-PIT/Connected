@@ -17,6 +17,9 @@ namespace TomPIT.Sys.Controllers
 		[HttpGet]
 		public IUser Select(string qualifier)
 		{
+			if (string.IsNullOrWhiteSpace(qualifier))
+				return null;
+
 			return DataModel.Users.Resolve(qualifier);
 		}
 

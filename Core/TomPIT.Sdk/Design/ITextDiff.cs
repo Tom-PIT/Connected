@@ -22,6 +22,7 @@ namespace TomPIT.Design
 		List<ITextDiffDescriptor> Diff(string original, string modified, TextDiffCompareMode mode);
 		List<ITextPatchDescriptor> Patch(List<ITextDiffDescriptor> diffs);
 		ITextPatchResult Apply(List<ITextPatchDescriptor> descriptors, string baseText);
+		ITextPatchResult Apply(string original, string modified, string baseText);
 		string Render(List<ITextDiffDescriptor> diffs);
 	}
 }

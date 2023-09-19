@@ -8,6 +8,8 @@ namespace TomPIT.Connectivity
 {
 	internal static class HttpClientPool
 	{
+		private static readonly int DefaultTimeout = 300;
+
 		public static HttpClient Get(ICredentials credentials, IInstanceMetadataProvider instanceProvider)
 		{
 			if (credentials is IBearerCredentials)
@@ -41,7 +43,7 @@ namespace TomPIT.Connectivity
 					if (instanceProvider != null)
 						r.DefaultRequestHeaders.Add("TomPITInstanceId", instanceProvider.InstanceId.ToString());
 
-					r.Timeout = TimeSpan.FromSeconds(300);
+					r.Timeout = TimeSpan.FromSeconds(DefaultTimeout);
 
 					return r;
 				});
@@ -70,7 +72,7 @@ namespace TomPIT.Connectivity
 					if (instanceProvider != null)
 						r.DefaultRequestHeaders.Add("TomPITInstanceId", instanceProvider.InstanceId.ToString());
 
-					r.Timeout = TimeSpan.FromSeconds(300);
+					r.Timeout = TimeSpan.FromSeconds(DefaultTimeout);
 
 					return r;
 				});
@@ -94,7 +96,7 @@ namespace TomPIT.Connectivity
 					if (instanceProvider != null)
 						r.DefaultRequestHeaders.Add("TomPITInstanceId", instanceProvider.InstanceId.ToString());
 
-					r.Timeout = TimeSpan.FromSeconds(300);
+					r.Timeout = TimeSpan.FromSeconds(DefaultTimeout);
 
 					return r;
 				});

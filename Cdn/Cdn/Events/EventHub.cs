@@ -36,7 +36,8 @@ namespace TomPIT.Cdn.Events
 						EventName = e.Name,
 						Arguments = e.Arguments,
 						Client = e.Client,
-						Behavior = e.Behavior
+						Behavior = e.Behavior,
+						Recipient = e.Recipient
 					});
 				}
 
@@ -54,8 +55,8 @@ namespace TomPIT.Cdn.Events
 			{
 				foreach (var e in events)
 				{
-					EventClients.Remove(Context.ConnectionId, e.Name);
-					EventMessagingCache.Remove(e.Client, e.Name);
+					EventClients.Remove(Context.ConnectionId, e.Name, e.Recipient);
+					EventMessagingCache.Remove(e.Client, e.Name, e.Recipient);
 				}
 
 				await Task.CompletedTask;
@@ -68,16 +69,30 @@ namespace TomPIT.Cdn.Events
 
 		public async Task Acknowledge(EventAcknowledgeArgs e)
 		{
-			EventMessagingCache.Remove(e);
+			try
+			{
+				EventMessagingCache.Remove(e);
 
-			await Task.CompletedTask;
+				await Task.CompletedTask;
+			}
+			catch (Exception ex)
+			{
+				await Clients.Caller.SendAsync("exception", ex.Message);
+			}
 		}
 
-		public override Task OnDisconnectedAsync(Exception exception)
+		public override async Task OnDisconnectedAsync(Exception exception)
 		{
-			EventClients.Remove(Context.ConnectionId);
+			try
+			{
+				EventClients.Remove(Context.ConnectionId);
 
-			return base.OnDisconnectedAsync(exception);
+				await base.OnDisconnectedAsync(exception);
+			}
+			catch (Exception ex)
+			{
+				await Clients.Caller.SendAsync("exception", ex.Message);
+			}
 		}
 	}
 }

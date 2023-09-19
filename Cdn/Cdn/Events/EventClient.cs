@@ -13,7 +13,7 @@ namespace TomPIT.Cdn.Events
 		public string EventName { get; set; }
 		public JObject Arguments { get; set; }
 		public string Client { get; set; }
-
+		public string Recipient { get; set; }
 		public DateTime RetentionDeadline { get; set; }
 
 		private string SerializedArguments
@@ -40,6 +40,9 @@ namespace TomPIT.Cdn.Events
 				return 1;
 
 			if (string.Compare(EventName, other.EventName, true) != 0)
+				return 1;
+
+			if (string.Compare(Recipient, other.Recipient, true) != 0)
 				return 1;
 
 			if (string.Compare(Client, other.Client, true) != 0)

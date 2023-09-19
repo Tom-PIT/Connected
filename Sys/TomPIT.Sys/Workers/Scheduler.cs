@@ -15,6 +15,12 @@ namespace TomPIT.Sys.Workers
 		}
 		protected override bool OnInitialize(CancellationToken cancel)
 		{
+			if (DataModel.Initialized)
+			{
+				var queued = DataModel.Workers.QueryQueued();
+				queued.ForEach(e => DataModel.Workers.Reset(e.Worker));
+			}
+
 			return DataModel.Initialized;
 		}
 

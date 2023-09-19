@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
 using TomPIT.Environment;
-using TomPIT.Middleware;
 using TomPIT.Runtime;
-using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.Security.Authentication
 {
@@ -22,41 +18,22 @@ namespace TomPIT.Security.Authentication
 
 		protected override void OnInitializing()
 		{
+			ImmutableList<IAuthenticationToken> items;
+
 			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)
-			{
-				var u = Tenant.CreateUrl("Security", "QueryAllAuthenticationTokens");
-				var ds = Tenant.Post<List<AuthenticationToken>>(u).ToList<IAuthenticationToken>();
-
-				foreach (var i in ds)
-					Set(i.Token, i, TimeSpan.Zero);
-			}
+				items = Instance.SysProxy.Security.QueryAuthenticationTokens();
 			else
-			{
-				var u = Tenant.CreateUrl("Security", "QueryAuthenticationTokens");
-				var a = new JArray();
-				var e = new JObject
-				{
-					{"data", a }
-				};
+				items = Instance.SysProxy.Security.QueryAuthenticationTokens(Tenant.GetService<IResourceGroupService>().QuerySupported().Select(f => f.Name).ToList());
 
-				foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-					a.Add(i);
-
-				var ds = Tenant.Post<List<AuthenticationToken>>(u, e).ToList<IAuthenticationToken>();
-
-				foreach (var i in ds)
-					Set(i.Token, i, TimeSpan.Zero);
-			}
+			foreach (var i in items)
+				Set(i.Token, i, TimeSpan.Zero);
 		}
 
 		protected override void OnInvalidate(Guid token)
 		{
-			var u = Tenant.CreateUrl("Security", "SelectAuthenticationToken")
-				.AddParameter("token", token);
+			var d = Instance.SysProxy.Security.SelectAuthenticationToken(token);
 
-			var d = Tenant.Get<AuthenticationToken>(u);
-
-			if (d != null)
+			if (d is not null)
 				Set(d.Token, d, TimeSpan.Zero);
 		}
 
@@ -65,41 +42,31 @@ namespace TomPIT.Security.Authentication
 			return Where(f => f.ResourceGroup == resourceGroup);
 		}
 
-		public IAuthenticationToken Select(InstanceType type)
+		public IAuthenticationToken Select(InstanceFeatures features)
 		{
 			var claim = AuthenticationTokenClaim.None;
 
-			switch (type)
-			{
-				case InstanceType.Application:
-					claim = AuthenticationTokenClaim.Application;
-					break;
-				case InstanceType.Worker:
-					claim = AuthenticationTokenClaim.Worker;
-					break;
-				case InstanceType.Cdn:
-					claim = AuthenticationTokenClaim.Cdn;
-					break;
-				case InstanceType.IoT:
-					claim = AuthenticationTokenClaim.IoT;
-					break;
-				case InstanceType.BigData:
-					claim = AuthenticationTokenClaim.BigData;
-					break;
-				case InstanceType.Search:
-					claim = AuthenticationTokenClaim.Search;
-					break;
-				case InstanceType.Rest:
-					claim = AuthenticationTokenClaim.Rest;
-					break;
-			}
+			if (features.HasFlag(InstanceFeatures.Application))
+				claim |= AuthenticationTokenClaim.Application;
+			else if (features.HasFlag(InstanceFeatures.Worker))
+				claim |= AuthenticationTokenClaim.Worker;
+			else if (features.HasFlag(InstanceFeatures.Cdn))
+				claim |= AuthenticationTokenClaim.Cdn;
+			else if (features.HasFlag(InstanceFeatures.IoT))
+				claim |= AuthenticationTokenClaim.IoT;
+			else if (features.HasFlag(InstanceFeatures.BigData))
+				claim |= AuthenticationTokenClaim.BigData;
+			else if (features.HasFlag(InstanceFeatures.Search))
+				claim |= AuthenticationTokenClaim.Search;
+			else if (features.HasFlag(InstanceFeatures.Rest))
+				claim |= AuthenticationTokenClaim.Rest;
 
 			if (claim == AuthenticationTokenClaim.None)
 				return null;
 
-			var candidates = Where(f => (f.Claims & claim) == claim);
+			var candidates = Where(f => f.Claims.HasFlag(claim));
 
-			if (candidates.Count == 0)
+			if (!candidates.Any())
 				return null;
 
 			foreach (var candidate in candidates)
@@ -118,7 +85,7 @@ namespace TomPIT.Security.Authentication
 
 		public IAuthenticationToken Select(string key)
 		{
-			return Get(f => string.Compare(f.Key, key, false) == 0);
+			return Get(f => string.Equals(f.Key, key, StringComparison.OrdinalIgnoreCase));
 		}
 
 		public void NotifyChanged(Guid id)

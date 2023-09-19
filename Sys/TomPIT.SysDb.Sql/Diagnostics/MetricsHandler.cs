@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using TomPIT.Data.Sql;
 using TomPIT.Diagnostics;
 using TomPIT.SysDb.Diagnostics;
@@ -53,7 +53,7 @@ namespace TomPIT.SysDb.Sql.Diagnostics
 					{"result",  (int)i.Result},
 					{"session",  i.Session},
 					{"start",  i.Start},
-					{"instance",  (int)i.Instance}
+					{"instance",  (int)i.Features}
 				};
 
 				if (i.Element != Guid.Empty)

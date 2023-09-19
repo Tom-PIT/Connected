@@ -1,146 +1,238 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using TomPIT.Caching;
 using TomPIT.Storage;
 using TomPIT.Sys.Api.Database;
-using TomPIT.SysDb.Messaging;
+using TomPIT.Sys.Caching;
 
 namespace TomPIT.Sys.Model.Cdn
 {
-	internal class QueueingModel : SynchronizedRepository<IQueueMessage, string>
-	{
-		internal const string Queue = "queueworker";
+   public class QueueingModel : IdentityRepository<QueueMessage, long>
+   {
+      public const string Queue = "queueworker";
 
-		public QueueingModel(IMemoryCache container) : base(container, "queueMessage")
-		{
-		}
+      public QueueingModel(IMemoryCache container) : base(container, "queueMessage")
+      {
+      }
 
-		protected override void OnInitializing()
-		{
-			var ds = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Query();
+      protected override void OnInitializing()
+      {
+         foreach (var j in Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Query())
+         {
+            if (j.Id > Identity)
+               Seed(j.Id);
 
-			foreach (var j in ds)
-				Set(j.Id, j, TimeSpan.Zero);
-		}
+            Set(j.Id, new QueueMessage(j), TimeSpan.Zero);
+         }
 
-		protected override void OnInvalidate(string id)
-		{
-			var r = Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Select(id);
+         Debug.WriteLine($"Initialized {Count} messages.", "Queue");
+      }
 
-			if (r != null)
-			{
-				Set(id, r, TimeSpan.Zero);
-				return;
-			}
+      public void Enqueue(string queue, string message, string bufferKey, TimeSpan expire, TimeSpan nextVisible, QueueScope scope)
+      {
+         Initialize();
+         /*
+          * This is performance optimization.
+          * We only enqueue one message with the same message argument at the same time if the buffer key has been passed.
+          */
+         if (!string.IsNullOrWhiteSpace(bufferKey))
+         {
+            var existing = Where(f => string.Compare(f.Queue, queue, true) == 0 && string.Compare(f.BufferKey, bufferKey, true) == 0);
+            /*
+             * Entry exists. Let's find out if we have one with the same message argument.
+             */
+            if (existing.Any())
+            {
+               foreach (var ex in existing)
+               {
+                  if (string.Equals(message, ex.Message, StringComparison.Ordinal))
+                  {
+                     /*
+                      * Exists. Queueing a new item would mean the client would process the same thing more than once
+                      * and this is not suppported in buffer mode. If the client needs to process every single entry regardless
+                      * of duplicates it should not use the buffer mode.
+                      */
+                     return;
+                  }
+               }
+            }
+         }
 
-			Remove(id);
-		}
+         var descriptor = new QueueMessage
+         {
+            Id = Increment(),
+            Message = message,
+            Created = DateTime.UtcNow,
+            Expire = DateTime.UtcNow.Add(expire),
+            NextVisible = DateTime.UtcNow.Add(nextVisible),
+            Queue = queue,
+            Scope = scope,
+            BufferKey = bufferKey,
+         };
 
-		public void Enqueue(string queue, string message, string bufferKey, TimeSpan expire, TimeSpan nextVisible, QueueScope scope)
-		{
-			if (!string.IsNullOrWhiteSpace(bufferKey))
-			{
-				var existing = Where(f => string.Compare(f.Queue, queue, true) == 0 && string.Compare(f.BufferKey, bufferKey, true) == 0);
+         Set(descriptor.Id, descriptor, TimeSpan.Zero);
 
-				if (existing.Count > 0)
-				{
-					foreach (var ex in existing)
-					{
-						if (ex.NextVisible <= DateTime.UtcNow)
-							return;
-					}
-				}
-			}
+         Dirty();
+      }
 
-			Refresh(Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Insert(queue, message, bufferKey, expire, nextVisible, scope));
-		}
+      public ImmutableList<IQueueMessage> Dequeue(int count, TimeSpan nextVisible, QueueScope scope, string queue)
+      {
+#if DEBUG
+         var sw = new Stopwatch();
 
-		public ImmutableList<IQueueMessage> Dequeue(int count, TimeSpan nextVisible, QueueScope scope, string queue)
-		{
-			ImmutableList<IQueueMessage> result = null;
+         sw.Start();
+#endif
 
-			result = SelectTargets(count, scope, queue);
+         var results = new List<IQueueMessage>();
 
-			if (result == null || result.Count == 0)
-				return ImmutableList<IQueueMessage>.Empty;
+         var targets = SelectTargets(count, scope, queue);
 
-			foreach (var target in result)
-			{
-				if (target is IQueueMessageModifier modifier)
-					modifier.Modify(DateTime.UtcNow.Add(nextVisible), DateTime.UtcNow, target.DequeueCount + 1, Guid.NewGuid());
-			}
+         if (targets.IsEmpty)
+         {
+#if DEBUG
+            sw.Stop();
 
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Update(result.ToList());
+            if (sw.ElapsedMilliseconds > 1)
+               Debug.WriteLine($"Dequeue {queue} {sw.ElapsedMilliseconds:n0} ms. (empty)", "Queue");
+#endif
+            return ImmutableList<IQueueMessage>.Empty;
+         }
 
-			return result;
-		}
+         foreach (var target in targets)
+         {
+            try
+            {
+               target.BeginEdit();
 
-		private ImmutableList<IQueueMessage> SelectTargets(int count, QueueScope scope, string queue)
-		{
-			Initialize();
+               if (target.NextVisible > DateTime.UtcNow)
+               {
+                  target.EndEdit();
+                  continue;
+               }
 
-			if (Count == 0)
-				return null;
+               target.NextVisible = DateTime.UtcNow.Add(nextVisible);
+               target.DequeueTimestamp = DateTime.UtcNow;
+               target.DequeueCount++;
+               target.PopReceipt = Guid.NewGuid();
 
-			var targets = string.IsNullOrWhiteSpace(queue)
-				? Where(f => f.Scope == scope && f.NextVisible <= DateTime.UtcNow && f.Expire > DateTime.UtcNow)
-				: Where(f => f.Scope == scope && f.NextVisible <= DateTime.UtcNow && f.Expire > DateTime.UtcNow && string.Compare(f.Queue, queue, true) == 0);
+               results.Add(target);
 
-			if (targets.Count == 0)
-				return null;
+               Dirty();
 
-			var ordered = targets.OrderBy(f => f.NextVisible).ThenBy(f => f.Id);
+               target.EndEdit();
+            }
+            catch
+            {
+               continue;
+            }
+         }
 
-			if (ordered.Count() <= count)
-				return ordered.ToImmutableList();
+#if DEBUG
+         sw.Stop();
 
-			return ordered.Take(count).ToImmutableList();
-		}
+         Debug.WriteLine($"Dequeue {queue} {sw.ElapsedMilliseconds:n0} ms.", "Queue");
+#endif
 
-		public void Ping(Guid popReceipt, TimeSpan nextVisible)
-		{
-			var message = Select(popReceipt);
+         return results.ToImmutableList();
+      }
 
-			if (message == null)
-				return;
+      private ImmutableList<QueueMessage> SelectTargets(int count, QueueScope scope, string queue)
+      {
+         Initialize();
 
-			if (message is IQueueMessageModifier modifier)
-				modifier.Modify(DateTime.UtcNow.Add(nextVisible), message.DequeueTimestamp, message.DequeueCount, message.PopReceipt);
+         if (Count == 0)
+            return ImmutableList<QueueMessage>.Empty;
 
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Update(new List<IQueueMessage> { message });
-		}
+         var targets = new List<QueueMessage>();
 
-		public void Complete(Guid popReceipt)
-		{
-			var message = Select(popReceipt);
+         foreach (var i in All())
+         {
+            if (i.Scope != scope || i.NextVisible > DateTime.UtcNow || i.Expire <= DateTime.UtcNow)
+               continue;
 
-			if (message == null)
-				return;
+            if (string.Compare(i.Queue ?? string.Empty, queue ?? string.Empty, true) == 0)
+               targets.Add(i);
+         }
 
-			Remove(message.Id);
+         if (!targets.Any())
+            return ImmutableList<QueueMessage>.Empty;
 
-			Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Delete(message);
-		}
+         var ordered = targets.OrderBy(f => f.NextVisible).ThenBy(f => f.Id);
 
-		public IQueueMessage Select(Guid popReceipt)
-		{
-			return Get(f => f.PopReceipt == popReceipt);
-		}
+         if (ordered.Count() <= count)
+            return ordered.ToImmutableList();
 
-		public void Recycle()
-		{
-			Initialize();
+         return ordered.Take(count).ToImmutableList();
+      }
 
-			var orphanes = Where(f => f.Expire < DateTime.UtcNow);
+      public void Ping(Guid popReceipt, TimeSpan nextVisible)
+      {
+         if (Select(popReceipt) is not QueueMessage message)
+            return;
 
-			foreach (var message in orphanes)
-			{
-				Remove(message.Id);
+         try
+         {
+            message.BeginEdit();
+            message.NextVisible = DateTime.UtcNow.Add(nextVisible);
 
-				Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Delete(message);
-			}
-		}
-	}
+            Dirty();
+
+            message.EndEdit();
+         }
+         catch { }
+      }
+
+      public void Complete(Guid popReceipt)
+      {
+         if (Select(popReceipt) is not QueueMessage message)
+            return;
+
+         Remove(message.Id);
+         Dirty();
+      }
+
+      public IQueueMessage Select(Guid popReceipt)
+      {
+         return Get(f => f.PopReceipt == popReceipt);
+      }
+
+      protected override async Task OnFlushing()
+      {
+         var messages = All();
+         var items = new List<IQueueMessage>();
+
+         foreach (var message in messages)
+         {
+            if (message.Expire < DateTime.UtcNow)
+               Remove(message.Id);
+
+            items.Add(message);
+         }
+
+#if DEBUG
+         var sw = new Stopwatch();
+
+         sw.Start();
+#endif
+         await Task.Run(() => Shell.GetService<IDatabaseService>().Proxy.Messaging.Queue.Update(items));
+
+         await Task.CompletedTask;
+#if DEBUG
+         sw.Stop();
+
+         Debug.WriteLine($"Queue update {sw.ElapsedMilliseconds:n0} ms. {messages.Count} items (with orphanes).", "Queue");
+
+         //sw.Reset();
+         //sw.Start();
+         //await File.WriteAllTextAsync(Path.Combine(System.Environment.GetFolderPath(SpecialFolder.LocalApplicationData), "Queue.json"), JsonConvert.SerializeObject(items));
+         //sw.Stop();
+
+         //Debug.WriteLine($"Queue update file {sw.ElapsedMilliseconds:n0} ms. {messages.Count} items (with orphanes).", "Queue");
+#endif
+      }
+   }
 }

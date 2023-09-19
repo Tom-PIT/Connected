@@ -1,25 +1,43 @@
 ﻿using System;
-using TomPIT.ComponentModel;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+
 using TomPIT.Data.Sql;
 using TomPIT.Development;
 
+using IComponent = TomPIT.ComponentModel.IComponent;
+
 namespace TomPIT.SysDb.Sql.Development
 {
-	internal class Component : PrimaryKeyRecord, IComponent
+    internal class Component : PrimaryKeyRecord, IComponent
 	{
-		public string Name { get; set; }
-		public Guid MicroService { get; set; }
-		public Guid Token { get; set; }
-		public string Type { get; set; }
-		public string Category { get; set; }
-		public Guid RuntimeConfiguration { get; set; }
-		public DateTime Modified { get; set; }
-		public Guid Folder { get; set; }
-		public LockStatus LockStatus { get; set; }
-		public Guid LockUser { get; set; }
-		public DateTime LockDate { get; set; }
-		public LockVerb LockVerb { get; set; }
-		public string NameSpace { get; set; }
+        [Required]
+        [MaxLength(128)]
+        public string Name { get; set; }
+        [Browsable(false)]
+        public Guid MicroService { get; set; }
+        [Browsable(false)]
+        public Guid Token { get; set; }
+        [Browsable(false)]
+        public string Type { get; set; }
+        [Browsable(false)]
+        public string Category { get; set; }
+        [Browsable(false)]
+        public Guid RuntimeConfiguration { get; set; }
+        [Browsable(false)]
+        public DateTime Modified { get; set; }
+        [Browsable(false)]
+        public Guid Folder { get; set; }
+        [Browsable(false)]
+        public LockStatus LockStatus { get; set; }
+        [Browsable(false)]
+        public Guid LockUser { get; set; }
+        [Browsable(false)]
+        public DateTime LockDate { get; set; }
+        [Browsable(false)]
+        public LockVerb LockVerb { get; set; }
+        [Browsable(false)]
+        public string NameSpace { get; set; }
 
 		protected override void OnCreate()
 		{
@@ -39,5 +57,13 @@ namespace TomPIT.SysDb.Sql.Development
 			LockVerb = GetValue("lock_verb", LockVerb.None);
 			NameSpace = GetString("namespace");
 		}
-	}
+
+      public override string ToString()
+      {
+         if (string.IsNullOrWhiteSpace(Name))
+            return base.ToString();
+
+         return Name;
+      }
+   }
 }

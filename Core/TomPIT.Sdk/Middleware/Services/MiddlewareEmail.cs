@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
 using TomPIT.Cdn;
 using TomPIT.ComponentModel;
 using TomPIT.Diagnostics;
@@ -35,9 +35,9 @@ namespace TomPIT.Middleware.Services
 
 			descriptor.Validate();
 
-			var url = Context.Tenant.GetService<IRuntimeService>().Type == InstanceType.Application
+			var url = Context.Tenant.GetService<IRuntimeService>().Features.HasFlag(InstanceFeatures.Application)
 				? Context.Services.Routing.RootUrl
-				: Context.Tenant.GetService<IInstanceEndpointService>().Url(InstanceType.Application, InstanceVerbs.Post);
+				: Context.Tenant.GetService<IInstanceEndpointService>().Url(InstanceFeatures.Application, InstanceVerbs.Post);
 
 			if (string.IsNullOrWhiteSpace(url))
 				throw new RuntimeException(SR.ErrNoAppServer).WithMetrics(Context);

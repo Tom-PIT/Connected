@@ -1,15 +1,15 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using TomPIT.Cdn;
 using TomPIT.Storage;
 using TomPIT.Sys.Api.Database;
 
 namespace TomPIT.Sys.Model.Cdn
 {
-	internal class SubscriptionsModel
+	public class SubscriptionsModel
 	{
 		private const string Queue = "subscription";
 		private const string EventQueue = "subscriptionEvent";
@@ -99,16 +99,16 @@ namespace TomPIT.Sys.Model.Cdn
 			Shell.GetService<IDatabaseService>().Proxy.Cdn.Subscription.InsertSubscribers(sub, subscribers);
 		}
 
-		public Guid InsertSubscriber(Guid subscription, SubscriptionResourceType type, string resourcePrimaryKey)
+		public Guid InsertSubscriber(Guid subscription, SubscriptionResourceType type, string resourcePrimaryKey, List<string> tags)
 		{
 			var sub = Select(subscription);
 
-			if (sub== null)
+			if (sub == null)
 				throw new SysException(SR.ErrSubscriptionNotFound);
 
 			var id = Guid.NewGuid();
 
-			Shell.GetService<IDatabaseService>().Proxy.Cdn.Subscription.InsertSubscriber(sub, id, type, resourcePrimaryKey);
+			Shell.GetService<IDatabaseService>().Proxy.Cdn.Subscription.InsertSubscriber(sub, id, type, resourcePrimaryKey, tags);
 
 			return id;
 		}

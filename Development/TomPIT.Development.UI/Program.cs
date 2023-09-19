@@ -15,7 +15,7 @@ namespace TomPIT.Development
 				  .ConfigureWebHostDefaults(webBuilder =>
 				  {
 					  webBuilder.UseStaticWebAssets();
-					  webBuilder.UseStartup<Startup>()
+					  webBuilder.UseStartup<DevStartup>()
 					  .UseDefaultServiceProvider(f => f.ValidateScopes = false);
 				  });
 	}

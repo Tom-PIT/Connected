@@ -1,8 +1,6 @@
 ﻿using System;
-using Newtonsoft.Json.Linq;
 using TomPIT.Connectivity;
 using TomPIT.Environment;
-using TomPIT.Middleware;
 using TomPIT.Runtime;
 
 namespace TomPIT.Security.Authentication
@@ -15,21 +13,30 @@ namespace TomPIT.Security.Authentication
 
 		public IClientAuthenticationResult Authenticate(string userName, string password)
 		{
-			var u = Tenant.CreateUrl("Authentication", "Authenticate");
-			var args = new JObject
-			{
-				{ "user", userName },
-				{"password", password }
-			};
-
-			var r = Tenant.Post<AuthenticationResult>(u, args);
+			var r = Instance.SysProxy.Authentication.Authenticate(userName, password);
 
 			if (r.Success)
 			{
 				var user = Tenant.GetService<IUserService>().Select(userName);
 
-				if (user != null)
-					r.Identity = new Identity(user, r.Token, Tenant.Url);
+				if (user is null)
+				{
+					return new AuthenticationResult
+					{
+						Success = false,
+						Reason = AuthenticationResultReason.Other
+					};
+				}
+				else
+				{
+					return new AuthenticationResult
+					{
+						Identity = new Identity(user),
+						Reason = AuthenticationResultReason.OK,
+						Success = true,
+						Token = r.Token
+					};
+				}
 			}
 
 			return r;
@@ -37,21 +44,7 @@ namespace TomPIT.Security.Authentication
 
 		public IClientAuthenticationResult AuthenticateByPin(string user, string pin)
 		{
-			var r = Tenant.Post<AuthenticationResult>(Tenant.CreateUrl("Authentication", "AuthenticateByPin"), new
-			{
-				user,
-				pin
-			});
-
-			if (r.Success)
-			{
-				var u = Tenant.GetService<IUserService>().Select(user);
-
-				if (user != null)
-					r.Identity = new Identity(u, r.Token, Tenant.Url);
-			}
-
-			return r;
+			return Instance.SysProxy.Authentication.AuthenticateByPin(user, pin);
 		}
 
 		public IClientAuthenticationResult Authenticate(Guid authenticationToken)
@@ -95,30 +88,28 @@ namespace TomPIT.Security.Authentication
 			var u = Tenant.GetService<IUserService>().Select(token.User.ToString());
 			var claim = AuthenticationTokenClaim.None;
 
-			switch (Shell.GetService<IRuntimeService>().Type)
-			{
-				case InstanceType.Application:
-					claim = AuthenticationTokenClaim.Application;
-					break;
-				case InstanceType.Worker:
-					claim = AuthenticationTokenClaim.Worker;
-					break;
-				case InstanceType.Cdn:
-					claim = AuthenticationTokenClaim.Cdn;
-					break;
-				case InstanceType.IoT:
-					claim = AuthenticationTokenClaim.IoT;
-					break;
-				case InstanceType.BigData:
-					claim = AuthenticationTokenClaim.BigData;
-					break;
-				case InstanceType.Search:
-					claim = AuthenticationTokenClaim.Search;
-					break;
-				case InstanceType.Rest:
-					claim = AuthenticationTokenClaim.Rest;
-					break;
-			}
+			var features = Shell.GetService<IRuntimeService>().Features;
+
+			if (features.HasFlag(InstanceFeatures.Application))
+				claim = AuthenticationTokenClaim.Application;
+
+			if (features.HasFlag(InstanceFeatures.Worker))
+				claim |= AuthenticationTokenClaim.Worker;
+
+			if (features.HasFlag(InstanceFeatures.Cdn))
+				claim |= AuthenticationTokenClaim.Cdn;
+
+			if (features.HasFlag(InstanceFeatures.IoT))
+				claim |= AuthenticationTokenClaim.IoT;
+
+			if (features.HasFlag(InstanceFeatures.BigData))
+				claim |= AuthenticationTokenClaim.BigData;
+
+			if (features.HasFlag(InstanceFeatures.Search))
+				claim |= AuthenticationTokenClaim.Search;
+
+			if (features.HasFlag(InstanceFeatures.Rest))
+				claim |= AuthenticationTokenClaim.Rest;
 
 			if (token == null || !token.IsValid(Shell.HttpContext.Request, claim))
 			{
@@ -140,10 +131,10 @@ namespace TomPIT.Security.Authentication
 			}
 		}
 
-		public string RequestToken(InstanceType type)
+		public string RequestToken(InstanceFeatures features)
 		{
 			var svc = Tenant.GetService<IAuthorizationService>() as AuthorizationService;
-			var token = svc.AuthenticationTokens.Select(type);
+			var token = svc.AuthenticationTokens.Select(features);
 
 			if (token == null)
 				return null;

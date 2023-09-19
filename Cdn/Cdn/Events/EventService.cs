@@ -1,78 +1,62 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 using TomPIT.Distributed;
-using TomPIT.Middleware;
-using TomPIT.Runtime.Configuration;
+using TomPIT.Environment;
 
 namespace TomPIT.Cdn.Events
 {
-	internal class EventService : HostedService
-	{
-		private Lazy<List<EventDispatcher>> _dispatchers = new Lazy<List<EventDispatcher>>();
+    internal class EventService : HostedService
+    {
+        public EventService()
+        {
+            IntervalTimeout = TimeSpan.FromMilliseconds(490);
+            ServiceInstance = this;
+        }
 
-		public EventService()
-		{
-			IntervalTimeout = TimeSpan.FromMilliseconds(490);
-		}
+        public static EventService ServiceInstance { get; private set; }
+        private EventDispatcher Dispatcher { get; set; }
 
-		protected override bool OnInitialize(CancellationToken cancel)
-		{
-			if (Instance.State == InstanceState.Initializing)
-				return false;
+        protected override bool OnInitialize(CancellationToken cancel)
+        {
+            if (Instance.State == InstanceState.Initializing)
+                return false;
 
-			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-				Dispatchers.Add(new EventDispatcher(i));
 
-			return true;
-		}
-		protected override Task OnExecute(CancellationToken cancel)
-		{
-			Parallel.ForEach(Dispatchers, (f) =>
-			{
-				if (f.Available <= 0)
-					return;
+            Dispatcher = new(Tenant.GetService<IResourceGroupService>().Default.Name);
 
-				var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("EventManagement", "Dequeue");
+            return true;
+        }
+        protected override async Task OnExecute(CancellationToken cancel)
+        {
+            if (Dispatcher.Available <= 0)
+                return;
 
-				var e = new JObject
-				{
-					{ "count", f.Available },
-					{ "resourceGroup", f.ResourceGroup }
-				};
+            if (cancel.IsCancellationRequested)
+                return;
 
-				if (cancel.IsCancellationRequested)
-					return;
+            var jobs = Instance.SysProxy.Management.Events.Dequeue(Dispatcher.Available);
 
-				var jobs = MiddlewareDescriptor.Current.Tenant.Post<List<QueueMessage>>(url, e);
+            if (!jobs.Any())
+                return;
 
-				if (jobs == null)
-					return;
+            foreach (var i in jobs)
+            {
+                if (cancel.IsCancellationRequested)
+                    return;
 
-				foreach (var i in jobs)
-				{
-					if (cancel.IsCancellationRequested)
-						return;
+                Dispatcher.Enqueue(i);
+            }
 
-					f.Enqueue(i);
-				}
-			});
+            await Task.CompletedTask;
+        }
 
-			return Task.CompletedTask;
-		}
+        public override void Dispose()
+        {
+            Dispatcher.Dispose();
 
-		private List<EventDispatcher> Dispatchers { get { return _dispatchers.Value; } }
-
-		public override void Dispose()
-		{
-			foreach (var dispatcher in Dispatchers)
-				dispatcher.Dispose();
-
-			Dispatchers.Clear();
-
-			base.Dispose();
-		}
-	}
+            base.Dispose();
+        }
+    }
 }

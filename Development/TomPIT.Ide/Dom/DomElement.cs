@@ -309,7 +309,7 @@ namespace TomPIT.Ide.Dom
 				return CreatePropertyDesignerInstance(instance, propertyName, att);
 			else
 			{
-				att = pi.PropertyType.ResolveDesigner();
+				att = pi.PropertyType.ResolveDesigner(Environment);
 
 				if (att != null)
 					return CreatePropertyDesignerInstance(instance, propertyName, att);
@@ -319,7 +319,7 @@ namespace TomPIT.Ide.Dom
 
 					if (value != null)
 					{
-						att = value.GetType().ResolveDesigner();
+						att = value.GetType().ResolveDesigner(Environment);
 
 						if (att != null)
 							return CreatePropertyDesignerInstance(instance, propertyName, att);

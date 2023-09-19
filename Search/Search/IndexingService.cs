@@ -1,100 +1,52 @@
 ﻿using System;
-using Newtonsoft.Json.Linq;
-using TomPIT.Middleware;
 using TomPIT.Search.Indexing;
 
-namespace TomPIT.Search
+namespace TomPIT.Search;
+
+internal class IndexingService : IIndexingService
 {
-	internal class IndexingService : IIndexingService
-	{
-		public void Complete(Guid popReceipt)
-		{
-			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("SearchManagement", "Complete");
-			var e = new JObject
-			{
-				{"popReceipt", popReceipt }
-			};
+    public void Complete(Guid popReceipt)
+    {
+        Instance.SysProxy.Management.Search.Complete(popReceipt);
+    }
 
-			MiddlewareDescriptor.Current.Tenant.Post(u, e);
-		}
+    public void CompleteRebuilding(Guid catalog)
+    {
+        Instance.SysProxy.Management.Search.DeleteState(catalog);
+    }
 
-		public void CompleteRebuilding(Guid catalog)
-		{
-			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("SearchManagement", "DeleteState");
-			var e = new JObject
-			{
-				{"catalog", catalog }
-			};
+    public void Flush()
+    {
+        IndexCache.Flush();
+    }
 
-			MiddlewareDescriptor.Current.Tenant.Post(u, e);
-		}
+    public void MarkRebuilding(Guid catalog)
+    {
+        Instance.SysProxy.Management.Search.UpdateState(catalog, CatalogStateStatus.Rebuilding);
+    }
 
-		public void Flush()
-		{
-			IndexCache.Flush();
-		}
+    public void Ping(Guid popReceipt, int nextVisible)
+    {
+        Instance.SysProxy.Management.Search.Ping(popReceipt, nextVisible);
+    }
 
-		public void MarkRebuilding(Guid catalog)
-		{
-			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("SearchManagement", "UpdateState");
-			var e = new JObject
-			{
-				{"catalog", catalog },
-				{"status", CatalogStateStatus.Rebuilding.ToString() }
-			};
+    public void Rebuild(Guid catalog)
+    {
+        Instance.SysProxy.Management.Search.InvalidateState(catalog);
+    }
 
-			MiddlewareDescriptor.Current.Tenant.Post(u, e);
-		}
+    public void ResetRebuilding(Guid catalog)
+    {
+        Instance.SysProxy.Management.Search.UpdateState(catalog, CatalogStateStatus.Pending);
+    }
 
-		public void Ping(Guid popReceipt, int nextVisible)
-		{
-			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("SearchManagement", "Ping");
-			var e = new JObject
-			{
-				{"popReceipt", popReceipt },
-				{"nextVisible", nextVisible }
-			};
+    public void Scave()
+    {
+        IndexCache.Scave();
+    }
 
-			MiddlewareDescriptor.Current.Tenant.Post(u, e);
-		}
-
-		public void Rebuild(Guid catalog)
-		{
-			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("SearchManagement", "InvalidateState");
-			var e = new JObject
-			{
-				{"catalog", catalog }
-			};
-
-			MiddlewareDescriptor.Current.Tenant.Post(u, e);
-		}
-
-		public void ResetRebuilding(Guid catalog)
-		{
-			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("SearchManagement", "UpdateState");
-			var e = new JObject
-			{
-				{"catalog", catalog },
-				{"status", CatalogStateStatus.Pending.ToString() }
-			};
-
-			MiddlewareDescriptor.Current.Tenant.Post(u, e);
-		}
-
-		public void Scave()
-		{
-			IndexCache.Scave();
-		}
-
-		public ICatalogState SelectState(Guid catalog)
-		{
-			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("SearchManagement", "SelectState");
-			var e = new JObject
-			{
-				{"catalog", catalog }
-			};
-
-			return MiddlewareDescriptor.Current.Tenant.Post<CatalogState>(u, e);
-		}
-	}
+    public ICatalogState SelectState(Guid catalog)
+    {
+        return Instance.SysProxy.Management.Search.SelectState(catalog);
+    }
 }

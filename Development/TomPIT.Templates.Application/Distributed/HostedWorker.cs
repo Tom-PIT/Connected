@@ -14,6 +14,7 @@ namespace TomPIT.MicroServices.Distributed
 	[DomDesigner(DesignUtils.ScheduleDesigner, Mode = EnvironmentMode.Runtime)]
 	[DomDesigner(DomDesignerAttribute.TextDesigner, Mode = EnvironmentMode.Design)]
 	[Syntax(SyntaxAttribute.CSharp)]
+	[ComponentCreatedHandler("TomPIT.MicroServices.Design.CreateHandlers.HostedWorker, TomPIT.MicroServices.Design")]
 	[ClassRequired]
 	public class HostedWorker : TextConfiguration, IHostedWorkerConfiguration
 	{

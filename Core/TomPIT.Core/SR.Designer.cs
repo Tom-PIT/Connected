@@ -19,7 +19,7 @@ namespace TomPIT {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class SR {
@@ -763,6 +763,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Big data timezone not found.
+        /// </summary>
+        public static string ErrBigDataTimezoneNotFound {
+            get {
+                return ResourceManager.GetString("ErrBigDataTimezoneNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Big data transaction not found.
         /// </summary>
         public static string ErrBigDataTransactionNotFound {
@@ -1119,6 +1128,15 @@ namespace TomPIT {
         public static string ErrContentTypeNotSupported {
             get {
                 return ResourceManager.GetString("ErrContentTypeNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This part of the application is currently in readonly mode..
+        /// </summary>
+        public static string ErrContextInReadonlyMode {
+            get {
+                return ResourceManager.GetString("ErrContextInReadonlyMode", resourceCulture);
             }
         }
         
@@ -2617,6 +2635,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The provided topic does not match the previously provided topic.
+        /// </summary>
+        public static string ErrTopicMismatch {
+            get {
+                return ResourceManager.GetString("ErrTopicMismatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Topic not found.
         /// </summary>
         public static string ErrTopicNotFound {
@@ -2694,6 +2721,15 @@ namespace TomPIT {
         public static string ErrTypeNull {
             get {
                 return ResourceManager.GetString("ErrTypeNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Users can not be deleted, action deprecated..
+        /// </summary>
+        public static string ErrUserDeleteUnsupported {
+            get {
+                return ResourceManager.GetString("ErrUserDeleteUnsupported", resourceCulture);
             }
         }
         
@@ -2824,6 +2860,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to None.
+        /// </summary>
+        public static string ItemNone {
+            get {
+                return ResourceManager.GetString("ItemNone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Application URL not set.
         /// </summary>
         public static string JsAppUrlNotSet {
@@ -2892,6 +2937,24 @@ namespace TomPIT {
         public static string MasterDefault {
             get {
                 return ResourceManager.GetString("MasterDefault", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        public static string MaxLengthAttribute {
+            get {
+                return ResourceManager.GetString("MaxLengthAttribute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        public static string MaxValueAttribute {
+            get {
+                return ResourceManager.GetString("MaxValueAttribute", resourceCulture);
             }
         }
         
@@ -2968,6 +3031,24 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        public static string MinLengthAttribute {
+            get {
+                return ResourceManager.GetString("MinLengthAttribute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        public static string MinValueAttribute {
+            get {
+                return ResourceManager.GetString("MinValueAttribute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to This class acts as a namespace class.
         /// </summary>
         public static string NamespaceClass {
@@ -3022,6 +3103,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        public static string RangeAttribute {
+            get {
+                return ResourceManager.GetString("RangeAttribute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Try again.
         /// </summary>
         public static string ReloadView {
@@ -3036,6 +3126,15 @@ namespace TomPIT {
         public static string RememberMe {
             get {
                 return ResourceManager.GetString("RememberMe", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The property {0} is required..
+        /// </summary>
+        public static string RequiredAttribute {
+            get {
+                return ResourceManager.GetString("RequiredAttribute", resourceCulture);
             }
         }
         
@@ -3216,6 +3315,15 @@ namespace TomPIT {
         public static string ToggleDropdown {
             get {
                 return ResourceManager.GetString("ToggleDropdown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        public static string UniqueAttribute {
+            get {
+                return ResourceManager.GetString("UniqueAttribute", resourceCulture);
             }
         }
         
@@ -3445,7 +3553,7 @@ namespace TomPIT {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Value for the field {0} already exists.
+        ///   Looks up a localized string similar to Value for the field {0} already exists .
         /// </summary>
         public static string ValUnique {
             get {

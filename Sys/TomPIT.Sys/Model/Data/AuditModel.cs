@@ -7,7 +7,7 @@ using TomPIT.Sys.Api.Database;
 
 namespace TomPIT.Sys.Model.Data
 {
-	internal class AuditModel
+	public class AuditModel
 	{
 		public void Insert(Guid user, string category, string @event, string primaryKey, string ip, Dictionary<string, string> values, string description)
 		{

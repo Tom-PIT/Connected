@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using TomPIT.Environment;
 using TomPIT.Models;
 using TomPIT.Runtime;
 
@@ -111,7 +112,7 @@ namespace TomPIT.Controllers
 			if (!string.IsNullOrWhiteSpace(returnUrl))
 				loginUrl += $"?{returnUrl}";
 
-			if (Shell.GetService<IRuntimeService>().Type == Environment.InstanceType.Application)
+			if (Shell.GetService<IRuntimeService>().Features.HasFlag(InstanceFeatures.Application))
 				return new RedirectResult(loginUrl);
 
 			var model = new LoginModel();

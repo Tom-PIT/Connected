@@ -34,6 +34,8 @@ namespace TomPIT.SysDb.Sql.Workers
 		public bool Logging { get; set; }
 		public WorkerKind Kind { get; set; }
 		public Guid State { get; set; }
+		public int RetryInterval { get; set; }
+		public int DisableTreshold { get; set; }
 
 		protected override void OnCreate()
 		{
@@ -66,6 +68,8 @@ namespace TomPIT.SysDb.Sql.Workers
 			Logging = GetBool("logging");
 			Kind = GetValue("kind", WorkerKind.Worker);
 			State = GetGuid("state");
+			RetryInterval = GetInt("retry_interval");
+			DisableTreshold = GetInt("disable_treshold");
 		}
 	}
 }

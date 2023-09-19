@@ -1,15 +1,16 @@
-﻿using System;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using TomPIT.Middleware;
-using TomPIT.Reflection;
 
 namespace TomPIT
 {
 	internal abstract class PropertyRenderer
 	{
 		private StringBuilder _builder = null;
-		private IManifestMember _property = null;
+		private PropertyDeclarationSyntax _property = null;
 		public PropertyRenderer(IMiddlewareContext context, string propertyName)
 		{
 			Context = context;
@@ -21,17 +22,17 @@ namespace TomPIT
 
 		protected IMiddlewareContext Context { get; }
 
-		protected abstract IManifestMiddleware Manifest { get; }
+		protected abstract ImmutableArray<PropertyDeclarationSyntax> Properties { get; }
 
-		private IManifestMember Property
+		private PropertyDeclarationSyntax Property
 		{
 			get
 			{
 				if (_property == null)
 				{
-					_property = Manifest.DeclaredType?.Members.FirstOrDefault(f => string.Compare(f.Name, PropertyName, true) == 0);
+					_property = Properties.FirstOrDefault(f => string.Equals(f.Identifier.Text, PropertyName, StringComparison.Ordinal));
 
-					if (_property == null)
+					if (_property is null)
 						throw new NullReferenceException($"{SR.ErrManifestPropertyNull} ({PropertyName})");
 				}
 
@@ -39,16 +40,7 @@ namespace TomPIT
 			}
 		}
 
-		private StringBuilder Builder
-		{
-			get
-			{
-				if (_builder == null)
-					_builder = new StringBuilder();
-
-				return _builder;
-			}
-		}
+		private StringBuilder Builder => _builder ??= new();
 
 		public string Result
 		{
@@ -64,7 +56,7 @@ namespace TomPIT
 		{
 			Builder.Clear();
 
-			Builder.Append($"<tp-property name =\"{Property.Name}\" data-type=\"{Property.Type}\"");
+			Builder.Append($"<tp-property name =\"{Property.Identifier.Text}\" data-type=\"{Property.Type.ToString()}\"");
 
 			ResolveLocalizationString("LocalizedDisplay", "label");
 			ResolveLocalizationString("LocalizedCategory", "category");
@@ -72,54 +64,92 @@ namespace TomPIT
 
 			Builder.Append(">");
 
-			var attributes = Property is IManifestAttributeMember member ? member.Attributes : null;
-
-			if (attributes != null)
+			if (Property.AttributeLists.Any())
 			{
-				var validationAttributes = attributes.Where(f => f.IsValidation);
+				Builder.AppendLine("<tp-validation>");
 
-				if (validationAttributes.Count() > 0)
+				foreach (var list in Property.AttributeLists)
 				{
-					Builder.AppendLine("<tp-validation>");
-
-					foreach (var attribute in validationAttributes)
-					{
-						Builder.Append($"<tp-validation-attribute type=\"{attribute.Name}\" ");
-
-						if (!string.IsNullOrWhiteSpace(attribute.Description))
-							Builder.Append($"description =\"{attribute.Description}\"");
-
-						Builder.Append(">");
-						Builder.AppendLine("</tp-validation-attribute>");
-					}
-
-					Builder.AppendLine("</tp-validation>");
+					foreach (var attribute in list.Attributes)
+						RenderAttribute(attribute);
 				}
+
+				Builder.AppendLine("</tp-validation>");
 			}
+
 			Builder.AppendLine("</tp-property>");
+		}
+
+		private void RenderAttribute(AttributeSyntax attribute)
+		{
+			if (string.Equals(attribute.Name.ToString(), "Required", StringComparison.Ordinal))
+				RenderRequired(attribute);
+			else if (string.Equals(attribute.Name.ToString(), "MaxLength", StringComparison.Ordinal))
+				RenderMaxLength(attribute);
+			else if (string.Equals(attribute.Name.ToString(), "MinValue", StringComparison.Ordinal))
+				RenderMinValue(attribute);
+			else if (string.Equals(attribute.Name.ToString(), "MaxValue", StringComparison.Ordinal))
+				RenderMaxValue(attribute);
+		}
+
+		private void RenderRequired(AttributeSyntax attribute)
+		{
+			RenderValidation("Required", null);
+		}
+
+		private void RenderMaxLength(AttributeSyntax attribute)
+		{
+			RenderValidation("MaxLength", attribute.ArgumentList.Arguments[0].ToString().Trim('"'));
+		}
+
+		private void RenderMinValue(AttributeSyntax attribute)
+		{
+			RenderValidation("MinValue", attribute.ArgumentList.Arguments[0].ToString().Trim('"'));
+		}
+
+		private void RenderMaxValue(AttributeSyntax attribute)
+		{
+			RenderValidation("MaxValue", attribute.ArgumentList.Arguments[0].ToString().Trim('"'));
+		}
+
+		private void RenderValidation(string name, string description)
+		{
+			Builder.Append($"<tp-validation-attribute type=\"{name}\" ");
+
+			if (!string.IsNullOrWhiteSpace(description))
+				Builder.Append($"description =\"{description}\"");
+
+			Builder.Append(">");
+			Builder.AppendLine("</tp-validation-attribute>");
 		}
 
 		private void ResolveLocalizationString(string attributeName, string propertyName)
 		{
-			var attributes = Property is IManifestAttributeMember member ? member.Attributes : null;
+			var attribute = FindAttribute(attributeName);
 
-			if (attributes != null)
+			if (attribute is null)
+				return;
+
+			var stringTable = attribute.ArgumentList.Arguments[0].ToString().Trim('"');
+			var key = attribute.ArgumentList.Arguments[1].ToString().Trim('"');
+			var loc = Context.Services.Globalization.GetString(stringTable, key);
+
+			if (!string.IsNullOrWhiteSpace(loc))
+				Builder.Append($" {propertyName}=\"{loc}\" ");
+		}
+
+		private AttributeSyntax FindAttribute(string name)
+		{
+			foreach (var list in Property.AttributeLists)
 			{
-				var display = attributes.FirstOrDefault(f => string.Compare(f.Name, attributeName, true) == 0);
-
-				if (display == null)
-					return;
-
-				var description = display.Description.Split(',');
-
-				if (description.Length < 2)
-					return;
-
-				var loc = Context.Services.Globalization.GetString(description[0].Trim().Trim('"'), description[1].Trim().Trim('"'));
-
-				if (!string.IsNullOrWhiteSpace(loc))
-					Builder.Append($" {propertyName}=\"{loc}\" ");
+				foreach (var attribute in list.Attributes)
+				{
+					if (string.Equals(attribute.Name.ToString(), name, StringComparison.Ordinal))
+						return attribute;
+				}
 			}
+
+			return null;
 		}
 	}
 }

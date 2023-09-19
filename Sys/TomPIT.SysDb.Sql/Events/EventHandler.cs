@@ -1,51 +1,48 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
-using TomPIT.ComponentModel;
+using TomPIT.Cdn;
 using TomPIT.Data.Sql;
 using TomPIT.SysDb.Events;
 
-namespace TomPIT.SysDb.Sql.Events
+namespace TomPIT.SysDb.Sql.Events;
+
+internal class EventHandler : IEventHandler
 {
-	internal class EventHandler : IEventHandler
-	{
-		public void Delete(IEventDescriptor d)
-		{
-			using var w = new Writer("tompit.event_del");
+    public List<IEventDescriptor> Query()
+    {
+        using var r = new Reader<EventDescriptor>("tompit.event_que");
 
-			w.CreateParameter("@id", d.GetId());
+        return r.Execute().ToList<IEventDescriptor>();
+    }
 
-			w.Execute();
-		}
+    public void Update(ImmutableList<IEventDescriptor> events)
+    {
+        using var w = new LongWriter("tompit.event_upd");
+        var items = new JArray();
 
-		public List<IEventDescriptor> Query()
-		{
-			using var r = new Reader<EventDescriptor>("tompit.event_que");
+        foreach (var item in events)
+        {
+            var jo = new JObject
+            {
+                {"name", item.Name },
+                {"created", item.Created },
+                {"identifier", item.Identifier },
+                {"service", item.MicroService }
+            };
 
-			return r.Execute().ToList<IEventDescriptor>();
-		}
+            if (!string.IsNullOrEmpty(item.Arguments))
+                jo.Add("arguments", item.Arguments);
 
-		public IEventDescriptor Select(Guid identifier)
-		{
-			using var r = new Reader<EventDescriptor>("tompit.event_sel");
+            if (!string.IsNullOrEmpty(item.Callback))
+                jo.Add("callback", item.Callback);
 
-			r.CreateParameter("@identifier", identifier);
+            items.Add(jo);
+        };
 
-			return r.ExecuteSingleRow();
-		}
+        w.CreateParameter("@items", items);
 
-		public void Insert(IMicroService microService, string name, Guid identifier, DateTime created, string arguments, string callback)
-		{
-			using var w = new Writer("tompit.event_ins");
-
-			w.CreateParameter("@name", name);
-			w.CreateParameter("@identifier", identifier);
-			w.CreateParameter("@created", created);
-			w.CreateParameter("@arguments", arguments, true);
-			w.CreateParameter("@callback", callback, true);
-			w.CreateParameter("@service", microService.Token);
-
-			w.Execute();
-		}
-	}
+        w.Execute();
+    }
 }

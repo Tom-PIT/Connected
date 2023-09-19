@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using TomPIT.Distributed;
+using TomPIT.Environment;
 using TomPIT.Middleware;
-using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.Worker.Subscriptions
 {
@@ -22,8 +22,8 @@ namespace TomPIT.Worker.Subscriptions
 			if (Instance.State == InstanceState.Initializing)
 				return false;
 
-			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-				Dispatchers.Add(new SubscriptionDispatcher(i));
+			foreach (var i in Tenant.GetService<IResourceGroupService>().QuerySupported())
+				Dispatchers.Add(new SubscriptionDispatcher(i.Name));
 
 			return true;
 		}

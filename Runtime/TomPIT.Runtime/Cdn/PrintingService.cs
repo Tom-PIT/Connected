@@ -1,8 +1,5 @@
 ﻿using System;
-using Newtonsoft.Json.Linq;
 using TomPIT.Connectivity;
-using TomPIT.Middleware;
-using TomPIT.Serialization;
 
 namespace TomPIT.Cdn
 {
@@ -15,59 +12,22 @@ namespace TomPIT.Cdn
 
 		public void Delete(Guid token)
 		{
-			var u = Tenant.CreateUrl("Printing", "Delete");
-			var e = new JObject
-			{
-				{"token", token }
-			};
-
-			Tenant.Post(u, e);
+			Instance.SysProxy.Printing.Delete(token);
 		}
 
-		public Guid Insert(string provider, IPrinter printer, Guid component, object arguments, string user, string category)
+		public Guid Insert(string provider, IPrinter printer, Guid component, object arguments, string user, string category, int copyCount)
 		{
-			var u = Tenant.CreateUrl("Printing", "Insert");
-			var args = new JObject();
-
-			if (arguments != null)
-				args.Add("arguments", Serializer.Serialize(arguments));
-
-			args.Add("printer", Serializer.Serialize(printer));
-
-			var e = new JObject
-			{
-				{"provider", provider },
-				{"component", component },
-				{"user", user },
-				{"category", category },
-				{"arguments",  Serializer.Serialize(args)}
-			};
-
-			return Tenant.Post<Guid>(u, e);
+			return Instance.SysProxy.Printing.Insert(provider, printer, component, arguments, user, category, copyCount);
 		}
 
 		public void Update(Guid token, PrintJobStatus status, string error)
 		{
-			var u = Tenant.CreateUrl("Printing", "Update");
-			var e = new JObject
-			{
-				{"token", token },
-				{"status", status.ToString() },
-				{"error", error }
-			};
-
-			Tenant.Post(u, e);
+			Instance.SysProxy.Printing.Update(token, status, error);
 		}
 
 		public IPrintJob Select(Guid token)
 		{
-			var u = Tenant.CreateUrl("Printing", "Select");
-			var e = new JObject
-			{
-				{"token", token }
-			};
-
-			return Tenant.Post<PrintJob>(u, e);
+			return Instance.SysProxy.Printing.Select(token);
 		}
 	}
 }

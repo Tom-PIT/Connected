@@ -1,12 +1,13 @@
-﻿using System;
+﻿using Microsoft.CodeAnalysis;
+using System;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Microsoft.CodeAnalysis;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
+using TomPIT.ComponentModel.IoC;
 using TomPIT.Connectivity;
-using TomPIT.Exceptions;
+using TomPIT.Reflection;
 
 namespace TomPIT.Compilation
 {
@@ -28,16 +29,10 @@ namespace TomPIT.Compilation
 
 		public override bool Equals(object obj)
 		{
-			if (ReferenceEquals(null, obj))
-				return false;
+			if (obj is ScriptResolver resolver2)
+				return Equals(this, resolver2);
 
-			if (ReferenceEquals(this, obj))
-				return true;
-
-			if (obj.GetType() != GetType())
-				return false;
-
-			return Equals((ScriptResolver)obj);
+			return false;
 		}
 
 		public override int GetHashCode()
@@ -61,9 +56,9 @@ namespace TomPIT.Compilation
 
 		public override Stream OpenRead(string resolvedPath)
 		{
-			var sourceCode = LoadScript(resolvedPath);
+			var sourceCode = Tenant.GetService<IDiscoveryService>().Configuration.Find(resolvedPath);
 
-			if (sourceCode == null)
+			if (sourceCode is null)
 				return new MemoryStream(Encoding.UTF8.GetBytes(string.Empty));
 
 			var content = Tenant.GetService<IComponentService>().SelectText(sourceCode.Configuration().MicroService(), sourceCode);
@@ -71,175 +66,117 @@ namespace TomPIT.Compilation
 			if (string.IsNullOrWhiteSpace(content))
 				return new MemoryStream(Encoding.UTF8.GetBytes(string.Empty));
 
-			return new MemoryStream(Encoding.UTF8.GetBytes(content));
-		}
-
-		public IText LoadScript(string resolvedPath)
-		{
-			var root = resolvedPath.Split(':');
-			var tokens = root.Length == 1 ? root[0].Split("/") : root[1].Split("/");
-			var calling = root.Length > 1 ? root[0] : null;
-			/*
-			 * possible references:
-			 * --------------------
-			 * - Microservice/PublicScript (2)
-			 * - Microservice/Api/Operation (3)
-			 * - Microservice/AuthorizationPolicy
-			 */
-
-			if (tokens.Length == 2)
-				return LoadScript(calling, tokens[0], tokens[1]);
-			else if (tokens.Length == 3)
-				return Load(calling, tokens[0], tokens[1], tokens[2]);
-			else
-				return null;
-		}
-
-		private IText Load(string callingMicroService, string microService, string componentName, string element)
-		{
-			IMicroService ms = null;
-
-			if (!string.IsNullOrWhiteSpace(microService))
-			{
-				ms = Tenant.GetService<IMicroServiceService>().Select(microService);
-
-				if (ms == null)
-					throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({microService})");
-			}
-			else
-				ms = Tenant.GetService<IMicroServiceService>().Select(MicroService);
-
-			var component = Tenant.GetService<IComponentService>().SelectComponentByNameSpace(ms.Token, ComponentCategories.NameSpacePublicScript, componentName);
-
-			if (component == null)
-				return null;
-
-			if (string.Compare(component.Category, ComponentCategories.Api, true) == 0)
-				return LoadApiOperation(microService, component, element);
-			else
-				return null;
-		}
-
-		private IText LoadApiOperation(string microService, IComponent component, string operation)
-		{
-			if (!(Tenant.GetService<IComponentService>().SelectConfiguration(component.Token) is IApiConfiguration config))
-				throw new RuntimeException($"{SR.ErrServiceOperationNotFound} ({microService}/{component.Name}/{operation})");
-
-			return config.Operations.FirstOrDefault(f => string.Compare(f.Name, TrimExtension(operation), true) == 0);
-		}
-
-		private IText LoadScript(string callingMicroService, string microService, string script)
-		{
-			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
-
-			if (ms == null)
-				throw new RuntimeException($"{SR.ErrMicroServiceNotFound} ({microService})");
-
-			var scriptName = TrimExtension(script);
-			var component = Tenant.GetService<IComponentService>().SelectComponentByNameSpace(ms.Token, ComponentCategories.NameSpacePublicScript, scriptName);
-
-			if (component == null || component.LockVerb == Development.LockVerb.Delete)
-				return null;
-
-			if (Tenant.GetService<IComponentService>().SelectConfiguration(component.Token) is not IText text)
-				throw new RuntimeException(string.Format("{0} ({1}/{2})", SR.ErrComponentNotFound, microService, scriptName));
-
-			return text;
+			return new MemoryStream(Encoding.UTF8.GetBytes(NamespaceRewriter.Rewrite(content)));
 		}
 
 		public override string ResolveReference(string path, string baseFilePath)
 		{
+			/*
+			* possible references:
+			* --------------------
+			* - Microservice/Script (2)
+			* - Microservice/IoCContainer/Operation (3)
+			* - Microservice/Api/Operation (3)
+			* obsolete:
+			* - Script (1)
+			* - Api/Operation (2)
+			* - IoCContainer/Operation (2)
+			*/
+
 			var resolvedPath = path;
 
-			/*
-			 * possible references:
-			 * --------------------
-			 * - Script (1)
-			 * - Microservice/Script (2)
-			 * - Api/Operation (2)
-			 * - IoCContainer/Operation (2)
-			 * - Microservice/Api/Operation (3)
-			 * - Microservice/IoCContainer/Operation (3)
-			 */
+			var hasBaseFile = !string.IsNullOrWhiteSpace(baseFilePath);
+
+			var ms = Tenant.GetService<IMicroServiceService>().Select(MicroService);
 
 			var tokens = resolvedPath.Split(new char[] { '/' }, 3);
-			var fileName = tokens[tokens.Length - 1];
-			var extension = Path.GetExtension(fileName);
-			var ms = Tenant.GetService<IMicroServiceService>().Select(MicroService);
+
+			var fileName = tokens[^1];
+
+			if (!Path.HasExtension(fileName))
+				tokens[^1] = $"{fileName}.csx";
+
 			IMicroService baseMs = null;
 
-			if (!string.IsNullOrWhiteSpace(baseFilePath))
+			if (hasBaseFile)
 			{
 				var root = baseFilePath.Split(':');
 				var baseMsToken = root.Length == 1
-					? root[0].Split('/')[0]
-					: root[1].Split('/')[0];
+					 ? root[0].Split('/')[0]
+					 : root[1].Split('/')[0];
 
 				if (baseMsToken.EndsWith(".csx"))
 					baseMs = ms;
 				else
-				{
-					baseMs = Tenant.GetService<IMicroServiceService>().Select(baseMsToken);
-
-					if (baseMs == null)
-						baseMs = ms;
-				}
+					baseMs = Tenant.GetService<IMicroServiceService>().Select(baseMsToken) ?? ms;
 			}
 
-			if (string.IsNullOrWhiteSpace(extension))
-				tokens[^1] = $"{fileName}.csx";
-
-			/*
-			 * fully qualified
-			 */
-			if (tokens.Length == 3)
-				return ValidatePath(ms, baseMs, $"{tokens[0]}/{tokens[1]}/{tokens[2]}");
-			else if (tokens.Length == 2)
+			switch (tokens.Length)
 			{
-				if (string.IsNullOrWhiteSpace(baseFilePath))
-				{
-					var component = Tenant.GetService<IComponentService>().SelectComponentByNameSpace(MicroService, ComponentCategories.NameSpacePublicScript, tokens[0]);
+				case 3: //Fully qualified as ms/component/entry
+					{
+						resolvedPath = $"{tokens[0]}/{tokens[1]}/{tokens[2]}";
+						break;
+					}
+				case 2: //Either ms/script or api/operation
+					{
+						var microserviceToken = hasBaseFile ? baseMs.Token : MicroService;
+						var microService = hasBaseFile ? baseMs : ms;
 
-					if (component != null &&
-						(
-							string.Compare(component.Category, ComponentCategories.Api, true) == 0
-							|| string.Compare(component.Category, ComponentCategories.IoCContainer, true) == 0
-						))
-						return ValidatePath(ms, baseMs, $"{ms.Name}/{tokens[0]}/{tokens[1]}"); //api with ms
-					else
-						return ValidatePath(ms, baseMs, $"{tokens[0]}/{tokens[1]}");//script
-				}
-				else
-				{
-					var component = Tenant.GetService<IComponentService>().SelectComponentByNameSpace(baseMs.Token, ComponentCategories.NameSpacePublicScript, tokens[0]);
+						var component = Tenant.GetService<IComponentService>().SelectComponentByNameSpace(microserviceToken, ComponentCategories.NameSpacePublicScript, tokens[0]);
 
-					if (component != null &&
-						(
-							string.Compare(component.Category, ComponentCategories.Api, true) == 0
-							|| string.Compare(component.Category, ComponentCategories.IoCContainer, true) == 0
-						))
-						return ValidatePath(ms, baseMs, $"{baseMs.Name}/{tokens[0]}/{tokens[1]}"); //api with basems
-					else
-						return ValidatePath(ms, baseMs, $"{tokens[0]}/{tokens[1]}");//script
-				}
+						//Check for exact match before returning
+						if (IsOfCategory(component, ComponentCategories.Api))
+						{
+							var configuration = GetConfiguration<IApiConfiguration>(component.Token);
+
+							if (configuration?.Operations.Any(e => string.Compare(e.Name, TrimExtension(tokens[1]), true) == 0) ?? false)
+							{
+								resolvedPath = $"{microService.Name}/{tokens[0]}/{tokens[1]}";
+								break;
+							}
+						}
+						else if (IsOfCategory(component, ComponentCategories.IoCContainer))
+						{
+							var configuration = GetConfiguration<IIoCContainerConfiguration>(component.Token);
+
+							if (configuration?.Operations.Any(e => string.Compare(e.Name, TrimExtension(tokens[1]), true) == 0) ?? false)
+							{
+								resolvedPath = $"{microService.Name}/{tokens[0]}/{tokens[1]}";
+								break;
+							}
+						}
+
+						//No component exact match found, most likely ms/script
+
+						//Trust, but verify
+						if (Tenant.GetService<IMicroServiceService>().Select(tokens[0]) is null)
+						{
+							//Issue invalid path and let it fail silently down along the line to preserve compatibility
+							resolvedPath = $"{microService.Name}/{tokens[0]}/{tokens[1]}";
+							break;
+						}
+
+						//Microservice was found, assume ms/component combo
+						resolvedPath = $"{tokens[0]}/{tokens[1]}";
+						break;
+					}
+				case 1: //script
+					{
+						if (hasBaseFile)
+							resolvedPath = $"{baseMs.Name}/{tokens[0]}";
+						else
+							resolvedPath = $"{ms.Name}/{tokens[0]}";
+						break;
+					}
 			}
-			else
-			{
-				/*
-				 * script
-				 */
-				if (string.IsNullOrWhiteSpace(baseFilePath))
-					return ValidatePath(ms, baseMs, $"{ms.Name}/{tokens[0]}");
-				else
-					return ValidatePath(ms, baseMs, $"{baseMs.Name}/{tokens[0]}");
-			}
+
+			return ValidatePath(ms, baseMs, resolvedPath);
 		}
 
-		private string ValidatePath(IMicroService origin, IMicroService baseMicroService, string resolvedPath)
+		private static string ValidatePath(IMicroService origin, IMicroService baseMicroService, string resolvedPath)
 		{
-			var target = baseMicroService == null
-				? origin
-				: baseMicroService;
+			var target = baseMicroService ?? origin;
 
 			var ms = resolvedPath.Split('/')[0];
 
@@ -248,9 +185,12 @@ namespace TomPIT.Compilation
 			return resolvedPath;
 		}
 
-		private string TrimExtension(string fileName)
-		{
-			return fileName.EndsWith(".csx") ? fileName[0..^4] : fileName;
-		}
+		private static string TrimExtension(string fileName) => fileName.EndsWith(".csx") ? fileName[0..^4] : fileName;
+
+		private static bool IsOfCategory(IComponent component, string category) => string.Compare(component?.Category, category, true) == 0;
+
+		private IConfiguration GetConfiguration(Guid token) => Tenant.GetService<IComponentService>().SelectConfiguration(token);
+
+		private T GetConfiguration<T>(Guid token) => GetConfiguration(token) is T matching ? matching : default;
 	}
 }

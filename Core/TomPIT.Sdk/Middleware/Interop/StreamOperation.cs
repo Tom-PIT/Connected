@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Net.Mime;
-using Microsoft.AspNetCore.Http;
 using TomPIT.Exceptions;
 
 namespace TomPIT.Middleware.Interop
@@ -13,9 +13,10 @@ namespace TomPIT.Middleware.Interop
 		{
 			Invoke(null);
 		}
-		public void Invoke(IMiddlewareContext context)
+
+		public void Invoke(IMiddlewareContext? context)
 		{
-			if (context != null)
+			if (context is not null)
 				this.WithContext(context);
 
 			try
@@ -127,6 +128,8 @@ namespace TomPIT.Middleware.Interop
 			HttpContext.Response.Headers.Append("Content-Disposition", cd.ToString());
 			HttpContext.Response.ContentLength = e.Content.Length;
 			HttpContext.Response.Body.WriteAsync(e.Content, 0, e.Content.Length).Wait();
+
+			HttpContext.Response.CompleteAsync().Wait();
 		}
 	}
 }

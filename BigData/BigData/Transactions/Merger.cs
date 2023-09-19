@@ -7,7 +7,6 @@ using TomPIT.BigData.Nodes;
 using TomPIT.BigData.Partitions;
 using TomPIT.BigData.Persistence;
 using TomPIT.Diagnostics;
-using TomPIT.Middleware;
 
 namespace TomPIT.BigData.Transactions
 {
@@ -47,7 +46,7 @@ namespace TomPIT.BigData.Transactions
 			catch (Exception ex)
 			{
 				Dump(ex.Message);
-				MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, "BigData");
+				Tenant.LogError(ex.Source, ex.Message, "BigData");
 
 				throw;
 			}
@@ -69,7 +68,7 @@ namespace TomPIT.BigData.Transactions
 			 * we'll select all rows at once which targets our data and then
 			 * operate on that set
 			 */
-			var files = MiddlewareDescriptor.Current.Tenant.GetService<IPartitionService>().QueryFiles(Provider.Block.Partition, PartitionKey, min, max);
+			var files = Tenant.GetService<IPartitionService>().QueryFiles(Provider.Block.Partition, Provider.Block.Timezone, PartitionKey, min, max);
 
 			foreach (var i in files)
 			{
@@ -97,7 +96,7 @@ namespace TomPIT.BigData.Transactions
 					{
 						ReleaseLocks(r);
 						Locked = true;
-						Dump($"{dfc.File.FileName} locked");
+						//Dump($"{dfc.File.FileName} locked");
 						return null;
 					}
 
@@ -109,9 +108,7 @@ namespace TomPIT.BigData.Transactions
 				 * for every file until we find all updates. If updates still remain on the last block we'll call full merge
 				 * with inserts as well
 				 */
-				var targetFiles = r.Where(f =>
-					((f.File.Status == PartitionFileStatus.Open) || f.File.StartTimestamp <= timestampValue)
-					&& (f.File.EndTimestamp == DateTime.MinValue || f.File.EndTimestamp >= timestampValue));
+				var targetFiles = r.Where(f => ((f.File.Status == PartitionFileStatus.Open) || f.File.StartTimestamp <= timestampValue) && (f.File.EndTimestamp == DateTime.MinValue || f.File.EndTimestamp >= timestampValue));
 
 				if (targetFiles.Count() == 0)
 				{
@@ -193,17 +190,15 @@ namespace TomPIT.BigData.Transactions
 				}
 			}
 
-			return r.OrderBy(f => f.File.Status).ThenBy(f => f.File.StartTimestamp).ToList();
+			return r.OrderBy(f => f.File.Status).ThenByDescending(f => f.File.StartTimestamp).ToList();
 		}
 
 		private DataFileContext CreateDataFileContext(DateTime timestamp, DateTime min, DateTime max)
 		{
 			lock (FileManager)
 			{
-				var files = MiddlewareDescriptor.Current.Tenant.GetService<IPartitionService>().QueryFiles(Provider.Block.Partition, PartitionKey, min, max);
-				var target = files.FirstOrDefault(f =>
-					(f.Status == PartitionFileStatus.Open || f.StartTimestamp <= timestamp)
-					&& (f.EndTimestamp == DateTime.MinValue || f.EndTimestamp >= timestamp));
+				var files = Tenant.GetService<IPartitionService>().QueryFiles(Provider.Block.Partition, Provider.Block.Timezone, PartitionKey, min, max);
+				var target = files.FirstOrDefault(f => (f.Status == PartitionFileStatus.Open || f.StartTimestamp <= timestamp) && (f.EndTimestamp == DateTime.MinValue || f.EndTimestamp >= timestamp));
 
 				if (target != null)
 				{
@@ -220,7 +215,7 @@ namespace TomPIT.BigData.Transactions
 				}
 
 				Dump($"creating new file");
-				var fileId = FileManager.CreateFile(Provider.Block.Partition, PartitionKey, timestamp);
+				var fileId = FileManager.CreateFile(Provider.Block.Partition, Provider.Block.Timezone, PartitionKey, timestamp);
 
 				if (fileId == Guid.Empty)
 				{
@@ -241,7 +236,7 @@ namespace TomPIT.BigData.Transactions
 						return null;
 					}
 
-					dfc.File = MiddlewareDescriptor.Current.Tenant.GetService<IPartitionService>().SelectFile(fileId);
+					dfc.File = Tenant.GetService<IPartitionService>().SelectFile(fileId);
 
 					return dfc;
 				}
@@ -253,7 +248,7 @@ namespace TomPIT.BigData.Transactions
 			for (var i = 0; i < transactions.Count; i++)
 			{
 				var transaction = transactions[i];
-				
+
 				Dump($"merging transaction on file {transaction.File.FileName}");
 
 				if (transaction.File.Status == PartitionFileStatus.Closed)
@@ -295,9 +290,9 @@ namespace TomPIT.BigData.Transactions
 				if (context.Lock == Guid.Empty)
 					return context.Data;
 
-				var node = MiddlewareDescriptor.Current.Tenant.GetService<INodeService>().Select(context.File.Node);
+				var node = Tenant.GetService<INodeService>().Select(context.File.Node);
 
-				return MiddlewareDescriptor.Current.Tenant.GetService<IPersistenceService>().Merge(Provider, node, context, MergePolicy.Full);
+				return Tenant.GetService<IPersistenceService>().Merge(Provider, node, context, MergePolicy.Full);
 			}
 			finally
 			{
@@ -316,9 +311,9 @@ namespace TomPIT.BigData.Transactions
 				if (context.Data.Rows.Count == 0)
 					return null;
 
-				var node = MiddlewareDescriptor.Current.Tenant.GetService<INodeService>().Select(context.File.Node);
+				var node = Tenant.GetService<INodeService>().Select(context.File.Node);
 
-				return MiddlewareDescriptor.Current.Tenant.GetService<IPersistenceService>().Merge(Provider, node, context, MergePolicy.Partial);
+				return Tenant.GetService<IPersistenceService>().Merge(Provider, node, context, MergePolicy.Partial);
 			}
 			finally
 			{
@@ -370,6 +365,17 @@ namespace TomPIT.BigData.Transactions
 
 		private bool CompareRows(DataRow a, DataRow b)
 		{
+			foreach (var field in Provider.Schema.Fields) 
+			{
+				if (!field.Key && !field.Index)
+					continue;
+
+				if (Comparer.Default.Compare(a[field.Name], b[field.Name]) != 0)
+					return false;
+			}
+
+			return true;
+
 			for (var i = 0; i < a.ItemArray.Length; i++)
 			{
 				if (Comparer.Default.Compare(a.ItemArray[i], b.ItemArray[i]) != 0)
@@ -407,7 +413,7 @@ namespace TomPIT.BigData.Transactions
 
 		private void Dump(string text)
 		{
-			MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"Merger, PartitionKey:{PartitionKey}, {text}.");
+			Tenant.GetService<ILoggingService>().Dump($"Merger, PartitionKey:{PartitionKey}, {text}.");
 		}
 	}
 }

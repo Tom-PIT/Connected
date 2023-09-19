@@ -14,6 +14,8 @@ using TomPIT.Sys.Diagnostics;
 using TomPIT.Sys.Model;
 using TomPIT.Sys.Model.Diagnostics;
 
+using LogEntry = TomPIT.Sys.Model.Diagnostics.LogEntry;
+
 namespace TomPIT.Sys.Search
 {
 	internal abstract class SearchHost<T> : IDisposable

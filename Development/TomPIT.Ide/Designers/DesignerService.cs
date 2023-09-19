@@ -4,15 +4,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Newtonsoft.Json.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
 using TomPIT.Design.Ide.Properties;
 using TomPIT.Design.Tools;
 using TomPIT.Development;
 using TomPIT.Diagnostics;
-using TomPIT.Exceptions;
-using TomPIT.Ide.Analysis.Diagnostics;
 using TomPIT.Ide.Properties;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
@@ -21,6 +18,7 @@ namespace TomPIT.Ide.Designers
 {
 	internal class DesignerService : TenantObject, IDesignerService
 	{
+		private const string Controller = "ComponentDevelopment";
 		private Lazy<ConcurrentDictionary<string, IPropertyEditor>> _propertyEditors = new Lazy<ConcurrentDictionary<string, IPropertyEditor>>();
 		private Lazy<ConcurrentBag<IAutoFixProvider>> _autoFixProviders = new Lazy<ConcurrentBag<IAutoFixProvider>>();
 
@@ -58,26 +56,28 @@ namespace TomPIT.Ide.Designers
 
 		public IDevelopmentComponentError SelectError(Guid identifier)
 		{
-			var u = Tenant.CreateUrl("DevelopmentErrors", "Select");
-			var e = new JObject();
+			return null;
+			//var u = Tenant.CreateUrl("DevelopmentErrors", "Select");
+			//var e = new JObject();
 
-			e.Add("identifier", identifier);
+			//e.Add("identifier", identifier);
 
-			return Tenant.Post<DevelopmentComponentError>(u, e);
+			//return Tenant.Post<DevelopmentComponentError>(u, e);
 		}
 
 		public List<IDevelopmentComponentError> QueryErrors(Guid microService, ErrorCategory category)
 		{
-			var u = Tenant.CreateUrl("DevelopmentErrors", "Query");
-			var e = new JObject();
+			return new();
+			//var u = Tenant.CreateUrl("DevelopmentErrors", "Query");
+			//var e = new JObject();
 
-			if (microService != Guid.Empty)
-				e.Add("microService", microService);
+			//if (microService != Guid.Empty)
+			//	e.Add("microService", microService);
 
-			if (category != ErrorCategory.NotSet)
-				e.Add("category", category.ToString());
+			//if (category != ErrorCategory.NotSet)
+			//	e.Add("category", category.ToString());
 
-			return Tenant.Post<List<DevelopmentComponentError>>(u, e).ToList<IDevelopmentComponentError>();
+			//return Tenant.Post<List<DevelopmentComponentError>>(u, e).ToList<IDevelopmentComponentError>();
 		}
 
 		public List<IDevelopmentComponentError> QueryErrors(ErrorCategory category)
@@ -97,53 +97,54 @@ namespace TomPIT.Ide.Designers
 
 		public void ClearErrors(Guid component, Guid element, ErrorCategory category)
 		{
-			var u = Tenant.CreateUrl("DevelopmentErrors", "Clear");
-			var e = new JObject
-			{
-				{"component", component },
-				{"category", category.ToString() }
-			};
+			//var u = Tenant.CreateUrl("DevelopmentErrors", "Clear");
+			//var e = new JObject
+			//{
+			//	{"component", component },
+			//	{"category", category.ToString() }
+			//};
 
-			if (element != Guid.Empty)
-				e.Add("element", element);
+			//if (element != Guid.Empty)
+			//	e.Add("element", element);
 
-			Tenant.Post(u, e);
+			//Tenant.Post(u, e);
 		}
 
+		[Obsolete]
 		public void InsertErrors(Guid component, List<IDevelopmentError> errors)
 		{
-			var c = Tenant.GetService<IComponentService>().SelectComponent(component);
+			//var c = Tenant.GetService<IComponentService>().SelectComponent(component);
 
-			if (c == null)
-				throw new RuntimeException(SR.ErrComponentNotFound);
+			//if (c == null)
+			//	throw new RuntimeException(SR.ErrComponentNotFound);
 
-			var u = Tenant.CreateUrl("DevelopmentErrors", "Insert");
-			var e = new JObject
-			{
-				{"microService", c.MicroService },
-				{"component", c.Token }
-			};
+			//var u = Tenant.CreateUrl("DevelopmentErrors", "Insert");
+			//var e = new JObject
+			//{
+			//	{"microService", c.MicroService },
+			//	{"component", c.Token }
+			//};
 
-			var a = new JArray();
-			e.Add("errors", a);
+			//var a = new JArray();
+			//e.Add("errors", a);
 
-			foreach (var error in errors)
-			{
-				var je = new JObject
-				{
-					{"message", error.Message },
-					{"severity", (int)error.Severity },
-					{"category", (int)error.Category },
-					{"code", error.Code }
-				};
+			//foreach (var error in errors)
+			//{
+			//	var je = new JObject
+			//	{
+			//		{"message", error.Message },
+			//		{"severity", (int)error.Severity },
+			//		{"category", (int)error.Category },
+			//		{"code", error.Code }
+			//	};
 
-				if (error.Element != Guid.Empty)
-					je.Add("element", error.Element);
+			//	if (error.Element != Guid.Empty)
+			//		je.Add("element", error.Element);
 
-				a.Add(je);
-			}
+			//	a.Add(je);
+			//}
 
-			Tenant.Post(u, e);
+			//Tenant.Post(u, e);
 		}
 
 		public void RegisterAutoFix(IAutoFixProvider provider)
@@ -211,16 +212,33 @@ namespace TomPIT.Ide.Designers
 
 		public void AutoFix(string provider, Guid error)
 		{
-			var u = Tenant.CreateUrl("DevelopmentErrors", "AutoFix");
-			var e = new JObject
-			{
-				{"provider", provider },
-				{"error", error }
-			};
+			//var u = Tenant.CreateUrl("DevelopmentErrors", "AutoFix");
+			//var e = new JObject
+			//{
+			//	{"provider", provider },
+			//	{"error", error }
+			//};
 
-			Tenant.Post(u, e);
+			//Tenant.Post(u, e);
 		}
 
+		public List<IComponentDevelopmentState> DequeueDevelopmentStates(int count)
+		{
+			//var u = Tenant.CreateUrl("DevelopmentErrors", "AutoFix");
+			//var e = new JObject
+			//{
+			//	{"provider", provider },
+			//	{"error", error }
+			//};
+
+			//Tenant.Post(contro, e);
+			return null;
+		}
+
+		private string CreateUrl(string action)
+		{
+			return Tenant.CreateUrl(Controller, action);
+		}
 		private bool AutoFixProvidersInitialized { get; set; }
 		private ConcurrentDictionary<string, IPropertyEditor> PropertyEditors => _propertyEditors.Value;
 		private ConcurrentBag<IAutoFixProvider> AutoFixProviders => _autoFixProviders.Value;

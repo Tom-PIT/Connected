@@ -76,9 +76,6 @@ namespace TomPIT.Middleware.Interop
 
 			Serializer.Populate(item, r);
 
-			if (r is DataEntity entity && item is DataEntity itemEntity)
-				entity.Deserialize(itemEntity);
-
 			try
 			{
 				OnInvoke(r);

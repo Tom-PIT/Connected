@@ -1,80 +1,53 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 using TomPIT.Distributed;
-using TomPIT.Middleware;
-using TomPIT.Runtime.Configuration;
+using TomPIT.Environment;
 
 namespace TomPIT.Worker.Services
 {
-	internal class WorkerService : HostedService
-	{
-		private Lazy<List<WorkerDispatcher>> _dispatchers = new Lazy<List<WorkerDispatcher>>();
+    internal class WorkerService : HostedService
+    {
+        public WorkerService()
+        {
+            IntervalTimeout = TimeSpan.FromMilliseconds(490);
+        }
 
-		public WorkerService()
-		{
-			IntervalTimeout = TimeSpan.FromMilliseconds(490);
-		}
+        private WorkerDispatcher Dispatcher { get; set; }
+        protected override async Task OnExecute(CancellationToken cancel)
+        {
+            var jobs = Instance.SysProxy.Management.Workers.Dequeue(Dispatcher.Available);
 
-		protected override Task OnExecute(CancellationToken cancel)
-		{
-			Parallel.ForEach(Dispatchers, (f) =>
-			{
-				var available = f.Available;
+            if (cancel.IsCancellationRequested)
+                return;
 
-				if (available == 0)
-					return;
+            foreach (var i in jobs)
+            {
+                if (cancel.IsCancellationRequested)
+                    return;
 
-				var url = MiddlewareDescriptor.Current.Tenant.CreateUrl("WorkerManagement", "Dequeue");
+                Dispatcher.Enqueue(i);
+            }
 
-				var e = new JObject
-				{
-					{ "count", available},
-					{ "resourceGroup", f.ResourceGroup }
-				};
+            await Task.CompletedTask;
+        }
 
-				var jobs = MiddlewareDescriptor.Current.Tenant.Post<List<QueueMessage>>(url, e);
+        protected override bool OnInitialize(CancellationToken cancel)
+        {
+            if (Instance.State == InstanceState.Initializing)
+                return false;
 
-				if (cancel.IsCancellationRequested)
-					return;
+            Dispatcher = new(Tenant.GetService<IResourceGroupService>().Default.Name);
 
-				if (jobs == null)
-					return;
+            return true;
+        }
 
-				foreach (var i in jobs)
-				{
-					if (cancel.IsCancellationRequested)
-						return;
+        public override void Dispose()
+        {
+            if (Dispatcher is not null)
+                Dispatcher.Dispose();
 
-					f.Enqueue(i);
-				}
-			});
-
-			return Task.CompletedTask;
-		}
-
-		protected override bool OnInitialize(CancellationToken cancel)
-		{
-			if (Instance.State == InstanceState.Initializing)
-				return false;
-
-			foreach (var i in Shell.GetConfiguration<IClientSys>().ResourceGroups)
-				Dispatchers.Add(new WorkerDispatcher(i));
-
-			return true;
-		}
-		private List<WorkerDispatcher> Dispatchers { get { return _dispatchers.Value; } }
-
-		public override void Dispose()
-		{
-			foreach (var dispatcher in Dispatchers)
-				dispatcher.Dispose();
-
-			Dispatchers.Clear();
-
-			base.Dispose();
-		}
-	}
+            base.Dispose();
+        }
+    }
 }

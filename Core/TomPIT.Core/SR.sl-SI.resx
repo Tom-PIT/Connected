@@ -621,4 +621,37 @@
   <data name="ErrConcurrencySource" xml:space="preserve">
     <value>Sočasen prepis podatkov</value>
   </data>
+  <data name="ErrTopicMismatch" xml:space="preserve">
+    <value>Tema se ne ujema s predhodno zapisano temo</value>
+  </data>
+  <data name="ErrContextInReadonlyMode" xml:space="preserve">
+    <value>Ta del aplikacije je na voljo samo za branje.</value>
+  </data>
+  <data name="RequiredAttribute" xml:space="preserve">
+    <value>Polje {0} je obvezno.</value>
+  </data>
+  <data name="MaxLengthAttribute" xml:space="preserve">
+    <value>Polje '{0}' mora biti besedilo z maksimalno dolžino {1}.</value>
+  </data>
+  <data name="MaxValueAttribute" xml:space="preserve">
+    <value>Največja dovoljena vrednost za polje '{0}' je {1}.</value>
+  </data>
+  <data name="MinLengthAttribute" xml:space="preserve">
+    <value>Polje '{0}' mora biti besedilo z minimalno dolžino {1}.</value>
+  </data>
+  <data name="MinValueAttribute" xml:space="preserve">
+    <value>Najmanjša dovoljena vrednost za polje '{0}' je {1}.</value>
+  </data>
+  <data name="RangeAttribute" xml:space="preserve">
+    <value>Dovoljene vrednosti za polje '{0}' morajo bitit med {1} in {2}.</value>
+  </data>
+  <data name="UniqueAttribute" xml:space="preserve">
+    <value>Vrednost polja '{0}' mora biti unikatna.</value>
+  </data>
+  <data name="ValUnique" xml:space="preserve">
+    <value>Vrednost polja '{0}' že obstaja.</value>
+  </data>
+  <data name="ErrUserDeleteUnsupported" xml:space="preserve">
+    <value>Brisanje uporabnikov ni omogočeno.</value>
+  </data>
 </root>

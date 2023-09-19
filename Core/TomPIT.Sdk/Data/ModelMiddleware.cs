@@ -21,8 +21,19 @@ namespace TomPIT.Data
 {
 	public abstract class ModelMiddleware<T> : MiddlewareComponent, IModelMiddleware<T>
 	{
-		private IComponent _component = null;
-		private IModelConfiguration _configuration = null;
+		private IComponent? _component = null;
+		private IModelConfiguration? _configuration = null;
+
+		public ModelMiddleware()
+		{
+			Component = Context.Tenant.GetService<ICompilerService>().ResolveComponent(this);
+			Configuration = Context.Tenant.GetService<IComponentService>().SelectConfiguration(Component.Token) as IModelConfiguration;
+		}
+		private IComponent Component { get; }
+		private IModelConfiguration? Configuration { get; }
+		public virtual ConnectionBehavior ConnectionBehavior { get; set; } = ConnectionBehavior.Shared;
+		protected virtual object ConnectionArguments { get; }
+		public ConcurrencyMode Concurrency { get; set; } = ConcurrencyMode.Enabled;
 		public int Execute([CIP(CIP.ModelExecuteOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] params object[] e)
 		{
 			var op = ResolveOperation(operation);
@@ -76,6 +87,7 @@ namespace TomPIT.Data
 		{
 			return Select<T>(operation, e);
 		}
+
 		public R Select<R>([CIP(CIP.ModelQueryOperationProvider)] string operation, [CIP(CIP.ModelOperationParametersProvider)] params object[] e)
 		{
 			var op = ResolveOperation(operation);
@@ -92,28 +104,6 @@ namespace TomPIT.Data
 				BindParameters(r, arg, descriptor);
 
 			return r.Select();
-		}
-
-		private IComponent Component
-		{
-			get
-			{
-				if (_component == null)
-					_component = Context.Tenant.GetService<ICompilerService>().ResolveComponent(this);
-
-				return _component;
-			}
-		}
-
-		private IModelConfiguration Configuration
-		{
-			get
-			{
-				if (_configuration == null)
-					_configuration = Context.Tenant.GetService<IComponentService>().SelectConfiguration(Component.Token) as IModelConfiguration;
-
-				return _configuration;
-			}
 		}
 
 		private IModelOperation ResolveOperation(string operation)
@@ -141,9 +131,6 @@ namespace TomPIT.Data
 			return Context.OpenConnection($"{ms.Name}/{connection.Name}", ConnectionBehavior, ConnectionArguments);
 		}
 
-		public virtual ConnectionBehavior ConnectionBehavior { get; set; } = ConnectionBehavior.Shared;
-		protected virtual object ConnectionArguments { get; }
-
 		private void ResetParameters(IDataCommand command)
 		{
 			foreach (var parameter in command.Parameters)
@@ -158,6 +145,8 @@ namespace TomPIT.Data
 				BindDictionaryParameters(command, e, descriptor);
 			else if (e is ExpandoObject)
 				BindExpandoObjectParameters(command, e, descriptor);
+			else if (e.GetType().IsCollection())
+				BindCollectionParameters(command, e, descriptor);
 			else
 				BindObjectParameters(command, e, descriptor);
 		}
@@ -190,9 +179,9 @@ namespace TomPIT.Data
 				if (property == null)
 				{
 					var candidates = new List<string>
-					{
-						parameter.Name.Replace("@", "")
-					};
+						  {
+								parameter.Name.Replace("@", "")
+						  };
 
 					foreach (var prop in properties)
 					{
@@ -254,6 +243,15 @@ namespace TomPIT.Data
 
 			while (enumerator.MoveNext())
 				command.SetParameter(enumerator.Key as string, enumerator.Value);
+		}
+
+		private void BindCollectionParameters(IDataCommand command, object e, ICommandTextDescriptor descriptor)
+		{
+			var en = e as IEnumerable;
+			var enumerator = en.GetEnumerator();
+
+			while (enumerator.MoveNext())
+				BindParameters(command, enumerator.Current, descriptor);
 		}
 
 		public T CreateEntity(object instance)
@@ -340,9 +338,9 @@ namespace TomPIT.Data
 				if (property == null)
 				{
 					var candidates = new List<string>
-					{
-						parameter.Name.Replace("@", string.Empty)
-					};
+						  {
+								parameter.Name.Replace("@", string.Empty)
+						  };
 
 					foreach (var prop in properties)
 					{
@@ -431,16 +429,14 @@ namespace TomPIT.Data
 			return entity;
 		}
 
-		public List<Type> QueryEntities()
+		public List<Type>? QueryEntities()
 		{
 			return OnQueryEntities();
 		}
 
-		protected virtual List<Type> OnQueryEntities()
+		protected virtual List<Type>? OnQueryEntities()
 		{
 			return null;
 		}
-
-		public ConcurrencyMode Concurrency { get; set; } = ConcurrencyMode.Enabled;
 	}
 }

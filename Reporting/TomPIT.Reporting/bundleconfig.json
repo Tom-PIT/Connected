@@ -1,22 +1,39 @@
 ﻿[
   {
-    "outputFileName": "wwwroot/assets/reporting.min.css",
+    "outputFileName": "wwwroot/Assets/reporting.min.css",
     "inputFiles": [
-      "node_modules/@devexpress/analytics-core/dist/css/dx-analytics.light.css",
       "node_modules/@devexpress/analytics-core/dist/css/dx-analytics.common.css",
+      "node_modules/@devexpress/analytics-core/dist/css/dx-analytics.material.blue.light.css",
       "node_modules/devexpress-reporting/dist/css/dx-webdocumentviewer.css"
     ],
     "minify": {
-      "enabled": true,
-      "renameLocals": true
+      "enabled": false,
+      "renameLocals": false
     },
     "sourceMap": false
   },
   {
-    "outputFileName": "wwwroot/assets/reporting.design.min.css",
+    "outputFileName": "wwwroot/Assets/reporting.min.js",
     "inputFiles": [
-      "node_modules/@devexpress/analytics-core/dist/css/dx-analytics.light.css",
+      "node_modules/@devexpress/analytics-core/dist/js/dx-analytics-core.min.js",
+      "node_modules/devexpress-reporting/dist/js/dx-webdocumentviewer.min.js"
+    ],
+    "minify": {
+      "enabled": false,
+      "renameLocals": false
+    },
+    "sourceMap": false
+  },
+  {
+    "outputFileName": "wwwroot/Assets/reporting.design.min.css",
+    "inputFiles": [
+      "node_modules/devextreme-dist/css/dx.material.blue.light.css",
+      "node_modules/ace-builds/css/ace.css",
+      "node_modules/ace-builds/css/theme/dreamweaver.css",
+      "node_modules/ace-builds/css/theme/ambiance.css",
+      "node_modules/devexpress-richedit/dist/dx.richedit.css",
       "node_modules/@devexpress/analytics-core/dist/css/dx-analytics.common.css",
+      "node_modules/@devexpress/analytics-core/dist/css/dx-analytics.material.blue.light.css",
       "node_modules/@devexpress/analytics-core/dist/css/dx-querybuilder.css",
       "node_modules/devexpress-reporting/dist/css/dx-webdocumentviewer.css",
       "node_modules/devexpress-reporting/dist/css/dx-reportdesigner.css"
@@ -28,56 +45,22 @@
     "sourceMap": false
   },
   {
-    "outputFileName": "wwwroot/assets/reporting.design.min.js",
+    "outputFileName": "wwwroot/Assets/reporting.design.min.js",
     "inputFiles": [
-      "node_modules/ace-builds/src-min-noconflict/ace.js",
-      "node_modules/ace-builds/src-min-noconflict/ext-language_tools.js",
-      "node_modules/ace-builds/src-min-noconflict/theme-dreamweaver.js",
-      "node_modules/ace-builds/src-min-noconflict/theme-ambiance.js",
-      "node_modules/ace-builds/src-min-noconflict/snippets/text.js",
-      "node_modules/cldrjs/dist/cldr.js",
-      "node_modules/cldrjs/dist/cldr/event.js",
-      "node_modules/cldrjs/dist/cldr/supplemental.js",
-      "node_modules/cldrjs/dist/cldr/unresolved.js",
-      "node_modules/globalize/dist/globalize.js",
-      "node_modules/globalize/dist/globalize/message.js",
-      "node_modules/globalize/dist/globalize/number.js",
-      "node_modules/globalize/dist/globalize/currency.js",
-      "node_modules/globalize/dist/globalize/date.js",
-      "node_modules/@devexpress/analytics-core/dist/js/dx-analytics-core.min.js",
-      "node_modules/@devexpress/analytics-core/dist/js/dx-querybuilder.min.js",
-      "node_modules/devexpress-reporting/dist/js/dx-webdocumentviewer.min.js",
-      "node_modules/devexpress-reporting/dist/js/dx-reportdesigner.min.js"
+      "node_modules/ace-builds/src/ace.js",
+      "node_modules/ace-builds/src/ext-language_tools.js",
+      "node_modules/ace-builds/src/snippets/text.js",
+      "node_modules/jszip/dist/jszip.min.js",
+      "node_modules/devexpress-richedit/dist/dx.richedit.min.js",
+      "node_modules/@devexpress/analytics-core/dist/js/dx-analytics-core.js",
+      "node_modules/@devexpress/analytics-core/dist/js/dx-querybuilder.js",
+      "node_modules/devexpress-reporting/dist/js/dx-webdocumentviewer.js",
+      "node_modules/devexpress-reporting/dist/js/dx-reportdesigner.js"
     ],
     "minify": {
       "enabled": false,
       "renameLocals": false
     },
     "sourceMap": false
-  },
-  {
-    "outputFileName": "wwwroot/assets/ko.min.js",
-    "inputFiles": [
-      "node_modules/knockout/build/output/knockout-latest.js"
-    ],
-    "minify": {
-      "enabled": true,
-      "renameLocals": true
-    },
-    "sourceMap": false
-  },
-  {
-    "outputFileName": "wwwroot/assets/reporting.min.js",
-    "inputFiles": [
-      "node_modules/@devexpress/analytics-core/dist/js/dx-analytics-core.min.js",
-      //"node_modules/knockout/build/output/knockout-latest.js",
-      "node_modules/devexpress-reporting/dist/js/dx-webdocumentviewer.min.js"
-    ],
-    "minify": {
-      "enabled": true,
-      "renameLocals": true
-    },
-    "sourceMap": false
   }
-
 ]

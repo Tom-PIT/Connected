@@ -6,18 +6,18 @@
     <SccLocalPath>SAK</SccLocalPath>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-    <AssemblyVersion>2.2.418.1</AssemblyVersion>
-    <FileVersion>2.2.418.1</FileVersion>
-    <Version>2.2.418.1</Version>
+    <TargetFramework>net7.0</TargetFramework>
+    <AssemblyVersion>3.1.706.1</AssemblyVersion>
+    <FileVersion>3.1.706.1</FileVersion>
+    <Version>3.1.706.1</Version>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.SqlServer.Management.SqlParser" Version="160.20216.14" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.2" />
+    <PackageReference Include="Microsoft.SqlServer.Management.SqlParser" Version="170.9.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
@@ -25,6 +25,9 @@
     <ProjectReference Include="..\..\Core\TomPIT.Sdk\TomPIT.Sdk.csproj" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;c:\Deploy\Plugins\TomPIT.DataProviders.Sql&quot;" />
+    <!-- <Exec Command="mkdir -p &quot;/src/plugins/TomPIT.DataProviders.Sql/&quot;" />
+    <Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/TomPIT.DataProviders.Sql/&quot;" /> -->
+    <!--<Exec Command="mkdir -p &quot;/src/plugins/&quot;" />
+    <Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/&quot;" />-->
   </Target>
 </Project>

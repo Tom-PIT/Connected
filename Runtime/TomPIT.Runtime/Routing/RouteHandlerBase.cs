@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Globalization;
-using Microsoft.AspNetCore.Http;
 using TomPIT.Connectivity;
 using TomPIT.Middleware;
 using TomPIT.Security;

@@ -1,59 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json.Linq;
-using TomPIT.Distributed;
-using TomPIT.Middleware;
-using TomPIT.Storage;
 
 namespace TomPIT.Cdn.Printing
 {
-	internal class PrintingManagementService : IPrintingManagementService
-	{
-		public void Complete(Guid popReceipt)
-		{
-			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("PrintingManagement", "Complete");
-			var e = new JObject
-			{
-				{ "popReceipt", popReceipt }
-			};
+    internal class PrintingManagementService : IPrintingManagementService
+    {
+        public void Complete(Guid popReceipt)
+        {
+            Instance.SysProxy.Management.Printing.Complete(popReceipt);
+        }
 
-			MiddlewareDescriptor.Current.Tenant.Post(u, e);
-		}
+        public List<IPrintQueueMessage> Dequeue(int count)
+        {
+            return Instance.SysProxy.Management.Printing.Dequeue(count).ToList();
+        }
 
-		public List<IQueueMessage> Dequeue(int count)
-		{
-			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("PrintingManagement", "Dequeue");
-			var e = new JObject
-			{
-				{ "count", count }
-			};
+        public void Error(Guid popReceipt, string error)
+        {
+            Instance.SysProxy.Management.Printing.Error(popReceipt, error);
+        }
 
-			return MiddlewareDescriptor.Current.Tenant.Post<List<QueueMessage>>(u, e).ToList<IQueueMessage>();
-		}
-
-		public void Error(Guid popReceipt, string error)
-		{
-			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("PrintingManagement", "Error");
-			var e = new JObject
-			{
-				{ "popReceipt", popReceipt },
-				{ "error", error }
-			};
-
-			MiddlewareDescriptor.Current.Tenant.Post(u, e);
-		}
-
-		public void Ping(Guid popReceipt)
-		{
-			var u = MiddlewareDescriptor.Current.Tenant.CreateUrl("PrintingManagement", "Ping");
-			var e = new JObject
-			{
-				{ "popReceipt", popReceipt },
-				{ "nextVisible", TimeSpan.FromMinutes(4) }
-			};
-
-			MiddlewareDescriptor.Current.Tenant.Post(u, e);
-		}
-	}
+        public void Ping(Guid popReceipt)
+        {
+            Instance.SysProxy.Management.Printing.Ping(popReceipt, TimeSpan.FromMinutes(4));
+        }
+    }
 }

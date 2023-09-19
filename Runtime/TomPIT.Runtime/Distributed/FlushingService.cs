@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using TomPIT.Analytics;
 using TomPIT.Connectivity;
 using TomPIT.Diagnostics;
+using TomPIT.Diagnostics.Tracing;
 
 namespace TomPIT.Distributed
 {
@@ -38,8 +38,10 @@ namespace TomPIT.Distributed
 						if (connection.GetService<IMetricService>() is MetricService m)
 							m.Flush();
 
-						if (connection.GetService<IAnalyticsService>() is AnalyticsService a)
-							((MruService)a.Mru).Flush();
+						Instance.SysProxy.Analytics.Flush();
+
+						if (connection.GetService<ITraceService>() is TraceService t)
+							t.Flush();
 					});
 			}
 			catch

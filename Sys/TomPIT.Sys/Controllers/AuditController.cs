@@ -5,6 +5,8 @@ using Newtonsoft.Json.Linq;
 using TomPIT.Data;
 using TomPIT.Sys.Model;
 
+using DataModel = TomPIT.Sys.Model.DataModel;
+
 namespace TomPIT.Sys.Controllers
 {
 	public class AuditController : SysController

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Newtonsoft.Json.Linq;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Search;
@@ -22,32 +21,23 @@ namespace TomPIT.Search
 
 		public void Index<T>(ISearchCatalogConfiguration catalog, SearchVerb verb, T args)
 		{
-			var u = Tenant.CreateUrl("Search", "Index");
-			var e = new JObject
+			var e = new Dictionary<string, object>
 			{
-				{"microService", ((IConfiguration)catalog).MicroService() },
-				{"catalog", catalog.ComponentName() }
+				{ nameof(verb), verb.ToString() },
 			};
 
-			var a = new JObject
-			{
-				{"verb", verb.ToString() }
-			};
+			if (args is not null)
+				e.Add("arguments", Serializer.Serialize(args));
 
-			if (args != null)
-				a.Add("arguments", Serializer.Serialize(args));
-
-			e.Add("arguments", Serializer.Serialize(a));
-
-			Tenant.Post(u, e);
+			Instance.SysProxy.Search.Index(catalog.MicroService(), catalog.ComponentName(), Serializer.Serialize(e));
 		}
 
 		public IClientSearchResults Search(ISearchOptions options)
 		{
-			var url = Tenant.GetService<IInstanceEndpointService>().Url(InstanceType.Search, InstanceVerbs.Post);
+			var url = Tenant.GetService<IInstanceEndpointService>().Url(InstanceFeatures.Search, InstanceVerbs.Post);
 
 			if (string.IsNullOrWhiteSpace(url))
-				throw new RuntimeException($"{SR.ErrNoServer} ({InstanceType.Search}, {InstanceVerbs.Post})");
+				throw new RuntimeException($"{SR.ErrNoServer} ({InstanceFeatures.Search}, {InstanceVerbs.Post})");
 
 			var u = ServerUrl.Create(url, "Search", "Search");
 

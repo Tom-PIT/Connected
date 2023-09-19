@@ -96,7 +96,7 @@ namespace TomPIT.Exceptions
 		{
 			if (ex is TomPITException tp)
 				return tp;
-
+		
 			if (ex is TargetInvocationException target && target.InnerException != null)
 				return UnwrapWithData(sender, ex.InnerException);
 			
@@ -180,7 +180,9 @@ namespace TomPIT.Exceptions
 
 			foreach (var frame in stackTrace.GetFrames())
 			{
-				if (!IsScript(frame) && !IsView(frame))
+				var isView = IsView(frame);
+
+				if (!IsScript(frame) && !isView)
 					continue;
 
 				var method = frame.GetMethod();
@@ -196,7 +198,7 @@ namespace TomPIT.Exceptions
 					fileName = $"{tokens[^2]}/{tokens[^1]}";
 				}
 
-				var methodName = method == null ? "?" : method.Name;
+				var methodName = isView ? "Render" : method == null ? "?" : method.Name;
 
 				stackTraceString.AppendLine($"{methodName} in {fileName} at line {line}");
 

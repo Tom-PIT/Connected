@@ -1,0 +1,12 @@
+﻿using System;
+using System.Linq;
+using System.Collections.Generic;
+using TomPIT.IoC;
+
+public class DependencyInjection: ApiDependencyInjectionMiddleware<T>
+{
+   protected override T OnInvoke(T e)
+   {
+      return e;
+   }
+}

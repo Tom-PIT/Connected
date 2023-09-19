@@ -153,6 +153,23 @@
                 </div>
             </div>
 
+            <h4>Error handling</h4>
+            <hr />
+            <div class="row">
+                <div class="col-6">
+                    <div class="form-group">
+                        <label for="editRetryInterval">Retry interval (seconds)</label>
+                        <div id="editRetryInterval" class="form-editor" />
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="form-group">
+                        <label for="editDisableTreshold">Disable treshold</label>
+                        <div id="editDisableTreshold" class="form-editor" />
+                    </div>
+                </div>
+            </div>
+
             <h4>@SRM.WorkerWorkingHours</h4>
             <hr />
             <div class="row">
@@ -219,7 +236,7 @@
                             <div id="checkWeekMonday"></div>
                         </div>
                         <div class="form-check">
-                            <div id="checkWeekTuesday"></div>                        
+                            <div id="checkWeekTuesday"></div>
                         </div>
                         <div class="form-check">
                             <div id="checkWeekWednesday"></div>
@@ -231,7 +248,7 @@
                             <div id="checkWeekFriday"></div>
                         </div>
                         <div class="form-check">
-                            <div id="checkWeekSaturday"></div>                        
+                            <div id="checkWeekSaturday"></div>
                         </div>
                         <div class="form-check">
                             <div id="checkWeekSunday"></div>
@@ -351,6 +368,8 @@
             dayOfMonth:@Model.Job.DayOfMonth,
             endMode: '@Model.Job.EndMode',
             limit:@Model.Job.Limit,
+            retryInterval:@Model.Job.RetryInterval,
+            disableTreshold:@Model.Job.DisableTreshold,
             weekdays: {
                 monday: @Html.TP().JavaScript.Bool(monday),
                 tuesday: @Html.TP().JavaScript.Bool(tuesday),
@@ -516,7 +535,7 @@
             yearOnThe: '@SRM.WorkerYearOnThe',
             noEnd: '@SRM.WorkerNoEnd',
             endAfter: '@SRM.WorkerEndAfter',
-            endBy:'@SRM.WorkerEndBy'
+            endBy: '@SRM.WorkerEndBy'
 		}
 	});
 </script>

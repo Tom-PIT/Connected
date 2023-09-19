@@ -7,6 +7,7 @@ using TomPIT.MicroServices.Design;
 
 namespace TomPIT.MicroServices.IoC
 {
+	[ComponentCreatedHandler("TomPIT.MicroServices.Design.CreateHandlers.EventBinding, TomPIT.MicroServices.Design")]
 	public class DependencyInjectionConfiguration : ComponentConfiguration, IDependencyInjectionConfiguration
 	{
 		private ListItems<IDependency> _injections = null;

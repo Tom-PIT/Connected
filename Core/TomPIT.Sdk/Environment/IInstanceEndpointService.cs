@@ -6,10 +6,10 @@ namespace TomPIT.Environment
 	public interface IInstanceEndpointService
 	{
 		IInstanceEndpoint Select(Guid endpoint);
-		IInstanceEndpoint Select(InstanceType type);
+		IInstanceEndpoint Select(InstanceFeatures features);
 		ImmutableList<IInstanceEndpoint> Query();
-		ImmutableList<IInstanceEndpoint> Query(InstanceType type);
+		ImmutableList<IInstanceEndpoint> Query(InstanceFeatures features);
 
-		string Url(InstanceType type, InstanceVerbs verb);
+		string Url(InstanceFeatures features, InstanceVerbs verb);
 	}
 }

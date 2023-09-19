@@ -7,7 +7,7 @@ using TomPIT.Sys.Notifications;
 
 namespace TomPIT.Sys.Model.Security
 {
-	internal class UserDataModel : CacheRepository<List<IUserData>, Guid>
+	public class UserDataModel : CacheRepository<List<IUserData>, Guid>
 	{
 		public UserDataModel(IMemoryCache container) : base(container, "userdata")
 		{

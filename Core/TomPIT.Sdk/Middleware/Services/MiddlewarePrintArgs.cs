@@ -13,5 +13,6 @@ namespace TomPIT.Middleware.Services
 		public string Provider { get; set; }
 		public string User { get; set; }
 		public string Category { get; set; }
+		public int CopyCount { get; set; } = 1;
 	}
 }

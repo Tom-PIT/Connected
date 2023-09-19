@@ -3,6 +3,7 @@ using TomPIT.Design.Ide.Dom;
 using TomPIT.Design.Ide.Globalization;
 using TomPIT.Design.Ide.Selection;
 using TomPIT.Middleware;
+using TomPIT.Runtime;
 
 namespace TomPIT.Design.Ide
 {
@@ -15,5 +16,6 @@ namespace TomPIT.Design.Ide
 		string Id { get; }
 		JObject RequestBody { get; }
 		string IdeUrl { get; }
+		EnvironmentMode Mode { get; }
 	}
 }

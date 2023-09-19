@@ -8,6 +8,7 @@ using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
 using TomPIT.Ide.TextServices.CSharp;
 using TomPIT.Ide.TextServices.Services;
+using TomPIT.Runtime;
 
 namespace TomPIT.Ide.TextServices.Razor.Services
 {
@@ -23,7 +24,13 @@ namespace TomPIT.Ide.TextServices.Razor.Services
 			var compilation = model.Compilation;
 
 			var result = new List<IMarkerData>();
-			var diagnostics = compilation.WithAnalyzers(CreateAnalyzers(Editor.Context.Tenant, sourceCode)). GetAllDiagnosticsAsync().Result;
+			var stage = Editor.Context.Tenant.GetService<IRuntimeService>().Stage;
+			ImmutableArray<Diagnostic> diagnostics;
+
+			if (stage == EnvironmentStage.Production)
+				diagnostics = compilation.GetDiagnostics();
+			else
+				diagnostics = compilation.WithAnalyzers(CreateAnalyzers(Editor.Context.Tenant, sourceCode)).GetAllDiagnosticsAsync().Result;
 
 			foreach (var diagnostic in diagnostics)
 			{

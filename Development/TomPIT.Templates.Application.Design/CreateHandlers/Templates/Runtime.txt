@@ -1,0 +1,69 @@
+﻿using System;
+using System.Linq;
+using System.Collections.Generic;
+using TomPIT.Runtime;
+using TomPIT.Middleware;
+using System.Net;
+using TomPIT.ComponentModel;
+using HtmlAgilityPack;
+
+public class [NAME] : RuntimeMiddleware
+{
+   private IRuntimeViewModifier _viewModifier; 
+   public override IRuntimeViewModifier ViewModifier => _viewModifier ??= new ViewModifier(Context);
+
+   protected override void OnInitialize(RuntimeInitializeArgs e)
+   {
+      
+   }
+}
+
+private class ViewModifier : RuntimeViewModifier
+{
+   private readonly IMiddlewareContext _ctx;
+
+   public ViewModifier(IMiddlewareContext ctx)
+   {
+      _ctx = ctx;
+   }
+
+   protected override bool CanPreRenderView(ViewPreRenderModificationArguments state)
+   {
+      return false;
+   }
+
+   protected override bool CanPostRenderView(ViewPostRenderModificationArguments state)
+   {
+      return false;
+   }
+
+   protected override bool CanPreRenderPartialView(PartialViewPreRenderModificationArguments state)
+   {
+      return false;
+   }
+
+   protected override bool CanPostRenderPartialView(PartialViewPostRenderModificationArguments state)
+   {
+      return false;
+   }
+
+   protected override ViewPreRenderModificationArguments OnPreRenderView(ViewPreRenderModificationArguments state)
+   {
+      return state;
+   }
+
+   protected override HtmlDocument OnPostRenderView(HtmlDocument content, ViewPreRenderModificationArguments args)
+   {
+      return content;
+   }
+
+   protected override PartialViewPreRenderModificationArguments OnPreRenderPartialView(PartialViewPreRenderModificationArguments state)
+   {  
+      return state;
+   }
+
+   protected override HtmlDocument OnPostRenderPartialView(HtmlDocument content, PartialViewPreRenderModificationArguments args)
+   {
+      return content;
+   }
+}

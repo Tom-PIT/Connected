@@ -28,9 +28,10 @@ namespace TomPIT.Middleware.Services
 
 			return Authorize(claim, primaryKey, permissionDescriptor, user);
 		}
+
 		public bool Authorize(object claim, object primaryKey, string permissionDescriptor, Guid user)
 		{
-			return Context.Tenant.GetService<IAuthorizationService>().Authorize(Context, new AuthorizationArgs(user, claim.ToString(), primaryKey.ToString(), permissionDescriptor)).Success;
+			return AsyncUtils.RunSync(() => Context.Tenant.GetService<IAuthorizationService>().AuthorizeAsync(Context, new AuthorizationArgs(user, claim.ToString(), primaryKey.ToString(), permissionDescriptor))).Success;
 		}
 
 		public void Deny(object claim, object primaryKey, string permissionDescriptor)
@@ -57,16 +58,12 @@ namespace TomPIT.Middleware.Services
 			var result = PermissionValue.NotSet;
 
 			while (result != value)
-				result = svc.Toggle(claim.ToString(), schema, evidence, primaryKey.ToString(), permissionDescriptor);
+				result = AsyncUtils.RunSync(() => svc.ToggleAsync(claim.ToString(), schema, evidence, primaryKey.ToString(), permissionDescriptor));
 		}
 
 		public T CreatePolicy<T>() where T : AuthorizationPolicyAttribute
 		{
-			var result = TypeExtensions.CreateInstance<T>(typeof(T));
-
-			ReflectionExtensions.SetPropertyValue(result, nameof(Context), Context);
-			
-			return result;
+			return TypeExtensions.CreateInstance<T>(typeof(T));
 		}
 	}
 }

@@ -17,6 +17,7 @@ namespace TomPIT.ComponentModel
 
 	public interface IComponentDevelopmentState : IComponent
 	{
+		int Id { get; }
 		IndexState IndexState { get; }
 		AnalyzerState AnalyzerState { get; }
 		DateTime AnalyzerTimestamp { get; }

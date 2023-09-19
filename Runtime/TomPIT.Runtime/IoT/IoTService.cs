@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
-using TomPIT.Middleware;
 
 namespace TomPIT.IoT
 {
@@ -32,7 +30,7 @@ namespace TomPIT.IoT
 
 		private void SynchronizeField(List<IIoTFieldState> schema, IIoTFieldStateModifier modifier)
 		{
-			if (!(schema.FirstOrDefault(f => string.Compare(f.Field, modifier.Field, true) == 0) is IoTFieldState field))
+			if (schema.FirstOrDefault(f => string.Compare(f.Field, modifier.Field, true) == 0) is not IIoTFieldState field)
 			{
 				schema.Add(new IoTFieldState
 				{
@@ -55,16 +53,9 @@ namespace TomPIT.IoT
 				{
 					f.Duration = TimeSpan.Zero;
 
-					var u = Tenant.CreateUrl("IoT", "SelectState");
-					var e = new JObject
-					{
-						{ "hub", hub }
-					};
+					var r = Instance.SysProxy.IoT.SelectState(hub)?.ToList();
 
-					var r = Tenant.Post<List<IoTFieldState>>(u, e).ToList<IIoTFieldState>();
-
-					if (r == null)
-						r = new List<IIoTFieldState>();
+					r ??= new List<IIoTFieldState>();
 
 					return r;
 				});

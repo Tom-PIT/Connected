@@ -27,18 +27,25 @@ namespace TomPIT.Rest.Controllers
 
 			Context.Response.ContentLength = buffer.Length;
 			await Context.Response.Body.WriteAsync(buffer, 0, buffer.Length);
+
+			await Context.Response.CompleteAsync();
 		}
 
 		protected override async Task OnRenderResult(object content)
 		{
-			var buffer = content == null ? Array.Empty<byte>() : Encoding.UTF8.GetBytes(Serializer.Serialize(content));
+			if (!Context.Response.HasStarted)
+			{
+				var buffer = content == null ? Array.Empty<byte>() : Encoding.UTF8.GetBytes(Serializer.Serialize(content));
 
-			Context.Response.Clear();
-			Context.Response.ContentLength = buffer.Length;
-			Context.Response.ContentType = ContentType;
-			Context.Response.StatusCode = StatusCodes.Status200OK;
+				Context.Response.Clear();
+				Context.Response.ContentLength = buffer.Length;
+				Context.Response.ContentType = ContentType;
+				Context.Response.StatusCode = StatusCodes.Status200OK;
 
-			await Context.Response.Body.WriteAsync(buffer, 0, buffer.Length);
+				await Context.Response.Body.WriteAsync(buffer, 0, buffer.Length);
+			}
+			
+			await Context.Response.CompleteAsync();
 		}
 	}
 }

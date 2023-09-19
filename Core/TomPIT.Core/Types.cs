@@ -350,14 +350,14 @@ namespace TomPIT
 		public static DataType ToDataType(Type type)
 		{
 			if (type == typeof(byte)
-				|| type == typeof(sbyte)
-				|| type == typeof(short)
-				|| type == typeof(ushort)
-				|| type == typeof(int)
-				|| type == typeof(uint))
+				 || type == typeof(sbyte)
+				 || type == typeof(short)
+				 || type == typeof(ushort)
+				 || type == typeof(int)
+				 || type == typeof(uint))
 				return DataType.Integer;
 			else if (type == typeof(char)
-				|| type == typeof(string))
+				 || type == typeof(string))
 				return DataType.String;
 			else if (type == typeof(Guid))
 				return DataType.Guid;
@@ -366,15 +366,15 @@ namespace TomPIT
 			else if (type == typeof(byte[]))
 				return DataType.Binary;
 			else if (type == typeof(DateTime)
-				|| type == typeof(TimeSpan)
-				|| type == typeof(DateTimeOffset))
+				 || type == typeof(TimeSpan)
+				 || type == typeof(DateTimeOffset))
 				return DataType.Date;
 			else if (type == typeof(float)
-				|| type == typeof(double)
-				|| type == typeof(decimal))
+				 || type == typeof(double)
+				 || type == typeof(decimal))
 				return DataType.Float;
 			else if (type == typeof(long)
-				|| type == typeof(ulong))
+				 || type == typeof(ulong))
 				return DataType.Long;
 			else
 				return DataType.String;
@@ -492,9 +492,9 @@ namespace TomPIT
 				sb.AppendFormat("{0}{1}", duration.Days, format ? string.Format("<span class=\"small\">{0}</span>", da) : da);
 
 				if (duration.Hours > 0
-					|| duration.Minutes > 0
-					|| duration.Seconds > 0
-					|| duration.Milliseconds > 0)
+					 || duration.Minutes > 0
+					 || duration.Seconds > 0
+					 || duration.Milliseconds > 0)
 					sb.Append(" ");
 			}
 
@@ -502,9 +502,9 @@ namespace TomPIT
 				return sb.ToString();
 
 			if (duration.Hours == 0
-				&& duration.Minutes == 0
-				&& duration.Seconds == 0
-				&& duration.Milliseconds == 0)
+				 && duration.Minutes == 0
+				 && duration.Seconds == 0
+				 && duration.Milliseconds == 0)
 				return sb.ToString();
 
 			if (duration.Hours > 0)
@@ -512,8 +512,8 @@ namespace TomPIT
 				sb.AppendFormat("{0}{1}", duration.Hours, format ? string.Format("<span class=\"small\">{0}</span>", ha) : ha);
 
 				if (duration.Minutes == 0
-					&& duration.Seconds == 0
-					&& duration.Milliseconds == 0)
+					 && duration.Seconds == 0
+					 && duration.Milliseconds == 0)
 					return sb.ToString();
 				else
 					sb.Append(" ");
@@ -527,7 +527,7 @@ namespace TomPIT
 				sb.AppendFormat("{0}{1}", duration.Minutes, format ? string.Format("<span class=\"small\">{0}</span>", ma) : ma);
 
 				if (duration.Seconds == 0
-					&& duration.Milliseconds == 0)
+					 && duration.Milliseconds == 0)
 					return sb.ToString();
 				else
 					sb.Append(" ");
@@ -690,6 +690,31 @@ namespace TomPIT
 				return value;
 			else
 				return new DateTimeOffset(value.UtcDateTime);
+		}
+
+		public static DateTime ToStartOfWeek(this DateTime value, DayOfWeek? firstDayOfWeek = null)
+		{
+			firstDayOfWeek ??= CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek;
+			var dayOfWeek = value.DayOfWeek;
+
+			var difference = firstDayOfWeek.Value - dayOfWeek;
+
+			if (difference > 0)
+				difference -= 7;
+
+			try
+			{
+				return value.AddDays(difference) - value.TimeOfDay;
+			}
+			catch
+			{
+				return DateTime.MinValue;
+			}
+		}
+
+		public static bool IsNullableType(this Type type)
+		{
+			return (object)type != null && type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
 		}
 	}
 }

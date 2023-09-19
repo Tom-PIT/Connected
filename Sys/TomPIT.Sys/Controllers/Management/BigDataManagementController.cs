@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using TomPIT.BigData;
 using TomPIT.Storage;
@@ -61,6 +62,53 @@ namespace TomPIT.Sys.Controllers.Management
 			var token = body.Required<Guid>("token");
 
 			DataModel.BigDataNodes.Delete(token);
+		}
+		/*
+		 * Timezones
+		 */
+		[HttpGet]
+		public ImmutableList<ITimeZone> QueryTimeZones()
+		{
+			return DataModel.BigDataTimeZones.Query();
+		}
+
+		[HttpPost]
+		public ITimeZone SelectTimeZone()
+		{
+			var body = FromBody();
+			var token = body.Required<Guid>("token");
+
+			return DataModel.BigDataTimeZones.Select(token);
+		}
+
+		[HttpPost]
+		public Guid InsertTimeZone()
+		{
+			var body = FromBody();
+			var name = body.Required<string>("name");
+			var offset = body.Required<int>("offset");
+
+			return DataModel.BigDataTimeZones.Insert(name, offset);
+		}
+
+		[HttpPost]
+		public void UpdateTimeZone()
+		{
+			var body = FromBody();
+			var token = body.Required<Guid>("token");
+			var name = body.Required<string>("name");
+			var offset = body.Required<int>("offset");
+
+			DataModel.BigDataTimeZones.Update(token, name, offset);
+		}
+
+		[HttpPost]
+		public void DeleteTimeZone()
+		{
+			var body = FromBody();
+			var token = body.Required<Guid>("token");
+
+			DataModel.BigDataTimeZones.Delete(token);
 		}
 		/*
 		 * Partitions
@@ -129,8 +177,9 @@ namespace TomPIT.Sys.Controllers.Management
 			var body = FromBody();
 			var partition = body.Required<Guid>("partition");
 			var blockCount = body.Required<int>("blockCount");
+			var timezone = body.Optional("timezone", Guid.Empty);
 
-			return DataModel.BigDataTransactions.Insert(partition, blockCount);
+			return DataModel.BigDataTransactions.Insert(partition, timezone, blockCount);
 		}
 		[HttpPost]
 		public void DeleteTransaction()
@@ -200,8 +249,9 @@ namespace TomPIT.Sys.Controllers.Management
 			var node = body.Required<Guid>("node");
 			var key = body.Optional("key", string.Empty);
 			var timestamp = body.Optional("timeStamp", DateTime.MinValue);
+			var timezone = body.Optional("timezone", Guid.Empty);
 
-			return DataModel.BigDataPartitionFiles.Insert(partition, node, key, timestamp);
+			return DataModel.BigDataPartitionFiles.Insert(partition, node, timezone, key, timestamp);
 		}
 
 		[HttpPost]
@@ -340,7 +390,7 @@ namespace TomPIT.Sys.Controllers.Management
 			var count = body.Required<int>("count");
 			var ts = body.Required<TimeSpan>("timeSpan");
 
-			return DataModel.BigDataPartitionBuffering.Dequeue(count, ts);
+			return DataModel.BigDataPartitionBuffering.Dequeue(count, ts).ToList<IPartitionBuffer>();
 		}
 		[HttpPost]
 		public void EnqueueBuffer()

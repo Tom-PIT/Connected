@@ -14,6 +14,7 @@ namespace TomPIT.ComponentModel
 		event ComponentChangedHandler ComponentChanged;
 		event ComponentChangedHandler ComponentAdded;
 		event ComponentChangedHandler ComponentRemoved;
+		event ComponentChangedHandler Deleting;
 		event ConfigurationChangedHandler ConfigurationChanged;
 		event ConfigurationChangedHandler ConfigurationAdded;
 		event ConfigurationChangedHandler ConfigurationRemoved;
@@ -24,13 +25,14 @@ namespace TomPIT.ComponentModel
 		ImmutableList<IFolder> QueryFolders(Guid microService);
 
 		ImmutableList<IConfiguration> QueryConfigurations(ImmutableList<IComponent> components);
+
 		ImmutableList<IConfiguration> QueryConfigurations(List<string> resourceGroups, string categories);
 		ImmutableList<IConfiguration> QueryConfigurations(List<Guid> microServices, string categories);
+		ImmutableList<IConfiguration> QueryConfigurations(params string[] categories);
 		ImmutableList<IConfiguration> QueryConfigurations(string categories);
 		ImmutableList<IConfiguration> QueryConfigurations(Guid microService, string categories);
 		IComponent SelectComponent(Guid microService, string category, string name);
 		IComponent SelectComponentByNameSpace(Guid microService, string nameSpace, string name);
-		//IComponent SelectComponent(string category, string name);
 		IComponent SelectComponent(Guid token);
 		IConfiguration SelectConfiguration(Guid microService, string category, string name);
 		IConfiguration SelectConfiguration(Guid component);
@@ -40,9 +42,6 @@ namespace TomPIT.ComponentModel
 		ImmutableList<IComponent> QueryComponents(Guid microService, string category);
 		ImmutableList<IComponent> QueryComponents(Guid microService, Guid folder);
 		ImmutableList<IComponent> QueryComponents(Guid microService);
-		ImmutableList<IComponent> QueryComponents(List<string> resourceGroups, string categories);
-
-
-		string CreateName(Guid microService, string category, string prefix);
+		ImmutableList<IComponent> QueryComponents(params string[] categories);
 	}
 }

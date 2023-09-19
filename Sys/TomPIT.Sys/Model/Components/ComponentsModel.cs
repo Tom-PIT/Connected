@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using TomPIT.Api.ComponentModel;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
@@ -14,7 +14,7 @@ using TomPIT.Sys.Notifications;
 
 namespace TomPIT.Sys.Model.Components
 {
-	internal class ComponentsModel : SynchronizedRepository<IComponent, Guid>
+	public class ComponentsModel : SynchronizedRepository<IComponent, Guid>
 	{
 		public ComponentsModel(IMemoryCache container) : base(container, "component")
 		{
@@ -79,7 +79,7 @@ namespace TomPIT.Sys.Model.Components
 					else
 					{
 						Refresh(component.Token);
-						CachingNotifications.ComponentChanged(component.MicroService, component.Folder, component.Token,  component.NameSpace, component.Category, component.Name);
+						CachingNotifications.ComponentChanged(component.MicroService, component.Folder, component.Token, component.NameSpace, component.Category, component.Name);
 					}
 				}
 
@@ -96,7 +96,7 @@ namespace TomPIT.Sys.Model.Components
 		public void NotifyChanged(IComponent component)
 		{
 			Refresh(component.Token);
-			CachingNotifications.ComponentChanged(component.MicroService, component.Folder, component.Token,  component.NameSpace, component.Category, component.Name);
+			CachingNotifications.ComponentChanged(component.MicroService, component.Folder, component.Token, component.NameSpace, component.Category, component.Name);
 		}
 
 		public IComponent Select(Guid token)
@@ -273,6 +273,25 @@ namespace TomPIT.Sys.Model.Components
 			return r.ToImmutableList();
 		}
 
+		public ImmutableList<IComponent> QueryByCategories(string categories)
+		{
+			var cats = categories.Split(',');
+			var r = new List<IComponent>();
+
+			foreach (var j in cats)
+			{
+				if (string.IsNullOrWhiteSpace(j))
+					continue;
+
+				var ds = Where(f => string.Compare(f.Category, j.Trim()) == 0);
+
+				if (ds.Any())
+					r.AddRange(ds);
+			}
+
+			return r.ToImmutableList();
+		}
+
 		public ImmutableList<IComponent> Query(string resourceGroups, string categories)
 		{
 			var tokens = string.IsNullOrWhiteSpace(resourceGroups) ? Array.Empty<string>() : resourceGroups.Split(',', StringSplitOptions.RemoveEmptyEntries);
@@ -329,6 +348,14 @@ namespace TomPIT.Sys.Model.Components
 			}
 
 			return r.Where(f => f.LockVerb != LockVerb.Delete).ToImmutableList();
+		}
+
+		public ImmutableList<IComponent> Query(bool includeDeleted = false)
+		{
+			if (includeDeleted)
+				return All();
+			else
+				return Where(f => f.LockVerb != LockVerb.Delete);
 		}
 
 		public ImmutableList<IComponent> Query(Guid[] microService, bool includeDeleted)
@@ -436,16 +463,6 @@ namespace TomPIT.Sys.Model.Components
 			c.DemandDevelopmentStage();
 
 			Update(component, c.Name, c.Folder, runtimeConfiguration);
-		}
-
-		public void Update(List<IComponentIndexState> states)
-		{
-			Shell.GetService<IDatabaseService>().Proxy.Development.Components.UpdateStates(states);
-		}
-
-		public void Update(List<IComponentAnalyzerState> states)
-		{
-			Shell.GetService<IDatabaseService>().Proxy.Development.Components.UpdateStates(states);
 		}
 
 		public void Update(Guid component, string name, Guid folder, Guid runtimeConfiguration)

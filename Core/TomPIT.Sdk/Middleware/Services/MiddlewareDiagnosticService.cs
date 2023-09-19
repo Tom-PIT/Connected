@@ -98,7 +98,7 @@ namespace TomPIT.Middleware.Services
 				Component = metric.Configuration().Component,
 				Element = element,
 				Session = id,
-				Instance = Shell.GetService<IRuntimeService>().Type,
+				Features = Shell.GetService<IRuntimeService>().Features,
 				IP = Shell.HttpContext == null ? IPAddress.None.ToString() : Shell.HttpContext.Connection.RemoteIpAddress.ToString(),
 				Start = DateTime.UtcNow,
 				Request = content,
