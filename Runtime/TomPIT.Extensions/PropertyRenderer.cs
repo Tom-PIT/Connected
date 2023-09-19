@@ -99,17 +99,17 @@ namespace TomPIT
 
 		private void RenderMaxLength(AttributeSyntax attribute)
 		{
-			RenderValidation("MaxLength", attribute.ArgumentList.Arguments[0].ToString());
+			RenderValidation("MaxLength", attribute.ArgumentList.Arguments[0].ToString().Trim('"'));
 		}
 
 		private void RenderMinValue(AttributeSyntax attribute)
 		{
-			RenderValidation("MinValue", attribute.ArgumentList.Arguments[0].ToString());
+			RenderValidation("MinValue", attribute.ArgumentList.Arguments[0].ToString().Trim('"'));
 		}
 
 		private void RenderMaxValue(AttributeSyntax attribute)
 		{
-			RenderValidation("MaxValue", attribute.ArgumentList.Arguments[0].ToString());
+			RenderValidation("MaxValue", attribute.ArgumentList.Arguments[0].ToString().Trim('"'));
 		}
 
 		private void RenderValidation(string name, string description)
@@ -130,8 +130,8 @@ namespace TomPIT
 			if (attribute is null)
 				return;
 
-			var stringTable = attribute.ArgumentList.Arguments[0].ToString();
-			var key = attribute.ArgumentList.Arguments[0].ToString();
+			var stringTable = attribute.ArgumentList.Arguments[0].ToString().Trim('"');
+			var key = attribute.ArgumentList.Arguments[1].ToString().Trim('"');
 			var loc = Context.Services.Globalization.GetString(stringTable, key);
 
 			if (!string.IsNullOrWhiteSpace(loc))
