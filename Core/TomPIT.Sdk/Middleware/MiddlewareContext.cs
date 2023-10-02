@@ -42,6 +42,11 @@ namespace TomPIT.Middleware
 		{
 			((MiddlewareEnvironment)Environment).IsInteractive = interactive;
 		}
+
+		[Obsolete("Remains to keep code compatibility. Use the parameterless constructor instead.")]
+		public MiddlewareContext(string endpoint = null) : this()
+		{
+		}
 		#endregion
 
 		#region Properties
