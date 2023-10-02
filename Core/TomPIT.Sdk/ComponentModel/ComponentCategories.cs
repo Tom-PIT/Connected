@@ -1,4 +1,6 @@
-﻿namespace TomPIT.ComponentModel
+﻿using Microsoft.Extensions.FileProviders;
+
+namespace TomPIT.ComponentModel
 {
 	public static class ComponentCategories
 	{
@@ -63,6 +65,32 @@
 		public static string NameSpaceNuGet => "NuGetPackage";
 
 		public static string[] ScriptCategories => new string[] { Script, IoCContainer };
+
+		public static string[] NamespaceCategories(string nameSpace)
+		{
+			if (string.Equals(nameSpace, NameSpacePublicScript, System.StringComparison.OrdinalIgnoreCase))
+				return new string[] { Api, Script, Model, Settings, Entity };
+			else if (string.Equals(nameSpace, NameSpaceInternalScript, System.StringComparison.OrdinalIgnoreCase))
+				return new string[] { Subscription, IoCContainer, Queue, SiteMap, BigDataPartition, DistributedEvent, HostedWorker, HostedService, SearchCatalog, IoTHub, IoTSchema, IoCEndpoint, Middleware };
+			else if (string.Equals(nameSpace, NameSpaceView, System.StringComparison.OrdinalIgnoreCase))
+				return new string[] { View, MasterView, Partial, MailTemplate };
+			else if (string.Equals(nameSpace, NameSpaceData, System.StringComparison.OrdinalIgnoreCase))
+				return new string[] { Connection };
+			else if (string.Equals(nameSpace, NameSpaceReference, System.StringComparison.OrdinalIgnoreCase))
+				return new string[] { Reference };
+			else if (string.Equals(nameSpace, NameSpaceResource, System.StringComparison.OrdinalIgnoreCase))
+				return new string[] { Theme, ScriptBundle, StringTable, Media, EmbeddedAssembly, FileAssembly };
+			else if (string.Equals(nameSpace, NameSpaceMiddleware, System.StringComparison.OrdinalIgnoreCase))
+				return new string[] { EventBinder };
+			else if (string.Equals(nameSpace, NameSpaceDeployment, System.StringComparison.OrdinalIgnoreCase))
+				return new string[] { Installer };
+			else if (string.Equals(nameSpace, NameSpaceQuality, System.StringComparison.OrdinalIgnoreCase))
+				return new string[] { UnitTest };
+			else if (string.Equals(nameSpace, NameSpaceNuGet, System.StringComparison.OrdinalIgnoreCase))
+				return new string[] { NuGetPackage, EmbeddedNuGetPackage };
+			else
+				return new string[0];
+		}
 		public static string ResolveNamespace(string category)
 		{
 			if (string.Compare(category, Api, true) == 0

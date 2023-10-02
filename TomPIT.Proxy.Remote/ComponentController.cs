@@ -8,10 +8,9 @@ namespace TomPIT.Proxy.Remote
 	internal class ComponentController : IComponentController
 	{
 		private const string Controller = "Component";
-		public ImmutableList<IComponent> Query(bool includeDeleted = false)
+		public ImmutableList<IComponent> Query()
 		{
-			var u = Connection.CreateUrl(Controller, "Query")
-				.AddParameter("includeDeleted", includeDeleted);
+			var u = Connection.CreateUrl(Controller, "Query");
 
 			return Connection.Get<List<Component>>(u).ToImmutableList<IComponent>();
 		}

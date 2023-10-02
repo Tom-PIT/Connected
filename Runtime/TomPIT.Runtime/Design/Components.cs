@@ -39,7 +39,7 @@ namespace TomPIT.Design
 
 		public void Delete(Guid component)
 		{
-			Delete(component, false);
+			Delete(component, true);
 		}
 		/// <summary>
 		/// It's always permanent since version control is not part of the framework anymore.
@@ -598,6 +598,10 @@ namespace TomPIT.Design
 		public IComponentImage CreateComponentImage(Guid component)
 		{
 			var c = Tenant.GetService<IComponentService>().SelectComponent(component);
+
+			if (c is null)
+				return null;
+
 			var r = new ComponentImage
 			{
 				Category = c.Category,

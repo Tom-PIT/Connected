@@ -327,7 +327,7 @@ namespace TomPIT.Sys.Model.Components
 			{
 				if (cats.Length == 0)
 				{
-					var ds = Query(i.Token, false);
+					var ds = Query(i.Token);
 
 					if (ds.Count > 0)
 						r.AddRange(ds);
@@ -347,31 +347,22 @@ namespace TomPIT.Sys.Model.Components
 				}
 			}
 
-			return r.Where(f => f.LockVerb != LockVerb.Delete).ToImmutableList();
+			return r.ToImmutableList();
 		}
 
-		public ImmutableList<IComponent> Query(bool includeDeleted = false)
+		public ImmutableList<IComponent> Query()
 		{
-			if (includeDeleted)
-				return All();
-			else
-				return Where(f => f.LockVerb != LockVerb.Delete);
+			return All();
 		}
 
-		public ImmutableList<IComponent> Query(Guid[] microService, bool includeDeleted)
+		public ImmutableList<IComponent> Query(Guid[] microService)
 		{
-			if (includeDeleted)
-				return Where(f => microService.Any(g => g == f.MicroService));
-			else
-				return Where(f => microService.Any(g => g == f.MicroService) && f.LockVerb != LockVerb.Delete);
+			return Where(f => microService.Any(g => g == f.MicroService));
 		}
 
-		public ImmutableList<IComponent> Query(Guid microService, bool includeDeleted)
+		public ImmutableList<IComponent> Query(Guid microService)
 		{
-			if (includeDeleted)
-				return Where(f => f.MicroService == microService);
-			else
-				return Where(f => f.MicroService == microService && f.LockVerb != LockVerb.Delete);
+			return Where(f => f.MicroService == microService);
 		}
 
 		public ImmutableList<IComponent> Query(Guid microService, Guid folder)
@@ -381,28 +372,12 @@ namespace TomPIT.Sys.Model.Components
 
 		public ImmutableList<IComponent> QueryByNameSpace(Guid microService, string nameSpace)
 		{
-			return Where(f => f.MicroService == microService && string.Compare(f.NameSpace, nameSpace, true) == 0 && f.LockVerb != LockVerb.Delete);
+			return Where(f => f.MicroService == microService && string.Compare(f.NameSpace, nameSpace, true) == 0);
 		}
 
 		public ImmutableList<IComponent> Query(Guid microService, string category)
 		{
-			return Where(f => f.MicroService == microService && string.Compare(f.Category, category, true) == 0 && f.LockVerb != LockVerb.Delete);
-		}
-
-		public ImmutableList<IComponent> QueryByNameSpace(Guid microService, string nameSpace, bool includeDeleted)
-		{
-			if (includeDeleted)
-				return Where(f => f.MicroService == microService && string.Compare(f.NameSpace, nameSpace, true) == 0 && f.LockVerb != LockVerb.Delete);
-			else
-				return Where(f => f.MicroService == microService && string.Compare(f.NameSpace, nameSpace, true) == 0);
-		}
-
-		public ImmutableList<IComponent> Query(Guid microService, string category, bool includeDeleted)
-		{
-			if (includeDeleted)
-				return Where(f => f.MicroService == microService && string.Compare(f.Category, category, true) == 0 && f.LockVerb != LockVerb.Delete);
-			else
-				return Where(f => f.MicroService == microService && string.Compare(f.Category, category, true) == 0);
+			return Where(f => f.MicroService == microService && string.Compare(f.Category, category, true) == 0);
 		}
 
 		public void Insert(Guid component, Guid microService, Guid folder, string category, string nameSpace, string name, string type, Guid runtimeConfiguration)
@@ -423,7 +398,7 @@ namespace TomPIT.Sys.Model.Components
 
 			var v = new Validator();
 
-			v.Unique(null, name, nameof(IComponent.Name), QueryByNameSpace(microService, nameSpace, true));
+			v.Unique(null, name, nameof(IComponent.Name), QueryByNameSpace(microService, nameSpace));
 
 			if (!v.IsValid)
 				throw new SysException(v.ErrorMessage);

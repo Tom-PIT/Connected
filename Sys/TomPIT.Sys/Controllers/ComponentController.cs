@@ -11,21 +11,21 @@ namespace TomPIT.Sys.Controllers
 	public class ComponentController : SysController
 	{
 		[HttpGet]
-		public ImmutableList<IComponent> Query(bool includeDeleted = false)
+		public ImmutableList<IComponent> Query()
 		{
-			return DataModel.Components.Query(includeDeleted);
+			return DataModel.Components.Query();
 		}
 
 		[HttpGet]
 		public ImmutableList<IComponent> Query(Guid microService)
 		{
-			return DataModel.Components.Query(microService, false);
+			return DataModel.Components.Query(microService);
 		}
 
 		[HttpGet]
 		public ImmutableList<IComponent> QueryAll(Guid microService)
 		{
-			return DataModel.Components.Query(microService, true);
+			return DataModel.Components.Query(microService);
 		}
 
 		[HttpGet]
@@ -75,7 +75,7 @@ namespace TomPIT.Sys.Controllers
 			foreach (JValue item in list)
 				serviceList.Add(Types.Convert<Guid>(item.Value));
 
-			return DataModel.Components.Query(serviceList.ToArray(), false);
+			return DataModel.Components.Query(serviceList.ToArray());
 		}
 
 		[HttpGet]

@@ -7,7 +7,7 @@ namespace TomPIT.Proxy
 {
 	public interface IComponentController
 	{
-		ImmutableList<IComponent> Query(bool includeDeleted = false);
+		ImmutableList<IComponent> Query();
 		ImmutableList<IComponent> Query(Guid microService);
 		ImmutableList<IComponent> QueryAll(Guid microService);
 		ImmutableList<IComponent> QueryByCategory(Guid microService, string category);
