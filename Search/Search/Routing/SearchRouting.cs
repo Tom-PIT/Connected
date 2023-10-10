@@ -7,7 +7,7 @@ namespace TomPIT.Search.Routing
 	{
 		public static void Register(IEndpointRouteBuilder routes)
 		{
-			routes.MapControllerRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
+			routes.MapPingRoute();
 			routes.MapControllerRoute("default", "{controller}/{action}");
 		}
 	}

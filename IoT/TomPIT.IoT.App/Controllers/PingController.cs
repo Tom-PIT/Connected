@@ -5,6 +5,7 @@ using TomPIT.Controllers;
 namespace TomPIT.IoT.Controllers
 {
 	[AllowAnonymous]
+	[Route("sys/iot/pingcontroller")]
 	public class PingController : ServerController
 	{
 		[HttpGet]

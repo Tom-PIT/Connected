@@ -9,7 +9,7 @@ namespace TomPIT.IoT.Routing
     {
         public static void Register(IEndpointRouteBuilder routes)
         {
-            routes.MapControllerRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
+            routes.MapPingRoute();
 
             routes.Map("transaction/{microService}/{hub}/{device}/{transaction}", (t) =>
             {                

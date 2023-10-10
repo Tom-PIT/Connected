@@ -41,7 +41,7 @@ namespace TomPIT.App.Routing
         }
         public static void Register(IEndpointRouteBuilder routes)
         {
-            routes.MapControllerRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
+            routes.MapPingRoute();
             routes.MapControllerRoute("sys.api", "sys/api/invoke", new { controller = "Api", action = "Invoke" });
             routes.MapControllerRoute("sys.search", "sys/api/search", new { controller = "Api", action = "Search" });
             routes.MapControllerRoute("sys.partial", "sys/api/partial", new { controller = "Api", action = "Partial" });
