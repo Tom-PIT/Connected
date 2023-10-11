@@ -1,12 +1,11 @@
-﻿using Microsoft.Extensions.FileProviders;
-
-namespace TomPIT.ComponentModel
+﻿namespace TomPIT.ComponentModel
 {
 	public static class ComponentCategories
 	{
 		public static string ReferenceComponentName => "References";
 		public static string Api => "Api";
 		public static string Model => "Model";
+		public static string Code => "Code";
 		public static string View => "View";
 		public static string Subscription => "Subscription";
 		public static string Queue => "Queue";
@@ -53,6 +52,7 @@ namespace TomPIT.ComponentModel
 		public static string SmtpConnection => "SmtpConnection";
 		public static string UnitTest => "UnitTest";
 
+		public static string NameSpaceCode => "Code";
 		public static string NameSpacePublicScript => "PublicScript";
 		public static string NameSpaceInternalScript => "InternalScript";
 		public static string NameSpaceView => "View";
@@ -88,6 +88,8 @@ namespace TomPIT.ComponentModel
 				return new string[] { UnitTest };
 			else if (string.Equals(nameSpace, NameSpaceNuGet, System.StringComparison.OrdinalIgnoreCase))
 				return new string[] { NuGetPackage, EmbeddedNuGetPackage };
+			else if (string.Equals(nameSpace, NameSpaceCode, System.StringComparison.OrdinalIgnoreCase))
+				return new string[] { Code };
 			else
 				return new string[0];
 		}
@@ -138,6 +140,8 @@ namespace TomPIT.ComponentModel
 			else if (string.Compare(category, NuGetPackage, true) == 0
 				 || string.Compare(category, EmbeddedNuGetPackage, true) == 0)
 				return NameSpaceNuGet;
+			else if (string.Compare(category, Code, true) == 0)
+				return NameSpaceCode;
 			else
 				return "Default";
 		}
