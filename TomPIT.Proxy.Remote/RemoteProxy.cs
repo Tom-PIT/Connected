@@ -23,7 +23,6 @@
 			Locking = new LockingController();
 			Logging = new LoggingController();
 			Mail = new MailController();
-			Metrics = new MetricController();
 			MicroServices = new MicroServiceController();
 			Printing = new PrintingController();
 			Queue = new QueueController();
@@ -58,7 +57,6 @@
 		public ILockingController Locking { get; }
 		public ILoggingController Logging { get; }
 		public IMailController Mail { get; }
-		public IMetricController Metrics { get; }
 		public IMicroServiceController MicroServices { get; }
 		public IPrintingController Printing { get; }
 		public IQueueController Queue { get; }

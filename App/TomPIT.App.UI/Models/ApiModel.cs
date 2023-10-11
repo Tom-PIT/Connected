@@ -1,7 +1,6 @@
-﻿using System;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using TomPIT.ComponentModel;
-using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
 using TomPIT.Models;
 
@@ -17,17 +16,17 @@ namespace TomPIT.App.Models
 		public ApiModel(string api, string component) : this()
 		{
 			if (string.IsNullOrWhiteSpace(api))
-				throw new RuntimeException($"{SR.ErrHttpHeaderExpected} (X-TP-API)").WithMetrics(this);
+				throw new RuntimeException($"{SR.ErrHttpHeaderExpected} (X-TP-API)");
 
 			if (string.IsNullOrWhiteSpace(component))
-				throw new RuntimeException($"{SR.ErrHttpHeaderExpected} (X-TP-COMPONENT)").WithMetrics(this);
+				throw new RuntimeException($"{SR.ErrHttpHeaderExpected} (X-TP-COMPONENT)");
 
 			QualifierName = api;
 
 			var tokens = component.Split('.');
 
 			if (tokens.Length != 2)
-				throw new RuntimeException($"{SR.ErrInvalidQualifier} ({component}). {SR.ErrInvalidQualifierExpected}: 'microService.component'.").WithMetrics(this);
+				throw new RuntimeException($"{SR.ErrInvalidQualifier} ({component}). {SR.ErrInvalidQualifierExpected}: 'microService.component'.");
 
 			var s = Tenant.GetService<IMicroServiceService>().Select(new Guid(tokens[0]));
 			var c = Tenant.GetService<IComponentService>().SelectComponent(new Guid(tokens[1]));
@@ -44,7 +43,7 @@ namespace TomPIT.App.Models
 				return;
 
 			if (string.IsNullOrWhiteSpace(Body.Optional("__api", string.Empty)))
-				throw new RuntimeException($"{SR.ErrDataParameterExpected} (__api)").WithMetrics(this);
+				throw new RuntimeException($"{SR.ErrDataParameterExpected} (__api)");
 
 			QualifierName = Body.Optional("__api", string.Empty);
 
@@ -52,7 +51,7 @@ namespace TomPIT.App.Models
 			var tokens = component.Split('.');
 
 			if (tokens.Length != 2)
-				throw new RuntimeException($"{SR.ErrInvalidQualifier} ({component}). {SR.ErrInvalidQualifierExpected}: 'microService.component'.").WithMetrics(this);
+				throw new RuntimeException($"{SR.ErrInvalidQualifier} ({component}). {SR.ErrInvalidQualifierExpected}: 'microService.component'.");
 
 			var s = Tenant.GetService<IMicroServiceService>().Select(new Guid(tokens[0]));
 			var c = Tenant.GetService<IComponentService>().SelectComponent(new Guid(tokens[1]));
@@ -89,9 +88,9 @@ namespace TomPIT.App.Models
 			}
 		}
 
-        public override IRuntimeModel Clone()
-        {
+		public override IRuntimeModel Clone()
+		{
 			return this;
-        }
-    }
+		}
+	}
 }

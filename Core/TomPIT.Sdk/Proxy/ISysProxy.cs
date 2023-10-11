@@ -20,7 +20,6 @@
 		ILockingController Locking { get; }
 		ILoggingController Logging { get; }
 		IMailController Mail { get; }
-		IMetricController Metrics { get; }
 		IMicroServiceController MicroServices { get; }
 		IPrintingController Printing { get; }
 		IQueueController Queue { get; }

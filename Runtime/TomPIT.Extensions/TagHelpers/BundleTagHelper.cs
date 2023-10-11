@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using TomPIT.ComponentModel;
-using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
 
@@ -28,7 +27,7 @@ namespace TomPIT.TagHelpers
 				var reference = ctx.Tenant.GetService<IMicroServiceService>().Select(microService);
 
 				if (reference == null)
-					throw new RuntimeException(string.Format("{0} ({1})", SR.ErrMicroServiceNotFound, microService)).WithMetrics(ctx);
+					throw new RuntimeException(string.Format("{0} ({1})", SR.ErrMicroServiceNotFound, microService));
 
 				try
 				{

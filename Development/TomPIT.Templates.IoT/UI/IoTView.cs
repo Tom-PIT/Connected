@@ -3,9 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
 using TomPIT.Collections;
-using TomPIT.ComponentModel.Diagnostics;
 using TomPIT.ComponentModel.IoT;
-using TomPIT.Diagnostics;
 using TomPIT.MicroServices.IoT.UI.Stencils;
 using TomPIT.Runtime;
 
@@ -17,7 +15,6 @@ namespace TomPIT.MicroServices.IoT.UI
 	[ViewRenderer("TomPIT.MicroServices.IoT.UI.IoTRenderer, TomPIT.MicroServices.IoT")]
 	public class IoTView : ViewBase, IIoTViewConfiguration
 	{
-		private IMetricOptions _metric = null;
 		private ListItems<IIoTElement> _elements = null;
 
 		[Browsable(false)]
@@ -51,17 +48,6 @@ namespace TomPIT.MicroServices.IoT.UI
 		[Items(ItemsAttribute.LayoutItems)]
 		public string Layout { get; set; }
 
-		[Browsable(false)]
-		public IMetricOptions Metrics
-		{
-			get
-			{
-				if (_metric == null)
-					_metric = new MetricOptions { Parent = this };
-
-				return _metric;
-			}
-		}
 		[Browsable(false)]
 		public bool AuthorizationEnabled => false;
 	}

@@ -1,6 +1,4 @@
-﻿using TomPIT.ComponentModel.Diagnostics;
-
-namespace TomPIT.ComponentModel.UI
+﻿namespace TomPIT.ComponentModel.UI
 {
 	public interface IViewConfiguration : IConfiguration, IGraphicInterface
 	{
@@ -9,7 +7,6 @@ namespace TomPIT.ComponentModel.UI
 		string Url { get; }
 		string Layout { get; }
 		bool Enabled { get; }
-		IMetricOptions Metrics { get; }
 		bool AuthorizationEnabled { get; }
 	}
 }

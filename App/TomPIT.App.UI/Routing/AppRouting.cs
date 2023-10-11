@@ -1,4 +1,22 @@
-﻿namespace TomPIT.App.Routing
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
+using TomPIT.App.Globalization;
+using TomPIT.App.Resources;
+using TomPIT.App.UI;
+using TomPIT.App.UI.Theming;
+using TomPIT.Middleware;
+using TomPIT.Navigation;
+using TomPIT.Routing;
+using TomPIT.Runtime;
+using TomPIT.UI;
+
+namespace TomPIT.App.Routing
 {
 	internal static class AppRouting
 	{

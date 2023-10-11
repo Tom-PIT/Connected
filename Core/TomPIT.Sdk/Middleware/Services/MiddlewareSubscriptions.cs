@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using TomPIT.Cdn;
 using TomPIT.ComponentModel;
-using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
 using TomPIT.Security;
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
@@ -59,7 +58,7 @@ namespace TomPIT.Middleware.Services
 			var ev = config.Configuration.Events.FirstOrDefault(f => string.Compare(f.Name, config.Element, true) == 0);
 
 			if (ev == null)
-				throw new RuntimeException($"{SR.ErrSubscriptionEventNotFound} ({config.MicroServiceName}/{config.ComponentName}/{config.Element})").WithMetrics(Context);
+				throw new RuntimeException($"{SR.ErrSubscriptionEventNotFound} ({config.MicroServiceName}/{config.ComponentName}/{config.Element})");
 
 			Context.Tenant.GetService<ISubscriptionService>().TriggerEvent(config.Configuration, config.Element, primaryKey, topic, arguments);
 		}

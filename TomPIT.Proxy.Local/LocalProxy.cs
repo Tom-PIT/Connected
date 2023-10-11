@@ -57,7 +57,6 @@
 		public ILockingController Locking { get; }
 		public ILoggingController Logging { get; }
 		public IMailController Mail { get; }
-		public IMetricController Metrics { get; }
 		public IMicroServiceController MicroServices { get; }
 		public IPrintingController Printing { get; }
 		public IQueueController Queue { get; }

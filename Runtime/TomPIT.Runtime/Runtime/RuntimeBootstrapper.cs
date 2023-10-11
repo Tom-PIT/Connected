@@ -94,7 +94,6 @@ namespace TomPIT.Runtime
 			e.Tenant.RegisterService(typeof(IAuditService), typeof(AuditService));
 			e.Tenant.RegisterService(typeof(IDiscoveryService), typeof(DiscoveryService));
 			e.Tenant.RegisterService(typeof(ICryptographyService), typeof(CryptographyService));
-			e.Tenant.RegisterService(typeof(IMetricService), typeof(MetricService));
 			e.Tenant.RegisterService(typeof(IValidationService), typeof(ValidationService));
 			e.Tenant.RegisterService(typeof(IUserDataService), typeof(UserDataService));
 			e.Tenant.RegisterService(typeof(IMailService), typeof(MailService));

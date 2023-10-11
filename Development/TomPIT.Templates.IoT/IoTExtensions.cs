@@ -1,6 +1,5 @@
 ﻿using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.IoT;
-using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
 using TomPIT.MicroServices.IoT.Annotations;
 using TomPIT.MicroServices.IoT.Models;
@@ -58,7 +57,7 @@ namespace TomPIT.MicroServices.IoT
 				var microService = context.Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
 
 				if (microService == null)
-					throw new RuntimeException(SR.ErrMicroServiceNotFound).WithMetrics(context);
+					throw new RuntimeException(SR.ErrMicroServiceNotFound);
 
 				ms = microService.Token;
 			}

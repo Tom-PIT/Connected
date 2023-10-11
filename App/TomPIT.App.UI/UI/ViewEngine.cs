@@ -10,7 +10,6 @@ using TomPIT.App.Models;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.UI;
-using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Models;
@@ -96,11 +95,7 @@ namespace TomPIT.App.UI
 				return;
 			}
 
-			var metric = Guid.Empty;
 			var content = string.Empty;
-
-			if (model.ViewConfiguration != null)
-				metric = model.Services.Diagnostic.StartMetric(model.ViewConfiguration.Metrics, model.ViewConfiguration.Metrics.ParseRequest(Context.Request));
 
 			try
 			{
@@ -111,76 +106,69 @@ namespace TomPIT.App.UI
 				if (!model.ActionContext.RouteData.Values.ContainsKey("Action"))
 					model.ActionContext.RouteData.Values.Add("Action", name);
 
-				try
+				var viewEngineResult = Engine.FindView(model.ActionContext, name, false);
+
+				if (!viewEngineResult.Success)
 				{
-					var viewEngineResult = Engine.FindView(model.ActionContext, name, false);
-
-					if (!viewEngineResult.Success)
-					{
-						if (string.Compare(name, "home", true) == 0)
-							throw new InvalidOperationException(SR.ErrDefaultViewNotSet);
-						else
-						{
-							Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-							return;
-						}
-					}
-
-					var view = viewEngineResult.View;
-
-					if (Context.Response.StatusCode != (int)HttpStatusCode.OK)
-						return;
-
-					content = await CreateContent(view, model);
-
-					var modifiers = this.ViewModifiers;
-
-					if (modifiers.Any())
-					{
-						var postRenderArgs = new ViewPostRenderModificationArguments
-						{
-							Arguments = model.Arguments,
-							Component = model.Component,
-							MicroService = model.MicroService,
-							Configuration = model.ViewConfiguration,
-							Name = $"{model.MicroService.Name}/{model.Component.Name}",
-							Url = name,
-							Content = content
-						};
-
-						foreach (var modifier in modifiers)
-						{
-							postRenderArgs.Content = modifier.PostRenderView(postRenderArgs);
-						}
-
-						content = postRenderArgs.Content;
-					}
-
-					var buffer = Encoding.UTF8.GetBytes(content);
-
-					if (Context.Response.StatusCode == (int)HttpStatusCode.OK)
-					{
-						Context.Response.ContentType = "text/html; charset=UTF-8";
-						await Context.Response.Body.WriteAsync(buffer, 0, buffer.Length);
-					}
-
-					await Context.Response.CompleteAsync();
-				}
-				catch (CompilerException)
-				{
-					throw;
-				}
-				catch (Exception ex)
-				{
-					if (ex is NotFoundException || ex.InnerException is NotFoundException)
-						Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+					if (string.Compare(name, "home", true) == 0)
+						throw new InvalidOperationException(SR.ErrDefaultViewNotSet);
 					else
-						throw new CompilerException(model.ViewConfiguration, ex);
+					{
+						Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+						return;
+					}
 				}
+
+				var view = viewEngineResult.View;
+
+				if (Context.Response.StatusCode != (int)HttpStatusCode.OK)
+					return;
+
+				content = await CreateContent(view, model);
+
+				var modifiers = this.ViewModifiers;
+
+				if (modifiers.Any())
+				{
+					var postRenderArgs = new ViewPostRenderModificationArguments
+					{
+						Arguments = model.Arguments,
+						Component = model.Component,
+						MicroService = model.MicroService,
+						Configuration = model.ViewConfiguration,
+						Name = $"{model.MicroService.Name}/{model.Component.Name}",
+						Url = name,
+						Content = content
+					};
+
+					foreach (var modifier in modifiers)
+					{
+						postRenderArgs.Content = modifier.PostRenderView(postRenderArgs);
+					}
+
+					content = postRenderArgs.Content;
+				}
+
+				var buffer = Encoding.UTF8.GetBytes(content);
+
+				if (Context.Response.StatusCode == (int)HttpStatusCode.OK)
+				{
+					Context.Response.ContentType = "text/html; charset=UTF-8";
+					await Context.Response.Body.WriteAsync(buffer, 0, buffer.Length);
+				}
+
+				await Context.Response.CompleteAsync();
 			}
-			finally
+			catch (CompilerException)
 			{
-				model.Services.Diagnostic.StopMetric(metric, Context.Response.StatusCode < 400 ? SessionResult.Success : SessionResult.Fail, model.ViewConfiguration.Metrics.ParseResponse(Context.Response, content));
+				throw;
+			}
+			catch (Exception ex)
+			{
+				if (ex is NotFoundException || ex.InnerException is NotFoundException)
+					Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+				else
+					throw new CompilerException(model.ViewConfiguration, ex);
 			}
 		}
 

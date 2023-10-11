@@ -6,7 +6,6 @@ using System.Linq;
 using System.Runtime.ExceptionServices;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
-using TomPIT.Diagnostics;
 using TomPIT.Exceptions;
 using TomPIT.Reflection;
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
@@ -73,7 +72,7 @@ namespace TomPIT.Middleware.Interop
 				if (_callback is null)
 				{
 					if (string.IsNullOrWhiteSpace(CallbackPath))
-						throw new RuntimeException(SR.ErrAsyncPathExpected).WithMetrics(Context);
+						throw new RuntimeException(SR.ErrAsyncPathExpected);
 
 					var descriptor = ComponentDescriptor.Api(Context, CallbackPath);
 

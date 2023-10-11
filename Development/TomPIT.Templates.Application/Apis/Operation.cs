@@ -6,8 +6,6 @@ using TomPIT.Annotations.Design;
 using TomPIT.Annotations.Design.CodeAnalysis;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
-using TomPIT.ComponentModel.Diagnostics;
-using TomPIT.Diagnostics;
 using TomPIT.MicroServices.Design;
 using TomPIT.Reflection;
 using TomPIT.Runtime;
@@ -23,8 +21,6 @@ namespace TomPIT.MicroServices.Apis
 	[ComponentCreatedHandler("TomPIT.MicroServices.Design.CreateHandlers.ApiOperation, TomPIT.MicroServices.Design")]
 	public class Operation : ConfigurationElement, IApiOperation
 	{
-		private IMetricOptions _metric = null;
-
 		[InvalidateEnvironment(EnvironmentSection.Explorer | EnvironmentSection.Designer)]
 		[Required]
 		[PropertyCategory(PropertyCategoryAttribute.CategoryDesign)]
@@ -39,18 +35,6 @@ namespace TomPIT.MicroServices.Apis
 		[DefaultValue(ElementScope.Public)]
 		[InvalidateEnvironment(EnvironmentSection.Explorer)]
 		public ElementScope Scope { get; set; } = ElementScope.Public;
-
-		[Browsable(false)]
-		public IMetricOptions Metrics
-		{
-			get
-			{
-				if (_metric == null)
-					_metric = new MetricOptions { Parent = this };
-
-				return _metric;
-			}
-		}
 
 		[Browsable(false)]
 		public Guid TextBlob { get; set; }
