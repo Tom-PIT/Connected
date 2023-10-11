@@ -5,6 +5,7 @@ using TomPIT.Controllers;
 namespace TomPIT.Rest.Controllers
 {
 	[AllowAnonymous]
+	[Route("sys/rest/pingcontroller")]
 	public class PingController : ServerController
 	{
 		[HttpGet]

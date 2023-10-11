@@ -1,4 +1,9 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
@@ -26,6 +31,7 @@ namespace TomPIT
 	}
 	public static class Instance
 	{
+		private static bool _pingRouteRegistered = false;
 		private static List<IPlugin> _plugins = null;
 		internal static RequestLocalizationOptions RequestLocalizationOptions { get; set; }
 		public static Guid Id { get; } = Guid.NewGuid();
@@ -92,6 +98,18 @@ namespace TomPIT
 
 				return _plugins;
 			}
+		}
+
+		public static void MapPingRoute(this IEndpointRouteBuilder routes)
+		{
+			if (_pingRouteRegistered)
+				return;
+
+			routes.Map("sys/ping", () => Results.Ok());
+
+			//routes.MapControllerRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
+
+			_pingRouteRegistered = true;
 		}
 	}
 }

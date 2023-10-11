@@ -7,6 +7,7 @@ using TomPIT.Worker.Services;
 namespace TomPIT.Worker.Controllers
 {
 	[AllowAnonymous]
+	[Route("sys/worker/pingcontroller")]
 	public class PingController : ServerController
 	{
 		[HttpGet]
