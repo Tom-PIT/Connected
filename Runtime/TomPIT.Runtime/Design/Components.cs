@@ -74,7 +74,7 @@ namespace TomPIT.Design
 
 			Instance.SysProxy.Development.Notifications.ConfigurationRemoved(c.MicroService, c.Token, c.Category);
 
-			Tenant.GetService<IDebugService>().ConfigurationRemoved(c.MicroService, c.Token, c.Category);
+			Tenant.GetService<IDebugService>().ConfigurationRemoved(c.Token);
 		}
 
 		public void Restore(Guid microService, IPullRequestComponent component)
@@ -116,7 +116,7 @@ namespace TomPIT.Design
 			};
 
 			Tenant.GetService<IStorageService>().Upload(blob, Unpack(configuration.Content), StoragePolicy.Singleton, component.Token);
-			Tenant.GetService<IDebugService>().ConfigurationChanged(microService.Token, configuration.Token, component.Category);
+			Tenant.GetService<IDebugService>().ConfigurationChanged(configuration.Token);
 
 			if (Tenant.GetService<IComponentService>() is not IComponentNotification notification)
 				return;
@@ -136,12 +136,14 @@ namespace TomPIT.Design
 				if (file.Type == BlobTypes.Configuration || file.Verb == ComponentVerb.NotModified)
 					continue;
 
+				var elementId = ResolveElementId(component.Token, file.Token);
+
 				if (file.Verb == ComponentVerb.Delete)
 				{
 					Tenant.GetService<IStorageService>().Delete(file.Token);
 
 					if (file.Type == BlobTypes.Template && Tenant.GetService<ICompilerService>() is ICompilerNotification notification)
-						notification.NotifyChanged(this, new ScriptChangedEventArgs(microService.Token, component.Token, ResolveElementId(component.Token, file.Token)));
+						notification.NotifyChanged(this, new ScriptChangedEventArgs(microService.Token, component.Token, elementId));
 
 					FileDeleted?.Invoke(this, new FileArgs(microService.Token, component.Token, file.Token));
 				}
@@ -168,7 +170,7 @@ namespace TomPIT.Design
 					FileRestored?.Invoke(this, new FileArgs(microService.Token, component.Token, file.Token));
 				}
 
-				Tenant.GetService<IDebugService>().ScriptChanged(microService.Token, component.Token, file.Token);
+				Tenant.GetService<IDebugService>().ScriptChanged(microService.Token, component.Token, elementId, file.Token);
 			}
 		}
 
@@ -342,7 +344,7 @@ namespace TomPIT.Design
 			}
 
 			Instance.SysProxy.Development.Notifications.ConfigurationAdded(microService, instance.Component, category);
-			Tenant.GetService<IDebugService>().ConfigurationAdded(microService, instance.Component, category);
+			Tenant.GetService<IDebugService>().ConfigurationAdded(instance.Component);
 
 			return instance.Component;
 		}
@@ -355,7 +357,7 @@ namespace TomPIT.Design
 			if (Tenant.GetService<IComponentService>() is IComponentNotification n)
 				n.NotifyChanged(this, new ConfigurationEventArgs(c.MicroService, component, c.Category));
 
-			Tenant.GetService<IDebugService>().ConfigurationChanged(c.MicroService, component, c.Category);
+			Tenant.GetService<IDebugService>().ConfigurationChanged(component);
 		}
 
 		public void Update(IConfiguration configuration)
@@ -391,7 +393,7 @@ namespace TomPIT.Design
 				n.NotifyChanged(this, new ConfigurationEventArgs(c.MicroService, configuration.Component, c.Category));
 
 			Instance.SysProxy.Development.Notifications.ConfigurationChanged(c.MicroService, c.Token, c.Category);
-			Tenant.GetService<IDebugService>().ConfigurationChanged(c.MicroService, c.Token, c.Category);
+			Tenant.GetService<IDebugService>().ConfigurationChanged(c.Token);
 		}
 
 		public void Update(IText text, string content)
@@ -417,13 +419,15 @@ namespace TomPIT.Design
 
 			Update(text.Configuration());
 
-			Tenant.GetService<IDebugService>().ScriptChanged(text.Configuration().MicroService(), text.Configuration().Component, text.Id);
+			Tenant.GetService<IDebugService>().ScriptChanged(text.Configuration().MicroService(), text.Configuration().Component, text.Id, blob);
 		}
 
 		private void Delete(IText text, bool updateConfig)
 		{
 			if (text.TextBlob == Guid.Empty)
 				return;
+
+			var blob = text.TextBlob;
 
 			try
 			{
@@ -438,7 +442,7 @@ namespace TomPIT.Design
 			if (updateConfig)
 				Update(text.Configuration());
 
-			Tenant.GetService<IDebugService>().ScriptChanged(text.Configuration().MicroService(), text.Configuration().Component, text.Id);
+			Tenant.GetService<IDebugService>().ScriptChanged(text.Configuration().MicroService(), text.Configuration().Component, text.Id, blob);
 		}
 
 		private void RemoveDependencies(Guid component)
