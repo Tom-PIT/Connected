@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Text.Json;
 using TomPIT.Connectivity;
 using TomPIT.Middleware;
@@ -13,8 +14,8 @@ internal class DebugService : IDebugService
 			if (debugTarget.TryGetProperty("url", out JsonElement urlNode))
 				Url = urlNode.GetString();
 
-			if (debugTarget.TryGetProperty("authenticationToken", out JsonElement tokenNode))
-				AuthenticationToken = tokenNode.GetString();
+			if (debugTarget.TryGetProperty("token", out JsonElement tokenNode))
+				AuthenticationToken = Encoding.UTF8.GetString(Convert.FromBase64String(tokenNode.GetString()));
 		}
 	}
 
@@ -22,42 +23,40 @@ internal class DebugService : IDebugService
 	private string AuthenticationToken { get; }
 	public bool Enabled => !string.IsNullOrEmpty(Url);
 
-	public void ConfigurationAdded(Guid microService, Guid component, string category)
+	public void ConfigurationAdded(Guid component)
 	{
 		if (!Enabled)
 			return;
 
 		MiddlewareDescriptor.Current.Tenant.Post(CreateUrl("ConfigurationAdded"), new
 		{
-			configuration = component
+			component
 		}, new HttpRequestArgs().WithBearerCredentials(AuthenticationToken));
 	}
 
-	public void ConfigurationChanged(Guid microService, Guid component, string category)
+	public void ConfigurationChanged(Guid component)
 	{
 		if (!Enabled)
 			return;
 
 		MiddlewareDescriptor.Current.Tenant.Post(CreateUrl("ConfigurationChanged"), new
 		{
-			configuration = component
+			component
 		}, new HttpRequestArgs().WithBearerCredentials(AuthenticationToken));
 	}
 
-	public void ConfigurationRemoved(Guid microService, Guid component, string category)
+	public void ConfigurationRemoved(Guid component)
 	{
 		if (!Enabled)
 			return;
 
 		MiddlewareDescriptor.Current.Tenant.Post(CreateUrl("ConfigurationRemoved"), new
 		{
-			microService,
-			configuration = component,
-			category
+			component
 		}, new HttpRequestArgs().WithBearerCredentials(AuthenticationToken));
 	}
 
-	public void ScriptChanged(Guid microService, Guid component, Guid element)
+	public void ScriptChanged(Guid microService, Guid component, Guid element, Guid token)
 	{
 		if (!Enabled)
 			return;
@@ -65,13 +64,14 @@ internal class DebugService : IDebugService
 		MiddlewareDescriptor.Current.Tenant.Post(CreateUrl("ScriptChanged"), new
 		{
 			microService,
-			container = component,
-			sourceCode = element
+			component,
+			element,
+			token
 		}, new HttpRequestArgs().WithBearerCredentials(AuthenticationToken));
 	}
 
 	private string CreateUrl(string action)
 	{
-		return $"{Url}/NotificationDevelopment/{action}";
+		return $"{Url}/sys/debug/{action}";
 	}
 }
