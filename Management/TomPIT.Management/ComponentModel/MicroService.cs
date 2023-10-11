@@ -21,7 +21,7 @@ namespace TomPIT.Management.ComponentModel
 		[KeyProperty]
 		public Guid Token { get; set; }
 		[PropertyCategory(PropertyCategoryAttribute.CategoryBehavior)]
-		public MicroServiceStatus Status { get; set; }
+		public MicroServiceStages SupportedStages { get; set; }
 		[Browsable(false)]
 		public Guid ResourceGroup { get; set; }
 		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]
@@ -29,15 +29,7 @@ namespace TomPIT.Management.ComponentModel
 		[Items(ManagementItems.MicroServiceTemplates)]
 		public Guid Template { get; set; }
 		[Browsable(false)]
-		public Guid Package { get; set; }
-		[Browsable(false)]
-		public UpdateStatus UpdateStatus { get; set; }
-		[Browsable(false)]
-		public CommitStatus CommitStatus { get; set; }
-		[Browsable(false)]
 		public string Version { get; set; }
-		[Browsable(false)]
-		public Guid Plan { get; set; }
 		public override string ToString()
 		{
 			return string.IsNullOrWhiteSpace(Name)

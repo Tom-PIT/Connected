@@ -23,7 +23,6 @@
 			Locking = new LockingController();
 			Logging = new LoggingController();
 			Mail = new MailController();
-			Metrics = new MetricController();
 			MicroServices = new MicroServiceController();
 			Printing = new PrintingController();
 			Queue = new QueueController();

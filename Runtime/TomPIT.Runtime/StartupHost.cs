@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -21,7 +20,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Text.Json;
-
 using TomPIT.Configuration;
 using TomPIT.Connectivity;
 using TomPIT.Design;
@@ -80,7 +78,6 @@ internal class StartupHost : IStartupHostProxy
 	public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 	{
 		RuntimeService._host = app;
-
 		app.UseAuthentication();
 		app.UseMiddleware<AuthenticationCookieMiddleware>();
 		app.UseRequestLocalization(app.ApplicationServices.GetService<IOptions<RequestLocalizationOptions>>()?.Value);

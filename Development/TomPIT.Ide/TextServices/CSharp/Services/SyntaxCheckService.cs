@@ -19,11 +19,11 @@ namespace TomPIT.Ide.TextServices.CSharp.Services
 			var service = Editor.Context.Tenant.GetService<ICompilerService>();
 
 			if (Editor.HostType == null)
-				script = service.GetScript(new CompilerScriptArgs( sourceCode.Configuration().MicroService(), sourceCode, true));
+				script = service.GetScript(new CompilerScriptArgs(sourceCode.Configuration().MicroService(), sourceCode));
 			else
 			{
 				var methods = service.GetType().GetMethods().Where(f => string.Compare(f.Name, nameof(ICompilerService.GetScript), false) == 0);
-				
+
 				foreach (var method in methods)
 				{
 					if (method.IsGenericMethod)

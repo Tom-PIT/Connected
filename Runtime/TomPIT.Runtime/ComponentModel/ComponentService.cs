@@ -8,7 +8,6 @@ using System.Text;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
 using TomPIT.Design.Serialization;
-using TomPIT.Development;
 using TomPIT.Diagnostics;
 using TomPIT.Environment;
 using TomPIT.Exceptions;
@@ -243,14 +242,14 @@ namespace TomPIT.ComponentModel
 				}
 			}
 
-			return QueryConfigurations(r.Where(f => f.LockVerb != LockVerb.Delete).ToImmutableList());
+			return QueryConfigurations(r.ToImmutableList());
 		}
 
 		public ImmutableList<IConfiguration> QueryConfigurations(params string[] categories)
 		{
 			var r = QueryComponents(categories);
 
-			return QueryConfigurations(r.Where(f => f.LockVerb != LockVerb.Delete).ToImmutableList());
+			return QueryConfigurations(r.ToImmutableList());
 		}
 
 		public IConfiguration SelectConfiguration(Guid microService, string category, string name)

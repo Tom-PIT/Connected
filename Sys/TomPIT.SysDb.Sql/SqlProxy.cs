@@ -3,7 +3,6 @@ using TomPIT.SysDb.Analytics;
 using TomPIT.SysDb.BigData;
 using TomPIT.SysDb.Cdn;
 using TomPIT.SysDb.Data;
-using TomPIT.SysDb.Deployment;
 using TomPIT.SysDb.Development;
 using TomPIT.SysDb.Diagnostics;
 using TomPIT.SysDb.Environment;
@@ -20,7 +19,6 @@ using TomPIT.SysDb.Sql.BigData;
 using TomPIT.SysDb.Sql.Cdn;
 using TomPIT.SysDb.Sql.Configuration;
 using TomPIT.SysDb.Sql.Data;
-using TomPIT.SysDb.Sql.Deployment;
 using TomPIT.SysDb.Sql.Development;
 using TomPIT.SysDb.Sql.Diagnostics;
 using TomPIT.SysDb.Sql.Environment;
@@ -51,7 +49,6 @@ namespace TomPIT.SysDb.Sql
 		private IEventHandler _events = null;
 		private IDataHandler _data = null;
 		private IIoTHandler _iot = null;
-		private IDeploymentHandler _deployment = null;
 		private ICdnHandler _cdn = null;
 		private IBigDataHandler _bigData = null;
 		private IMessagingHandler _messaging = null;
@@ -89,17 +86,6 @@ namespace TomPIT.SysDb.Sql
 					_cdn = new CdnHandler();
 
 				return _cdn;
-			}
-		}
-
-		public IDeploymentHandler Deployment
-		{
-			get
-			{
-				if (_deployment == null)
-					_deployment = new DeploymentHandler();
-
-				return _deployment;
 			}
 		}
 

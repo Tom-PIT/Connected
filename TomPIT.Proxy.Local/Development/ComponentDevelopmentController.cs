@@ -11,14 +11,14 @@ namespace TomPIT.Proxy.Local.Development
 			return DataModel.Components.CreateComponentName(microService, prefix, nameSpace);
 		}
 
-		public void Delete(Guid component, Guid user, bool permanent)
+		public void Delete(Guid component, Guid user)
 		{
-			DataModel.Components.Delete(component, user, permanent);
+			DataModel.Components.Delete(component, user);
 		}
 
 		public void Insert(Guid microService, Guid folder, Guid token, string nameSpace, string category, string name, string type)
 		{
-			DataModel.Components.Insert(token, microService, folder, category, nameSpace, name, type, Guid.Empty);
+			DataModel.Components.Insert(token, microService, folder, category, nameSpace, name, type);
 		}
 
 		public void Update(Guid component, string name, Guid folder)

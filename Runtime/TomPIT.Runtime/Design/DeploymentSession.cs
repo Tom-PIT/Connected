@@ -12,7 +12,6 @@ using TomPIT.Diagnostics;
 using TomPIT.Environment;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
-using TomPIT.Runtime;
 
 namespace TomPIT.Design
 {
@@ -52,7 +51,6 @@ namespace TomPIT.Design
 			DeployComponents();
 			SynchronizeEntities();
 			RunInstallers();
-			CommitMicroService();
 		}
 
 		private void DropMicroService()
@@ -62,17 +60,7 @@ namespace TomPIT.Design
 			if (ms is null)
 				return;
 
-			if (ms.Status != MicroServiceStatus.Development)
-				UpdateMicroService(ms);
-
 			Tenant.GetService<IDesignService>().MicroServices.Delete(ms.Token);
-		}
-
-		private void CommitMicroService()
-		{
-			var ms = Tenant.GetService<IMicroServiceService>().Select(Request.Token);
-
-			Tenant.GetService<IDesignService>().MicroServices.Update(Request.Token, Request.Name, ms.ResourceGroup, Request.Template, ResolveStatus(), UpdateStatus.UpToDate, CommitStatus.Synchronized);
 		}
 
 		private void SynchronizeMicroService()
@@ -87,31 +75,14 @@ namespace TomPIT.Design
 
 		private void UpdateMicroService(IMicroService microService)
 		{
-			Tenant.GetService<IDesignService>().MicroServices.Update(Request.Token, Request.Name, microService.ResourceGroup, Request.Template, MicroServiceStatus.Development, microService.UpdateStatus, microService.CommitStatus);
+			Tenant.GetService<IDesignService>().MicroServices.Update(Request.Token, Request.Name, microService.ResourceGroup, Request.Template, microService.SupportedStages);
 		}
 
 		private void InsertMicroService()
 		{
 			var resourceGroup = Tenant.GetService<IResourceGroupService>().Default.Token;
 
-			Tenant.GetService<IDesignService>().MicroServices.Insert(Request.Token, Request.Name, resourceGroup, Request.Template, MicroServiceStatus.Development);
-		}
-
-		private MicroServiceStatus ResolveStatus()
-		{
-			var stage = Tenant.GetService<IRuntimeService>().Stage;
-
-			switch (stage)
-			{
-				case EnvironmentStage.Development:
-					return MicroServiceStatus.Development;
-				case EnvironmentStage.Staging:
-					return MicroServiceStatus.Staging;
-				case EnvironmentStage.Production:
-					return MicroServiceStatus.Production;
-				default:
-					throw new NotSupportedException();
-			}
+			Tenant.GetService<IDesignService>().MicroServices.Insert(Request.Token, Request.Name, resourceGroup, Request.Template, Request.SupportedStages);
 		}
 
 		private void SynchronizeEntities()
@@ -173,7 +144,7 @@ namespace TomPIT.Design
 			foreach (var component in Request.Components)
 			{
 				if (component.Verb == ComponentVerb.Delete)
-					ComponentModel.Delete(component.Token, true);
+					ComponentModel.Delete(component.Token);
 			}
 		}
 

@@ -17,7 +17,7 @@ namespace TomPIT.Runtime
 		public InstanceFeatures Features { get; set; }
 		public EnvironmentStage Stage { get; set; }
 		public EnvironmentMode Mode { get; set; } = EnvironmentMode.Runtime;
-
+		public EnvironmentOptimization Optimization { get; set; } = EnvironmentOptimization.Release;
 		public IApplicationBuilder Host => _host;
 
 		public Platform Platform { get; private set; } = Platform.Cloud;
@@ -49,6 +49,9 @@ namespace TomPIT.Runtime
 
 			if (Shell.Configuration.RootElement.TryGetProperty("platform", out JsonElement platformElement))
 				Platform = Enum.Parse<Platform>(platformElement.GetString());
+
+			if (Shell.Configuration.RootElement.TryGetProperty("optimization", out JsonElement optimizationElement))
+				Optimization = Enum.Parse<EnvironmentOptimization>(optimizationElement.GetString());
 		}
 
 		public void Initialize(IWebHostEnvironment environment)

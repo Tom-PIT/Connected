@@ -1,14 +1,10 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Text;
 using TomPIT.Api.ComponentModel;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
-using TomPIT.Development;
 using TomPIT.Sys.Api.Database;
 using TomPIT.Sys.Notifications;
 
@@ -41,58 +37,6 @@ namespace TomPIT.Sys.Model.Components
 			Set(id, r, TimeSpan.Zero);
 		}
 
-		public void DeleteCommit(Guid token)
-		{
-			DataModel.VersionControl.DeleteCommit(token);
-		}
-		public void Commit(List<Guid> components, Guid user, string comment)
-		{
-			var changes = new Dictionary<Guid, List<IComponent>>();
-
-			foreach (var i in components)
-			{
-				var component = Select(i);
-
-				if (component == null)
-					throw new SysException(SR.ErrComponentNotFound);
-
-				if (component.LockStatus != LockStatus.Lock)
-					throw new SysException(SR.ErrComponentNotLocked);
-
-				if (component.LockUser != user)
-					throw new SysException(SR.ErrComponentLockMismatch);
-
-				if (changes.ContainsKey(component.MicroService))
-					changes[component.MicroService].Add(component);
-				else
-					changes.Add(component.MicroService, new List<IComponent> { component });
-			}
-
-			foreach (var i in changes)
-			{
-				DataModel.VersionControl.InsertCommit(i.Key, user, comment, i.Value);
-
-				foreach (var component in i.Value)
-				{
-					if (component.LockVerb == LockVerb.Delete)
-						Delete(component.Token, user, true);
-					else
-					{
-						Refresh(component.Token);
-						CachingNotifications.ComponentChanged(component.MicroService, component.Folder, component.Token, component.NameSpace, component.Category, component.Name);
-					}
-				}
-
-				var microService = DataModel.MicroServices.Select(i.Key);
-
-				if (microService.Package == Guid.Empty)
-					continue;
-
-				DataModel.MicroServices.Update(microService.Token, microService.Name, microService.Status, microService.Template, microService.ResourceGroup,
-					 microService.Package, microService.Plan, microService.UpdateStatus, CommitStatus.Invalidated);
-			}
-		}
-
 		public void NotifyChanged(IComponent component)
 		{
 			Refresh(component.Token);
@@ -117,8 +61,7 @@ namespace TomPIT.Sys.Model.Components
 		public IComponent SelectByNameSpace(Guid microService, string nameSpace, string name)
 		{
 			var r = Where(f => f.MicroService == microService && string.Compare(f.Name, name, true) == 0
-				 && string.Compare(f.NameSpace, nameSpace, true) == 0
-				 && f.LockVerb != LockVerb.Delete);
+				 && string.Compare(f.NameSpace, nameSpace, true) == 0);
 
 			if (r != null && r.Count > 0)
 			{
@@ -181,77 +124,6 @@ namespace TomPIT.Sys.Model.Components
 				Set(r.Token, r, TimeSpan.Zero);
 
 			return r;
-		}
-
-		public void DropRuntimeState(Guid microService)
-		{
-			var state = SelectRuntimeState(microService, out Guid id);
-
-			if (state == null)
-				return;
-
-			foreach (JObject i in state)
-			{
-				var prop = i.First as JProperty;
-
-				DataModel.Blobs.Delete(new Guid(prop.Value.ToString()));
-			}
-
-			DataModel.Blobs.Delete(id);
-		}
-
-		public void SaveRuntimeState(Guid microService, Dictionary<Guid, Guid> items)
-		{
-			if (items.Count == 0)
-				return;
-
-			var state = new JArray();
-
-			foreach (var i in items)
-			{
-				var blob = DataModel.Blobs.Select(i.Value);
-
-				if (blob == null)
-					continue;
-
-				var content = DataModel.BlobsContents.Select(i.Value);
-
-				if (content == null || content.Content.Length == 0)
-					continue;
-
-				var id = Guid.NewGuid();
-
-				DataModel.Blobs.Upload(blob.ResourceGroup, 1001, blob.PrimaryKey, microService, blob.Topic,
-					 blob.FileName, blob.ContentType, string.Empty, content.Content, Storage.StoragePolicy.Singleton, id);
-
-				state.Add(new JObject
-					 {
-						  {i.Key.ToString(), id.ToString() }
-					 });
-			}
-
-			var raw = LZ4.LZ4Codec.Wrap(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(state)));
-
-			DataModel.Blobs.Upload(DataModel.ResourceGroups.Default.Token, 1002, microService.ToString(), microService,
-				 null, string.Format("{0}.json", microService), "application/json", string.Empty, raw, Storage.StoragePolicy.Singleton, Guid.NewGuid());
-		}
-
-		public JArray SelectRuntimeState(Guid microService, out Guid blobId)
-		{
-			blobId = Guid.Empty;
-
-			var blobs = DataModel.Blobs.Query(DataModel.ResourceGroups.Default.Token, 1002, microService.ToString());
-
-			if (blobs.Count == 0)
-				return null;
-
-			var content = DataModel.BlobsContents.Select(blobs[0].Token);
-
-			if (content == null || content.Content.Length == 0)
-				return null;
-
-			blobId = blobs[0].Token;
-			return JsonConvert.DeserializeObject<JArray>(Encoding.UTF8.GetString(LZ4.LZ4Codec.Unwrap(content.Content)));
 		}
 
 		public ImmutableList<IComponent> QueryCategories(Guid microService, string categories)
@@ -367,7 +239,7 @@ namespace TomPIT.Sys.Model.Components
 
 		public ImmutableList<IComponent> Query(Guid microService, Guid folder)
 		{
-			return Where(f => f.MicroService == microService && f.Folder == folder && f.LockVerb != LockVerb.Delete);
+			return Where(f => f.MicroService == microService && f.Folder == folder);
 		}
 
 		public ImmutableList<IComponent> QueryByNameSpace(Guid microService, string nameSpace)
@@ -380,7 +252,7 @@ namespace TomPIT.Sys.Model.Components
 			return Where(f => f.MicroService == microService && string.Compare(f.Category, category, true) == 0);
 		}
 
-		public void Insert(Guid component, Guid microService, Guid folder, string category, string nameSpace, string name, string type, Guid runtimeConfiguration)
+		public void Insert(Guid component, Guid microService, Guid folder, string category, string nameSpace, string name, string type)
 		{
 			var s = DataModel.MicroServices.Select(microService);
 
@@ -403,7 +275,7 @@ namespace TomPIT.Sys.Model.Components
 			if (!v.IsValid)
 				throw new SysException(v.ErrorMessage);
 
-			Shell.GetService<IDatabaseService>().Proxy.Development.Components.Insert(s, DateTime.UtcNow, f, category, nameSpace, name, component, type, runtimeConfiguration);
+			Shell.GetService<IDatabaseService>().Proxy.Development.Components.Insert(s, DateTime.UtcNow, f, category, nameSpace, name, component, type);
 
 			Refresh(component);
 			CachingNotifications.ComponentAdded(microService, folder, component, nameSpace, category, name);
@@ -413,34 +285,10 @@ namespace TomPIT.Sys.Model.Components
 		{
 			var c = Select(microService, category, name);
 
-			Update(c.Token, c.Name, c.Folder, c.RuntimeConfiguration);
+			Update(c.Token, c.Name, c.Folder);
 		}
 
 		public void Update(Guid component, string name, Guid folder)
-		{
-			var c = Select(component);
-
-			if (c == null)
-				throw new SysException(SR.ErrComponentNotFound);
-
-			c.DemandDevelopmentStage();
-
-			Update(component, name, folder, c.RuntimeConfiguration);
-		}
-
-		public void Update(Guid component, Guid runtimeConfiguration)
-		{
-			var c = Select(component);
-
-			if (c == null)
-				throw new SysException(SR.ErrComponentNotFound);
-
-			c.DemandDevelopmentStage();
-
-			Update(component, c.Name, c.Folder, runtimeConfiguration);
-		}
-
-		public void Update(Guid component, string name, Guid folder, Guid runtimeConfiguration)
 		{
 			var c = Select(component);
 
@@ -466,13 +314,13 @@ namespace TomPIT.Sys.Model.Components
 					throw new SysException(SR.ErrFolderNotFound);
 			}
 
-			Shell.GetService<IDatabaseService>().Proxy.Development.Components.Update(c, DateTime.UtcNow, name, f, runtimeConfiguration);
+			Shell.GetService<IDatabaseService>().Proxy.Development.Components.Update(c, DateTime.UtcNow, name, f);
 
 			Refresh(component);
 			CachingNotifications.ComponentChanged(c.MicroService, c.Folder, component, c.NameSpace, c.Category, c.Name);
 		}
 
-		public void Delete(Guid component, Guid user, bool permanent)
+		public void Delete(Guid component, Guid user)
 		{
 			var c = Select(component);
 
@@ -481,23 +329,9 @@ namespace TomPIT.Sys.Model.Components
 
 			c.DemandDevelopmentStage();
 
-			if (permanent)
-			{
-				Shell.GetService<IDatabaseService>().Proxy.Development.Components.Delete(c);
+			Shell.GetService<IDatabaseService>().Proxy.Development.Components.Delete(c);
 
-				Remove(component);
-			}
-			else
-			{
-				var u = DataModel.Users.Select(user);
-
-				if (u == null)
-					throw new SysException(SR.ErrUserNotFound);
-
-				Shell.GetService<IDatabaseService>().Proxy.Development.Components.Update(c, u, LockStatus.Lock, LockVerb.Delete, DateTime.UtcNow);
-
-				Refresh(component);
-			}
+			Remove(component);
 
 			CachingNotifications.ComponentRemoved(c.MicroService, c.Folder, component, c.NameSpace, c.Category, c.Name);
 		}
@@ -507,22 +341,6 @@ namespace TomPIT.Sys.Model.Components
 			var existing = Where(f => f.MicroService == microService && string.Compare(nameSpace, f.NameSpace, true) == 0);
 
 			return Shell.GetService<INamingService>().Create(prefix, existing.Select(f => f.Name), true);
-		}
-
-		public ImmutableList<IComponent> QueryLocks(Guid microService)
-		{
-			if (microService == Guid.Empty)
-				return Where(f => f.LockStatus == LockStatus.Lock);
-			else
-				return Where(f => f.LockStatus == LockStatus.Lock && f.MicroService == microService);
-		}
-
-		public ImmutableList<IComponent> QueryLocks(Guid microService, Guid user)
-		{
-			if (microService == Guid.Empty)
-				return Where(f => f.LockStatus == LockStatus.Lock && f.LockUser == user);
-			else
-				return Where(f => f.LockStatus == LockStatus.Lock && f.MicroService == microService && f.LockUser == user);
 		}
 	}
 }

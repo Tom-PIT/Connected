@@ -1,5 +1,5 @@
-﻿using System;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using System;
 using TomPIT.Sys.Model;
 using TomPIT.Sys.Notifications;
 

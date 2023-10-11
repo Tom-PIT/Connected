@@ -8,20 +8,6 @@ namespace TomPIT.SysDb.Sql.Development
 		private IFolderHandler _folders = null;
 		private IComponentHandler _components = null;
 		private IQaHandler _qa = null;
-		private IVersionControlHandler _versionControl = null;
-		private IDevelopmentErrorHandler _errors = null;
-		private IToolsHandler _tools = null;
-
-		public IDevelopmentErrorHandler Errors
-		{
-			get
-			{
-				if (_errors == null)
-					_errors = new DevelopmentErrorHandler();
-
-				return _errors;
-			}
-		}
 
 		public IQaHandler QA
 		{
@@ -31,17 +17,6 @@ namespace TomPIT.SysDb.Sql.Development
 					_qa = new QaHandler();
 
 				return _qa;
-			}
-		}
-
-		public IVersionControlHandler VersionControl
-		{
-			get
-			{
-				if (_versionControl == null)
-					_versionControl = new VersionControlHandler();
-
-				return _versionControl;
 			}
 		}
 
@@ -75,17 +50,6 @@ namespace TomPIT.SysDb.Sql.Development
 					_components = new ComponentHandler();
 
 				return _components;
-			}
-		}
-
-		public IToolsHandler Tools
-		{
-			get
-			{
-				if (_tools == null)
-					_tools = new ToolsHandler();
-
-				return _tools;
 			}
 		}
 	}

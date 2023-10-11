@@ -1,7 +1,5 @@
-﻿using Microsoft.CodeAnalysis.Diagnostics;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Scripting;
 using TomPIT.Connectivity;
@@ -60,7 +58,5 @@ namespace TomPIT.Compilation
 		public IText ResolveText(Guid microService, string path);
 		public string Rewrite(string sourceText);
 		public string ResolveReference(Guid microService, string path);
-
-		ImmutableArray<DiagnosticAnalyzer> GetAnalyzers(CompilerLanguage language, Guid microService, Guid component, Guid script);
 	}
 }

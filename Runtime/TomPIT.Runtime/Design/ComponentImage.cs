@@ -12,7 +12,6 @@ namespace TomPIT.Design
 		public string Category { get; set; }
 		public Guid Folder { get; set; }
 		public Guid MicroService { get; set; }
-		public Guid RuntimeConfiguration { get; set; }
 		public string Type { get; set; }
 		public IComponentImageBlob Configuration { get; set; }
 
@@ -27,6 +26,6 @@ namespace TomPIT.Design
 			}
 		}
 
-		public string NameSpace {get;set;}
+		public string NameSpace { get; set; }
 	}
 }

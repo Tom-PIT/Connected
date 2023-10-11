@@ -8,9 +8,7 @@ namespace TomPIT.Design
 	internal class DesignService : TenantObject, IDesignService
 	{
 		private IComponentModel _components = null;
-		private IDesignSearch _search = null;
 		private IDeployment _deployment = null;
-		private ITextDiff _diff = null;
 		private IMicroServiceDesign _microServices = null;
 
 		public DesignService(ITenant tenant) : base(tenant)
@@ -38,17 +36,6 @@ namespace TomPIT.Design
 			}
 		}
 
-		public ITextDiff TextDiff
-		{
-			get
-			{
-				if (_diff == null)
-					_diff = new TextDiff();
-
-				return _diff;
-			}
-		}
-
 		public IDeployment Deployment
 		{
 			get
@@ -57,17 +44,6 @@ namespace TomPIT.Design
 					_deployment = new Deployment(Tenant);
 
 				return _deployment;
-			}
-		}
-
-		public IDesignSearch Search
-		{
-			get
-			{
-				if (_search == null)
-					_search = new DesignSearch(Tenant);
-
-				return _search;
 			}
 		}
 

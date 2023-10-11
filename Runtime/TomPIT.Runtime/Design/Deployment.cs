@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using TomPIT.Connectivity;
 using TomPIT.Diagnostics;
@@ -12,12 +14,16 @@ namespace TomPIT.Design
 
 		public Deployment(ITenant tenant) : base(tenant)
 		{
+			DeployingMicroServicesList = new();
 			Configuration = new DeploymentConfiguration();
 
 			Initialize();
 		}
 
 		public IDeploymentConfiguration Configuration { get; }
+		private List<Guid> DeployingMicroServicesList { get; }
+
+		public ImmutableArray<Guid> DeployingMicroServices => DeployingMicroServicesList.ToImmutableArray();
 
 		public void Deploy(string remote, Guid repository, long branch, long commit, string authenticationToken)
 		{
@@ -38,7 +44,24 @@ namespace TomPIT.Design
 
 		public void Deploy(IPullRequest request, DeployArgs e)
 		{
-			new DeploymentSession(Tenant, request).Deploy(e);
+			if (request is null)
+				return;
+
+			try
+			{
+				lock (DeployingMicroServicesList)
+				{
+					if (!DeployingMicroServicesList.Contains(request.Token))
+						DeployingMicroServicesList.Add(request.Token);
+				}
+
+				new DeploymentSession(Tenant, request).Deploy(e);
+			}
+			finally
+			{
+				lock (DeployingMicroServicesList)
+					DeployingMicroServicesList.Remove(request.Token);
+			}
 		}
 
 		private void Deploy(string fileName)
