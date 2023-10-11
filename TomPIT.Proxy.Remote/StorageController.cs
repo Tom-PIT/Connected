@@ -153,5 +153,13 @@ namespace TomPIT.Proxy.Remote
 				token
 			});
 		}
+
+		public void Refresh(Guid token)
+		{
+			Connection.Post(Connection.CreateUrl(Controller, "Refresh"), new
+			{
+				token
+			});
+		}
 	}
 }

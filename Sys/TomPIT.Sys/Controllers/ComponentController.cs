@@ -95,5 +95,14 @@ namespace TomPIT.Sys.Controllers
 		{
 			return DataModel.Components.SelectByNameSpace(microService, nameSpace, name);
 		}
+
+		[HttpPost]
+		public void Refresh()
+		{
+			var body = FromBody();
+			var token = body.Required<Guid>("component");
+
+			DataModel.Components.RefreshComponent(token);
+		}
 	}
 }

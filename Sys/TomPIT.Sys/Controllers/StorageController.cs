@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
 using TomPIT.Storage;
 using TomPIT.Sys.Model;
 
@@ -142,7 +142,7 @@ namespace TomPIT.Sys.Controllers
 
 			foreach (JValue i in ja2)
 				types.Add(Types.Convert<int>(i.Value));
-			
+
 			return DataModel.BlobsContents.Query(resourceGroups, types);
 		}
 
@@ -154,6 +154,15 @@ namespace TomPIT.Sys.Controllers
 			var microService = body.Required<Guid>("microService");
 
 			DataModel.Blobs.Clean(microService);
+		}
+
+		[HttpPost]
+		public void Refresh()
+		{
+			var body = FromBody();
+			var token = body.Required<Guid>("token");
+
+			DataModel.Blobs.RefreshBlob(token);
 		}
 	}
 }

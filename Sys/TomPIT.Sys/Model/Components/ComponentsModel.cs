@@ -37,6 +37,13 @@ namespace TomPIT.Sys.Model.Components
 			Set(id, r, TimeSpan.Zero);
 		}
 
+		public void RefreshComponent(Guid token)
+		{
+			Refresh(token);
+
+			DataModel.Blobs.RefreshBlob(token);
+		}
+
 		public void NotifyChanged(IComponent component)
 		{
 			Refresh(component.Token);

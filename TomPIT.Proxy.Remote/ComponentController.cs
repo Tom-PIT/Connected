@@ -121,5 +121,13 @@ namespace TomPIT.Proxy.Remote
 
 			return Connection.Get<Component>(u);
 		}
+
+		public void Refresh(Guid component)
+		{
+			var u = Connection.CreateUrl("Component", "Refresh")
+				.AddParameter("component", component);
+
+			Connection.Post(u);
+		}
 	}
 }

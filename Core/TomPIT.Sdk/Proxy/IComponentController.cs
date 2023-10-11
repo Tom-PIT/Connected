@@ -19,5 +19,7 @@ namespace TomPIT.Proxy
 		IComponent SelectByToken(Guid component);
 		IComponent Select(Guid microService, string category, string name);
 		IComponent SelectByNameSpace(Guid microService, string nameSpace, string name);
+
+		void Refresh(Guid token);
 	}
 }

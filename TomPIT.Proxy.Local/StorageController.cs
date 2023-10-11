@@ -77,5 +77,10 @@ namespace TomPIT.Proxy.Local
 		{
 			return DataModel.Blobs.Upload(blob.ResourceGroup, blob.Type, blob.PrimaryKey, blob.MicroService, blob.Topic, blob.FileName, blob.ContentType, blob.Draft, content, policy, token);
 		}
+
+		public void Refresh(Guid token)
+		{
+			DataModel.Blobs.RefreshBlob(token);
+		}
 	}
 }
