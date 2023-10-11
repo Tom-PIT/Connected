@@ -60,6 +60,9 @@ namespace TomPIT.Compilation
 
 		public IScriptDescriptor GetScript(CompilerScriptArgs e)
 		{
+			if (!IsStageSupported(e.MicroService))
+				return null;
+
 			if (GetCachedScript(e.SourceCode.Id) is IScriptDescriptor existing)
 				return existing;
 
@@ -98,6 +101,9 @@ namespace TomPIT.Compilation
 
 		public Microsoft.CodeAnalysis.Compilation GetCompilation(IText sourceCode)
 		{
+			if (!IsStageSupported(sourceCode.Configuration().MicroService()))
+				return null;
+
 			var microService = sourceCode.Configuration().MicroService();
 
 			using var script = new CompilerScript(Tenant, microService, sourceCode);
@@ -485,6 +491,23 @@ namespace TomPIT.Compilation
 		public string Rewrite(string sourceText)
 		{
 			return NamespaceRewriter.Rewrite(sourceText);
+		}
+
+		private bool IsStageSupported(Guid microService)
+		{
+			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
+
+			if (ms is null)
+				return false;
+
+			return Stage switch
+			{
+				EnvironmentStage.Development => ms.SupportedStages.HasFlag(MicroServiceStages.Development),
+				EnvironmentStage.QualityAssurance => ms.SupportedStages.HasFlag(MicroServiceStages.QualityAssurance),
+				EnvironmentStage.Staging => ms.SupportedStages.HasFlag(MicroServiceStages.Staging),
+				EnvironmentStage.Production => ms.SupportedStages.HasFlag(MicroServiceStages.Production),
+				_ => throw new NotSupportedException(),
+			};
 		}
 	}
 }
