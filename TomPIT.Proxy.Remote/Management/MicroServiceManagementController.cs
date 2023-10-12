@@ -17,7 +17,7 @@ namespace TomPIT.Proxy.Remote.Management
 			});
 		}
 
-		public void Insert(Guid token, string name, Guid resourceGroup, Guid template, MicroServiceStages supportedStages, string version)
+		public void Insert(Guid token, string name, Guid resourceGroup, Guid template, MicroServiceStages supportedStages, string version, string commit)
 		{
 			Connection.Post(Connection.CreateUrl(Controller, "Insert"), new
 			{
@@ -26,7 +26,8 @@ namespace TomPIT.Proxy.Remote.Management
 				resourceGroup,
 				template,
 				supportedStages,
-				version
+				version,
+				commit
 			});
 
 		}
@@ -36,7 +37,7 @@ namespace TomPIT.Proxy.Remote.Management
 			return Connection.Get<List<MicroService>>(Connection.CreateUrl(Controller, "Query").AddParameter("resourceGroup", resourceGroup)).ToImmutableList<IMicroService>();
 		}
 
-		public void Update(Guid token, string name, Guid resourceGroup, Guid template, MicroServiceStages supportedStages)
+		public void Update(Guid token, string name, Guid resourceGroup, Guid template, MicroServiceStages supportedStages, string version, string commit)
 		{
 			Connection.Post(Connection.CreateUrl(Controller, "Update"), new
 			{
@@ -44,7 +45,9 @@ namespace TomPIT.Proxy.Remote.Management
 				name,
 				resourceGroup,
 				template,
-				supportedStages
+				supportedStages,
+				version,
+				commit
 			});
 		}
 	}

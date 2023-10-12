@@ -28,6 +28,13 @@ namespace TomPIT.Design
 		public void Deploy(string remote, Guid repository, long branch, long commit, string authenticationToken)
 		{
 			var url = $"{remote}/Connected.Repositories/Branches/Pull";
+			var args = new DeployArgs
+			{
+				ResetMicroService = true
+			};
+
+			args.Commit.Branch = branch;
+			args.Commit.Commit = commit;
 
 			Deploy(Tenant.Post<PullRequest>(url, new
 			{
@@ -36,10 +43,7 @@ namespace TomPIT.Design
 				commit,
 				Mode = "Content",
 				Reason = "Install",
-			}, new HttpRequestArgs().WithBearerCredentials(authenticationToken)), new DeployArgs
-			{
-				ResetMicroService = true
-			});
+			}, new HttpRequestArgs().WithBearerCredentials(authenticationToken)), args);
 		}
 
 		public void Deploy(IPullRequest request, DeployArgs e)
@@ -82,8 +86,6 @@ namespace TomPIT.Design
 			{
 				ResetMicroService = true
 			};
-
-			args.Commit.Enabled = false;
 
 			Deploy(request, args);
 		}

@@ -33,6 +33,8 @@ namespace TomPIT.Compilation
 			Tenant.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
 
 			Scripts = new ScriptCache(tenant);
+
+			MicroServiceCompiler.Compile();
 		}
 
 		private static ConcurrentDictionary<Guid, List<Guid>> References { get { return _references.Value; } }
@@ -493,14 +495,15 @@ namespace TomPIT.Compilation
 			return NamespaceRewriter.Rewrite(sourceText);
 		}
 
-		private bool IsStageSupported(Guid microService)
+		internal static bool IsStageSupported(Guid microService)
 		{
-			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
+			var stage = TomPIT.Tenant.GetService<IRuntimeService>().Stage;
+			var ms = TomPIT.Tenant.GetService<IMicroServiceService>().Select(microService);
 
 			if (ms is null)
 				return false;
 
-			return Stage switch
+			return stage switch
 			{
 				EnvironmentStage.Development => ms.SupportedStages.HasFlag(MicroServiceStages.Development),
 				EnvironmentStage.QualityAssurance => ms.SupportedStages.HasFlag(MicroServiceStages.QualityAssurance),

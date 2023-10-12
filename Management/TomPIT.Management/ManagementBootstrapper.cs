@@ -22,7 +22,6 @@ namespace TomPIT.Management
 			tenant.RegisterService(typeof(IMicroServiceManagementService), typeof(MicroServiceManagementService));
 			tenant.RegisterService(typeof(IInstanceEndpointManagementService), typeof(InstanceEndpointManagementService));
 			tenant.RegisterService(typeof(IAuthenticationTokenManagementService), typeof(AuthenticationTokenManagementService));
-			tenant.RegisterService(typeof(IMetricManagementService), typeof(MetricManagementService));
 			tenant.RegisterService(typeof(IBigDataManagementService), typeof(BigDataManagementService));
 			tenant.RegisterService(typeof(IGlobalizationManagementService), typeof(GlobalizationManagementService));
 		}

@@ -39,7 +39,6 @@ namespace TomPIT.Proxy.Local
 		public IInstanceEndpointManagementController InstanceEndpoints { get; }
 		public ILoggingManagementController Logging { get; }
 		public IMailManagementController Mail { get; }
-		public IMetricManagementController Metrics { get; }
 		public IPrintManagementController Printing { get; }
 		public IQueueManagementController Queue { get; }
 		public IResourceGroupManagementController ResourceGroups { get; }

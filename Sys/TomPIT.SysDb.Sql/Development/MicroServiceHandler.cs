@@ -21,7 +21,7 @@ public class MicroServiceHandler : IMicroServiceHandler
 		w.Execute();
 	}
 
-	public void Insert(Guid token, string name, string url, MicroServiceStages supportedStages, IResourceGroup resourceGroup, Guid template, string version)
+	public void Insert(Guid token, string name, string url, MicroServiceStages supportedStages, IResourceGroup resourceGroup, Guid template, string version, string commit)
 	{
 		using var p = new Writer("tompit.service_ins");
 
@@ -32,6 +32,7 @@ public class MicroServiceHandler : IMicroServiceHandler
 		p.CreateParameter("@template", template);
 		p.CreateParameter("@token", token);
 		p.CreateParameter("@version", version, true);
+		p.CreateParameter("@commit", commit, true);
 
 		p.Execute();
 	}
@@ -80,8 +81,7 @@ public class MicroServiceHandler : IMicroServiceHandler
 		return p.ExecuteSingleRow();
 	}
 
-	public void Update(IMicroService microService, string name, string url, MicroServiceStages supportedStages, Guid template,
-		 IResourceGroup resourceGroup)
+	public void Update(IMicroService microService, string name, string url, MicroServiceStages supportedStages, Guid template, IResourceGroup resourceGroup, string version, string commit)
 	{
 		using var p = new Writer("tompit.service_upd");
 
@@ -91,6 +91,8 @@ public class MicroServiceHandler : IMicroServiceHandler
 		p.CreateParameter("@şupported_stages", supportedStages);
 		p.CreateParameter("@template", template);
 		p.CreateParameter("@resource_group", resourceGroup.GetId());
+		p.CreateParameter("@version", version, true);
+		p.CreateParameter("@commit", commit, true);
 
 		p.Execute();
 	}

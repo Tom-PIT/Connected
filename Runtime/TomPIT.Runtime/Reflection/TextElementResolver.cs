@@ -63,6 +63,9 @@ internal class TextElementResolver
 
 	private void ResolveComponent()
 	{
+		if (LoadCode())
+			return;
+
 		if (LoadScript())
 			return;
 
@@ -161,6 +164,11 @@ internal class TextElementResolver
 
 		if (LoadSubscriptions())
 			return;
+	}
+
+	private bool LoadCode()
+	{
+		return LoadSimple<IScriptConfiguration>(ComponentCategories.Code);
 	}
 
 	private bool LoadScript()

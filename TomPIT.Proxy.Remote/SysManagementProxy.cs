@@ -18,7 +18,6 @@ namespace TomPIT.Proxy.Remote
 			InstanceEndpoints = new InstanceEndpointManagementController();
 			Logging = new LoggingManagementController();
 			Mail = new MailManagementController();
-			Metrics = new MetricManagementController();
 			Printing = new PrintManagementController();
 			Queue = new QueueManagementController();
 			ResourceGroups = new ResourceGroupManagementController();
@@ -40,7 +39,6 @@ namespace TomPIT.Proxy.Remote
 		public IInstanceEndpointManagementController InstanceEndpoints { get; }
 		public ILoggingManagementController Logging { get; }
 		public IMailManagementController Mail { get; }
-		public IMetricManagementController Metrics { get; }
 		public IPrintManagementController Printing { get; }
 		public IQueueManagementController Queue { get; }
 		public IResourceGroupManagementController ResourceGroups { get; }

@@ -22,5 +22,6 @@ namespace TomPIT.ComponentModel
 		Guid ResourceGroup { get; }
 		Guid Template { get; }
 		string Version { get; }
+		string Commit { get; }
 	}
 }

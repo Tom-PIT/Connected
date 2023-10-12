@@ -105,7 +105,7 @@ namespace TomPIT.Sys.Model.Components
 			Set(id, r, TimeSpan.Zero);
 		}
 
-		public void Insert(Guid token, string name, MicroServiceStages supportedStages, Guid resourceGroup, Guid template, string version)
+		public void Insert(Guid token, string name, MicroServiceStages supportedStages, Guid resourceGroup, Guid template, string version, string commit)
 		{
 			var g = DataModel.ResourceGroups.Select(resourceGroup);
 
@@ -114,14 +114,14 @@ namespace TomPIT.Sys.Model.Components
 
 			var url = Url(Guid.Empty, name);
 
-			Shell.GetService<IDatabaseService>().Proxy.Development.MicroServices.Insert(token, name, url, supportedStages, g, template, version);
+			Shell.GetService<IDatabaseService>().Proxy.Development.MicroServices.Insert(token, name, url, supportedStages, g, template, version, commit);
 
 			Refresh(token);
 
 			CachingNotifications.MicroServiceChanged(token);
 		}
 
-		public void Update(Guid token, string name, MicroServiceStages supportedStages, Guid template, Guid resourceGroup)
+		public void Update(Guid token, string name, MicroServiceStages supportedStages, Guid template, Guid resourceGroup, string version, string commit)
 		{
 			var microService = Select(token);
 
@@ -146,7 +146,7 @@ namespace TomPIT.Sys.Model.Components
 			if (template == Guid.Empty)
 				template = microService.Template;
 
-			Shell.GetService<IDatabaseService>().Proxy.Development.MicroServices.Update(microService, name, url, supportedStages, template, r);
+			Shell.GetService<IDatabaseService>().Proxy.Development.MicroServices.Update(microService, name, url, supportedStages, template, r, version, commit);
 
 			Refresh(token);
 

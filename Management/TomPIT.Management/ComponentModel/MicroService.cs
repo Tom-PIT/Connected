@@ -30,6 +30,8 @@ namespace TomPIT.Management.ComponentModel
 		public Guid Template { get; set; }
 		[Browsable(false)]
 		public string Version { get; set; }
+		[Browsable(false)]
+		public string Commit { get; set; }
 		public override string ToString()
 		{
 			return string.IsNullOrWhiteSpace(Name)

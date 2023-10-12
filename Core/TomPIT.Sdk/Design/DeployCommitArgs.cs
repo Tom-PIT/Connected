@@ -1,11 +1,8 @@
-﻿using System;
-
-namespace TomPIT.Design
+﻿namespace TomPIT.Design
 {
 	public class DeployCommitArgs
 	{
-		public bool Enabled { get; set; } = true;
-		public string Comment { get; set; }
-		public Guid Id { get; set; }
+		public long Branch { get; set; }
+		public long Commit { get; set; }
 	}
 }

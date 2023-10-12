@@ -10,9 +10,9 @@ namespace TomPIT.Design
 		{
 		}
 
-		public void Insert(Guid token, string name, Guid resourceGroup, Guid template, MicroServiceStages stages)
+		public void Insert(Guid token, string name, Guid resourceGroup, Guid template, MicroServiceStages stages, string version, string commit)
 		{
-			Instance.SysProxy.Management.MicroServices.Insert(token, name, resourceGroup, template, stages, null);
+			Instance.SysProxy.Management.MicroServices.Insert(token, name, resourceGroup, template, stages, version, commit);
 		}
 
 		public void Delete(Guid token)
@@ -42,12 +42,38 @@ namespace TomPIT.Design
 			Tenant.GetService<IDesignService>().Components.DeleteFolder(model.Folder.MicroService, model.Folder.Token, true);
 		}
 
-		public void Update(Guid token, string name, Guid resourceGroup, Guid template, MicroServiceStages stages)
+		public void Update(Guid token, string name, Guid resourceGroup, Guid template, MicroServiceStages stages, string version, string commit)
 		{
-			Instance.SysProxy.Management.MicroServices.Update(token, name, resourceGroup, template, stages);
+			Instance.SysProxy.Management.MicroServices.Update(token, name, resourceGroup, template, stages, version, commit);
 
 			if (Tenant.GetService<IMicroServiceService>() is IMicroServiceNotification notification)
 				notification.NotifyChanged(this, new MicroServiceEventArgs(token));
+		}
+
+		public void IncrementVersion(Guid token)
+		{
+			var ms = Tenant.GetService<IMicroServiceService>().Select(token);
+
+			if (ms is null)
+				return;
+
+			var version = ms.Version;
+			var major = DateTime.UtcNow.ToString("yy");
+			var minor = DateTime.UtcNow.ToString("MM");
+			var build = DateTime.UtcNow.Day.ToString().PadLeft(2, '0');
+			var revision = "0";
+
+			if (!string.IsNullOrEmpty(version))
+			{
+				string currentRevision = version.Split('.')[^1];
+
+				if (!string.IsNullOrEmpty(currentRevision) && Types.TryConvert(currentRevision, out int rev))
+					revision = (++rev).ToString();
+			}
+
+			version = $"{major}.{minor}.{build}.{revision}";
+
+			Update(token, ms.Name, ms.ResourceGroup, ms.Template, ms.SupportedStages, version, ms.Commit);
 		}
 	}
 }

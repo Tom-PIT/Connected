@@ -12,7 +12,7 @@ namespace TomPIT.MicroServices;
 [Syntax(SyntaxAttribute.CSharp)]
 [EventArguments(typeof(IMiddlewareContext))]
 [FileNameExtension("cs")]
-public class Code : TextConfiguration
+public class Code : TextConfiguration, ICodeConfiguration
 {
 	[Browsable(false)]
 	public override string FileName => $"{ToString()}.cs";

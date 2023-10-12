@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Linq;
-
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Data;
 using TomPIT.ComponentModel.Deployment;
@@ -45,12 +44,13 @@ namespace TomPIT.Design
 				DropMicroService();
 			}
 
-			SynchronizeMicroService();
+			SynchronizeMicroService(e);
 			Drop();
 			DeployFolders();
 			DeployComponents();
 			SynchronizeEntities();
 			RunInstallers();
+			IncrementVersion();
 		}
 
 		private void DropMicroService()
@@ -63,28 +63,42 @@ namespace TomPIT.Design
 			Tenant.GetService<IDesignService>().MicroServices.Delete(ms.Token);
 		}
 
-		private void SynchronizeMicroService()
+		private void SynchronizeMicroService(DeployArgs e)
 		{
 			var ms = Tenant.GetService<IMicroServiceService>().Select(Request.Token);
 
 			if (ms == null)
-				InsertMicroService();
+				InsertMicroService(e);
 			else
-				UpdateMicroService(ms);
+				UpdateMicroService(ms, e);
 		}
 
-		private void UpdateMicroService(IMicroService microService)
+		private void UpdateMicroService(IMicroService microService, DeployArgs e)
 		{
-			Tenant.GetService<IDesignService>().MicroServices.Update(Request.Token, Request.Name, microService.ResourceGroup, Request.Template, microService.SupportedStages);
+			var commitKey = $"{e.Commit.Branch}.{e.Commit.Commit}";
+
+			Tenant.GetService<IDesignService>().MicroServices.Update(Request.Token, Request.Name, microService.ResourceGroup, Request.Template, microService.SupportedStages, microService.Version, commitKey);
 		}
 
-		private void InsertMicroService()
+		private void InsertMicroService(DeployArgs e)
 		{
+			var commitKey = $"{e.Commit.Branch}.{e.Commit.Commit}";
 			var resourceGroup = Tenant.GetService<IResourceGroupService>().Default.Token;
 
-			Tenant.GetService<IDesignService>().MicroServices.Insert(Request.Token, Request.Name, resourceGroup, Request.Template, Request.SupportedStages);
+			Tenant.GetService<IDesignService>().MicroServices.Insert(Request.Token, Request.Name, resourceGroup, Request.Template, Request.SupportedStages, null, commitKey);
 		}
 
+		private void IncrementVersion()
+		{
+			foreach (var component in Request.Components)
+			{
+				if (string.Equals(component.Category, ComponentCategories.Code, StringComparison.OrdinalIgnoreCase))
+				{
+					Tenant.GetService<IDesignService>().MicroServices.IncrementVersion(Request.Token);
+					return;
+				}
+			}
+		}
 		private void SynchronizeEntities()
 		{
 			var components = Tenant.GetService<IComponentService>().QueryComponents(Request.Token, ComponentCategories.Model);

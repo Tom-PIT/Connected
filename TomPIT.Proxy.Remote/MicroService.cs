@@ -19,5 +19,7 @@ namespace TomPIT.Proxy.Remote
 		public Guid Template { get; set; }
 		[Browsable(false)]
 		public string Version { get; set; }
+		[Browsable(false)]
+		public string Commit { get; set; }
 	}
 }

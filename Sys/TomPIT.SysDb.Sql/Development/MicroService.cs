@@ -30,6 +30,9 @@ namespace TomPIT.SysDb.Sql.Development
 		[Editable(false)]
 		public string Version { get; set; }
 
+		[Editable(false)]
+		public string Commit { get; set; }
+
 		protected override void OnCreate()
 		{
 			base.OnCreate();
@@ -41,6 +44,7 @@ namespace TomPIT.SysDb.Sql.Development
 			ResourceGroup = GetGuid("resource_token");
 			Template = GetGuid("template");
 			Version = GetString("version");
+			Commit = GetString("commit");
 		}
 
 		public override string ToString()

@@ -13,8 +13,8 @@ namespace TomPIT.SysDb.Development
 		IMicroService Select(Guid token);
 		IMicroService Select(string name);
 
-		void Insert(Guid token, string name, string url, MicroServiceStages supportedStages, IResourceGroup resourceGroup, Guid template, string version);
-		void Update(IMicroService microService, string name, string url, MicroServiceStages supportedStages, Guid template, IResourceGroup resourceGroup);
+		void Insert(Guid token, string name, string url, MicroServiceStages supportedStages, IResourceGroup resourceGroup, Guid template, string version, string commit);
+		void Update(IMicroService microService, string name, string url, MicroServiceStages supportedStages, Guid template, IResourceGroup resourceGroup, string version, string commit);
 		void Delete(IMicroService microService);
 	}
 }

@@ -15,7 +15,6 @@ public interface ISysManagementProxy
 	IInstanceEndpointManagementController InstanceEndpoints { get; }
 	ILoggingManagementController Logging { get; }
 	IMailManagementController Mail { get; }
-	IMetricManagementController Metrics { get; }
 	IPrintManagementController Printing { get; }
 	IQueueManagementController Queue { get; }
 	IResourceGroupManagementController ResourceGroups { get; }
