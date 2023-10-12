@@ -43,11 +43,6 @@ namespace TomPIT.Runtime
 
 		public static void Run()
 		{
-			RegisterServices();
-		}
-
-		private static void RegisterServices()
-		{
 			Shell.RegisterService(typeof(IRuntimeService), typeof(RuntimeService));
 			Shell.RegisterService(typeof(IConnectivityService), typeof(ConnectivityService));
 			Shell.RegisterService(typeof(IMicroServiceResolutionService), typeof(MicroServiceResolutionService));
@@ -122,6 +117,8 @@ namespace TomPIT.Runtime
 			e.Tenant.RegisterService(typeof(IWorkerService), typeof(WorkerService));
 			e.Tenant.RegisterService(typeof(IMicroServiceRuntimeService), new MicroServiceRuntimeService(e.Tenant));
 			e.Tenant.RegisterService(typeof(IDebugService), typeof(DebugService));
+
+			MicroServiceCompiler.Compile();
 
 			if (Instance.Features.HasFlag(InstanceFeatures.IoT))
 			{

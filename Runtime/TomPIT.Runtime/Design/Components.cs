@@ -419,6 +419,9 @@ namespace TomPIT.Design
 
 			Update(text.Configuration());
 
+			if (text is ICodeConfiguration)
+				Tenant.GetService<IDesignService>().MicroServices.IncrementVersion(s.Token);
+
 			Tenant.GetService<IDebugService>().ScriptChanged(text.Configuration().MicroService(), text.Configuration().Component, text.Id, blob);
 		}
 

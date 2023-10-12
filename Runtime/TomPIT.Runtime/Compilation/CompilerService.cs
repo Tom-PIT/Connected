@@ -33,8 +33,6 @@ namespace TomPIT.Compilation
 			Tenant.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
 
 			Scripts = new ScriptCache(tenant);
-
-			MicroServiceCompiler.Compile();
 		}
 
 		private static ConcurrentDictionary<Guid, List<Guid>> References { get { return _references.Value; } }
