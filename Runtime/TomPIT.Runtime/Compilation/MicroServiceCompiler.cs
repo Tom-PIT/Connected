@@ -24,9 +24,9 @@ internal static class MicroServiceCompiler
 	private static CSharpParseOptions ParseOptions { get; }
 	public static void Compile()
 	{
-		var microServices = Tenant.GetService<IMicroServiceService>().Query();
+		var microServices = new CompilationSet();
 
-		foreach (var microService in microServices)
+		while (microServices.TryDequeue(out IMicroService microService))
 			Compile(microService);
 	}
 

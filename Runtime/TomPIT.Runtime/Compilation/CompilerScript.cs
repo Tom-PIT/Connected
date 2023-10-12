@@ -132,14 +132,40 @@ namespace TomPIT.Compilation
 		{
 			return CSharpScript.Create(sourceCode, options: options, assemblyLoader: loader);
 		}
-		protected virtual List<Assembly> References => new List<Assembly>
-							{
-									 CompilerService.LoadSystemAssembly("TomPIT.Core"),
-									 CompilerService.LoadSystemAssembly("TomPIT.ComponentModel"),
-									 CompilerService.LoadSystemAssembly("TomPIT.Sdk"),
-									 CompilerService.LoadSystemAssembly("TomPIT.Runtime"),
-									 CompilerService.LoadSystemAssembly("Newtonsoft.Json")
-							};
+
+		protected virtual List<Assembly> References
+		{
+			get
+			{
+				var result = new List<Assembly>
+				{
+					CompilerService.LoadSystemAssembly("TomPIT.Core"),
+					CompilerService.LoadSystemAssembly("TomPIT.ComponentModel"),
+					CompilerService.LoadSystemAssembly("TomPIT.Sdk"),
+					CompilerService.LoadSystemAssembly("TomPIT.Runtime"),
+					CompilerService.LoadSystemAssembly("Newtonsoft.Json")
+				};
+
+				var references = Tenant.GetService<IDiscoveryService>().MicroServices.References.References(MicroService, false);
+
+				foreach (var reference in references)
+				{
+					var asm = CompilerService.LoadSystemAssembly($"{reference.Name}.dll");
+
+					if (asm is not null)
+						result.Add(asm);
+				}
+
+				var ms = Tenant.GetService<IMicroServiceService>().Select(MicroService);
+				var self = CompilerService.LoadSystemAssembly($"{ms.Name}.dll");
+
+				if (self is not null)
+					result.Add(self);
+
+				return result;
+			}
+		}
+
 		protected virtual string[] Usings => Array.Empty<string>();
 
 		public void Dispose()
