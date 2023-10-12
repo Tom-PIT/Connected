@@ -88,7 +88,7 @@ public class MicroServiceHandler : IMicroServiceHandler
 		p.CreateParameter("@name", name);
 		p.CreateParameter("@url", url);
 		p.CreateParameter("@id", microService.GetId());
-		p.CreateParameter("@şupported_stages", supportedStages);
+		p.CreateParameter("@supported_stages", supportedStages);
 		p.CreateParameter("@template", template);
 		p.CreateParameter("@resource_group", resourceGroup.GetId());
 		p.CreateParameter("@version", version, true);
