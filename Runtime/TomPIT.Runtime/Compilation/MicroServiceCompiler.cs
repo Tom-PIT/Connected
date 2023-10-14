@@ -101,12 +101,20 @@ internal static class MicroServiceCompiler
 			return true;
 
 		var msVersion = Version.Parse(microService.Version);
-		var version = AssemblyName.GetAssemblyName(path).Version;
 
-		if (version is null)
+		try
+		{
+			var version = AssemblyName.GetAssemblyName(path).Version;
+
+			if (version is null)
+				return true;
+
+			return version != msVersion;
+		}
+		catch
+		{
 			return true;
-
-		return version != msVersion;
+		}
 	}
 
 	private static CSharpCompilationOptions CreateOptions()
