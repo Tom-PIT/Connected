@@ -20,23 +20,21 @@ namespace TomPIT
 	public static class Shell
 	{
 		public static event EventHandler ServiceRegistered;
+		private static JsonDocument _configuration;
 
-		private static ServiceContainer _sm = null;
-		private static JsonDocument _configuration = null;
-		private static IHttpContextAccessor _accessor = null;
-		private static Version _version = null;
-		private static bool _cleaned = false;
-		private static Lazy<List<string>> _loadedAssemblies = new Lazy<List<string>>();
-		private static readonly List<string> ProbingPaths;
 		static Shell()
 		{
-			_sm = new ServiceContainer(null);
+			Container = new ServiceContainer(null);
 
 			ProbingPaths = new List<string>
-				{
-					 typeof(object).Assembly.Location,
-					 typeof(HttpContext).Assembly.Location
-				};
+			{
+				typeof(object).Assembly.Location,
+				typeof(HttpContext).Assembly.Location
+			};
+
+			ValidAssemblyNameExtensions = new[] { ".libdy", ".so", "" };
+			LoadedNativeLibraries = new();
+			LoadedAssemblies = new();
 
 			AssemblyLoadContext.Default.Resolving += OnResolvingAssembly;
 			AssemblyLoadContext.Default.ResolvingUnmanagedDll += OnResolvingUnmanagedDll; ;
@@ -44,11 +42,26 @@ namespace TomPIT
 			Initialize();
 		}
 
-		private static Dictionary<string, nint> _loadedNativeLibraries = new();
+		private static ServiceContainer Container { get; }
+		private static List<string> ProbingPaths { get; }
+		private static Dictionary<string, nint> LoadedNativeLibraries { get; }
+		public static string InstanceName { get; private set; }
+		public static Version Version => typeof(Shell).Assembly.GetName().Version;
+		public static HttpContext HttpContext => Accessor?.HttpContext;
+		private static IHttpContextAccessor Accessor { get; set; }
+		private static List<string> LoadedAssemblies { get; }
+		private static string[] ValidAssemblyNameExtensions { get; }
+		private static bool Cleaned { get; set; }
+
+		public static void Initialize()
+		{
+			if (Configuration.RootElement.TryGetProperty("instanceName", out JsonElement element))
+				InstanceName = element.GetString();
+		}
 
 		private static nint OnResolvingUnmanagedDll(Assembly requestingAssembly, string libName)
 		{
-			if (_loadedNativeLibraries.TryGetValue(libName, out var cachedHandle))
+			if (LoadedNativeLibraries.TryGetValue(libName, out var cachedHandle))
 				return cachedHandle;
 
 			var path = ResolveUnmanagedAssemblyPath(libName);
@@ -58,23 +71,10 @@ namespace TomPIT
 
 			var handle = NativeLibrary.Load(path, requestingAssembly, null);
 
-			_loadedNativeLibraries.Add(libName, handle);
+			LoadedNativeLibraries.Add(libName, handle);
 
 			return handle;
 		}
-
-		public static string InstanceName { get; private set; }
-		public static Version Version => _version ??= typeof(Shell).Assembly.GetName().Version;
-		public static HttpContext HttpContext { get { return _accessor?.HttpContext; } }
-		private static List<string> LoadedAssemblies => _loadedAssemblies.Value;
-
-		public static void Initialize()
-		{
-			if (Configuration.RootElement.TryGetProperty("instanceName", out JsonElement element))
-				InstanceName = element.GetString();
-		}
-
-		private static string[] ValidAssemblyNameExtensions = new[] { ".libdy", ".so", "" };
 
 		public static string ResolveUnmanagedAssemblyPath(string assemblyName)
 		{
@@ -141,7 +141,7 @@ namespace TomPIT
 				{
 					var name = Path.GetFileNameWithoutExtension(j);
 
-					if (string.Compare(name, assemblyName, true) == 0 && ValidAssemblyNameExtensions.Contains(Path.GetExtension(j)))
+					if (string.Equals(name, assemblyName, StringComparison.OrdinalIgnoreCase) && ValidAssemblyNameExtensions.Contains(Path.GetExtension(j)))
 						return j;
 				}
 			}
@@ -154,62 +154,113 @@ namespace TomPIT
 			if (assemblyName.EndsWith(".dll"))
 				assemblyName = Path.GetFileNameWithoutExtension(assemblyName);
 
-			var appPath = Assembly.GetEntryAssembly().Location;
-			var target = Path.Combine(Path.GetDirectoryName(appPath), string.Format("{0}.dll", assemblyName));
+			if (TryResolveMicroServicePath(assemblyName, out string result))
+				return result;
 
-			if (Plugins.Items is not null && !string.IsNullOrWhiteSpace(Plugins.Location))
+			if (TryResolvePluginPath(assemblyName, out string pluginResult))
+				return pluginResult;
+
+			if (TryResolveBinPath(assemblyName, out string binPath))
+				return binPath;
+
+			if (TryResolvePluginsPath(assemblyName, out string pluginsPath))
+				return pluginsPath;
+
+			if (TryResolveProbingPath(assemblyName, out string probingPath))
+				return probingPath;
+
+			return null;
+		}
+
+		private static bool TryResolveProbingPath(string assemblyName, out string result)
+		{
+			result = string.Empty;
+
+			foreach (var probingPath in ProbingPaths)
 			{
-				var dirs = Directory.GetDirectories(Plugins.Location);
+				result = Path.Combine(Path.GetDirectoryName(probingPath), assemblyName);
 
-				dirs = dirs.Append(Plugins.Location).ToArray();
+				if (File.Exists(result))
+					return true;
+			}
 
-				foreach (var i in dirs)
+			return false;
+		}
+
+		private static bool TryResolveBinPath(string assemblyName, out string result)
+		{
+			var appPath = Assembly.GetEntryAssembly().Location;
+
+			result = Path.Combine(Path.GetDirectoryName(appPath), assemblyName);
+
+			return File.Exists(result);
+		}
+
+		private static bool TryResolvePluginsPath(string assemblyName, out string path)
+		{
+			var appPath = Assembly.GetEntryAssembly().Location;
+
+			path = Path.Combine(Path.GetDirectoryName(appPath), "Plugins", assemblyName);
+
+			return File.Exists(path);
+		}
+
+		private static bool TryResolvePluginPath(string assemblyName, out string path)
+		{
+			path = string.Empty;
+
+			if (Plugins.Items is null || string.IsNullOrWhiteSpace(Plugins.Location))
+				return false;
+
+			var dirs = Directory.GetDirectories(Plugins.Location);
+
+			dirs = dirs.Append(Plugins.Location).ToArray();
+
+			foreach (var i in dirs)
+			{
+				var files = Directory.GetFiles(i);
+
+				foreach (var j in files)
 				{
-					var files = Directory.GetFiles(i);
+					var name = Path.GetFileNameWithoutExtension(j);
 
-					foreach (var j in files)
+					if (string.Equals(name, assemblyName, StringComparison.OrdinalIgnoreCase))
 					{
-						var name = Path.GetFileNameWithoutExtension(j);
+						path = j;
 
-						if (string.Compare(name, assemblyName, true) == 0)
-							return j;
+						return true;
 					}
 				}
 			}
 
-			if (File.Exists(target))
-				return target;
+			return false;
+		}
+		private static bool TryResolveMicroServicePath(string assemblyName, out string path)
+		{
+			var msFolder = "/microServices";
 
-			target = Path.Combine(Path.GetDirectoryName(appPath), "Plugins", string.Format("{0}.dll", assemblyName));
+			if (!Directory.Exists(msFolder))
+				Directory.CreateDirectory(msFolder);
 
-			if (File.Exists(target))
-				return target;
+			path = Path.Combine(msFolder, assemblyName);
 
-			foreach (var probingPath in ProbingPaths)
-			{
-				target = Path.Combine(Path.GetDirectoryName(probingPath), string.Format("{0}.dll", assemblyName));
-
-				if (File.Exists(target))
-					return target;
-			}
-
-			return null;
+			return File.Exists(path);
 		}
 
 		private static Assembly OnResolvingAssembly(AssemblyLoadContext ctx, AssemblyName asm)
 		{
 			var path = ResolveAssemblyPath(asm.Name);
 
-			if (path == null)
+			if (path is null)
 				return null;
 
 			if (Plugins.Items is not null && Plugins.ShadowCopy)
 			{
 				var shadowCopyLocation = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "Plugins");
 
-				if (!_cleaned)
+				if (!Cleaned)
 				{
-					_cleaned = true;
+					Cleaned = true;
 
 					if (Directory.Exists(shadowCopyLocation))
 					{
@@ -236,26 +287,25 @@ namespace TomPIT
 				path = targetPath;
 			}
 
-			var loadedAssembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
-			return loadedAssembly;
+			return AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
 		}
 
 		[DebuggerStepThrough]
 		public static T GetService<T>()
 		{
-			return _sm.Get<T>();
+			return Container.Get<T>();
 		}
 
 		public static void RegisterService(Type contract, object instance)
 		{
-			_sm.Register(contract, instance);
+			Container.Register(contract, instance);
 
 			ServiceRegistered?.Invoke(contract, EventArgs.Empty);
 		}
 
 		public static void RegisterService(Type contract, ServiceActivatorCallback callback)
 		{
-			_sm.Register(contract, callback);
+			Container.Register(contract, callback);
 
 			ServiceRegistered?.Invoke(contract, EventArgs.Empty);
 		}
@@ -267,7 +317,7 @@ namespace TomPIT
 				if (_configuration is not null)
 					return _configuration;
 
-				lock (_sm)
+				lock (Container)
 				{
 					if (_configuration is not null)
 						return _configuration;
@@ -301,7 +351,7 @@ namespace TomPIT
 
 		public static void Configure(IApplicationBuilder app)
 		{
-			_accessor = app.ApplicationServices.GetRequiredService<IHttpContextAccessor>();
+			Accessor = app.ApplicationServices.GetRequiredService<IHttpContextAccessor>();
 		}
 	}
 }
