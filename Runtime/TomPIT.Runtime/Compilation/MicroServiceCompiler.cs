@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using TomPIT.ComponentModel;
+using TomPIT.Reflection;
 using TomPIT.Runtime;
 
 namespace TomPIT.Compilation;
@@ -76,6 +77,10 @@ internal static class MicroServiceCompiler
 			File.Delete(pdbPath);
 
 		var result = compilation.Emit(outputPath, pdbPath);
+
+		if (!result.Success)
+			throw new Exception($"{microService.Name} - {result.Diagnostics.First(f => f.Severity == DiagnosticSeverity.Error).GetMessage()}");
+
 		var path = Shell.ResolveAssemblyPath(ParseAssemblyName(microService));
 
 		Assembly.LoadFile(path);
@@ -127,10 +132,39 @@ internal static class MicroServiceCompiler
 
 	private static List<MetadataReference> CreateReferences(IMicroService microService)
 	{
-		return new List<MetadataReference>
+		var references = Tenant.GetService<IDiscoveryService>().MicroServices.References.Select(microService.Token);
+		var result = new List<MetadataReference>
 		{
 			MetadataReference.CreateFromFile(Assembly.GetAssembly(typeof(object)).Location)
 		};
+
+		if (references is not null)
+		{
+			foreach (var assembly in references.Assemblies)
+			{
+				if (string.IsNullOrWhiteSpace(assembly.AssemblyName))
+					continue;
+
+				try
+				{
+					var name = assembly.AssemblyName.EndsWith(".dll") ? assembly.AssemblyName : $"{assembly.AssemblyName}.dll";
+					var path = Shell.ResolveAssemblyPath(name);
+
+					if (string.IsNullOrEmpty(path))
+						continue;
+
+					var reference = MetadataReference.CreateFromFile(path);
+
+					if (reference is null)
+						continue;
+
+					result.Add(reference);
+				}
+				catch { }
+			}
+		}
+
+		return result;
 	}
 	private static List<SyntaxTree> LoadSyntaxTrees(IMicroService microService)
 	{
