@@ -1,13 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
+    <AssemblyVersion>3.1.1019.1</AssemblyVersion>
+    <FileVersion>3.1.1019.1</FileVersion>
+    <Version>3.1.1019.1</Version>
   </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Core\TomPIT.Sdk\TomPIT.Sdk.csproj" />
     <ProjectReference Include="..\Sys\TomPIT.Sys\Sys.csproj" />
   </ItemGroup>
-
 </Project>
