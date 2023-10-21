@@ -50,6 +50,7 @@ internal class StartupHost : IStartupHostProxy
 	public event EventHandler<List<Assembly>> ConfigureEmbeddedStaticResources;
 
 	public event EventHandler<IMvcBuilder> MvcConfigured;
+
 	public void ConfigureServices(IServiceCollection services)
 	{
 		RuntimeBootstrapper.Run();
@@ -73,6 +74,9 @@ internal class StartupHost : IStartupHostProxy
 		services.AddHttpClient();
 
 		ConfiguringServices?.Invoke(null, services);
+
+		foreach (var startup in MicroServices.Startups)
+			startup.ConfigureServices(services);
 	}
 
 	public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -132,6 +136,9 @@ internal class StartupHost : IStartupHostProxy
 			plugin.Initialize(app, env);
 
 		Run(app, env);
+
+		foreach (var startup in MicroServices.Startups)
+			startup.Configure(app);
 	}
 
 	private void Boot()
@@ -151,21 +158,24 @@ internal class StartupHost : IStartupHostProxy
 
 	private void ConfigureTenant()
 	{
-		if (!Shell.Configuration.RootElement.TryGetProperty("sys", out JsonElement element) && !Instance.Features.HasFlag(InstanceFeatures.Sys))
+		if (!Shell.Configuration.RootElement.TryGetProperty("sys", out _) && !Instance.Features.HasFlag(InstanceFeatures.Sys))
 			throw new ConfigurationErrorsException("'sys' configuration element expected.");
 
-		var name = string.Empty;
+		var name = "localhost";
 		var url = string.Empty;
 		var token = string.Empty;
 
-		if (element.TryGetProperty("name", out JsonElement nameElement))
-			name = nameElement.GetString();
+		if (Shell.Configuration.RootElement.TryGetProperty("sys", out JsonElement sys))
+		{
+			if (sys.TryGetProperty("name", out JsonElement nameElement))
+				name = nameElement.GetString();
 
-		if (element.TryGetProperty("url", out JsonElement urlElement))
-			url = urlElement.GetString();
+			if (sys.TryGetProperty("url", out JsonElement urlElement))
+				url = urlElement.GetString();
 
-		if (element.TryGetProperty("token", out JsonElement tokenElement))
-			token = tokenElement.GetString();
+			if (sys.TryGetProperty("token", out JsonElement tokenElement))
+				token = tokenElement.GetString();
+		}
 
 		Shell.GetService<IConnectivityService>().InsertTenant(name, url, token);
 	}

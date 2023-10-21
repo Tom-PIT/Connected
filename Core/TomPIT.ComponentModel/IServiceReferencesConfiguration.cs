@@ -6,5 +6,6 @@ namespace TomPIT.ComponentModel
 	{
 		ListItems<IServiceReference> MicroServices { get; }
 		ListItems<IAssemblyReference> Assemblies { get; }
+		ListItems<IPackageReference> Packages { get; }
 	}
 }

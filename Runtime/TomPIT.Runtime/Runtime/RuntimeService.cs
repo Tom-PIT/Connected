@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using System;
+using System.Collections.Generic;
+using System.Reflection;
 using System.Text.Json;
 using TomPIT.Environment;
 
@@ -9,6 +11,7 @@ namespace TomPIT.Runtime
 	internal class RuntimeService : IRuntimeService
 	{
 		internal static IApplicationBuilder _host;
+		private List<Assembly> _microServices;
 
 		public string ContentRoot { get; set; }
 		public string WebRoot { get; set; }

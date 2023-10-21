@@ -120,20 +120,23 @@ namespace TomPIT.Runtime
 
 			MicroServiceCompiler.Compile();
 
-			if (Instance.Features.HasFlag(InstanceFeatures.IoT))
+			if (!string.IsNullOrEmpty(e.Tenant.Url))
 			{
-				var iotClient = new IoTClient(e.Tenant, e.Tenant.AuthenticationToken);
+				if (Instance.Features.HasFlag(InstanceFeatures.IoT))
+				{
+					var iotClient = new IoTClient(e.Tenant, e.Tenant.AuthenticationToken);
 
-				e.Tenant.Items.TryAdd("iotClient", iotClient);
+					e.Tenant.Items.TryAdd("iotClient", iotClient);
 
-				iotClient.Connect();
+					iotClient.Connect();
+				}
+
+				var dataCache = new DataCachingClient(e.Tenant, e.Tenant.AuthenticationToken);
+
+				e.Tenant.Items.TryAdd("dataCache", dataCache);
+
+				dataCache.Connect();
 			}
-
-			var dataCache = new DataCachingClient(e.Tenant, e.Tenant.AuthenticationToken);
-
-			e.Tenant.Items.TryAdd("dataCache", dataCache);
-
-			dataCache.Connect();
 		}
 	}
 }

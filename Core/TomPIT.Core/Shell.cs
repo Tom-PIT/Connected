@@ -151,23 +151,26 @@ namespace TomPIT
 
 		public static string ResolveAssemblyPath(string assemblyName)
 		{
-			if (assemblyName.EndsWith(".dll"))
-				assemblyName = Path.GetFileNameWithoutExtension(assemblyName);
+			if (!assemblyName.EndsWith(".dll"))
+				assemblyName = $"{assemblyName}.dll";
 
 			if (TryResolveMicroServicePath(assemblyName, out string result))
-				return result;
-
-			if (TryResolvePluginPath(assemblyName, out string pluginResult))
-				return pluginResult;
+				return Path.GetFullPath(result);
 
 			if (TryResolveBinPath(assemblyName, out string binPath))
-				return binPath;
+				return Path.GetFullPath(binPath);
+
+			if (TryResolveFrameworkPath(assemblyName, out string frameworkPath))
+				return Path.GetFullPath(frameworkPath);
+
+			if (TryResolvePluginPath(assemblyName, out string pluginResult))
+				return Path.GetFullPath(pluginResult);
 
 			if (TryResolvePluginsPath(assemblyName, out string pluginsPath))
-				return pluginsPath;
+				return Path.GetFullPath(pluginsPath);
 
 			if (TryResolveProbingPath(assemblyName, out string probingPath))
-				return probingPath;
+				return Path.GetFullPath(probingPath);
 
 			return null;
 		}
@@ -185,6 +188,15 @@ namespace TomPIT
 			}
 
 			return false;
+		}
+
+		private static bool TryResolveFrameworkPath(string assemblyName, out string result)
+		{
+			var appPath = RuntimeEnvironment.GetRuntimeDirectory();
+
+			result = Path.Combine(Path.GetDirectoryName(appPath), assemblyName);
+
+			return File.Exists(result);
 		}
 
 		private static bool TryResolveBinPath(string assemblyName, out string result)
@@ -223,8 +235,9 @@ namespace TomPIT
 				foreach (var j in files)
 				{
 					var name = Path.GetFileNameWithoutExtension(j);
+					var asmName = Path.GetFileNameWithoutExtension(assemblyName);
 
-					if (string.Equals(name, assemblyName, StringComparison.OrdinalIgnoreCase))
+					if (string.Equals(name, asmName, StringComparison.OrdinalIgnoreCase))
 					{
 						path = j;
 

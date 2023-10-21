@@ -61,14 +61,13 @@ internal static class MicroServiceCompiler
 	{
 		var path = Shell.ResolveAssemblyPath(ParseAssemblyName(microService));
 
-		Assembly.LoadFile(path);
+		Assembly.LoadFile(Path.GetFullPath(path));
 	}
 
 	private static void Load(IMicroService microService, CSharpCompilation compilation)
 	{
-		var folder = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-		var outputPath = Path.Combine(folder, ParseAssemblyName(microService));
-		var pdbPath = Path.Combine(folder, ParsePdbName(microService));
+		var outputPath = Path.Combine("/microServices", ParseAssemblyName(microService));
+		var pdbPath = Path.Combine("/microServices", ParsePdbName(microService));
 
 		if (File.Exists(outputPath))
 			File.Delete(outputPath);
@@ -133,39 +132,74 @@ internal static class MicroServiceCompiler
 	private static List<MetadataReference> CreateReferences(IMicroService microService)
 	{
 		var references = Tenant.GetService<IDiscoveryService>().MicroServices.References.Select(microService.Token);
-		var result = new List<MetadataReference>
-		{
-			MetadataReference.CreateFromFile(Assembly.GetAssembly(typeof(object)).Location)
-		};
+		var result = new List<MetadataReference>();
+		var existing = new List<string>();
 
-		if (references is not null)
+		result.AddRange(FrameworkFiles.FrameworkReferences);
+		result.AddRange(FrameworkFiles.AspNetCoreReferences);
+
+		foreach (var file in FrameworkFiles.TomPITFileNames)
+			AddReference(Path.Combine(FrameworkFiles.TomPITDirectory, file), existing, result);
+
+		if (references is null)
+			return result;
+
+		foreach (var assembly in references.Assemblies)
 		{
-			foreach (var assembly in references.Assemblies)
+			if (string.IsNullOrWhiteSpace(assembly.AssemblyName))
+				continue;
+
+			try
 			{
-				if (string.IsNullOrWhiteSpace(assembly.AssemblyName))
-					continue;
+				var name = assembly.AssemblyName.EndsWith(".dll") ? assembly.AssemblyName : $"{assembly.AssemblyName}.dll";
 
-				try
-				{
-					var name = assembly.AssemblyName.EndsWith(".dll") ? assembly.AssemblyName : $"{assembly.AssemblyName}.dll";
-					var path = Shell.ResolveAssemblyPath(name);
-
-					if (string.IsNullOrEmpty(path))
-						continue;
-
-					var reference = MetadataReference.CreateFromFile(path);
-
-					if (reference is null)
-						continue;
-
-					result.Add(reference);
-				}
-				catch { }
+				AddReference(Shell.ResolveAssemblyPath(name), existing, result);
 			}
+			catch { }
 		}
+
+		foreach (var package in references.Packages)
+			LoadPackage(package.PackageName, package.Version, existing, result);
 
 		return result;
 	}
+
+	private static void AddReference(string file, List<string> existing, List<MetadataReference> references)
+	{
+		if (string.IsNullOrWhiteSpace(file))
+			return;
+
+		if (existing.Contains(file, StringComparer.OrdinalIgnoreCase))
+			return;
+
+		existing.Add(file);
+
+		var reference = MetadataReference.CreateFromFile(file);
+
+		if (reference is null)
+			return;
+
+		references.Add(reference);
+	}
+
+	private static void LoadPackage(string packageName, string packageVersion, List<string> existingPaths, List<MetadataReference> references)
+	{
+		if (string.IsNullOrWhiteSpace(packageName) || string.IsNullOrWhiteSpace(packageVersion))
+			return;
+
+		try
+		{
+			var assemblies = Tenant.GetService<INuGetService>().Resolve(packageName, packageVersion, false);
+
+			if (assemblies is null)
+				return;
+
+			foreach (var asm in assemblies)
+				AddReference(asm.Location, existingPaths, references);
+		}
+		catch { }
+	}
+
 	private static List<SyntaxTree> LoadSyntaxTrees(IMicroService microService)
 	{
 		var components = Tenant.GetService<IComponentService>().QueryComponents(microService.Token, ComponentCategories.Code);
