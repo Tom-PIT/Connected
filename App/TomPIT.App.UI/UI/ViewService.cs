@@ -29,6 +29,9 @@ namespace TomPIT.App.UI
 
 		public ViewService(ITenant tenant) : base(tenant, "view")
 		{
+			if (!tenant.GetService<IRuntimeService>().IsHotSwappingSupported)
+				return;
+
 			tenant.GetService<IComponentService>().ComponentChanged += OnComponentChanged;
 
 			tenant.GetService<IComponentService>().ConfigurationChanged += OnConfigurationChanged;
@@ -128,7 +131,7 @@ namespace TomPIT.App.UI
 
 			foreach (var i in views)
 			{
-				if (i == null)
+				if (i is null || !Tenant.GetService<IRuntimeService>().IsMicroServiceSupported(i.MicroService()))
 					continue;
 
 				Set(i.Component, i, TimeSpan.Zero);
@@ -137,10 +140,18 @@ namespace TomPIT.App.UI
 
 		protected override void OnInvalidate(Guid id)
 		{
-			if (Tenant.GetService<IComponentService>().SelectConfiguration(id) is IConfiguration ui)
-				Set(ui.Component, ui, TimeSpan.Zero);
-			else
+			if (!Tenant.GetService<IRuntimeService>().IsHotSwappingSupported)
+				return;
+
+			var configuration = Tenant.GetService<IComponentService>().SelectConfiguration(id);
+
+			if (configuration is null)
 				Remove(id);
+
+			if (!Tenant.GetService<IRuntimeService>().IsMicroServiceSupported(configuration.MicroService()))
+				return;
+
+			Set(configuration.Component, configuration, TimeSpan.Zero);
 		}
 
 		public IViewConfiguration Select(string url, ActionContext context)

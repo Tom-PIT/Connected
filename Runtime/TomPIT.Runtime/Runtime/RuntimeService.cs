@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text.Json;
+using TomPIT.ComponentModel;
 using TomPIT.Environment;
 
 namespace TomPIT.Runtime
@@ -13,6 +14,7 @@ namespace TomPIT.Runtime
 		internal static IApplicationBuilder _host;
 		private List<Assembly> _microServices;
 
+		public bool IsHotSwappingSupported => Stage != EnvironmentStage.Development;
 		public string ContentRoot { get; set; }
 		public string WebRoot { get; set; }
 		public RuntimeEnvironment Environment { get; set; } = RuntimeEnvironment.SingleTenant;
@@ -61,6 +63,23 @@ namespace TomPIT.Runtime
 		{
 			ContentRoot = environment.ContentRootPath;
 			WebRoot = environment.WebRootPath;
+		}
+
+		public bool IsMicroServiceSupported(Guid microService)
+		{
+			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
+
+			if (ms is null)
+				return false;
+
+			return Stage switch
+			{
+				EnvironmentStage.Development => ms.SupportedStages.HasFlag(MicroServiceStages.Development),
+				EnvironmentStage.QualityAssurance => ms.SupportedStages.HasFlag(MicroServiceStages.QualityAssurance),
+				EnvironmentStage.Staging => ms.SupportedStages.HasFlag(MicroServiceStages.Staging),
+				EnvironmentStage.Production => ms.SupportedStages.HasFlag(MicroServiceStages.Production),
+				_ => throw new NotSupportedException(),
+			};
 		}
 	}
 }

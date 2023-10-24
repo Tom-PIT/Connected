@@ -33,7 +33,7 @@ internal static class MicroServiceCompiler
 
 	private static void Compile(IMicroService microService)
 	{
-		if (!CompilerService.IsStageSupported(microService.Token))
+		if (!Tenant.GetService<IRuntimeService>().IsMicroServiceSupported(microService.Token))
 			return;
 
 		if (!ShouldCompile(microService))
