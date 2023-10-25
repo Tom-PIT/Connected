@@ -63,6 +63,6 @@
     <Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/TomPIT.StorageProviders.Azure/&quot;" /> -->
     <Exec Command="if not exist &quot;c:/src/plugins/&quot; mkdir &quot;c:/src/plugins/&quot;" />
     <Exec Command="copy /y &quot;$(TargetPath)&quot; &quot;c:/src/plugins/&quot;" />
-    <Exec Command="copy /y &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;/src/plugins/&quot;" />
+    <Exec Command="copy /y &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;c:/src/plugins/&quot;" />
   </Target>
 </Project>
