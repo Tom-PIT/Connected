@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 
 namespace TomPIT.ComponentModel
 {
 	[Flags]
+	[JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
 	public enum MicroServiceStages
 	{
 		None = 0,

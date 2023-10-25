@@ -39,8 +39,7 @@ namespace TomPIT.Compilation
 		private static SingletonProcessor<Guid> ScriptProcessor => _scriptProcessor;
 		internal ScriptCache Scripts { get; }
 		public NuGetPackages Nuget => _nuGet ??= new NuGetPackages(Tenant);
-		private EnvironmentStage Stage => Tenant.GetService<IRuntimeService>().Stage;
-		private bool ReadOnly => Stage == EnvironmentStage.Development;
+		private bool ReadOnly => !Tenant.GetService<IRuntimeService>().IsHotSwappingSupported;
 
 		private void OnMicroServiceInstalled(object sender, MicroServiceEventArgs e)
 		{
@@ -60,7 +59,7 @@ namespace TomPIT.Compilation
 
 		public IScriptDescriptor GetScript(CompilerScriptArgs e)
 		{
-			if (!IsStageSupported(e.MicroService))
+			if (!Tenant.GetService<IRuntimeService>().IsMicroServiceSupported(e.MicroService))
 				return null;
 
 			if (GetCachedScript(e.SourceCode.Id) is IScriptDescriptor existing)
@@ -101,7 +100,7 @@ namespace TomPIT.Compilation
 
 		public Microsoft.CodeAnalysis.Compilation GetCompilation(IText sourceCode)
 		{
-			if (!IsStageSupported(sourceCode.Configuration().MicroService()))
+			if (!Tenant.GetService<IRuntimeService>().IsMicroServiceSupported(sourceCode.Configuration().MicroService()))
 				return null;
 
 			var microService = sourceCode.Configuration().MicroService();
@@ -491,24 +490,6 @@ namespace TomPIT.Compilation
 		public string Rewrite(string sourceText)
 		{
 			return NamespaceRewriter.Rewrite(sourceText);
-		}
-
-		internal static bool IsStageSupported(Guid microService)
-		{
-			var stage = TomPIT.Tenant.GetService<IRuntimeService>().Stage;
-			var ms = TomPIT.Tenant.GetService<IMicroServiceService>().Select(microService);
-
-			if (ms is null)
-				return false;
-
-			return stage switch
-			{
-				EnvironmentStage.Development => ms.SupportedStages.HasFlag(MicroServiceStages.Development),
-				EnvironmentStage.QualityAssurance => ms.SupportedStages.HasFlag(MicroServiceStages.QualityAssurance),
-				EnvironmentStage.Staging => ms.SupportedStages.HasFlag(MicroServiceStages.Staging),
-				EnvironmentStage.Production => ms.SupportedStages.HasFlag(MicroServiceStages.Production),
-				_ => throw new NotSupportedException(),
-			};
 		}
 	}
 }

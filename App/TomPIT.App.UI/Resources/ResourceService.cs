@@ -20,11 +20,14 @@ namespace TomPIT.App.Resources
 		private const string FromPreprocessorPatternSingle = "\'(.*?)\'";
 		public ResourceService(ITenant tenant) : base(tenant, "bundle")
 		{
-			tenant.GetService<IComponentService>().ConfigurationChanged += OnConfigurationChanged;
-			tenant.GetService<IComponentService>().ConfigurationAdded += OnConfigurationAdded;
-			tenant.GetService<IComponentService>().ConfigurationRemoved += OnConfigurationRemoved;
+			if (tenant.GetService<IRuntimeService>().IsHotSwappingSupported)
+			{
+				tenant.GetService<IComponentService>().ConfigurationChanged += OnConfigurationChanged;
+				tenant.GetService<IComponentService>().ConfigurationAdded += OnConfigurationAdded;
+				tenant.GetService<IComponentService>().ConfigurationRemoved += OnConfigurationRemoved;
 
-			tenant.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
+				tenant.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
+			}
 		}
 
 		private void OnMicroServiceInstalled(object sender, MicroServiceEventArgs e)
@@ -56,6 +59,9 @@ namespace TomPIT.App.Resources
 
 		private void Invalidate(ConfigurationEventArgs e)
 		{
+			if (!Tenant.GetService<IRuntimeService>().IsHotSwappingSupported || !Tenant.GetService<IRuntimeService>().IsMicroServiceSupported(e.MicroService))
+				return;
+
 			if (string.Compare(e.Category, ComponentCategories.ScriptBundle, true) != 0)
 				return;
 
@@ -82,7 +88,7 @@ namespace TomPIT.App.Resources
 		{
 			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
 
-			if (ms == null)
+			if (ms is null || !Tenant.GetService<IRuntimeService>().IsMicroServiceSupported(ms.Token))
 				throw new RuntimeException(GetType().ShortName(), string.Format("{0} ({1})", SR.ErrMicroServiceNotFound, microService));
 
 			using var ctx = new MicroServiceContext(ms.Token);

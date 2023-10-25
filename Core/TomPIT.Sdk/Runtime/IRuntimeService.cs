@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using System;
 using TomPIT.Environment;
 
 namespace TomPIT.Runtime
@@ -69,5 +70,7 @@ namespace TomPIT.Runtime
 		IApplicationBuilder Host { get; }
 
 		bool IsInitialized { get; }
+		bool IsHotSwappingSupported { get; }
+		bool IsMicroServiceSupported(Guid microService);
 	}
 }
