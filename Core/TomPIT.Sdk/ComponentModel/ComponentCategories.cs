@@ -6,6 +6,7 @@
 		public static string Api => "Api";
 		public static string Model => "Model";
 		public static string Code => "Code";
+		public static string AssemblyResource => "AssemblyResource";
 		public static string View => "View";
 		public static string Subscription => "Subscription";
 		public static string Queue => "Queue";
@@ -53,6 +54,7 @@
 		public static string UnitTest => "UnitTest";
 
 		public static string NameSpaceCode => "Code";
+		public static string NameSpaceAssemblyResources => "AssemblyResources";
 		public static string NameSpacePublicScript => "PublicScript";
 		public static string NameSpaceInternalScript => "InternalScript";
 		public static string NameSpaceView => "View";
@@ -90,6 +92,8 @@
 				return new string[] { NuGetPackage, EmbeddedNuGetPackage };
 			else if (string.Equals(nameSpace, NameSpaceCode, System.StringComparison.OrdinalIgnoreCase))
 				return new string[] { Code };
+			else if (string.Equals(nameSpace, NameSpaceAssemblyResources, System.StringComparison.OrdinalIgnoreCase))
+				return new string[] { AssemblyResource };
 			else
 				return new string[0];
 		}
@@ -142,6 +146,8 @@
 				return NameSpaceNuGet;
 			else if (string.Compare(category, Code, true) == 0)
 				return NameSpaceCode;
+			else if (string.Compare(category, AssemblyResource, true) == 0)
+				return NameSpaceAssemblyResources;
 			else
 				return "Default";
 		}

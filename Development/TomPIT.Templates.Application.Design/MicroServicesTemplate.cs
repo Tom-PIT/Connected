@@ -41,7 +41,7 @@ namespace TomPIT.MicroServices.Design
 			_items = new ConcurrentDictionary<string, IItemDescriptor>(new Dictionary<string, IItemDescriptor>
 				{
 				{ ComponentCategories.Code,             new ItemDescriptor("Code",              ComponentCategories.Code,               typeof(Code))                                 { Glyph = "fal fa-file-code",    Category = "Microservice" ,     Ordinal=5} },
-					 //{ ComponentCategories.Entity,      new ItemDescriptor("Entity",       ComponentCategories.Entity,        typeof(EntityConfiguration))                          { Glyph = "fal fa-database",             Category = "Data" ,           Ordinal=9} },
+				{ ComponentCategories.AssemblyResource,             new ItemDescriptor("Resource file",              ComponentCategories.AssemblyResource,               typeof(AssemblyResource))                                 { Glyph = "fal fa-font-case",    Category = "Microservice" ,     Ordinal=6} },
 					{ ComponentCategories.Connection,      new ItemDescriptor("Connection",       ComponentCategories.Connection,        typeof(Connection))                          { Glyph = "fal fa-server",             Category = "Data" ,           Ordinal=10} },
 					 { ComponentCategories.Model,             new ItemDescriptor("Model",              ComponentCategories.Model,               typeof(Model))                                 { Glyph = "fal fa-file-code",    Category = "Data" ,     Ordinal=20} },
 

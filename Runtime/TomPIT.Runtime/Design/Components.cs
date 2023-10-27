@@ -25,6 +25,7 @@ namespace TomPIT.Design
 		public event EventHandler<ComponentArgs> ComponentRestored;
 		public event EventHandler<ComponentArgs> ConfigurationRestored;
 		public event EventHandler<FileArgs> FileDeleted;
+		public event EventHandler<ComponentArgs> MultiFilesSynchronized;
 
 		public Components(ITenant tenant) : base(tenant)
 		{
@@ -35,10 +36,6 @@ namespace TomPIT.Design
 			return Instance.SysProxy.Development.Components.CreateName(microService, ComponentCategories.ResolveNamespace(category), prefix);
 		}
 
-		/// <summary>
-		/// It's always permanent since version control is not part of the framework anymore.
-		/// </summary>
-		/// <param name="component"></param>
 		public void Delete(Guid component)
 		{
 			var c = Tenant.GetService<IComponentService>().SelectComponent(component);
@@ -52,7 +49,7 @@ namespace TomPIT.Design
 
 			var config = Tenant.GetService<IComponentService>().SelectConfiguration(c.Token);
 
-			if (config != null)
+			if (config is not null)
 			{
 				var texts = Tenant.GetService<IDiscoveryService>().Configuration.Query<IText>(config);
 
@@ -64,7 +61,6 @@ namespace TomPIT.Design
 
 			Instance.SysProxy.Development.Components.Delete(component, MiddlewareDescriptor.Current.UserToken);
 
-
 			svc?.NotifyRemoved(this, new ComponentEventArgs(c.MicroService, c.Folder, component, c.NameSpace, c.Category, c.Name));
 
 			/*
@@ -75,6 +71,13 @@ namespace TomPIT.Design
 			Instance.SysProxy.Development.Notifications.ConfigurationRemoved(c.MicroService, c.Token, c.Category);
 
 			Tenant.GetService<IDebugService>().ConfigurationRemoved(c.Token);
+
+			if (config is IMultiFileElement multiFile)
+			{
+				AsyncUtils.RunSync(multiFile.ProcessDeleted);
+
+				MultiFilesSynchronized?.Invoke(this, new ComponentArgs(c.MicroService, c.Token, c.Category));
+			}
 		}
 
 		public void Restore(Guid microService, IPullRequestComponent component)
@@ -93,8 +96,17 @@ namespace TomPIT.Design
 			RestoreConfiguration(ms, component);
 			RestoreFiles(ms, component);
 
-			ConfigurationRestored?.Invoke(this, new ComponentArgs(microService, component.Token));
-			ComponentRestored?.Invoke(this, new ComponentArgs(microService, component.Token));
+			ConfigurationRestored?.Invoke(this, new ComponentArgs(microService, component.Token, component.Category));
+			ComponentRestored?.Invoke(this, new ComponentArgs(microService, component.Token, component.Category));
+
+			var config = Tenant.GetService<IComponentService>().SelectConfiguration(component.Token);
+
+			if (config is IMultiFileElement multiFile)
+			{
+				AsyncUtils.RunSync(multiFile.ProcessRestored);
+
+				MultiFilesSynchronized?.Invoke(this, new ComponentArgs(ms.Token, component.Token, component.Category));
+			}
 		}
 
 		private void RestoreConfiguration(IMicroService microService, IPullRequestComponent component)
@@ -346,6 +358,13 @@ namespace TomPIT.Design
 			Instance.SysProxy.Development.Notifications.ConfigurationAdded(microService, instance.Component, category);
 			Tenant.GetService<IDebugService>().ConfigurationAdded(instance.Component);
 
+			if (instance is IMultiFileElement multiFile)
+			{
+				AsyncUtils.RunSync(multiFile.ProcessCreated);
+
+				MultiFilesSynchronized?.Invoke(this, new ComponentArgs(microService, instance.Component, category));
+			}
+
 			return instance.Component;
 		}
 		public void Update(Guid component, string name, Guid folder)
@@ -358,6 +377,15 @@ namespace TomPIT.Design
 				n.NotifyChanged(this, new ConfigurationEventArgs(c.MicroService, component, c.Category));
 
 			Tenant.GetService<IDebugService>().ConfigurationChanged(component);
+
+			var config = Tenant.GetService<IComponentService>().SelectConfiguration(component);
+
+			if (config is IMultiFileElement multiFile)
+			{
+				AsyncUtils.RunSync(multiFile.ProcessChanged);
+
+				MultiFilesSynchronized?.Invoke(this, new ComponentArgs(c.MicroService, component, c.Category));
+			}
 		}
 
 		public void Update(IConfiguration configuration)
@@ -394,6 +422,15 @@ namespace TomPIT.Design
 
 			Instance.SysProxy.Development.Notifications.ConfigurationChanged(c.MicroService, c.Token, c.Category);
 			Tenant.GetService<IDebugService>().ConfigurationChanged(c.Token);
+
+			var config = Tenant.GetService<IComponentService>().SelectConfiguration(c.Token);
+
+			if (config is IMultiFileElement multiFile)
+			{
+				AsyncUtils.RunSync(multiFile.ProcessChanged);
+
+				MultiFilesSynchronized?.Invoke(this, new ComponentArgs(c.MicroService, c.Token, c.Category));
+			}
 		}
 
 		public void Update(IText text, string content)
@@ -454,7 +491,7 @@ namespace TomPIT.Design
 			{
 				var config = Tenant.GetService<IComponentService>().SelectConfiguration(component);
 
-				if (config == null)
+				if (config is null)
 					return;
 
 				var txt = Tenant.GetService<IDiscoveryService>().Configuration.Query<IText>(config);

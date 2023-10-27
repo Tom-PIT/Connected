@@ -3,7 +3,7 @@
 namespace TomPIT.Design;
 public class FileArgs : ComponentArgs
 {
-	public FileArgs(Guid microService, Guid component, Guid file) : base(microService, component)
+	public FileArgs(Guid microService, Guid component, Guid file) : base(microService, component, string.Empty)
 	{
 		File = file;
 	}

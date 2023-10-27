@@ -7,9 +7,12 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Resources;
 using TomPIT.Reflection;
 using TomPIT.Runtime;
+using TomPIT.Storage;
 
 namespace TomPIT.Compilation;
 internal static class MicroServiceCompiler
@@ -23,15 +26,15 @@ internal static class MicroServiceCompiler
 
 	private static CSharpCompilationOptions Options { get; }
 	private static CSharpParseOptions ParseOptions { get; }
-	public static void Compile()
+	public static async Task Compile()
 	{
 		var microServices = new CompilationSet();
 
 		while (microServices.TryDequeue(out IMicroService microService))
-			Compile(microService);
+			await Compile(microService);
 	}
 
-	private static void Compile(IMicroService microService)
+	private static async Task Compile(IMicroService microService)
 	{
 		if (!Tenant.GetService<IRuntimeService>().IsMicroServiceSupported(microService.Token))
 			return;
@@ -54,7 +57,7 @@ internal static class MicroServiceCompiler
 		var compilation = CSharpCompilation.Create(ParseAssemblyName(microService), trees, references, Options);
 
 		Validate(microService, compilation);
-		Load(microService, compilation);
+		await Load(microService, compilation);
 	}
 
 	private static void LoadExisting(IMicroService microService)
@@ -64,7 +67,7 @@ internal static class MicroServiceCompiler
 		Assembly.LoadFile(Path.GetFullPath(path));
 	}
 
-	private static void Load(IMicroService microService, CSharpCompilation compilation)
+	private static async Task Load(IMicroService microService, CSharpCompilation compilation)
 	{
 		var outputPath = Path.Combine("/microServices", ParseAssemblyName(microService));
 		var pdbPath = Path.Combine("/microServices", ParsePdbName(microService));
@@ -75,7 +78,30 @@ internal static class MicroServiceCompiler
 		if (File.Exists(pdbPath))
 			File.Delete(pdbPath);
 
-		var result = compilation.Emit(outputPath, pdbPath);
+		var resources = new List<ResourceDescription>();
+		var configurations = Tenant.GetService<IComponentService>().QueryConfigurations(microService.Token, ComponentCategories.AssemblyResource);
+
+		foreach (var configuration in configurations)
+		{
+			var resource = configuration as IAssemblyResourceConfiguration;
+
+			if (resource is null)
+				continue;
+
+			var files = await resource.QueryAdditionalFiles();
+
+			foreach (var file in files)
+			{
+				var blob = Tenant.GetService<IStorageService>().Download(file);
+
+				if (blob is null || blob.Content is null)
+					continue;
+
+				resources.Add(new ResourceDescription($"{microService.Name}.{configuration.ComponentName()}.resources", () => { return new MemoryStream(blob.Content); }, true));
+			}
+		}
+
+		var result = compilation.Emit(outputPath, pdbPath, manifestResources: resources);
 
 		if (!result.Success)
 			throw new Exception($"{microService.Name} - {result.Diagnostics.First(f => f.Severity == DiagnosticSeverity.Error).GetMessage()}");

@@ -18,7 +18,7 @@ namespace TomPIT.Caching
 		private readonly Lazy<Container> _container = new Lazy<Container>();
 		private readonly CancellationTokenSource _cancel = new CancellationTokenSource();
 
-		public MemoryCache():this( CacheScope.Shared)
+		public MemoryCache() : this(CacheScope.Shared)
 		{
 
 		}

@@ -9,6 +9,7 @@ namespace TomPIT.Design
 		event EventHandler<FileArgs> FileRestored;
 		event EventHandler<ComponentArgs> ComponentRestored;
 		event EventHandler<ComponentArgs> ConfigurationRestored;
+		event EventHandler<ComponentArgs> MultiFilesSynchronized;
 
 		event EventHandler<FileArgs> FileDeleted;
 
