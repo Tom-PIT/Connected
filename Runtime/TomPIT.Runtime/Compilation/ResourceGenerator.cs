@@ -39,23 +39,25 @@ internal static class ResourceGenerator
 		if (strings is null)
 			return null;
 
-		var stream = new MemoryStream();
+		using var stream = new MemoryStream();
 		using var writer = new ResourceWriter(stream);
 
 		foreach (var str in strings)
 			writer.AddResource(str.Key, str.Value);
 
 		writer.Generate();
-		writer.Close();
 
 		stream.Seek(0, SeekOrigin.Begin);
 
+		var buffer = stream.ToArray();
 		var key = $"{microService.Name}.{configuration.ComponentName()}.resources";
 
-		return new ResourceDescription(key, () => stream, true);
+		writer.Close();
+
+		return new ResourceDescription(key, () => new MemoryStream(buffer), true);
 	}
 
-	private static Dictionary<string, string>? LoadStrings(IMicroService microService, IAssemblyResourceConfiguration configuration)
+	private static Dictionary<string, string?>? LoadStrings(IMicroService microService, IAssemblyResourceConfiguration configuration)
 	{
 		var text = Tenant.GetService<IComponentService>().SelectText(microService.Token, configuration);
 
@@ -69,13 +71,22 @@ internal static class ResourceGenerator
 		if (doc.Root is null)
 			return null;
 
-		var result = new Dictionary<string, string>();
+		var result = new Dictionary<string, string?>();
 
 		var strings = from i in doc.Root.Elements("data")
-						  select i.Attribute("name");
+						  select i;
 
 		foreach (var key in strings)
-			result.Add(key.Name.LocalName, key.Value);
+		{
+			var name = key.Attribute("name");
+
+			if (name is null)
+				continue;
+
+			var value = key.Element("value");
+
+			result.Add(name.Value, value?.Value);
+		}
 
 		return result;
 	}
