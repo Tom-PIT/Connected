@@ -2,7 +2,8 @@
   "instanceName": "Default Instance",
   "features": "Application, Worker, Cdn, Rest, Search, BigData, Sys, IoT, Development, Management",
   "platform": "OnPrem",
-  "stage": "Development",
+  "stage": "QualityAssurance",
+  "optimization": "Debug",
   "resourceGroups": [
     "Default"
   ],
@@ -23,7 +24,7 @@
     "TomPIT.StorageProvider.Sql.SqlStorageProvider, TomPIT.StorageProvider.Sql"
   ],
   "connectionStrings": {
-    "sys": "data source=localhost,14331;initial catalog=tompitSys;user id=sa;password=%tpSqlPass2022!%;TrustServerCertificate=true;"
+    "sys": "data source=PIT-Z2\\SQLEXPRESS;initial catalog=tompitSys;integrated security=true;TrustServerCertificate=true;"
   },
   "sqlScriptPaths": {
     "create": "/path/to/create.sql",
@@ -43,7 +44,7 @@
     "TomPIT.MicroServices.Reporting.Design.ReportTemplate, TomPIT.MicroServices.Reporting.Design"
   ],
   "plugins": {
-    "location": "/mnt/c/src/plugins",
+    "location": "c:/src/plugins",
     "shadowCopy": false,
     "items": [
       "TomPIT.MicroServices.Configuration.Runtime.Plugin, TomPIT.MicroServices",

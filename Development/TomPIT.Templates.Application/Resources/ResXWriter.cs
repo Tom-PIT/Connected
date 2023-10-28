@@ -62,7 +62,7 @@ internal static class ResXWriter
 		var resourceCulture = ParseMemberDeclaration("private static global::System.Globalization.CultureInfo resourceCulture;");
 
 		var stringProperties = CreateStringProperties(text);
-		result = result.AddMembers(resourceMan, resourceCulture, CreateConstructor("SR"), CreateResourceManagerProperty(ns, identifier), CreateCultureProperty());
+		result = result.AddMembers(resourceMan, resourceCulture, CreateConstructor(identifier), CreateResourceManagerProperty(ns, identifier), CreateCultureProperty());
 
 		if (stringProperties.Any())
 			result = result.AddMembers(stringProperties.ToArray());

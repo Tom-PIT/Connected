@@ -67,7 +67,7 @@ namespace TomPIT.Runtime
 			}
 		}
 
-		private static void OnTenantInitialize(object sender, TenantArgs e)
+		private static async void OnTenantInitialize(object sender, TenantArgs e)
 		{
 			e.Tenant.RegisterService(typeof(ISerializationService), typeof(SerializationService));
 			e.Tenant.RegisterService(typeof(ICompilerService), typeof(CompilerService));
@@ -118,7 +118,7 @@ namespace TomPIT.Runtime
 			e.Tenant.RegisterService(typeof(IMicroServiceRuntimeService), new MicroServiceRuntimeService(e.Tenant));
 			e.Tenant.RegisterService(typeof(IDebugService), typeof(DebugService));
 
-			MicroServiceCompiler.Compile();
+			await MicroServiceCompiler.Compile();
 
 			if (!string.IsNullOrEmpty(e.Tenant.Url))
 			{

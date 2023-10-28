@@ -7,9 +7,12 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Resources;
 using TomPIT.Reflection;
 using TomPIT.Runtime;
+using TomPIT.Storage;
 
 namespace TomPIT.Compilation;
 internal static class MicroServiceCompiler
@@ -23,15 +26,15 @@ internal static class MicroServiceCompiler
 
 	private static CSharpCompilationOptions Options { get; }
 	private static CSharpParseOptions ParseOptions { get; }
-	public static void Compile()
+	public static async Task Compile()
 	{
 		var microServices = new CompilationSet();
 
 		while (microServices.TryDequeue(out IMicroService microService))
-			Compile(microService);
+			await Compile(microService);
 	}
 
-	private static void Compile(IMicroService microService)
+	private static async Task Compile(IMicroService microService)
 	{
 		if (!Tenant.GetService<IRuntimeService>().IsMicroServiceSupported(microService.Token))
 			return;
@@ -42,7 +45,7 @@ internal static class MicroServiceCompiler
 			return;
 		}
 
-		var trees = LoadSyntaxTrees(microService);
+		var trees = await LoadSyntaxTrees(microService);
 
 		if (trees is null || !trees.Any())
 			return;
@@ -201,7 +204,20 @@ internal static class MicroServiceCompiler
 		catch { }
 	}
 
-	private static List<SyntaxTree> LoadSyntaxTrees(IMicroService microService)
+	private static async Task<List<SyntaxTree>?> LoadSyntaxTrees(IMicroService microService)
+	{
+		var result = new List<SyntaxTree>();
+
+		if (await LoadComponents(microService) is List<SyntaxTree> trees)
+			result.AddRange(trees);
+
+		if (await LoadResources(microService) is List<SyntaxTree> resourcesTrees)
+			result.AddRange(resourcesTrees);
+
+		return result;
+	}
+
+	private static async Task<List<SyntaxTree>?> LoadComponents(IMicroService microService)
 	{
 		var components = Tenant.GetService<IComponentService>().QueryComponents(microService.Token, ComponentCategories.Code);
 
@@ -221,10 +237,67 @@ internal static class MicroServiceCompiler
 				continue;
 
 			result.Add(CSharpSyntaxTree.ParseText(SourceText.From(sourceCode, Encoding.UTF8), ParseOptions, $"{component.Name}.cs"));
+
+			if (config is IMultiFileElement multiFile)
+			{
+				var additionalFiles = await multiFile.QueryAdditionalFiles();
+
+				if (additionalFiles is null)
+					continue;
+
+				foreach (var file in additionalFiles)
+				{
+					if (LoadAdditionalFile(file) is SyntaxTree additionalTree)
+						result.Add(additionalTree);
+				}
+			}
 		}
 
 		return result;
 	}
+
+	private static async Task<List<SyntaxTree>?> LoadResources(IMicroService microService)
+	{
+		var resources = Tenant.GetService<IComponentService>().QueryConfigurations(microService.Token, ComponentCategories.AssemblyResource);
+
+		if (!resources.Any())
+			return null;
+
+		var result = new List<SyntaxTree>();
+
+		foreach (var configuration in resources)
+		{
+			if (configuration is not IAssemblyResourceConfiguration config)
+				continue;
+
+			var additionalFiles = await config.QueryAdditionalFiles();
+
+			if (additionalFiles is null)
+				continue;
+
+			foreach (var file in additionalFiles)
+			{
+				if (LoadAdditionalFile(file) is SyntaxTree additionalTree)
+					result.Add(additionalTree);
+			}
+		}
+
+		return result;
+	}
+
+	private static SyntaxTree? LoadAdditionalFile(Guid token)
+	{
+		var blob = Tenant.GetService<IStorageService>().Select(token);
+		var text = Tenant.GetService<IStorageService>().Download(token);
+
+		if (text is null || text.Content is null || !text.Content.Any())
+			return null;
+
+		var sourceCode = Encoding.UTF8.GetString(text.Content);
+
+		return CSharpSyntaxTree.ParseText(SourceText.From(sourceCode, Encoding.UTF8), ParseOptions, blob.FileName);
+	}
+
 
 	private static void CreateBuiltInTrees(IMicroService microService, List<SyntaxTree> trees)
 	{
