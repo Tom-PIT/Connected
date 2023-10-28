@@ -81,7 +81,10 @@ internal static class ResXWriter
 
 		get = get.AddAttributeLists(attributes);
 
-		get = get.AddBodyStatements(IfStatement(ParseExpression("object.ReferenceEquals(resourceMan, null)"), ParseStatement($"global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager(\"{ns}.{identifier}\", typeof({identifier}).Assembly);\r\nresourceMan = temp;\r\nreturn resourceMan;")));
+		var ifStatement = ParseExpression("object.ReferenceEquals(resourceMan, null)");
+		var statement = ParseStatement($"{{global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager(\"{ns}.{identifier}\", typeof({identifier}).Assembly);\r\nresourceMan = temp;\r\n}}\r\nreturn resourceMan;");
+
+		get = get.AddBodyStatements(IfStatement(ifStatement, statement));
 
 		result = result.AddAccessorListAccessors(get);
 
