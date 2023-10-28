@@ -151,5 +151,11 @@
 			else
 				return "Default";
 		}
+
+		public static bool IsAssemblyCategory(string category)
+		{
+			return string.Equals(category, Code, System.StringComparison.OrdinalIgnoreCase)
+				|| string.Equals(category, AssemblyResource, System.StringComparison.OrdinalIgnoreCase);
+		}
 	}
 }

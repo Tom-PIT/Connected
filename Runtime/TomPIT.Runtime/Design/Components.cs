@@ -456,7 +456,9 @@ namespace TomPIT.Design
 
 			Update(text.Configuration());
 
-			if (text is ICodeConfiguration)
+			var component = Tenant.GetService<IComponentService>().SelectComponent(text.Configuration().Component);
+
+			if (ComponentCategories.IsAssemblyCategory(component.Category))
 				Tenant.GetService<IDesignService>().MicroServices.IncrementVersion(s.Token);
 
 			Tenant.GetService<IDebugService>().ScriptChanged(text.Configuration().MicroService(), text.Configuration().Component, text.Id, blob);
