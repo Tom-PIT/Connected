@@ -20,10 +20,10 @@ internal static class ResXWriter
 		var ms = Tenant.GetService<IMicroServiceService>().Select(configuration.MicroService());
 		var text = Tenant.GetService<IComponentService>().SelectText(ms.Token, configuration);
 		var identifier = configuration.ComponentName();
-		var members = CreateMembers(ms.Name, identifier, text);
+		var members = CreateMembers(configuration.AccessModifier, ms.Name, identifier, text);
 		var usings = CreateUsings();
-
-		var ns = NamespaceDeclaration(ParseName(ms.Name)).AddUsings(usings).AddMembers(members);
+		var nameSpace = string.IsNullOrWhiteSpace(configuration.Namespace) ? ms.Name : configuration.Namespace;
+		var ns = NamespaceDeclaration(ParseName(nameSpace)).AddUsings(usings).AddMembers(members);
 
 		ns = ns.NormalizeWhitespace();
 
@@ -47,7 +47,7 @@ internal static class ResXWriter
 		}.ToArray();
 	}
 
-	private static MemberDeclarationSyntax CreateMembers(string ns, string identifier, string text)
+	private static MemberDeclarationSyntax CreateMembers(AccessModifier modifier, string ns, string identifier, string text)
 	{
 		var attributes1 = AttributeList(SeparatedList(new List<AttributeSyntax> { GeneratedCodeAttribute() }));
 		var attributes2 = AttributeList(SeparatedList(new List<AttributeSyntax> { DebuggerNonUserCodeAttribute() }));
@@ -56,15 +56,17 @@ internal static class ResXWriter
 		var result = ClassDeclaration(identifier);
 
 		result = result.AddAttributeLists(attributes1, attributes2, attributes3);
-		result = result.AddModifiers(Token(SyntaxKind.InternalKeyword));
+
+		result = result.AddModifiers(Token(modifier == AccessModifier.Public ? SyntaxKind.PublicKeyword : SyntaxKind.InternalKeyword));
 
 		var resourceMan = ParseMemberDeclaration("private static global::System.Resources.ResourceManager resourceMan;");
 		var resourceCulture = ParseMemberDeclaration("private static global::System.Globalization.CultureInfo resourceCulture;");
 
 		var stringProperties = CreateStringProperties(text);
+
 		result = result.AddMembers(resourceMan, resourceCulture, CreateConstructor(identifier), CreateResourceManagerProperty(ns, identifier), CreateCultureProperty());
 
-		if (stringProperties.Any())
+		if (stringProperties is not null && stringProperties.Any())
 			result = result.AddMembers(stringProperties.ToArray());
 
 		return result;
@@ -174,8 +176,11 @@ internal static class ResXWriter
 		return result;
 	}
 
-	private static List<PropertyDeclarationSyntax> CreateStringProperties(string text)
+	private static List<PropertyDeclarationSyntax>? CreateStringProperties(string text)
 	{
+		if (string.IsNullOrWhiteSpace(text))
+			return null;
+
 		using var ms = new MemoryStream(Encoding.UTF8.GetBytes(text));
 		var keys = new List<string>();
 		var doc = XDocument.Load(ms);
@@ -194,7 +199,7 @@ internal static class ResXWriter
 	{
 		var result = PropertyDeclaration(ParseTypeName("string"), key);
 
-		result = result.AddModifiers(Token(SyntaxKind.InternalKeyword), Token(SyntaxKind.StaticKeyword));
+		result = result.AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword));
 
 		var get = AccessorDeclaration(SyntaxKind.GetAccessorDeclaration);
 

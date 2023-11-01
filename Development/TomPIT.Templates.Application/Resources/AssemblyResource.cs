@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
@@ -15,6 +16,12 @@ namespace TomPIT.MicroServices.Resources;
 public class AssemblyResource : TextConfiguration, IAssemblyResourceConfiguration
 {
 	public override string FileName => $"{ToString()}.resx";
+
+	[PropertyCategory(PropertyCategoryAttribute.CategoryBehavior)]
+	public AccessModifier AccessModifier { get; set; } = AccessModifier.Public;
+
+	[PropertyCategory(PropertyCategoryAttribute.CategoryBehavior)]
+	public string Namespace { get; set; }
 
 	public async Task ProcessChanged()
 	{

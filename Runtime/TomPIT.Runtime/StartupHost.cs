@@ -138,7 +138,7 @@ internal class StartupHost : IStartupHostProxy
 		Run(app, env);
 
 		foreach (var startup in MicroServices.Startups)
-			startup.Configure(app);
+			startup.Configure(app, env);
 	}
 
 	private void Boot()

@@ -50,7 +50,8 @@ internal static class ResourceGenerator
 		stream.Seek(0, SeekOrigin.Begin);
 
 		var buffer = stream.ToArray();
-		var key = $"{microService.Name}.{configuration.ComponentName()}.resources";
+		var ns = string.IsNullOrWhiteSpace(configuration.Namespace) ? microService.Name : configuration.Namespace;
+		var key = $"{ns}.{configuration.ComponentName()}.resources";
 
 		writer.Close();
 

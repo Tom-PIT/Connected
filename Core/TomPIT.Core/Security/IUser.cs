@@ -10,6 +10,7 @@ namespace TomPIT.Security
 	}
 	public interface IUser
 	{
+		int Id { get; }
 		string FirstName { get; }
 		string LastName { get; }
 		string Url { get; }

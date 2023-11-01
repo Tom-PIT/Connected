@@ -34,6 +34,9 @@ namespace TomPIT.Proxy.Remote
 		public Guid Token { get; set; }
 
 		[Browsable(false)]
+		public int Id { get; set; }
+
+		[Browsable(false)]
 		public Guid AuthenticationToken { get; set; }
 
 		[Items("TomPIT.Design.Items.LanguageItems, TomPIT.Design")]

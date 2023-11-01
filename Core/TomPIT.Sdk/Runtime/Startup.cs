@@ -1,24 +1,46 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using System.Threading.Tasks;
 
 namespace TomPIT.Runtime;
 public abstract class Startup : IStartup
 {
-	public virtual void Configure(IApplicationBuilder app)
+	public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+	{
+		OnConfigure(app, env);
+	}
+
+	protected virtual void OnConfigure(IApplicationBuilder app, IWebHostEnvironment env)
 	{
 	}
 
-	public virtual void ConfigureServices(IServiceCollection services)
+	public void ConfigureServices(IServiceCollection services)
 	{
+		OnConfigureServices(services);
 	}
 
-	public virtual async Task Initialize()
+	protected virtual void OnConfigureServices(IServiceCollection services)
+	{
+
+	}
+
+	public async Task Initialize()
+	{
+		await OnInitialize();
+	}
+
+	protected virtual async Task OnInitialize()
 	{
 		await Task.CompletedTask;
 	}
 
-	public virtual async Task Start()
+	public async Task Start()
+	{
+		await OnStart();
+	}
+
+	protected virtual async Task OnStart()
 	{
 		await Task.CompletedTask;
 	}
