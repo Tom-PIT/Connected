@@ -69,12 +69,6 @@ internal class TextElementResolver
 		if (LoadScript())
 			return;
 
-		if (LoadEntity())
-			return;
-
-		if (LoadMiddleware())
-			return;
-
 		if (LoadModel())
 			return;
 
@@ -176,11 +170,6 @@ internal class TextElementResolver
 		return LoadSimple<IScriptConfiguration>(ComponentCategories.Script);
 	}
 
-	private bool LoadEntity()
-	{
-		return LoadSimple<IEntityConfiguration>(ComponentCategories.Entity);
-	}
-
 	private bool LoadConnection()
 	{
 		return LoadSimple<IConnectionConfiguration>(ComponentCategories.Connection);
@@ -189,11 +178,6 @@ internal class TextElementResolver
 	private bool LoadModel()
 	{
 		return LoadSimple<IModelConfiguration>(ComponentCategories.Model);
-	}
-
-	private bool LoadMiddleware()
-	{
-		return LoadSimple<IMiddlewareConfiguration>(ComponentCategories.Middleware);
 	}
 
 	private bool LoadApiComponent()

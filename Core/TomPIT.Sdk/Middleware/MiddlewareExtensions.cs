@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Reflection;
 using TomPIT.Annotations;
 using TomPIT.Connectivity;
@@ -120,23 +119,5 @@ namespace TomPIT.Middleware
 
 			context.Services.Diagnostic.Warning(exception.Source, exception.ToString(), category);
 		}
-
-		public static List<Type> ResolveImplementedMiddleware(Type type)
-		{
-			var result = new List<Type>();
-			var interfaces = type.GetInterfaces();
-
-			foreach (var i in interfaces)
-			{
-				if (typeof(IMiddleware).FullName is not string fullName)
-					continue;
-
-				if (i.GetInterface(fullName) is not null)
-					result.Add(i);
-			}
-
-			return result;
-		}
-
 	}
 }

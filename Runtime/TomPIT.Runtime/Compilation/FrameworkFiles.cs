@@ -336,8 +336,8 @@ public static class FrameworkFiles
 			"System.Security.Cryptography.Xml.dll",
 			"System.Threading.RateLimiting.dll"
 		};
-	}
 
+	}
 	public static List<MetadataReference> FrameworkReferences
 	{
 		get

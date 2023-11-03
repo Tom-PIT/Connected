@@ -236,7 +236,7 @@ namespace TomPIT.Design
 
 		private string EnumerateFolder(IPullRequestFolder folder, ImmutableList<IFolder> existing, int index)
 		{
-			var name = index == 0 ? folder.Name : $"{folder}{index}";
+			var name = index == 0 ? folder.Name : $"{folder.Name}{index}";
 
 			var target = existing.FirstOrDefault(f => string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase) && f.Parent == folder.Parent);
 
