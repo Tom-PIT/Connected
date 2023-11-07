@@ -50,8 +50,9 @@ namespace TomPIT.Routing
 			var key = body.Required<string>("authenticationKey");
 			var branch = body.Optional("branch", 0L);
 			var commit = body.Optional("commit", 0L);
+         var startCommit = body.Optional("startCommit", 0L);
 
-			ctx.GetService<IDesignService>().Deployment.Deploy(BaseUrl, repository, branch, commit, key);
+         ctx.GetService<IDesignService>().Deployment.Deploy(BaseUrl, repository, branch, commit, startCommit, key);
 		}
 	}
 }

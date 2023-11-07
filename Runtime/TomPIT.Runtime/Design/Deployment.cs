@@ -25,12 +25,12 @@ namespace TomPIT.Design
 
 		public ImmutableArray<Guid> DeployingMicroServices => DeployingMicroServicesList.ToImmutableArray();
 
-		public void Deploy(string remote, Guid repository, long branch, long commit, string authenticationToken)
+		public void Deploy(string remote, Guid repository, long branch, long commit, long startCommit, string authenticationToken)
 		{
 			var url = $"{remote}/Connected.Repositories/Branches/Pull";
 			var args = new DeployArgs
 			{
-				ResetMicroService = true
+				ResetMicroService = startCommit == 0
 			};
 
 			args.Commit.Branch = branch;
@@ -41,6 +41,7 @@ namespace TomPIT.Design
 				repository,
 				branch,
 				commit,
+				startCommit,
 				Mode = "Content",
 				Reason = "Install",
 			}, new HttpRequestArgs().WithBearerCredentials(authenticationToken)), args);
