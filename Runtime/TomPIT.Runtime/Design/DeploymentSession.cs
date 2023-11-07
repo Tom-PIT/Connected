@@ -28,7 +28,7 @@ namespace TomPIT.Design
       {
          if (e.ResetMicroService)
          {
-            for (var i = Request.Components.Count; i >= 0; i--)
+            for (var i = Request.Components.Count - 1; i >= 0; i--)
             {
                var component = Request.Components[i];
 
@@ -38,7 +38,7 @@ namespace TomPIT.Design
                   continue;
                }
 
-               for (var j = component.Files.Count; j >= 0; j--)
+               for (var j = component.Files.Count - 1; j >= 0; j--)
                {
                   var file = component.Files[j];
 
