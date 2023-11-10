@@ -1,11 +1,18 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace TomPIT.Runtime;
 public abstract class Startup : IStartup
 {
+	public Startup()
+	{
+		HasRecompiled = Tenant.GetService<IRuntimeService>().RecompiledMicroServices.FirstOrDefault(f => f == GetType().Assembly) is not null;
+	}
+
+	public bool HasRecompiled { get; }
 	public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 	{
 		OnConfigure(app, env);

@@ -10,4 +10,6 @@ public interface IStartup
 	void Configure(IApplicationBuilder app, IWebHostEnvironment env);
 	Task Initialize();
 	Task Start();
+
+	bool HasRecompiled { get; }
 }

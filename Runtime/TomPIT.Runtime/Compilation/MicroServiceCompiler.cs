@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -17,8 +18,11 @@ using TomPIT.Storage;
 namespace TomPIT.Compilation;
 internal static class MicroServiceCompiler
 {
+	public static List<Assembly> _compiled;
 	static MicroServiceCompiler()
 	{
+		_compiled = new();
+
 		Options = CreateOptions();
 
 		ParseOptions = new CSharpParseOptions(LanguageVersion.Latest, DocumentationMode.None, SourceCodeKind.Regular);
@@ -26,6 +30,7 @@ internal static class MicroServiceCompiler
 
 	private static CSharpCompilationOptions Options { get; }
 	private static CSharpParseOptions ParseOptions { get; }
+	public static ImmutableArray<Assembly> Compiled => _compiled.ToImmutableArray();
 	public static async Task Compile()
 	{
 		var microServices = new CompilationSet();
@@ -86,7 +91,7 @@ internal static class MicroServiceCompiler
 
 		var path = Shell.ResolveAssemblyPath(ParseAssemblyName(microService));
 
-		Assembly.LoadFile(path);
+		_compiled.Add(Assembly.LoadFile(path));
 	}
 	private static void Validate(IMicroService microService, CSharpCompilation compilation)
 	{

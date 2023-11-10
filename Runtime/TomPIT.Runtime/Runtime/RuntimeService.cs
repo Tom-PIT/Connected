@@ -2,8 +2,10 @@
 using Microsoft.AspNetCore.Hosting;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Reflection;
 using System.Text.Json;
+using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.Environment;
 
@@ -14,6 +16,7 @@ namespace TomPIT.Runtime
 		internal static IApplicationBuilder _host;
 		private List<Assembly> _microServices;
 
+		public ImmutableArray<Assembly> RecompiledMicroServices => MicroServiceCompiler.Compiled;
 		public bool IsHotSwappingSupported => Stage != EnvironmentStage.Development;
 		public string ContentRoot { get; set; }
 		public string WebRoot { get; set; }
