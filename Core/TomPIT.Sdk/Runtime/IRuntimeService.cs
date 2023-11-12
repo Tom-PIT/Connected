@@ -75,5 +75,6 @@ namespace TomPIT.Runtime
 		bool IsHotSwappingSupported { get; }
 		bool IsMicroServiceSupported(Guid microService);
 		ImmutableArray<Assembly> RecompiledMicroServices { get; }
+		ImmutableArray<Assembly> MicroServices { get; }
 	}
 }
