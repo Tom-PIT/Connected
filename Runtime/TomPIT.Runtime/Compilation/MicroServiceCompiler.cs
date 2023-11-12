@@ -153,6 +153,14 @@ internal static class MicroServiceCompiler
 		if (references is null)
 			return result;
 
+		foreach (var ms in references.MicroServices)
+		{
+			if (string.IsNullOrWhiteSpace(ms.MicroService))
+				continue;
+
+			AddReference(Shell.ResolveAssemblyPath($"{ms.MicroService}.dll"), existing, result);
+		}
+
 		foreach (var assembly in references.Assemblies)
 		{
 			if (string.IsNullOrWhiteSpace(assembly.AssemblyName))
