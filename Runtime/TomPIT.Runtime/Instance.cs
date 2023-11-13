@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 using System;
 using System.Collections.Generic;
@@ -15,101 +13,100 @@ using TomPIT.Reflection;
 using TomPIT.Runtime;
 using TomPIT.Runtime.Configuration;
 
-namespace TomPIT
+namespace TomPIT;
+
+public enum AuthenticationType
 {
-	public enum AuthenticationType
+	None = 0,
+	MultiTenant = 1,
+	SingleTenant = 2
+}
+
+public enum InstanceState
+{
+	Initializing = 1,
+	Running = 2
+}
+public static class Instance
+{
+	private static bool _pingRouteRegistered = false;
+	private static List<IPlugin> _plugins = null;
+	internal static RequestLocalizationOptions RequestLocalizationOptions { get; set; }
+	public static Guid Id { get; } = Guid.NewGuid();
+	public static InstanceState State { get; internal set; } = InstanceState.Initializing;
+	public static CancellationToken Stopping { get; internal set; }
+	public static CancellationToken Stopped { get; internal set; }
+	public static InstanceFeatures Features { get; internal set; }
+	public static ISysProxy SysProxy { get; internal set; }
+
+	static Instance()
 	{
-		None = 0,
-		MultiTenant = 1,
-		SingleTenant = 2
+		if (Shell.Configuration.RootElement.TryGetProperty("features", out JsonElement element))
+			Features = Enum.Parse<InstanceFeatures>(element.GetString());
+	}
+	public static IStartupHostProxy Start()
+	{
+		return new StartupHost();
 	}
 
-	public enum InstanceState
+	public static bool ResourceGroupExists(Guid resourceGroup)
 	{
-		Initializing = 1,
-		Running = 2
+		if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)
+			return true;
+
+		if (resourceGroup == Guid.Empty)
+			return true;
+
+		var resourceGroupService = MiddlewareDescriptor.Current.Tenant.GetService<IResourceGroupService>();
+
+		var groupInstance = resourceGroupService.Select(resourceGroup);
+
+		foreach (var i in Tenant.GetService<IResourceGroupService>().QuerySupported())
+		{
+			var rg = resourceGroupService.Select(i.Token);
+
+			if (rg == groupInstance)
+				return true;
+		}
+
+		return false;
 	}
-	public static class Instance
+
+	public static List<IPlugin> Plugins
 	{
-		private static bool _pingRouteRegistered = false;
-		private static List<IPlugin> _plugins = null;
-		internal static RequestLocalizationOptions RequestLocalizationOptions { get; set; }
-		public static Guid Id { get; } = Guid.NewGuid();
-		public static InstanceState State { get; internal set; } = InstanceState.Initializing;
-		public static CancellationToken Stopping { get; internal set; }
-		public static CancellationToken Stopped { get; internal set; }
-		public static InstanceFeatures Features { get; internal set; }
-		public static ISysProxy SysProxy { get; internal set; }
-
-		static Instance()
+		get
 		{
-			if (Shell.Configuration.RootElement.TryGetProperty("features", out JsonElement element))
-				Features = Enum.Parse<InstanceFeatures>(element.GetString());
-		}
-		public static IStartupHostProxy Start()
-		{
-			return new StartupHost();
-		}
-
-		public static bool ResourceGroupExists(Guid resourceGroup)
-		{
-			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)
-				return true;
-
-			if (resourceGroup == Guid.Empty)
-				return true;
-
-			var resourceGroupService = MiddlewareDescriptor.Current.Tenant.GetService<IResourceGroupService>();
-
-			var groupInstance = resourceGroupService.Select(resourceGroup);
-
-			foreach (var i in Tenant.GetService<IResourceGroupService>().QuerySupported())
+			if (_plugins is null)
 			{
-				var rg = resourceGroupService.Select(i.Token);
+				_plugins = new List<IPlugin>();
 
-				if (rg == groupInstance)
-					return true;
-			}
-
-			return false;
-		}
-
-		public static List<IPlugin> Plugins
-		{
-			get
-			{
-				if (_plugins is null)
+				foreach (var i in Runtime.Configuration.Plugins.Items)
 				{
-					_plugins = new List<IPlugin>();
+					var t = TypeExtensions.GetType(i);
 
-					foreach (var i in Runtime.Configuration.Plugins.Items)
-					{
-						var t = TypeExtensions.GetType(i);
+					if (t is null)
+						continue;
 
-						if (t is null)
-							continue;
+					var plugin = t.CreateInstance<IPlugin>();
 
-						var plugin = t.CreateInstance<IPlugin>();
-
-						if (plugin is not null)
-							_plugins.Add(plugin);
-					}
+					if (plugin is not null)
+						_plugins.Add(plugin);
 				}
-
-				return _plugins;
 			}
+
+			return _plugins;
 		}
+	}
 
-		public static void MapPingRoute(this IEndpointRouteBuilder routes)
-		{
-			if (_pingRouteRegistered)
-				return;
+	public static void MapPingRoute(this IEndpointRouteBuilder routes)
+	{
+		if (_pingRouteRegistered)
+			return;
 
-			routes.Map("sys/ping", () => Results.Ok());
+		routes.Map("sys/ping", () => Results.Ok());
 
-			//routes.MapControllerRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
+		//routes.MapControllerRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
 
-			_pingRouteRegistered = true;
-		}
+		_pingRouteRegistered = true;
 	}
 }

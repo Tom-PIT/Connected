@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Reflection;
 using System.Text.Json;
@@ -14,9 +13,9 @@ namespace TomPIT.Runtime
 	internal class RuntimeService : IRuntimeService
 	{
 		internal static IApplicationBuilder _host;
-		private List<Assembly> _microServices;
 
 		public ImmutableArray<Assembly> RecompiledMicroServices => MicroServiceCompiler.Compiled;
+		public ImmutableArray<Assembly> MicroServices => TomPIT.MicroServices.Assemblies;
 		public bool IsHotSwappingSupported => Stage != EnvironmentStage.Development;
 		public string ContentRoot { get; set; }
 		public string WebRoot { get; set; }

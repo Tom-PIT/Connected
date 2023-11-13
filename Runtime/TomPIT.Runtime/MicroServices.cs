@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Reflection;
 using TomPIT.Annotations;
+using TomPIT.Collections;
 using TomPIT.Reflection;
 using TomPIT.Runtime;
 
@@ -57,6 +59,9 @@ public static class MicroServices
 						}
 					}
 				}
+
+				if (_startups.Any())
+					_startups.SortByOrdinal();
 			}
 
 			return _startups.ToImmutableArray();
