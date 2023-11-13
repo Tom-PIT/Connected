@@ -7,7 +7,15 @@ namespace TomPIT.Design
 		private DeployCommitArgs _commit;
 
 		public bool ResetMicroService { get; set; }
+
+		public DeploymentVerb Verb { get; set; }
 		public DeployCommitArgs Commit => _commit ??= new DeployCommitArgs();
 		
+	}
+
+	public enum DeploymentVerb 
+	{
+		Deploy,
+		Delete
 	}
 }
