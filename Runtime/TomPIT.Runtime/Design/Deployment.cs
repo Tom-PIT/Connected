@@ -25,18 +25,16 @@ namespace TomPIT.Design
 
 		public ImmutableArray<Guid> DeployingMicroServices => DeployingMicroServicesList.ToImmutableArray();
 
-		public void Deploy(string remote, Guid repository, long branch, long commit, long startCommit, string authenticationToken)
+		public void Deploy(string remote, Guid repository, long branch, long commit, long startCommit, string authenticationToken, DeploymentVerb verb = DeploymentVerb.Deploy)
 		{
 			var url = $"{remote}/Connected.Repositories/Branches/Pull";
 			var args = new DeployArgs
 			{
-				ResetMicroService = startCommit == 0
+				ResetMicroService = startCommit == 0,
+				Verb = verb
 			};
-
-			args.Commit.Branch = branch;
-			args.Commit.Commit = commit;
-
-			Deploy(Tenant.Post<PullRequest>(url, new
+						
+			var pullRequest = Tenant.Post<PullRequest>(url, new
 			{
 				repository,
 				branch,
@@ -44,13 +42,21 @@ namespace TomPIT.Design
 				startCommit,
 				Mode = "Content",
 				Reason = "Install",
-			}, new HttpRequestArgs().WithBearerCredentials(authenticationToken)), args);
+			}, new HttpRequestArgs().WithBearerCredentials(authenticationToken));
+
+         args.Commit.Branch = pullRequest.Branch;
+         args.Commit.Commit = pullRequest.Commit;
+
+         Deploy(pullRequest, args); ;
 		}
 
 		public void Deploy(IPullRequest request, DeployArgs e)
 		{
 			if (request is null)
 				return;
+
+			e.Commit.Branch = request.Branch;
+			e.Commit.Commit = request.Commit;
 
 			try
 			{
@@ -85,8 +91,12 @@ namespace TomPIT.Design
 
 			var args = new DeployArgs
 			{
-				ResetMicroService = true
+				ResetMicroService = true,
+				Verb = DeploymentVerb.Deploy,
 			};
+
+			args.Commit.Branch = request.Branch;
+			args.Commit.Commit = request.Commit;
 
 			Deploy(request, args);
 		}

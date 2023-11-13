@@ -26,6 +26,12 @@ namespace TomPIT.Design
 
       public void Deploy(DeployArgs e)
       {
+         if (e.Verb == DeploymentVerb.Delete)
+         {
+            DropMicroService();
+            return;
+         }
+
          if (e.ResetMicroService)
          {
             for (var i = Request.Components.Count - 1; i >= 0; i--)
