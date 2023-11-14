@@ -146,7 +146,10 @@ namespace TomPIT.App.UI
 			var configuration = Tenant.GetService<IComponentService>().SelectConfiguration(id);
 
 			if (configuration is null)
+			{
 				Remove(id);
+				return;
+			}
 
 			if (!Tenant.GetService<IRuntimeService>().IsMicroServiceSupported(configuration.MicroService()))
 				return;
