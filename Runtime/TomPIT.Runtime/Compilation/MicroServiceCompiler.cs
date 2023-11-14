@@ -176,8 +176,52 @@ internal static class MicroServiceCompiler
 			catch { }
 		}
 
+		var packageAssemblies = new List<Assembly>();
+
 		foreach (var package in references.Packages)
-			LoadPackage(package.PackageName, package.Version, existing, result);
+		{
+			var assemblies = PreparePackage(package.PackageName, package.Version, existing, result);
+
+			if (assemblies is not null && assemblies.Any())
+				packageAssemblies.AddRange(assemblies);
+		}
+
+		packageAssemblies = ConsolidateAssemblies(packageAssemblies);
+
+		foreach (var assembly in packageAssemblies)
+			AddReference(assembly.Location, existing, result);
+
+		return result;
+	}
+
+	private static List<Assembly> ConsolidateAssemblies(List<Assembly> assemblies)
+	{
+		var result = new List<Assembly>();
+
+		foreach (var assembly in assemblies)
+		{
+			var proposed = AssemblyName.GetAssemblyName(assembly.Location);
+			var add = true;
+
+			for (var i = 0; i < result.Count; i++)
+			{
+				var existing = AssemblyName.GetAssemblyName(result[i].Location);
+
+				if (!string.Equals(existing.Name, proposed.Name, StringComparison.Ordinal))
+					continue;
+
+				add = false;
+
+				if (proposed.Version > existing.Version)
+				{
+					result[i] = assembly;
+					break;
+				}
+			}
+
+			if (add)
+				result.Add(assembly);
+		}
 
 		return result;
 	}
@@ -200,22 +244,19 @@ internal static class MicroServiceCompiler
 		references.Add(reference);
 	}
 
-	private static void LoadPackage(string packageName, string packageVersion, List<string> existingPaths, List<MetadataReference> references)
+	private static ImmutableList<Assembly>? PreparePackage(string packageName, string packageVersion, List<string> existingPaths, List<MetadataReference> references)
 	{
 		if (string.IsNullOrWhiteSpace(packageName) || string.IsNullOrWhiteSpace(packageVersion))
-			return;
+			return null;
 
 		try
 		{
-			var assemblies = Tenant.GetService<INuGetService>().Resolve(packageName, packageVersion, false);
-
-			if (assemblies is null)
-				return;
-
-			foreach (var asm in assemblies)
-				AddReference(asm.Location, existingPaths, references);
+			return Tenant.GetService<INuGetService>().Resolve(packageName, packageVersion, false);
 		}
-		catch { }
+		catch
+		{
+			return null;
+		}
 	}
 
 	private static async Task<List<SyntaxTree>?> LoadSyntaxTrees(IMicroService microService)
