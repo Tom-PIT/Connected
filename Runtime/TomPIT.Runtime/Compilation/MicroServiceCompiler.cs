@@ -68,8 +68,9 @@ internal static class MicroServiceCompiler
 	private static void LoadExisting(IMicroService microService)
 	{
 		var path = Shell.ResolveAssemblyPath(ParseAssemblyName(microService));
+		var name = AssemblyName.GetAssemblyName(Path.GetFullPath(path));
 
-		Assembly.LoadFile(Path.GetFullPath(path));
+		AppDomain.CurrentDomain.Load(name);
 	}
 
 	private static void Load(IMicroService microService, CSharpCompilation compilation)
