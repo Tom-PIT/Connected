@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -13,6 +15,8 @@ public abstract class Startup : IStartup
 	}
 
 	public bool HasRecompiled { get; }
+	protected IHost Host { get; private set; }
+	protected IServiceProvider Services => Host.Services;
 	public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 	{
 		OnConfigure(app, env);
@@ -32,8 +36,10 @@ public abstract class Startup : IStartup
 
 	}
 
-	public async Task Initialize()
+	public async Task Initialize(IHost host)
 	{
+		Host = host;
+
 		await OnInitialize();
 	}
 

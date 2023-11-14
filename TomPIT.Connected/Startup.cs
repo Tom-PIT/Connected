@@ -56,12 +56,6 @@ internal class Startup
 
 		foreach (var startup in startups)
 			startup.Initialize(Host);
-
-		foreach (var startup in MicroServices.Startups)
-			startup.Initialize();
-
-		foreach (var startup in MicroServices.Startups)
-			startup.Start();
 	}
 
 	private void OnConfiguringServices(object? sender, IServiceCollection e)
