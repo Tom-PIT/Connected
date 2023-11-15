@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -24,18 +25,45 @@ public static class ReferencePaths
 
 	public static string? Resolve(string name, string? version)
 	{
+		name = Path.GetFileNameWithoutExtension(name);
+
 		if (!Cache.TryGetValue(name, out List<ReferencePath> existing))
 			return null;
 
 		if (version is null)
-			return existing[^1].Path;
+			return Latest(existing);
 
 		var exact = existing.FirstOrDefault(f => string.Equals(f.Version, version, System.StringComparison.Ordinal));
 
 		if (exact is not null)
 			return exact.Path;
 
-		return existing[^1].Path;
+		return Latest(existing);
+	}
+
+	private static string? Latest(List<ReferencePath> versions)
+	{
+		ReferencePath? result = null;
+		Version? latestVersion = null;
+
+		foreach (var item in versions)
+		{
+			if (Version.TryParse(item.Version, out Version? version))
+			{
+				if (latestVersion is null)
+				{
+					result = item;
+					latestVersion = version;
+				}
+				else if (version > latestVersion)
+				{
+					result = item;
+					latestVersion = version;
+				}
+			}
+		}
+
+		return result?.Path;
 	}
 
 	public static void Update(List<Assembly> assemblies)
@@ -65,7 +93,7 @@ public static class ReferencePaths
 			}
 			else
 			{
-				Cache.TryAdd(assembly.FullName, new List<ReferencePath>
+				Cache.TryAdd(name.Name, new List<ReferencePath>
 				{
 					new ReferencePath
 					{
@@ -77,7 +105,7 @@ public static class ReferencePaths
 		}
 
 		var content = JsonSerializer.Serialize(Cache);
-		var fileName = Path.Combine(Shell.MicroServicesFolder, "deps.json");
+		var fileName = Path.GetFullPath(Path.Combine(Shell.MicroServicesFolder, "deps.json"));
 
 		File.WriteAllText(fileName, content);
 	}

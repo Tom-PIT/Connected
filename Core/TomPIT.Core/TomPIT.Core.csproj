@@ -1,66 +1,67 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup Label="Globals">
-    <SccProjectName>
-    </SccProjectName>
-    <SccProvider>
-    </SccProvider>
-    <SccAuxPath>
-    </SccAuxPath>
-    <SccLocalPath>
-    </SccLocalPath>
-  </PropertyGroup>
-  <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-    <Authors>Tom PIT</Authors>
-    <Company>Tom PIT</Company>
-    <Product>Tom PIT.connected</Product>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <RootNamespace>TomPIT</RootNamespace>
-    <AssemblyVersion>3.1.1114.5</AssemblyVersion>
-    <FileVersion>3.1.1114.5</FileVersion>
-    <Version>3.1.1114.5</Version>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DebugType>portable</DebugType>
-    <DebugSymbols>true</DebugSymbols>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="1.1.0" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.1" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Update="Claims.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Claims.resx</DependentUpon>
-    </Compile>
-    <Compile Update="SR.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>SR.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Update="Claims.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Claims.Designer.cs</LastGenOutput>
-      <CustomToolNamespace>TomPIT</CustomToolNamespace>
-    </EmbeddedResource>
-    <EmbeddedResource Update="SR.sl-SI.resx">
-      <CustomToolNamespace>TomPIT</CustomToolNamespace>
-      <LastGenOutput>SR.Designer.cs</LastGenOutput>
-      <Generator>PublicResXFileCodeGenerator</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="SR.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>SR.Designer.cs</LastGenOutput>
-      <CustomToolNamespace>TomPIT</CustomToolNamespace>
-    </EmbeddedResource>
-  </ItemGroup>
+	<PropertyGroup Label="Globals">
+		<SccProjectName>
+		</SccProjectName>
+		<SccProvider>
+		</SccProvider>
+		<SccAuxPath>
+		</SccAuxPath>
+		<SccLocalPath>
+		</SccLocalPath>
+	</PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework>
+		<Authors>Tom PIT</Authors>
+		<Company>Tom PIT</Company>
+		<Nullable>enable</Nullable>
+		<Product>Tom PIT.connected</Product>
+		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+		<RootNamespace>TomPIT</RootNamespace>
+		<AssemblyVersion>3.1.1114.5</AssemblyVersion>
+		<FileVersion>3.1.1114.5</FileVersion>
+		<Version>3.1.1114.5</Version>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<DebugType>portable</DebugType>
+		<DebugSymbols>true</DebugSymbols>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="2.2.0" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="1.1.0" />
+		<PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.1" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+	</ItemGroup>
+	<ItemGroup>
+		<Compile Update="Claims.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>Claims.resx</DependentUpon>
+		</Compile>
+		<Compile Update="SR.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>SR.resx</DependentUpon>
+		</Compile>
+	</ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Update="Claims.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>Claims.Designer.cs</LastGenOutput>
+			<CustomToolNamespace>TomPIT</CustomToolNamespace>
+		</EmbeddedResource>
+		<EmbeddedResource Update="SR.sl-SI.resx">
+			<CustomToolNamespace>TomPIT</CustomToolNamespace>
+			<LastGenOutput>SR.Designer.cs</LastGenOutput>
+			<Generator>PublicResXFileCodeGenerator</Generator>
+		</EmbeddedResource>
+		<EmbeddedResource Update="SR.resx">
+			<Generator>PublicResXFileCodeGenerator</Generator>
+			<LastGenOutput>SR.Designer.cs</LastGenOutput>
+			<CustomToolNamespace>TomPIT</CustomToolNamespace>
+		</EmbeddedResource>
+	</ItemGroup>
 </Project>
