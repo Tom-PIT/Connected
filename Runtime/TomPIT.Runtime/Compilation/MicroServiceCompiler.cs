@@ -191,6 +191,8 @@ internal static class MicroServiceCompiler
 		foreach (var assembly in packageAssemblies)
 			AddReference(assembly.Location, existing, result);
 
+		ReferencePaths.Update(packageAssemblies);
+
 		return result;
 	}
 
