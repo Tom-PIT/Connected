@@ -4,30 +4,84 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 
 namespace TomPIT.Runtime;
 public static class ReferencePaths
 {
+	private const string ManagedFileName = "ManagedDependencies.json";
+	private const string UnmanagedFileName = "UnmanagedDependencies.json";
 	static ReferencePaths()
 	{
-		var fileName = Path.Combine(Shell.MicroServicesFolder, "deps.json");
+		var managedFileName = Path.Combine(Shell.MicroServicesFolder, ManagedFileName);
+		var unmanagedFileName = Path.Combine(Shell.MicroServicesFolder, UnmanagedFileName);
 
-		if (File.Exists(fileName))
+		if (File.Exists(managedFileName))
 		{
-			using var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
-			Cache = JsonSerializer.Deserialize<ConcurrentDictionary<string, List<ReferencePath>>>(fs);
+			using var fs = new FileStream(managedFileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+			ManagedCache = JsonSerializer.Deserialize<ConcurrentDictionary<string, List<ReferencePath>>>(fs);
 		}
 		else
-			Cache = new();
+			ManagedCache = new();
+
+		if (File.Exists(unmanagedFileName))
+		{
+			using var fs = new FileStream(unmanagedFileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+			UnmanagedCache = JsonSerializer.Deserialize<ConcurrentDictionary<string, List<string>>>(fs);
+		}
+		else
+			UnmanagedCache = new();
 	}
-	private static ConcurrentDictionary<string, List<ReferencePath>> Cache { get; }
+	private static ConcurrentDictionary<string, List<ReferencePath>> ManagedCache { get; }
+	private static ConcurrentDictionary<string, List<string>> UnmanagedCache { get; }
 
-	public static string? Resolve(string name, string? version)
+	public static string? ResolveUnmanaged(string assemblyName)
 	{
-		name = Path.GetFileNameWithoutExtension(name);
+		assemblyName = Path.GetFileNameWithoutExtension(assemblyName);
 
-		if (!Cache.TryGetValue(name, out List<ReferencePath> existing))
+		if (!UnmanagedCache.TryGetValue(assemblyName, out var existing))
+			return null;
+
+		foreach (var path in existing)
+		{
+			var tokens = path.Split(Path.DirectorySeparatorChar);
+
+			if (tokens.Length < 4)
+				continue;
+
+			if (!string.Equals(tokens[^3], "runtimes", StringComparison.Ordinal))
+				continue;
+
+			var platform = string.Empty;
+
+			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+			{
+				//only x64 is currently supported
+				platform = "win-x64";
+			}
+			else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+			{
+				platform = "linux-x64";
+			}
+			else //Currently not supported.
+				return null;
+
+			if (string.IsNullOrEmpty(platform))
+				continue;
+
+			if (string.Equals(tokens[^2], platform, StringComparison.Ordinal))
+				return path;
+		}
+
+		return null;
+	}
+
+	public static string? ResolveManaged(string assemblyName, string? version)
+	{
+		assemblyName = Path.GetFileNameWithoutExtension(assemblyName);
+
+		if (!ManagedCache.TryGetValue(assemblyName, out List<ReferencePath> existing))
 			return null;
 
 		if (version is null)
@@ -66,6 +120,28 @@ public static class ReferencePaths
 		return result?.Path;
 	}
 
+	public static void Update(List<string> unmanagedPaths)
+	{
+		foreach (var path in unmanagedPaths)
+		{
+			var assemblyName = Path.GetFileNameWithoutExtension(Path.GetFileName(path));
+			var folder = Path.GetDirectoryName(path);
+
+			if (UnmanagedCache.TryGetValue(assemblyName, out var cache))
+			{
+				if (!cache.Contains(folder, StringComparer.OrdinalIgnoreCase))
+					cache.Add(folder);
+			}
+			else
+				UnmanagedCache.TryAdd(assemblyName, new List<string> { folder });
+		}
+
+		var content = JsonSerializer.Serialize(ManagedCache);
+		var fileName = Path.GetFullPath(Path.Combine(Shell.MicroServicesFolder, UnmanagedFileName));
+
+		File.WriteAllText(fileName, content);
+	}
+
 	public static void Update(List<Assembly> assemblies)
 	{
 		if (assemblies is null)
@@ -76,7 +152,7 @@ public static class ReferencePaths
 			var name = new AssemblyName(assembly.FullName);
 			var version = name.Version.ToString();
 
-			if (Cache.TryGetValue(name.Name, out List<ReferencePath> existing))
+			if (ManagedCache.TryGetValue(name.Name, out List<ReferencePath> existing))
 			{
 				var target = existing.FirstOrDefault(f => string.Equals(f.Version, version, System.StringComparison.Ordinal));
 
@@ -93,7 +169,7 @@ public static class ReferencePaths
 			}
 			else
 			{
-				Cache.TryAdd(name.Name, new List<ReferencePath>
+				ManagedCache.TryAdd(name.Name, new List<ReferencePath>
 				{
 					new ReferencePath
 					{
@@ -104,8 +180,8 @@ public static class ReferencePaths
 			}
 		}
 
-		var content = JsonSerializer.Serialize(Cache);
-		var fileName = Path.GetFullPath(Path.Combine(Shell.MicroServicesFolder, "deps.json"));
+		var content = JsonSerializer.Serialize(ManagedCache);
+		var fileName = Path.GetFullPath(Path.Combine(Shell.MicroServicesFolder, ManagedFileName));
 
 		File.WriteAllText(fileName, content);
 	}

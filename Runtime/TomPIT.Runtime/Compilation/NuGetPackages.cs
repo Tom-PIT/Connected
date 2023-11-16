@@ -32,8 +32,8 @@ namespace TomPIT.Compilation
 		private Lazy<ConcurrentDictionary<Guid, ManualResetEvent>> _packageBlobLoadState = new Lazy<ConcurrentDictionary<Guid, ManualResetEvent>>();
 		private Lazy<ConcurrentDictionary<string, bool>> _initializeState = new Lazy<ConcurrentDictionary<string, bool>>();
 		private Lazy<ConcurrentDictionary<Guid, bool>> _initializeBlobState = new Lazy<ConcurrentDictionary<Guid, bool>>();
-		private Lazy<ConcurrentDictionary<string, List<PackageFileDescriptor>>> _cache = new Lazy<ConcurrentDictionary<string, List<PackageFileDescriptor>>>();
-		private Lazy<ConcurrentDictionary<Guid, List<PackageFileDescriptor>>> _blobCache = new Lazy<ConcurrentDictionary<Guid, List<PackageFileDescriptor>>>();
+		private Lazy<ConcurrentDictionary<string, PackageDescriptor>> _cache = new Lazy<ConcurrentDictionary<string, PackageDescriptor>>();
+		private Lazy<ConcurrentDictionary<Guid, PackageDescriptor>> _blobCache = new Lazy<ConcurrentDictionary<Guid, PackageDescriptor>>();
 		private SourceCacheContext _cacheContext;
 		private ILogger _logger;
 		private NuGetFramework _framework;
@@ -54,8 +54,8 @@ namespace TomPIT.Compilation
 		private ConcurrentDictionary<Guid, ManualResetEvent> LoadBlobState => _packageBlobLoadState.Value;
 		private ConcurrentDictionary<string, bool> InitializeState => _initializeState.Value;
 		private ConcurrentDictionary<Guid, bool> InitializeBlobState => _initializeBlobState.Value;
-		private ConcurrentDictionary<string, List<PackageFileDescriptor>> Cache => _cache.Value;
-		private ConcurrentDictionary<Guid, List<PackageFileDescriptor>> BlobCache => _blobCache.Value;
+		private ConcurrentDictionary<string, PackageDescriptor> Cache => _cache.Value;
+		private ConcurrentDictionary<Guid, PackageDescriptor> BlobCache => _blobCache.Value;
 		private SourceCacheContext CacheContext => _cacheContext ??= new SourceCacheContext();
 		private ILogger Logger => _logger ??= new NuGetLogger(Tenant);
 		private NuGetFramework Framework => _framework ??= NuGetFramework.ParseFolder(FrameworkVersion);
@@ -91,6 +91,13 @@ namespace TomPIT.Compilation
 
 		private PackagePathResolver PathResolver => _pathResolver ??= new PackagePathResolver(RootDirectory, false);
 
+		public List<string> ResolveRuntimePaths(string id, string version)
+		{
+			var fs = GetPackageFileSet(id, version).Result;
+
+			return fs.RuntimePaths;
+		}
+
 		public ImmutableList<Assembly> Resolve(Guid blob, bool entryOnly)
 		{
 			return Resolve(GetPackageFileSet(blob).Result, entryOnly);
@@ -100,15 +107,15 @@ namespace TomPIT.Compilation
 			return Resolve(GetPackageFileSet(id, version).Result, entryOnly);
 		}
 
-		private ImmutableList<Assembly> Resolve(ImmutableArray<PackageFileDescriptor> files, bool entryOnly)
+		private ImmutableList<Assembly> Resolve(PackageDescriptor files, bool entryOnly)
 		{
 			var result = new List<Assembly>();
 
-			if (files.Any())
+			if (files.Files.Any())
 			{
 				if (entryOnly)
 				{
-					var file = files.FirstOrDefault(f => f.Entry);
+					var file = files.Files.FirstOrDefault(f => f.Entry);
 
 					if (file != null)
 					{
@@ -120,7 +127,7 @@ namespace TomPIT.Compilation
 				}
 				else
 				{
-					foreach (var file in files)
+					foreach (var file in files.Files)
 					{
 						var asm = LoadAssembly(file);
 
@@ -133,17 +140,17 @@ namespace TomPIT.Compilation
 			return result.ToImmutableList();
 		}
 
-		private async Task<ImmutableArray<PackageFileDescriptor>> GetPackageFileSet(Guid blob)
+		private async Task<PackageDescriptor>? GetPackageFileSet(Guid blob)
 		{
 			if (blob == Guid.Empty)
-				return ImmutableArray<PackageFileDescriptor>.Empty;
+				return null;
 
 			if (InitializeBlobState.TryGetValue(blob, out bool initialized) && initialized)
 			{
-				if (BlobCache.TryGetValue(blob, out List<PackageFileDescriptor> _result))
-					return _result.ToImmutableArray();
+				if (BlobCache.TryGetValue(blob, out PackageDescriptor _result))
+					return _result;
 
-				return ImmutableArray<PackageFileDescriptor>.Empty;
+				return null;
 			}
 
 			var resetEvent = new ManualResetEvent(false);
@@ -155,10 +162,10 @@ namespace TomPIT.Compilation
 
 				resetEvent.WaitOne();
 
-				if (BlobCache.TryGetValue(blob, out List<PackageFileDescriptor> _result))
-					return _result.ToImmutableArray();
+				if (BlobCache.TryGetValue(blob, out PackageDescriptor _result))
+					return _result;
 
-				return ImmutableArray<PackageFileDescriptor>.Empty;
+				return null;
 			}
 			else
 			{
@@ -180,16 +187,16 @@ namespace TomPIT.Compilation
 			}
 
 		}
-		private async Task<ImmutableArray<PackageFileDescriptor>> GetPackageFileSet(string id, string version)
+		private async Task<PackageDescriptor> GetPackageFileSet(string id, string version)
 		{
 			var key = CreateKey(id, version);
 
 			if (InitializeState.TryGetValue(key, out bool initialized) && initialized)
 			{
-				if (Cache.TryGetValue(key, out List<PackageFileDescriptor> _result))
-					return _result.ToImmutableArray();
+				if (Cache.TryGetValue(key, out PackageDescriptor _result))
+					return _result;
 
-				return ImmutableArray<PackageFileDescriptor>.Empty;
+				return null;
 			}
 
 			var resetEvent = new ManualResetEvent(false);
@@ -201,10 +208,10 @@ namespace TomPIT.Compilation
 
 				resetEvent.WaitOne();
 
-				if (Cache.TryGetValue(key, out List<PackageFileDescriptor> _result))
-					return _result.ToImmutableArray();
+				if (Cache.TryGetValue(key, out PackageDescriptor _result))
+					return _result;
 
-				return ImmutableArray<PackageFileDescriptor>.Empty;
+				return null;
 			}
 			else
 			{
@@ -259,12 +266,12 @@ namespace TomPIT.Compilation
 			}
 		}
 
-		private async Task<ImmutableArray<PackageFileDescriptor>> RestorePackage(Guid blob)
+		private async Task<PackageDescriptor>? RestorePackage(Guid blob)
 		{
 			var content = Tenant.GetService<IStorageService>().Download(blob);
 
 			if (content == null || content.Content?.Length == 0)
-				return ImmutableArray<PackageFileDescriptor>.Empty;
+				return null;
 
 			using var ms = new MemoryStream(content.Content);
 			using var reader = new PackageArchiveReader(ms);
@@ -273,22 +280,22 @@ namespace TomPIT.Compilation
 
 			var result = await RestorePackage(reader.NuspecReader.GetId(), reader.NuspecReader.GetVersion().ToString(), restoreSet, true);
 
-			BlobCache.TryAdd(blob, result.ToList());
+			BlobCache.TryAdd(blob, result);
 
 			return result;
 		}
-		private async Task<ImmutableArray<PackageFileDescriptor>> RestorePackage(string id, string version)
+		private async Task<PackageDescriptor> RestorePackage(string id, string version)
 		{
 			var restoreSet = await CreateRestoreSet(id, version);
 
 			return await RestorePackage(id, version, restoreSet, false);
 		}
 
-		private async Task<ImmutableArray<PackageFileDescriptor>> RestorePackage(string id, string version, IEnumerable<SourcePackageDependencyInfo> packages, bool isBlob)
+		private async Task<PackageDescriptor> RestorePackage(string id, string version, IEnumerable<SourcePackageDependencyInfo> packages, bool isBlob)
 		{
 			var packageExtractionContext = new PackageExtractionContext(PackageSaveMode.Defaultv3, XmlDocFileSaveMode.None, null, Logger);
 			var frameworkReducer = new FrameworkReducer();
-			var files = new List<PackageFileDescriptor>();
+			var result = new PackageDescriptor();
 
 			foreach (var installer in packages)
 			{
@@ -308,6 +315,24 @@ namespace TomPIT.Compilation
 				else
 					packageReader = new PackageFolderReader(installedPath);
 
+				/*
+ 				 * This is due to the strange behavior when installing packages locally. I couldn't figure out why
+ 				 * extractor doesn't install local package in the version folder. It is installed directly in the
+ 				 * package's root folder
+				 */
+				var folder = Path.Combine(PathResolver.GetInstallPath(installer), installer.Version.ToString());
+
+				if (!Directory.Exists(folder))
+					folder = PathResolver.GetInstallPath(installer);
+
+				var files = packageReader.GetFiles();
+
+				foreach (var file in files)
+				{
+					if (file.StartsWith("runtimes/") && file.EndsWith(".dll"))
+						result.RuntimePaths.Add(Path.GetFullPath(Path.Combine(folder, file)));
+				}
+
 				var libItems = packageReader.GetLibItems();
 				var nearest = frameworkReducer.GetNearest(Framework, libItems.Select(x => x.TargetFramework));
 
@@ -318,16 +343,6 @@ namespace TomPIT.Compilation
 
 				if (lib == null)
 					continue;
-
-				/*
-			* This is due to the strange behavior when installing packages locally. I couldn't figure out why
-			* extractor doesn't install local package in the version folder. It is installed directly in the
-			* package's root folder
-			*/
-				var folder = Path.Combine(PathResolver.GetInstallPath(installer), installer.Version.ToString());
-
-				if (!Directory.Exists(folder))
-					folder = PathResolver.GetInstallPath(installer);
 
 				foreach (var item in lib.Items)
 				{
@@ -340,7 +355,7 @@ namespace TomPIT.Compilation
 						if (!File.Exists(fullPath))
 							continue;
 
-						files.Add(new PackageFileDescriptor
+						result.Files.Add(new PackageFileDescriptor
 						{
 							FileName = fullPath,
 							Version = installer.Version.ToString(),
@@ -352,9 +367,9 @@ namespace TomPIT.Compilation
 			}
 
 			if (!isBlob)
-				Cache.TryAdd(CreateKey(id, version), files);
+				Cache.TryAdd(CreateKey(id, version), result);
 
-			return files.ToImmutableArray();
+			return result;
 		}
 
 		private async Task<IEnumerable<SourcePackageDependencyInfo>> CreateRestoreSet(Guid blob, PackageArchiveReader reader)

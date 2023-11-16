@@ -14,4 +14,9 @@ internal class NuGetService : INuGetService
 	{
 		return ((CompilerService)Tenant.GetService<ICompilerService>()).Nuget.Resolve(id, version, entryOnly);
 	}
+
+	public ImmutableList<string> ResolveRuntimePaths(string id, string version)
+	{
+		return ((CompilerService)Tenant.GetService<ICompilerService>()).Nuget.ResolveRuntimePaths(id, version).ToImmutableList();
+	}
 }

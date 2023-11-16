@@ -81,6 +81,9 @@ public static class Shell
 	{
 		assemblyName = Path.GetFileNameWithoutExtension(assemblyName);
 
+		if (ReferencePaths.ResolveUnmanaged(assemblyName) is string resolved)
+			return resolved;
+
 		var directoriesToCheck = new List<string>();
 
 		//Directories in order
@@ -181,7 +184,7 @@ public static class Shell
 
 	private static bool TryResolveDependencyPath(string assemblyName, out string result)
 	{
-		result = ReferencePaths.Resolve(assemblyName, null);
+		result = ReferencePaths.ResolveManaged(assemblyName, null);
 
 		return result is not null;
 	}

@@ -177,13 +177,17 @@ internal static class MicroServiceCompiler
 		}
 
 		var packageAssemblies = new List<Assembly>();
+		var unmanagedPaths = new List<string>();
 
 		foreach (var package in references.Packages)
 		{
-			var assemblies = PreparePackage(package.PackageName, package.Version, existing, result);
+			var prepared = PreparePackage(package.PackageName, package.Version, existing, result);
 
-			if (assemblies is not null && assemblies.Any())
-				packageAssemblies.AddRange(assemblies);
+			if (prepared.Item1 is not null && prepared.Item1.Any())
+				packageAssemblies.AddRange(prepared.Item1);
+
+			if (prepared.Item2 is not null && prepared.Item2.Any())
+				unmanagedPaths.AddRange(prepared.Item2);
 		}
 
 		packageAssemblies = ConsolidateAssemblies(packageAssemblies);
@@ -192,6 +196,7 @@ internal static class MicroServiceCompiler
 			AddReference(assembly.Location, existing, result);
 
 		ReferencePaths.Update(packageAssemblies);
+		ReferencePaths.Update(unmanagedPaths);
 
 		return result;
 	}
@@ -246,18 +251,21 @@ internal static class MicroServiceCompiler
 		references.Add(reference);
 	}
 
-	private static ImmutableList<Assembly>? PreparePackage(string packageName, string packageVersion, List<string> existingPaths, List<MetadataReference> references)
+	private static (ImmutableList<Assembly>?, ImmutableList<string>?) PreparePackage(string packageName, string packageVersion, List<string> existingPaths, List<MetadataReference> references)
 	{
 		if (string.IsNullOrWhiteSpace(packageName) || string.IsNullOrWhiteSpace(packageVersion))
-			return null;
+			return (null, null);
 
 		try
 		{
-			return Tenant.GetService<INuGetService>().Resolve(packageName, packageVersion, false);
+			var assemblies = Tenant.GetService<INuGetService>().Resolve(packageName, packageVersion, false);
+			var paths = Tenant.GetService<INuGetService>().ResolveRuntimePaths(packageName, packageVersion);
+
+			return (assemblies, paths);
 		}
 		catch
 		{
-			return null;
+			return (null, null);
 		}
 	}
 

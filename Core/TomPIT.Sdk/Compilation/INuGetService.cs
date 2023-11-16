@@ -7,4 +7,6 @@ public interface INuGetService
 {
 	ImmutableList<Assembly> Resolve(Guid blob, bool entryOnly);
 	ImmutableList<Assembly> Resolve(string id, string version, bool entryOnly);
+
+	ImmutableList<string> ResolveRuntimePaths(string id, string version);
 }
