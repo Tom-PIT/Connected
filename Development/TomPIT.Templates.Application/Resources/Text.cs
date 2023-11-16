@@ -1,14 +1,30 @@
-﻿using TomPIT.Annotations.Design;
+﻿using System.ComponentModel;
+using TomPIT.Annotations;
+using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
 
-namespace TomPIT.MicroServices.Resources
+namespace TomPIT.MicroServices.Resources;
+
+[FileNameExtension("txt")]
+[DomDesigner(DomDesignerAttribute.TextDesigner)]
+[Syntax(SyntaxAttribute.Text)]
+public class Text : TextConfiguration, ITextConfiguration, IStaticFileConfiguration
 {
-    [FileNameExtension("txt")]
-    [DomDesigner(DomDesignerAttribute.TextDesigner)]
-    [Syntax(SyntaxAttribute.Text)]
-    public class Text : TextConfiguration, ITextConfiguration
-    {
-        public override string FileName => ToString();
-    }
+	[Browsable(false)]
+	public override string FileName
+	{
+		get
+		{
+			var preferred = ToString();
+
+			if (preferred.Contains('.'))
+				return preferred;
+
+			return $"{preferred}.{Extension}";
+		}
+	}
+
+	[PropertyCategory(PropertyCategoryAttribute.CategoryBehavior)]
+	public string Extension { get; set; } = "txt";
 }
