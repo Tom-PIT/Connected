@@ -144,7 +144,7 @@ public static class ReferencePaths
 				UnmanagedCache.TryAdd(assemblyName, new List<string> { folder });
 		}
 
-		var content = JsonSerializer.Serialize(ManagedCache);
+		var content = JsonSerializer.Serialize(UnmanagedCache);
 		var fileName = Path.GetFullPath(Path.Combine(Shell.MicroServicesFolder, UnmanagedFileName));
 
 		File.WriteAllText(fileName, content);
@@ -188,7 +188,7 @@ public static class ReferencePaths
 			}
 		}
 
-		var content = JsonSerializer.Serialize(UnmanagedCache);
+		var content = JsonSerializer.Serialize(ManagedCache);
 		var fileName = Path.GetFullPath(Path.Combine(Shell.MicroServicesFolder, ManagedFileName));
 
 		File.WriteAllText(fileName, content);
