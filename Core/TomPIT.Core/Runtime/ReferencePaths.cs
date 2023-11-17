@@ -28,11 +28,19 @@ public static class ReferencePaths
 		if (File.Exists(unmanagedFileName))
 		{
 			using var fs = new FileStream(unmanagedFileName, FileMode.Open, FileAccess.Read, FileShare.Read);
-			UnmanagedCache = JsonSerializer.Deserialize<ConcurrentDictionary<string, List<string>>>(fs);
+			try
+			{
+				UnmanagedCache = JsonSerializer.Deserialize<ConcurrentDictionary<string, List<string>>>(fs);
+			}
+			catch (Exception ex)
+			{
+
+			}
 		}
 		else
 			UnmanagedCache = new();
 	}
+
 	private static ConcurrentDictionary<string, List<ReferencePath>> ManagedCache { get; }
 	private static ConcurrentDictionary<string, List<string>> UnmanagedCache { get; }
 
@@ -71,7 +79,7 @@ public static class ReferencePaths
 				continue;
 
 			if (string.Equals(tokens[^2], platform, StringComparison.Ordinal))
-				return path;
+				return Path.Combine(path, $"{assemblyName}.dll");
 		}
 
 		return null;
@@ -180,7 +188,7 @@ public static class ReferencePaths
 			}
 		}
 
-		var content = JsonSerializer.Serialize(ManagedCache);
+		var content = JsonSerializer.Serialize(UnmanagedCache);
 		var fileName = Path.GetFullPath(Path.Combine(Shell.MicroServicesFolder, ManagedFileName));
 
 		File.WriteAllText(fileName, content);
