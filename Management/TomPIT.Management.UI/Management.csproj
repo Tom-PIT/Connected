@@ -6,7 +6,7 @@
     <SccLocalPath>SAK</SccLocalPath>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <RootNamespace>TomPIT.Management</RootNamespace>
     <AssemblyName>TomPIT.Connected.Management</AssemblyName>
@@ -85,12 +85,12 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="BuildBundlerMinifierPlus" Version="5.3.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Features" Version="4.6.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Features" Version="4.8.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="7.0.0" />
-    <PackageReference Include="SkiaSharp" Version="2.88.3" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.3" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="7.0.9" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
+    <PackageReference Include="SkiaSharp" Version="2.88.6" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.6" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="8.0.0" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="Views\Ide\Designers\Scheduler.cshtml">
