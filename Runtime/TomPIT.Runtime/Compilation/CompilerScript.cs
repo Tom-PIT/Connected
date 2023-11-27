@@ -37,7 +37,7 @@ namespace TomPIT.Compilation
 				return;
 
 			var scriptName = ResolveScriptName();
-			code = $"#load \"{scriptName}\"{System.Environment.NewLine}";
+			code = $"#load \"{scriptName}\"{System.Environment.NewLine}global using LengthAttribute = TomPIT.Annotations.Models.LengthAttribute;{System.Environment.NewLine}";
 
 			var msv = Tenant.GetService<IMicroServiceService>().Select(MicroService);
 
@@ -176,9 +176,9 @@ namespace TomPIT.Compilation
 
 			return result;
 		}
-		protected virtual string[] Usings => Array.Empty<string>();
+		protected virtual string[] Usings => new string[] { };
 
-		public void Dispose()
+      public void Dispose()
 		{
 			Script = null;
 		}
@@ -189,7 +189,7 @@ namespace TomPIT.Compilation
 		{
 			var sb = new StringBuilder();
 
-			sb.AppendLine($"public static class {CompilerService.ScriptInfoClassName}");
+         sb.AppendLine($"public static class {CompilerService.ScriptInfoClassName}");
 			sb.AppendLine("{");
 			sb.AppendLine("private static readonly System.Collections.Generic.List<TomPIT.Compilation.SourceTypeDescriptor> _sourceTypes = new System.Collections.Generic.List<TomPIT.Compilation.SourceTypeDescriptor>{");
 
