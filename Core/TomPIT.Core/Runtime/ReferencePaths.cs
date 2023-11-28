@@ -28,14 +28,8 @@ public static class ReferencePaths
 		if (File.Exists(unmanagedFileName))
 		{
 			using var fs = new FileStream(unmanagedFileName, FileMode.Open, FileAccess.Read, FileShare.Read);
-			try
-			{
-				UnmanagedCache = JsonSerializer.Deserialize<ConcurrentDictionary<string, List<string>>>(fs);
-			}
-			catch (Exception ex)
-			{
 
-			}
+			UnmanagedCache = JsonSerializer.Deserialize<ConcurrentDictionary<string, List<string>>>(fs);
 		}
 		else
 			UnmanagedCache = new();
