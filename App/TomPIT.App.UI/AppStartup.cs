@@ -6,11 +6,14 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using TomPIT.App.Globalization;
 using TomPIT.App.Resources;
 using TomPIT.App.Routing;
 using TomPIT.App.UI;
+using TomPIT.Compilation;
 using TomPIT.Connectivity;
 using TomPIT.Diagnostics;
 using TomPIT.Diagnostics.Tracing;
@@ -88,6 +91,20 @@ namespace TomPIT.App
 			e.AddRazorRuntimeCompilation(opts =>
 				 {
 					 opts.FileProviders.Add(new ViewProvider());
+
+					 foreach (var ms in MicroServices.Assemblies)
+						 opts.AdditionalReferencePaths.Add(ms.Location);
+
+					 foreach (var file in FrameworkFiles.AspNetCoreFileNames)
+						 opts.AdditionalReferencePaths.Add(Path.Combine(FrameworkFiles.AspNetCoreDirectory, file));
+
+					 foreach (var file in FrameworkFiles.FrameworkFileNames)
+						 opts.AdditionalReferencePaths.Add(Path.Combine(FrameworkFiles.FrameworkDirectory, file));
+
+					 var bin = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+
+					 foreach (var file in FrameworkFiles.TomPITFileNames)
+						 opts.AdditionalReferencePaths.Add(Path.Combine(bin, file));
 				 }
 			);
 		}

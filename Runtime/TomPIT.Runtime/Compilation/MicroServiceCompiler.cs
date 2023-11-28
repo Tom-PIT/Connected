@@ -7,6 +7,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Loader;
 using System.Text;
 using System.Threading.Tasks;
 using TomPIT.ComponentModel;
@@ -70,7 +71,7 @@ internal static class MicroServiceCompiler
 		var path = Shell.ResolveAssemblyPath(ParseAssemblyName(microService));
 		var name = AssemblyName.GetAssemblyName(Path.GetFullPath(path));
 
-		AppDomain.CurrentDomain.Load(name);
+		AssemblyLoadContext.Default.LoadFromAssemblyName(name);
 	}
 
 	private static void Load(IMicroService microService, CSharpCompilation compilation)
