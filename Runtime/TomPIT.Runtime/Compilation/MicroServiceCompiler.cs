@@ -63,7 +63,14 @@ internal static class MicroServiceCompiler
 		var compilation = CSharpCompilation.Create(ParseAssemblyName(microService), trees, references, Options);
 
 		Validate(microService, compilation);
-		Load(microService, compilation);
+		try
+		{
+			Load(microService, compilation);
+		}
+		catch(Exception ex)
+		{
+			//TODO log to standard logging channel
+		}
 	}
 
 	private static void LoadExisting(IMicroService microService)
