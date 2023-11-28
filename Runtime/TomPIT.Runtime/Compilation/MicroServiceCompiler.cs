@@ -75,8 +75,8 @@ internal static class MicroServiceCompiler
 
 	private static void Load(IMicroService microService, CSharpCompilation compilation)
 	{
-		var outputPath = Path.Combine("/microServices", ParseAssemblyName(microService));
-		var pdbPath = Path.Combine("/microServices", ParsePdbName(microService));
+		var outputPath = Path.Combine(Shell.MicroServicesFolder, ParseAssemblyName(microService));
+		var pdbPath = Path.Combine(Shell.MicroServicesFolder, ParsePdbName(microService));
 
 		if (File.Exists(outputPath))
 			File.Delete(outputPath);

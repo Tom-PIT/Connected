@@ -18,8 +18,6 @@ namespace TomPIT;
 
 public static class Shell
 {
-	internal const string MicroServicesFolder = "/microServices";
-
 	public static event EventHandler ServiceRegistered;
 	private static JsonDocument _configuration;
 
@@ -43,6 +41,8 @@ public static class Shell
 		Initialize();
 	}
 
+	public static string MicroServicesFolder { get; private set; } = "/microServices";
+
 	private static ServiceContainer Container { get; }
 	private static List<string> ProbingPaths { get; }
 	private static Dictionary<string, nint> LoadedNativeLibraries { get; }
@@ -58,6 +58,9 @@ public static class Shell
 	{
 		if (Configuration.RootElement.TryGetProperty("instanceName", out JsonElement element))
 			InstanceName = element.GetString();
+
+		if (Configuration.RootElement.TryGetProperty("microServicesFolder", out JsonElement msElement))
+			MicroServicesFolder = msElement.GetString();
 	}
 
 	private static nint OnResolvingUnmanagedDll(Assembly requestingAssembly, string libName)
