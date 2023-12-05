@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <AssemblyVersion>3.1.1130.4</AssemblyVersion>
     <FileVersion>3.1.1130.4</FileVersion>
@@ -27,8 +27,8 @@
   <ItemGroup>
     <PackageReference Include="BuildBundlerMinifierPlus" Version="5.3.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="8.0.0" />
-    <PackageReference Include="System.CodeDom" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="7.0.0" />
+    <PackageReference Include="System.CodeDom" Version="7.0.0" />
     <PackageReference Include="DevExpress.Pdf.SkiaRenderer" Version="23.1.6" />
     <PackageReference Include="DevExpress.AspNetCore.Reporting" Version="23.1.6" />
     <PackageReference Include="SkiaSharp" Version="2.88.6" />
