@@ -47,7 +47,7 @@ internal static class MicroServiceCompiler
 
 		if (!ShouldCompile(microService))
 		{
-			LoadExisting(microService);
+			Load(microService);
 			return;
 		}
 
@@ -63,22 +63,23 @@ internal static class MicroServiceCompiler
 		var compilation = CSharpCompilation.Create(ParseAssemblyName(microService), trees, references, Options);
 
 		Validate(microService, compilation);
+
 		try
 		{
 			Load(microService, compilation);
 		}
-		catch(Exception ex)
+		catch (Exception ex)
 		{
 			//TODO log to standard logging channel
 		}
 	}
 
-	private static void LoadExisting(IMicroService microService)
+	private static Assembly Load(IMicroService microService)
 	{
 		var path = Shell.ResolveAssemblyPath(ParseAssemblyName(microService));
 		var name = AssemblyName.GetAssemblyName(Path.GetFullPath(path));
 
-		AssemblyLoadContext.Default.LoadFromAssemblyName(name);
+		return AssemblyLoadContext.Default.LoadFromAssemblyName(name);
 	}
 
 	private static void Load(IMicroService microService, CSharpCompilation compilation)
@@ -98,9 +99,7 @@ internal static class MicroServiceCompiler
 		if (!result.Success)
 			throw new Exception($"{microService.Name} - {result.Diagnostics.First(f => f.Severity == DiagnosticSeverity.Error).GetMessage()}");
 
-		var path = Shell.ResolveAssemblyPath(ParseAssemblyName(microService));
-
-		_compiled.Add(Assembly.LoadFile(path));
+		_compiled.Add(Load(microService));
 	}
 	private static void Validate(IMicroService microService, CSharpCompilation compilation)
 	{
@@ -131,12 +130,25 @@ internal static class MicroServiceCompiler
 			if (version is null)
 				return true;
 
-			return version != msVersion;
+			if (version != msVersion)
+				return true;
+
+			var references = Tenant.GetService<IDiscoveryService>().MicroServices.References.References(microService.Token, false);
+
+			foreach (var reference in references)
+			{
+				var assembly = $"{reference.Name}.dll";
+
+				if (_compiled.Any(f => string.Equals(f.GetName().Name, assembly, StringComparison.Ordinal)))
+					return true;
+			}
 		}
 		catch
 		{
 			return true;
 		}
+
+		return false;
 	}
 
 	private static CSharpCompilationOptions CreateOptions()
