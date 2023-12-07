@@ -24,6 +24,7 @@ public abstract class Startup : IStartup
 
 	protected virtual void OnConfigure(IApplicationBuilder app, IWebHostEnvironment env)
 	{
+
 	}
 
 	public void ConfigureServices(IServiceCollection services)

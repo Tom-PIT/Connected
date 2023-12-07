@@ -6,13 +6,13 @@
     <SccLocalPath>SAK</SccLocalPath>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <RootNamespace>TomPIT.Management</RootNamespace>
     <AssemblyName>TomPIT.Connected.Management</AssemblyName>
-    <AssemblyVersion>3.1.1128.2</AssemblyVersion>
-    <FileVersion>3.1.1128.2</FileVersion>
-    <Version>3.1.1128.2</Version>
+    <AssemblyVersion>3.1.1207.1</AssemblyVersion>
+    <FileVersion>3.1.1207.1</FileVersion>
+    <Version>3.1.1207.1</Version>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
@@ -87,10 +87,10 @@
     <PackageReference Include="BuildBundlerMinifierPlus" Version="5.3.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.Features" Version="4.8.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="7.0.0" />
     <PackageReference Include="SkiaSharp" Version="2.88.6" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.6" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="Views\Ide\Designers\Scheduler.cshtml">
