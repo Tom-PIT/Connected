@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Text.Json.Serialization;
 using System.Threading;
 using TomPIT.Connectivity;
@@ -20,12 +21,14 @@ namespace TomPIT.Middleware
 		private ElevationContextState _elevationState = ElevationContextState.Revoked;
 		private object _authorizationOwner;
 		private CancellationTokenSource _cancellationTokenSource = new();
+		private readonly object _sync = new();
+		private IServiceScope? _scope;
 		#endregion
 
 		#region Constructors
 		public MiddlewareContext()
 		{
-			Transactions = new TransactionContext();
+			Transactions = new TransactionContext(this);
 			Interop = new MiddlewareInterop(this);
 			Services = new MiddlewareServices(this, Transactions);
 			Environment = new MiddlewareEnvironment();
@@ -82,6 +85,25 @@ namespace TomPIT.Middleware
 		#endregion
 
 		#region Methods
+
+		public TService? GetService<TService>()
+		{
+			if (Disposed)
+				return default;
+
+			if (_scope is null)
+			{
+				lock (_sync)
+				{
+					_scope ??= Tenant.GetService<IRuntimeService>().Host.ApplicationServices.CreateScope();
+				}
+			}
+
+			if (_scope.ServiceProvider is null)
+				return default;
+
+			return _scope.ServiceProvider.GetService<TService>();
+		}
 
 		public void Cancel()
 		{
@@ -198,6 +220,12 @@ namespace TomPIT.Middleware
 			{
 				if (disposing)
 				{
+					if (_scope is not null)
+					{
+						_scope.Dispose();
+						_scope = null;
+					}
+
 					//Connections.Dispose();
 					ModelConnections.Dispose();
 					Interop.Dispose();

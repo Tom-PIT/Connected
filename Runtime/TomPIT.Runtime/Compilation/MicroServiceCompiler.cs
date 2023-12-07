@@ -74,12 +74,12 @@ internal static class MicroServiceCompiler
 		}
 	}
 
-	private static Assembly Load(IMicroService microService)
+	private static Assembly? Load(IMicroService microService)
 	{
 		var path = Shell.ResolveAssemblyPath(ParseAssemblyName(microService));
 
 		if (string.IsNullOrWhiteSpace(path))
-			return;
+			return null;
 
 		var name = AssemblyName.GetAssemblyName(Path.GetFullPath(path));
 
@@ -103,7 +103,10 @@ internal static class MicroServiceCompiler
 		if (!result.Success)
 			throw new Exception($"{microService.Name} - {result.Diagnostics.First(f => f.Severity == DiagnosticSeverity.Error).GetMessage()}");
 
-		_compiled.Add(Load(microService));
+		var assembly = Load(microService);
+
+		if (assembly is not null)
+			_compiled.Add(assembly);
 	}
 	private static void Validate(IMicroService microService, CSharpCompilation compilation)
 	{

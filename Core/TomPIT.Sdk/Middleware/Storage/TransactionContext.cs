@@ -10,10 +10,13 @@ internal class TransactionContext : ITransactionContext
 
 	public event EventHandler? StateChanged;
 
-	public TransactionContext()
+	public TransactionContext(MiddlewareContext owner)
 	{
+		Owner = owner;
 		Operations = new();
 	}
+
+	private MiddlewareContext Owner { get; }
 
 	public MiddlewareTransactionState State
 	{
@@ -55,6 +58,8 @@ internal class TransactionContext : ITransactionContext
 			}
 		}
 
+		Owner.GetService<IMultiContextOrchestrator>()?.Commit().Wait();
+
 		State = MiddlewareTransactionState.Completed;
 	}
 
@@ -70,6 +75,8 @@ internal class TransactionContext : ITransactionContext
 					middleware.RollbackOperation();
 			}
 		}
+
+		Owner.GetService<IMultiContextOrchestrator>()?.Rollback().Wait();
 
 		State = MiddlewareTransactionState.Completed;
 	}

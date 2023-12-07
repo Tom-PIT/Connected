@@ -258,11 +258,32 @@ namespace TomPIT.Compilation
 					return assembly;
 				}
 
+				var assemblyName = AssemblyName.GetAssemblyName(descriptor.FileName);
+
+				if (TryLoadFromName(assemblyName, out Assembly? asm) && asm is not null)
+					return asm;
+
 				return AssemblyLoadContext.Default.LoadFromAssemblyPath(descriptor.FileName);
 			}
 			catch
 			{
 				return null;
+			}
+		}
+
+		private bool TryLoadFromName(AssemblyName name, out Assembly? assembly)
+		{
+			try
+			{
+				assembly = AssemblyLoadContext.Default.LoadFromAssemblyName(name);
+
+				return true;
+			}
+			catch
+			{
+				assembly = null;
+
+				return false;
 			}
 		}
 
