@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
@@ -209,8 +210,8 @@ namespace TomPIT.Design
       {
          var folders = Tenant.GetService<IComponentService>().QueryFolders(Request.Token);
          /*
-		 * remove
-		 */
+          * remove
+          */
          foreach (var folder in folders)
          {
             if (Request.Folders?.FirstOrDefault(f => f.Id == folder.Token) != null)
@@ -219,12 +220,12 @@ namespace TomPIT.Design
             ComponentModel.DeleteFolder(Request.Token, folder.Token, false);
          }
          /*
-		 * add and modify
-		 */
-         DeployFolders(Guid.Empty, folders);
+          * add and modify
+          */
+         DeployFolders(Guid.Empty, folders.ToList());
       }
 
-      private void DeployFolders(Guid parent, ImmutableList<IFolder> existing)
+      private void DeployFolders(Guid parent, List<IFolder> existing)
       {
          if (Request.Folders == null)
             return;
@@ -260,7 +261,7 @@ namespace TomPIT.Design
          }
       }
 
-      private string EnumerateFolder(IPullRequestFolder folder, ImmutableList<IFolder> existing, int index)
+      private string EnumerateFolder(IPullRequestFolder folder, List<IFolder> existing, int index)
       {
          var name = index == 0 ? folder.Name : $"{folder.Name}{index}";
 
