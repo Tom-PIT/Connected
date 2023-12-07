@@ -67,7 +67,7 @@ internal static class MicroServiceCompiler
 		{
 			Load(microService, compilation);
 		}
-		catch(Exception ex)
+		catch (Exception ex)
 		{
 			//TODO log to standard logging channel
 		}
@@ -76,6 +76,10 @@ internal static class MicroServiceCompiler
 	private static void LoadExisting(IMicroService microService)
 	{
 		var path = Shell.ResolveAssemblyPath(ParseAssemblyName(microService));
+
+		if (string.IsNullOrWhiteSpace(path))
+			return;
+
 		var name = AssemblyName.GetAssemblyName(Path.GetFullPath(path));
 
 		AssemblyLoadContext.Default.LoadFromAssemblyName(name);
@@ -114,6 +118,10 @@ internal static class MicroServiceCompiler
 	private static string ParsePdbName(IMicroService microService) => $"{microService.Name}.pdb";
 	private static bool ShouldCompile(IMicroService microService)
 	{
+#if NORECOMPILE
+		return false;
+#endif
+
 		if (string.IsNullOrEmpty(microService.Version))
 			return true;
 
