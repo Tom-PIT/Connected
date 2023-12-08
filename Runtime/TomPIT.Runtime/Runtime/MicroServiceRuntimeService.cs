@@ -26,6 +26,9 @@ namespace TomPIT.Runtime
 
 		public void Configure(IApplicationBuilder app)
 		{
+			if (Instance.IsShellMode)
+				return;
+
 			Host = app;
 
 			foreach (var runtime in QueryRuntimes())
@@ -34,6 +37,9 @@ namespace TomPIT.Runtime
 
 		public void Configure(IServiceCollection services)
 		{
+			if (Instance.IsShellMode)
+				return;
+
 			Services = services;
 
 			Initialize();
@@ -41,6 +47,9 @@ namespace TomPIT.Runtime
 
 		protected override void OnInitializing()
 		{
+			if (Instance.IsShellMode)
+				return;
+
 			var configurations = Tenant.GetService<IComponentService>().QueryConfigurations(ComponentCategories.Runtime);
 
 			foreach (var i in configurations)

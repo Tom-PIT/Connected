@@ -49,6 +49,7 @@ public static class Instance
 		return new StartupHost();
 	}
 
+	internal static bool IsShellMode => string.Equals(System.Environment.GetEnvironmentVariable("TP_SHELL_MODE"), "1");
 	public static bool ResourceGroupExists(Guid resourceGroup)
 	{
 		if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)

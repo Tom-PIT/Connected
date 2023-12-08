@@ -95,7 +95,12 @@ namespace TomPIT.Middleware
 			{
 				lock (_sync)
 				{
-					_scope ??= Tenant.GetService<IRuntimeService>().Host.ApplicationServices.CreateScope();
+					var host = Tenant.GetService<IRuntimeService>().Host;
+
+					if (host is null)
+						return default;
+
+					_scope ??= host.ApplicationServices.CreateScope();
 				}
 			}
 

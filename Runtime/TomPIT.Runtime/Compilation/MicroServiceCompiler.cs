@@ -34,6 +34,9 @@ internal static class MicroServiceCompiler
 	public static ImmutableArray<Assembly> Compiled => _compiled.ToImmutableArray();
 	public static async Task Compile()
 	{
+		if (Instance.IsShellMode)
+			return;
+
 		var microServices = new CompilationSet();
 
 		while (microServices.TryDequeue(out IMicroService microService))

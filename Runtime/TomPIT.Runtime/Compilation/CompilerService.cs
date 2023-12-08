@@ -59,6 +59,9 @@ namespace TomPIT.Compilation
 
 		public IScriptDescriptor GetScript(CompilerScriptArgs e)
 		{
+			if (Instance.IsShellMode)
+				return null;
+
 			if (!Tenant.GetService<IRuntimeService>().IsMicroServiceSupported(e.MicroService))
 				return null;
 
@@ -100,6 +103,9 @@ namespace TomPIT.Compilation
 
 		public Microsoft.CodeAnalysis.Compilation GetCompilation(IText sourceCode)
 		{
+			if (Instance.IsShellMode)
+				return null;
+
 			if (!Tenant.GetService<IRuntimeService>().IsMicroServiceSupported(sourceCode.Configuration().MicroService()))
 				return null;
 
