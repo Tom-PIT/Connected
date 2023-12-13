@@ -258,6 +258,11 @@ namespace TomPIT.Compilation
 					return assembly;
 				}
 
+				var existing = AssemblyLoadContext.Default.Assemblies.FirstOrDefault(f => string.Equals(f.GetName().Name, descriptor.Name, StringComparison.Ordinal));
+
+				if (existing is not null)
+					return existing;
+
 				var assemblyName = AssemblyName.GetAssemblyName(descriptor.FileName);
 
 				if (TryLoadFromName(assemblyName, out Assembly? asm) && asm is not null)
