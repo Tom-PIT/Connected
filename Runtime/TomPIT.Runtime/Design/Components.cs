@@ -62,9 +62,17 @@ namespace TomPIT.Design
 
          RemoveDependencies(c.Token);
 
+         if (config is IMultiFileElement multiFile)
+         {
+            AsyncUtils.RunSync(() => multiFile.ProcessDeleted());
+
+            MultiFilesSynchronized?.Invoke(this, new ComponentArgs(c.MicroService, c.Token, c.Category));
+         }
+
          Instance.SysProxy.Development.Components.Delete(component, MiddlewareDescriptor.Current.UserToken);
 
          svc?.NotifyRemoved(this, new ComponentEventArgs(c.MicroService, c.Folder, component, c.NameSpace, c.Category, c.Name));
+
 
          /*
 			 * remove configuration file
@@ -82,13 +90,6 @@ namespace TomPIT.Design
          Instance.SysProxy.Development.Notifications.ConfigurationRemoved(c.MicroService, c.Token, c.Category);
 
          Tenant.GetService<IDebugService>().ConfigurationRemoved(c.Token);
-
-         if (config is IMultiFileElement multiFile)
-         {
-            AsyncUtils.RunSync(multiFile.ProcessDeleted);
-
-            MultiFilesSynchronized?.Invoke(this, new ComponentArgs(c.MicroService, c.Token, c.Category));
-         }
       }
 
       public void Restore(Guid microService, IPullRequestComponent component)
@@ -114,7 +115,7 @@ namespace TomPIT.Design
 
          if (config is IMultiFileElement multiFile)
          {
-            AsyncUtils.RunSync(multiFile.ProcessRestored);
+            AsyncUtils.RunSync(() => multiFile.ProcessRestored());
 
             MultiFilesSynchronized?.Invoke(this, new ComponentArgs(ms.Token, component.Token, component.Category));
          }
@@ -371,7 +372,7 @@ namespace TomPIT.Design
 
          if (instance is IMultiFileElement multiFile)
          {
-            AsyncUtils.RunSync(multiFile.ProcessCreated);
+            AsyncUtils.RunSync(()=> multiFile.ProcessCreated());
 
             MultiFilesSynchronized?.Invoke(this, new ComponentArgs(microService, instance.Component, category));
          }
@@ -393,7 +394,7 @@ namespace TomPIT.Design
 
          if (config is IMultiFileElement multiFile)
          {
-            AsyncUtils.RunSync(multiFile.ProcessChanged);
+            AsyncUtils.RunSync(()=> multiFile.ProcessChanged());
 
             MultiFilesSynchronized?.Invoke(this, new ComponentArgs(c.MicroService, component, c.Category));
          }
