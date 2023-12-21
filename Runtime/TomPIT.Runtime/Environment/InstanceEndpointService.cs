@@ -1,6 +1,11 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
+using System.ComponentModel;
+using System.Linq;
+
 using TomPIT.Caching;
 using TomPIT.Connectivity;
 using TomPIT.Distributed;
@@ -18,9 +23,9 @@ namespace TomPIT.Environment
 
 		protected override void OnInitializing()
 		{
-			var ds = Instance.SysProxy.InstanceEndpoints.Query();
+			var endpointConfiguration = Shell.Configuration.GetSection("instanceEndpoints").Get<InstanceEndpointBindingModel[]>() ?? Array.Empty<InstanceEndpointBindingModel>();
 
-			foreach (var i in ds)
+			foreach (var i in endpointConfiguration)
 			{
 				Set(i.Token, i, TimeSpan.Zero);
 
@@ -80,7 +85,8 @@ namespace TomPIT.Environment
 
 		private IInstanceEndpoint Load(Guid endpoint)
 		{
-			return Instance.SysProxy.InstanceEndpoints.Select(endpoint);
+			var endpointConfiguration = Shell.Configuration.GetSection("instanceEndpoints").Get<InstanceEndpointBindingModel[]>() ?? Array.Empty<InstanceEndpointBindingModel>();
+			return endpointConfiguration.FirstOrDefault(e => e.Token == endpoint);
 		}
 
 		public string Url(InstanceFeatures features, InstanceVerbs verb)
@@ -115,8 +121,8 @@ namespace TomPIT.Environment
 		{
 			RoundRobin robin;
 
-			if (_rr.ContainsKey(key))
-				robin = _rr[key];
+			if (_rr.TryGetValue(key, out RoundRobin? value))
+				robin = value;
 			else
 			{
 				robin = new RoundRobin();
@@ -184,6 +190,22 @@ namespace TomPIT.Environment
 		{
 			RemoveFromRobin(e.Endpoint);
 			Remove(e.Endpoint);
+		}
+
+		private class InstanceEndpointBindingModel: IInstanceEndpoint
+		{
+			public string? Url { get; set; }
+			public InstanceStatus Status { get; set; } = InstanceStatus.Enabled;
+			public string? Name { get; set; }
+			public InstanceFeatures Features { get; set; }
+			public Guid Token { get; set; } = Guid.NewGuid();
+			public InstanceVerbs Verbs { get; set; } = InstanceVerbs.All;
+			public string? ReverseProxyUrl { get; set; }
+
+			public override string ToString()
+			{
+				return string.IsNullOrWhiteSpace(Name) ? base.ToString() : Name;
+			}
 		}
 	}
 }
