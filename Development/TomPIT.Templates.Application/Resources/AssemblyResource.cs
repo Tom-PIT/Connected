@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,8 +24,12 @@ public class AssemblyResource : TextConfiguration, IAssemblyResourceConfiguratio
 	[PropertyCategory(PropertyCategoryAttribute.CategoryBehavior)]
 	public string Namespace { get; set; }
 
+	[PropertyCategory(PropertyCategoryAttribute.CategoryBehavior)]
+	public string Url { get; set; }
+
 	public async Task ProcessChanged()
 	{
+		CultureInfo
 		await UpdateFile();
 	}
 

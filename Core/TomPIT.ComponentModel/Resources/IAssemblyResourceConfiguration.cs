@@ -3,4 +3,5 @@ public interface IAssemblyResourceConfiguration : ITextConfiguration, IMultiFile
 {
 	AccessModifier AccessModifier { get; }
 	string Namespace { get; }
+	string Url { get; }
 }
