@@ -335,7 +335,7 @@ namespace TomPIT.Compilation
 
 					var downloadResource = await installer.Source.GetResourceAsync<DownloadResource>(CancellationToken.None);
 					var downloadResult = await downloadResource.GetDownloadResourceResultAsync(installer, new PackageDownloadContext(CacheContext), RootDirectory, Logger, CancellationToken.None);
-
+					
 					packageReader = downloadResult.PackageReader;
 				}
 				else
@@ -346,16 +346,26 @@ namespace TomPIT.Compilation
  				 * extractor doesn't install local package in the version folder. It is installed directly in the
  				 * package's root folder
 				 */
-				var folder = Path.Combine(PathResolver.GetInstallPath(installer), installer.Version.ToString());
+				var folder = Path.Combine(PathResolver.GetInstallPath(installer), installer.Version.ToString()).ToLower();
 
 				if (!Directory.Exists(folder))
-					folder = PathResolver.GetInstallPath(installer);
+				{
+					/*
+					 * Check for lowercase variant, present in some linux distributions
+					 */
+					var lowerCaseVariant = folder.Replace(installer.Id, installer.Id.ToLowerInvariant());
+
+					if (Directory.Exists(lowerCaseVariant))
+						folder = lowerCaseVariant;
+					else
+                  folder = PathResolver.GetInstallPath(installer);
+            }
 
 				var files = packageReader.GetFiles();
 
 				foreach (var file in files)
 				{
-					if (file.StartsWith("runtimes/") && file.EndsWith(".dll"))
+					if (file.ToLower().StartsWith("runtimes/") && file.ToLower().EndsWith(".dll"))
 						result.RuntimePaths.Add(Path.GetFullPath(Path.Combine(folder, file)));
 				}
 

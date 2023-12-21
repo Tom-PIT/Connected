@@ -7,6 +7,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using System.Text;
 using System.Threading.Tasks;
@@ -93,6 +94,9 @@ internal static class MicroServiceCompiler
 	{
 		var outputPath = Path.Combine(Shell.MicroServicesFolder, ParseAssemblyName(microService));
 		var pdbPath = Path.Combine(Shell.MicroServicesFolder, ParsePdbName(microService));
+
+		if (PlatformID.Unix == System.Environment.OSVersion.Platform)
+			pdbPath = null;
 
 		if (File.Exists(outputPath))
 			File.Delete(outputPath);

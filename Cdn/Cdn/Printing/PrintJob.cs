@@ -75,7 +75,7 @@ namespace TomPIT.Cdn.Printing
                 {
                     Category = "Cdn",
                     Level = System.Diagnostics.TraceLevel.Error,
-                    Message = ex.Message,
+                    Message = ex.ToString(),
                     Source = nameof(PrintJob),
                     EventId = MiddlewareEvents.Printing
                 });
@@ -96,7 +96,7 @@ namespace TomPIT.Cdn.Printing
 
         protected override void OnError(IPrintQueueMessage item, Exception ex)
         {
-            MiddlewareDescriptor.Current.Tenant.GetService<IPrintingManagementService>().Error(item.PopReceipt, ex.Message);
+            MiddlewareDescriptor.Current.Tenant.GetService<IPrintingManagementService>().Error(item.PopReceipt, ex.ToString());
         }
     }
 }

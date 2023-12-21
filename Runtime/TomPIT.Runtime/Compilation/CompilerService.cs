@@ -153,7 +153,7 @@ namespace TomPIT.Compilation
 			if (cache)
 				Set(script.Id, script, TimeSpan.Zero);
 
-			//GC.Collect();
+			GC.Collect();
 
 			return result;
 		}
