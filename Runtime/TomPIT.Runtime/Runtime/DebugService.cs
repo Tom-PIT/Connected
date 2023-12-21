@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+
+using System;
 using System.Collections.Concurrent;
 using System.Text;
 using System.Text.Json;
@@ -10,6 +12,8 @@ using TomPIT.Middleware;
 namespace TomPIT.Runtime;
 internal class DebugService : IDebugService, IDisposable
 {
+	private static readonly ConfigurationBindings _binder = new();
+
 	private enum DebugType
 	{
 		ConfigurationAdded = 1,
@@ -22,22 +26,24 @@ internal class DebugService : IDebugService, IDisposable
 		Queue = new();
 		Cancel = new();
 
-		if (Shell.Configuration.RootElement.TryGetProperty("debugTarget", out JsonElement debugTarget))
+		Initialize();
+		
+	}
+
+	private void Initialize() 
+	{
+		Shell.Configuration.Bind("debugTarget", _binder);
+
+		if (!string.IsNullOrWhiteSpace(Url) && !string.IsNullOrWhiteSpace(AuthenticationToken))
 		{
-			if (debugTarget.TryGetProperty("url", out JsonElement urlNode))
-				Url = urlNode.GetString();
-
-			if (debugTarget.TryGetProperty("token", out JsonElement tokenNode))
-				AuthenticationToken = Encoding.UTF8.GetString(Convert.FromBase64String(tokenNode.GetString()));
-
 			new Task(OnFlush, Cancel.Token, TaskCreationOptions.LongRunning).Start();
 		}
 	}
 
 	private ConcurrentQueue<DebugDescriptor> Queue { get; }
 	private CancellationTokenSource Cancel { get; }
-	private string Url { get; }
-	private string AuthenticationToken { get; }
+	private string Url => _binder.Url ?? string.Empty;
+	private string AuthenticationToken => _binder.AuthenticationToken ?? string.Empty;
 	public bool Enabled => !string.IsNullOrEmpty(Url);
 
 	private void OnFlush()
@@ -164,4 +170,12 @@ internal class DebugService : IDebugService, IDisposable
 		public Guid Element { get; set; }
 		public Guid Token { get; set; }
 	}
+
+	private class ConfigurationBindings
+	{
+		public string? Url { get; set; }
+
+		public string? AuthenticationToken { get; set; }
+	}
+
 }

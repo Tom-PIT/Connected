@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -145,9 +146,6 @@ internal class StartupHost : IStartupHostProxy
 	{
 		Booting?.Invoke(null, EventArgs.Empty);
 
-		if (Shell.Configuration.RootElement.TryGetProperty("features", out JsonElement element))
-			Instance.Features = Enum.Parse<InstanceFeatures>(element.GetString());
-
 		if (Instance.Features.HasFlag(InstanceFeatures.Sys))
 			Instance.SysProxy = new LocalProxy();
 		else
@@ -158,26 +156,21 @@ internal class StartupHost : IStartupHostProxy
 
 	private void ConfigureTenant()
 	{
-		if (!Shell.Configuration.RootElement.TryGetProperty("sys", out _) && !Instance.Features.HasFlag(InstanceFeatures.Sys))
+		if (Shell.Configuration.GetSection("sys") is null && !Instance.Features.HasFlag(InstanceFeatures.Sys))
 			throw new ConfigurationErrorsException("'sys' configuration element expected.");
 
-		var name = "localhost";
-		var url = string.Empty;
-		var token = string.Empty;
+		var bindings = new ConfigurationBindings();
 
-		if (Shell.Configuration.RootElement.TryGetProperty("sys", out JsonElement sys))
-		{
-			if (sys.TryGetProperty("name", out JsonElement nameElement))
-				name = nameElement.GetString();
+		Shell.Configuration.Bind("sys", bindings);
 
-			if (sys.TryGetProperty("url", out JsonElement urlElement))
-				url = urlElement.GetString();
+		Shell.GetService<IConnectivityService>().InsertTenant(bindings.Name, bindings.Url, bindings.Token);
+	}
 
-			if (sys.TryGetProperty("token", out JsonElement tokenElement))
-				token = tokenElement.GetString();
-		}
-
-		Shell.GetService<IConnectivityService>().InsertTenant(name, url, token);
+	private class ConfigurationBindings 
+	{
+		public string? Name { get; set; }
+		public string? Url { get; set; }
+		public string? Token { get; set;  }
 	}
 
 	private void OnTenantInitialized(object sender, TenantArgs e)

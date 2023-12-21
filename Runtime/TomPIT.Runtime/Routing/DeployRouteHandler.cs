@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+
+using System;
 using System.Net;
 
 using TomPIT.Design;
@@ -12,27 +14,9 @@ namespace TomPIT.Routing
 		//TODO Override from configuration
 		private const string Remote = "https://sys-connected.tompit.com/rest";
 
-		private string _baseUrl = null;
+		private string? _baseUrl = null;
 
-		private string BaseUrl
-		{
-			get
-			{
-				if (_baseUrl is not null)
-					return _baseUrl;
-
-				var config = Shell.Configuration;
-
-				if (config.RootElement.TryGetProperty("DeployRouteBaseUrl", out var baseUrlNode))
-					_baseUrl = baseUrlNode.GetString();
-
-				//Reset if value makes no sense
-				if (string.IsNullOrWhiteSpace(_baseUrl))
-					_baseUrl = Remote;
-
-				return _baseUrl;
-			}
-		}
+		private string BaseUrl => _baseUrl ??= Shell.Configuration.GetValue<string>("deployRouteBaseUrl", Remote);
 
 		protected override void OnProcessRequest()
 		{

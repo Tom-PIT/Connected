@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Configuration;
 
 using System;
 using System.Collections.Generic;
@@ -41,9 +42,9 @@ public static class Instance
 
 	static Instance()
 	{
-		if (Shell.Configuration.RootElement.TryGetProperty("features", out JsonElement element))
-			Features = Enum.Parse<InstanceFeatures>(element.GetString());
+		Features = Shell.Configuration.GetValue<InstanceFeatures>("features");
 	}
+
 	public static IStartupHostProxy Start()
 	{
 		return new StartupHost();

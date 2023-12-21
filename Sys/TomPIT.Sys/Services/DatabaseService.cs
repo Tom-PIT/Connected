@@ -1,4 +1,6 @@
-﻿using System.Configuration;
+﻿using Microsoft.Extensions.Configuration;
+
+using System.Configuration;
 using System.Text.Json;
 using TomPIT.Sys.Api.Database;
 using TomPIT.Sys.Configuration;
@@ -15,10 +17,7 @@ namespace TomPIT.Sys.Services
 
 		private void Configure()
 		{
-			if (!Shell.Configuration.RootElement.TryGetProperty("database", out JsonElement element))
-				throw new ConfigurationErrorsException("'database' configuration element does not exist.");
-
-			var database = element.GetString();
+			var database = Shell.Configuration.GetValue<string>("database");
 
 			if (string.IsNullOrWhiteSpace(database))
 				throw new ConfigurationErrorsException("'database' configuration element does not have a value.");

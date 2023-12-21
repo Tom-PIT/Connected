@@ -1,9 +1,11 @@
 ﻿using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
 
 using System;
 using System.Text;
 using System.Text.Json;
 
+using TomPIT.Connectivity;
 using TomPIT.Sys.SqlDeployment;
 
 namespace TomPIT.Sys.Configuration;
@@ -12,7 +14,7 @@ internal class DatabaseInitializer
 {
 	private string DatabaseConnectionString { get; set; }
 
-	public string AuthenticationToken { get; set; }
+	public string Token { get; set; }
 	public string Name { get; set; } = "Default";
 
 	public string UserName { get; set; } = "admin";
@@ -38,27 +40,14 @@ internal class DatabaseInitializer
 
 	protected virtual void InitializeConfig()
 	{
-		if (Shell.Configuration.RootElement.TryGetProperty("sys", out JsonElement element))
-		{
-			if (element.TryGetProperty("name", out JsonElement name))
-				Name = name.GetString();
-
-			if (element.TryGetProperty("url", out JsonElement url))
-				Url = url.GetString();
-
-			if (element.TryGetProperty("token", out JsonElement token))
-				AuthenticationToken = Encoding.UTF8.GetString(Convert.FromBase64String(token.GetString()));
-		}
-
+		Shell.Configuration.Bind("sys", this);
+				
 		DatabaseConnectionString = ConnectionStringsConfiguration.Sys;
 
 		ApplicationVersion = Shell.Version.ToString();
-
-		if (Shell.Configuration.RootElement.TryGetProperty("sqlScriptPaths", out JsonElement sqlScriptPath))
-		{
-			InsertScriptPath = sqlScriptPath.TryGetProperty("create", out JsonElement createPath) ? createPath.GetString() : "./create.sql";
-			UpdateScriptPath = sqlScriptPath.TryGetProperty("update", out JsonElement updatePath) ? updatePath.GetString() : "./update.json";
-		}
+	
+		InsertScriptPath = Shell.Configuration.GetValue<string>("sqlScriptPaths:create", "./create.sql"); 
+		UpdateScriptPath = Shell.Configuration.GetValue<string>("sqlScriptPaths:update", "./update.json");
 	}
 
 	private void Deploy()
@@ -150,7 +139,7 @@ internal class DatabaseInitializer
 		};
 
 		c.Parameters.AddWithValue("@token", Guid.NewGuid());
-		c.Parameters.AddWithValue("@key", AuthenticationToken);
+		c.Parameters.AddWithValue("@key", Token);
 		c.Parameters.AddWithValue("@claims", 2147483647);
 		c.Parameters.AddWithValue("@status", 1);
 		c.Parameters.AddWithValue("@resource_group", resourceGroup);
@@ -190,5 +179,12 @@ internal class DatabaseInitializer
 		c.Parameters.AddWithValue("@role", new Guid("C82BBDAD-E913-4779-8771-981349467860"));
 
 		c.ExecuteNonQuery();
+	}
+
+	private class ConfigurationBindings
+	{
+		public string? Name { get; set; }
+		public string? Url { get; set; }
+		public string? Token { get; set; }
 	}
 }

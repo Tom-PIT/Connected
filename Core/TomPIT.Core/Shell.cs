@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using System;
@@ -11,6 +12,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using System.Text.Json;
+
 using TomPIT.Runtime;
 using TomPIT.Runtime.Configuration;
 
@@ -19,7 +21,8 @@ namespace TomPIT;
 public static class Shell
 {
 	public static event EventHandler ServiceRegistered;
-	private static JsonDocument _configuration;
+	private static JsonDocument _jsonConfiguration;
+	private static IConfigurationRoot _configuration;
 
 	static Shell()
 	{
@@ -41,12 +44,13 @@ public static class Shell
 		Initialize();
 	}
 
-	public static string MicroServicesFolder { get; private set; } = "/microServices";
 
+	private static readonly ConfigurationBindings _configurationBinder = new();
 	private static ServiceContainer Container { get; }
 	private static List<string> ProbingPaths { get; }
 	private static Dictionary<string, nint> LoadedNativeLibraries { get; }
-	public static string InstanceName { get; private set; }
+	public static string InstanceName => _configurationBinder.InstanceName ?? string.Empty;
+	public static string MicroServicesFolder => _configurationBinder.MicroServicesFolder ?? "/microServices";
 	public static Version Version => typeof(Shell).Assembly.GetName().Version;
 	public static HttpContext HttpContext => Accessor?.HttpContext;
 	private static IHttpContextAccessor Accessor { get; set; }
@@ -56,11 +60,14 @@ public static class Shell
 
 	public static void Initialize()
 	{
-		if (Configuration.RootElement.TryGetProperty("instanceName", out JsonElement element))
-			InstanceName = element.GetString();
+		Configuration.Bind(_configurationBinder);
+	}
 
-		if (Configuration.RootElement.TryGetProperty("microServicesFolder", out JsonElement msElement))
-			MicroServicesFolder = msElement.GetString();
+	private class ConfigurationBindings 
+	{
+		public string? InstanceName { get; set; }
+
+		public string? MicroServicesFolder { get; set; }
 	}
 
 	private static nint OnResolvingUnmanagedDll(Assembly requestingAssembly, string libName)
@@ -338,17 +345,37 @@ public static class Shell
 		ServiceRegistered?.Invoke(contract, EventArgs.Empty);
 	}
 
-	public static JsonDocument Configuration
+	public static IConfigurationRoot Configuration
 	{
 		get
 		{
-			if (_configuration is not null)
-				return _configuration;
+			if (_configuration is null)
+			{
+				var appPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+				var sysPath = Path.Combine(appPath, "sys.json");
+
+				var builder = new ConfigurationBuilder();
+				builder.AddJsonFile(sysPath);
+				builder.AddEnvironmentVariables();
+
+				_configuration = builder.Build();
+			}
+
+			return _configuration;
+		}
+	}
+	
+	public static JsonDocument JsonConfiguration
+	{
+		get
+		{
+			if (_jsonConfiguration is not null)
+				return _jsonConfiguration;
 
 			lock (Container)
 			{
-				if (_configuration is not null)
-					return _configuration;
+				if (_jsonConfiguration is not null)
+					return _jsonConfiguration;
 
 				var appPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
 				var sysPath = Path.Combine(appPath, "sys.json");
@@ -357,9 +384,10 @@ public static class Shell
 				{
 					if (File.Exists(sysPath))
 					{
-						_configuration = JsonDocument.Parse(File.ReadAllText(sysPath), new JsonDocumentOptions
+						_jsonConfiguration = JsonDocument.Parse(File.ReadAllText(sysPath), new JsonDocumentOptions
 						{
-							AllowTrailingCommas = true
+							AllowTrailingCommas = true,
+							CommentHandling = JsonCommentHandling.Skip
 						});
 
 						break;
@@ -373,7 +401,7 @@ public static class Shell
 				}
 			}
 
-			return _configuration;
+			return _jsonConfiguration;
 		}
 	}
 

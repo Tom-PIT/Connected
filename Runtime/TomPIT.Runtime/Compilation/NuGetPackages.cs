@@ -346,7 +346,7 @@ namespace TomPIT.Compilation
  				 * extractor doesn't install local package in the version folder. It is installed directly in the
  				 * package's root folder
 				 */
-				var folder = Path.Combine(PathResolver.GetInstallPath(installer), installer.Version.ToString()).ToLower();
+				var folder = Path.Combine(PathResolver.GetInstallPath(installer), installer.Version.ToString());
 
 				if (!Directory.Exists(folder))
 				{

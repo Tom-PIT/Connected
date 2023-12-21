@@ -1,36 +1,30 @@
-﻿using System.Collections.Generic;
-using System.Text.Json;
+﻿using Microsoft.Extensions.Configuration;
+
+using System.Collections.Generic;
 
 namespace TomPIT.Runtime.Configuration;
 
 public static class Plugins
 {
+	private static readonly PluginBindings _binder = new();
+
 	static Plugins()
 	{
-		Items = new();
-
 		Initialize();
 	}
 
-	public static string Location { get; private set; }
-	public static bool ShadowCopy { get; private set; }
-	public static List<string> Items { get; }
+	public static string? Location => _binder.Location;
+	public static bool ShadowCopy => _binder.ShadowCopy;
+	public static List<string>? Items => _binder.Items;
 
 	private static void Initialize()
 	{
-		if (!Shell.Configuration.RootElement.TryGetProperty("plugins", out JsonElement element))
-			return;
-
-		if (element.TryGetProperty("location", out JsonElement location))
-			Location = location.GetString();
-
-		if (element.TryGetProperty("shadowCopy", out JsonElement shadowCopy))
-			ShadowCopy = shadowCopy.GetBoolean();
-
-		if (element.TryGetProperty("items", out JsonElement items))
-		{
-			foreach (var item in items.EnumerateArray())
-				Items.Add(item.GetString());
-		}
+		Shell.Configuration.Bind("plugins", _binder);
+	}
+	private class PluginBindings
+	{
+		public string? Location { get; set; }
+		public bool ShadowCopy { get; set; }
+		public List<string>? Items { get; set; }
 	}
 }

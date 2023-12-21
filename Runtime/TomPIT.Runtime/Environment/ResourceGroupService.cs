@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -75,14 +77,13 @@ namespace TomPIT.Environment
 
 		private void Initialize()
 		{
-			if (!Shell.Configuration.RootElement.TryGetProperty("resourceGroups", out JsonElement element))
-				return;
+			var resourceGroups = Shell.Configuration.GetSection("resourceGroups").Get<string[]>();
 
 			var all = Query();
 
-			foreach (var item in element.EnumerateArray())
+			foreach (var item in resourceGroups)
 			{
-				var current = all.FirstOrDefault(f => string.Equals(f.Name, item.GetString(), StringComparison.OrdinalIgnoreCase));
+				var current = all.FirstOrDefault(f => string.Equals(f.Name, item, StringComparison.OrdinalIgnoreCase));
 
 				if (current is null)
 					continue;

@@ -57,22 +57,5 @@ namespace TomPIT.Sys.Services
       }
 
       private HttpConnection Connection => _connection ??= new();
-
-      private Uri SysUri
-      {
-         get
-         {
-            if (_sysUri == null)
-            {
-               if (!Shell.Configuration.RootElement.TryGetProperty("sys", out JsonElement element))
-                  throw new ConfigurationErrorsException("'sys' configuration element expected.");
-
-               if (element.TryGetProperty("url", out JsonElement urlElement))
-                  _sysUri = new Uri(urlElement.GetString());
-            }
-
-            return _sysUri;
-         }
-      }
    }
 }
