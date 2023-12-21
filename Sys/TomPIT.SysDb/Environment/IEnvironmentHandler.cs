@@ -9,15 +9,6 @@ namespace TomPIT.SysDb.Environment
         IClientHandler Clients { get; }
 
         /*
-		 * Instance endpoints
-		 */
-        void InsertInstanceEndpoint(Guid token, InstanceFeatures features, string name, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs);
-        void UpdateInstanceEndpoint(IInstanceEndpoint item, InstanceFeatures features, string name, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs);
-        void DeleteInstanceEndpoint(IInstanceEndpoint item);
-
-        IInstanceEndpoint SelectInstanceEndpoint(Guid token);
-        List<IInstanceEndpoint> QueryInstanceEndpoints();
-        /*
 		 * Resource groups
 		 */
         void InsertResourceGroup(Guid token, string name, Guid storageProvider, string connectionString);

@@ -13,11 +13,11 @@ namespace TomPIT.Caching
         protected SynchronizedRepository(IMemoryCache container, string key) : base(container, key)
         {
             /*
-			 * Hook to the second event in the invalidation process
-			 * - Invalidating
-			 * - Invalidate
-			 * - Invalidated
-			 */
+			    * Hook to the second event in the invalidation process
+			    * - Invalidating
+			    * - Invalidate
+			    * - Invalidated
+			    */
             Container.Invalidate += OnInvalidate;
         }
 

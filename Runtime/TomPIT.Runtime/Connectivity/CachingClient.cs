@@ -27,7 +27,6 @@ namespace TomPIT.Connectivity
 			Configuration();
 			Security();
 			MicroServices();
-			Instances();
 			AuthenticationTokens();
 			Data();
 			Settings();
@@ -99,24 +98,6 @@ namespace TomPIT.Connectivity
 
 				if (Tenant.GetService<IAuthorizationService>() is IAuthenticationTokenNotification n)
 					n.NotifyAuthenticationTokenRemoved(Tenant, e.Args);
-			});
-		}
-		private void Instances()
-		{
-			Hub.On<MessageEventArgs<InstanceEndpointEventArgs>>("InstanceEndpointChanged", (e) =>
-			{
-				Hub.InvokeAsync("Confirm", e.Message);
-
-				if (Tenant.GetService<IInstanceEndpointService>() is IInstanceEndpointNotification n)
-					n.NotifyChanged(Tenant, e.Args);
-			});
-
-			Hub.On<MessageEventArgs<InstanceEndpointEventArgs>>("InstanceEndpointRemoved", (e) =>
-			{
-				Hub.InvokeAsync("Confirm", e.Message);
-
-				if (Tenant.GetService<IInstanceEndpointService>() is IInstanceEndpointNotification n)
-					n.NotifyRemoved(Tenant, e.Args);
 			});
 		}
 

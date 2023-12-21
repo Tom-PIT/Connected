@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.Extensions.Configuration;
+
+using System.Collections.Generic;
 using System.Linq;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
@@ -26,7 +28,12 @@ namespace TomPIT.Configuration
 
 		public List<ISetting> Query()
 		{
-			return Instance.SysProxy.Settings.Query().ToList();
+			var settings = Instance.SysProxy.Settings.Query().ToList();
+			var configSettings = Shell.Configuration.GetSection("settings").Get<Setting[]>();
+
+			settings.AddRange(configSettings);
+
+			return settings; 
 		}
 
 		public ISetting Select(string name, string nameSpace, string type, string primaryKey)
@@ -38,6 +45,16 @@ namespace TomPIT.Configuration
 				return r;
 
 			r = Instance.SysProxy.Settings.Select(name, nameSpace, type, primaryKey);
+
+			var configOverride = Shell.Configuration.GetSection("settings").Get<Setting[]>()?.FirstOrDefault(e=> 
+				string.Equals(e.Name, name) && 
+				string.Equals(e.NameSpace, nameSpace) && 
+				string.Equals(e.Type, type) && 
+				string.Equals(e.PrimaryKey, primaryKey)
+			);
+
+			if (configOverride is not null)
+				r = configOverride;
 
 			r ??= new Setting();
 

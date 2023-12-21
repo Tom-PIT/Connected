@@ -14,7 +14,6 @@
 		IDataCacheController DataCache { get; }
 		IEventController Events { get; }
 		IFolderController Folders { get; }
-		IInstanceEndpointController InstanceEndpoints { get; }
 		IIoTController IoT { get; }
 		ILanguageController Languages { get; }
 		ILockingController Locking { get; }

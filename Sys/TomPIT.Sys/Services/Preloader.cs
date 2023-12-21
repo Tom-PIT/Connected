@@ -31,7 +31,7 @@ namespace TomPIT.Sys.Services
       {
          try
          {
-            var ds = DataModel.InstanceEndpoints.Query();
+            var ds =  DataModel.InstanceEndpoints.Query();
 
             foreach (var i in ds)
                Load(i);

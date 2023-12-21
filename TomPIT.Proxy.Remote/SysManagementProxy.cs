@@ -15,7 +15,6 @@ namespace TomPIT.Proxy.Remote
 			Environment = new EnvironmentManagementController();
 			Events = new EventManagementController();
 			Globalization = new GlobalizationManagementController();
-			InstanceEndpoints = new InstanceEndpointManagementController();
 			Logging = new LoggingManagementController();
 			Mail = new MailManagementController();
 			Printing = new PrintManagementController();
@@ -36,7 +35,6 @@ namespace TomPIT.Proxy.Remote
 		public IEnvironmentManagementController Environment { get; }
 		public IEventManagementController Events { get; }
 		public IGlobalizationManagementController Globalization { get; }
-		public IInstanceEndpointManagementController InstanceEndpoints { get; }
 		public ILoggingManagementController Logging { get; }
 		public IMailManagementController Mail { get; }
 		public IPrintManagementController Printing { get; }

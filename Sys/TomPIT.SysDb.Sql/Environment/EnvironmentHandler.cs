@@ -18,63 +18,6 @@ namespace TomPIT.SysDb.Sql.Environment
                 return _clients ??= new ClientHandler();
             }
         }
-        /*
-		 * Instance endpoints
-		 */
-        public void DeleteInstanceEndpoint(IInstanceEndpoint d)
-        {
-            using var w = new Writer("tompit.instance_endpoint_del");
-
-            w.CreateParameter("@id", d.GetId());
-
-            w.Execute();
-        }
-
-        public void InsertInstanceEndpoint(Guid token, InstanceFeatures features, string name, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs)
-        {
-            using var w = new Writer("tompit.instance_endpoint_ins");
-
-            w.CreateParameter("@token", token);
-            w.CreateParameter("@type", features);
-            w.CreateParameter("@name", name);
-            w.CreateParameter("@url", url, true);
-            w.CreateParameter("@reverse_proxy_url", reverseProxyUrl, true);
-            w.CreateParameter("@status", status);
-            w.CreateParameter("@verbs", verbs);
-
-            w.Execute();
-        }
-
-        public List<IInstanceEndpoint> QueryInstanceEndpoints()
-        {
-            using var r = new Reader<InstanceEndpoint>("tompit.instance_endpoint_que");
-
-            return r.Execute().ToList<IInstanceEndpoint>();
-        }
-
-        public IInstanceEndpoint SelectInstanceEndpoint(Guid token)
-        {
-            using var r = new Reader<InstanceEndpoint>("tompit.instance_endpoint_sel");
-
-            r.CreateParameter("@token", token);
-
-            return r.ExecuteSingleRow();
-        }
-
-        public void UpdateInstanceEndpoint(IInstanceEndpoint target, InstanceFeatures features, string name, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs)
-        {
-            using var w = new Writer("tompit.instance_endpoint_upd");
-
-            w.CreateParameter("@id", target.GetId());
-            w.CreateParameter("@url", url, true);
-            w.CreateParameter("@status", status);
-            w.CreateParameter("@name", name);
-            w.CreateParameter("@type", features);
-            w.CreateParameter("@verbs", verbs);
-            w.CreateParameter("@reverse_proxy_url", reverseProxyUrl, true);
-
-            w.Execute();
-        }
 
         /*
 		 * Resource groups
