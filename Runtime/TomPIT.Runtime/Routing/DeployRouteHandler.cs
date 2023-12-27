@@ -16,7 +16,7 @@ namespace TomPIT.Routing
 
 		private string? _baseUrl = null;
 
-		private string BaseUrl => _baseUrl ??= Shell.Configuration.GetValue<string>("deployRouteBaseUrl", Remote);
+		private string BaseUrl => _baseUrl ??= Shell.Configuration.GetSection("deployment").GetValue("remoteUrl", Remote) ?? Remote;
 
 		protected override void OnProcessRequest()
 		{
