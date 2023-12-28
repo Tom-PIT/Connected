@@ -84,7 +84,6 @@ namespace TomPIT.Connected
 				  .ConfigureWebHostDefaults(webBuilder =>
 				  {
 					  webBuilder.UseStartup<Startup>();
-					  webBuilder.CaptureStartupErrors(true);
 				  });
 	}
 }
