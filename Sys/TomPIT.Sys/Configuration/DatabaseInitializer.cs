@@ -41,12 +41,15 @@ internal class DatabaseInitializer
 	protected virtual void InitializeConfig()
 	{
 		Shell.Configuration.Bind("sys", this);
-				
+
+		if (Token is not null)
+			Token = Encoding.UTF8.GetString(Convert.FromBase64String(Token));
+
 		DatabaseConnectionString = ConnectionStringsConfiguration.Sys;
 
 		ApplicationVersion = Shell.Version.ToString();
-	
-		InsertScriptPath = Shell.Configuration.GetValue<string>("sqlScriptPaths:create", "./create.sql"); 
+
+		InsertScriptPath = Shell.Configuration.GetValue<string>("sqlScriptPaths:create", "./create.sql");
 		UpdateScriptPath = Shell.Configuration.GetValue<string>("sqlScriptPaths:update", "./update.json");
 	}
 
