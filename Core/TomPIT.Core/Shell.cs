@@ -12,6 +12,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 using TomPIT.Runtime;
 using TomPIT.Runtime.Configuration;
@@ -63,7 +64,7 @@ public static class Shell
 		Configuration.Bind(_configurationBinder);
 	}
 
-	private class ConfigurationBindings 
+	private class ConfigurationBindings
 	{
 		public string? InstanceName { get; set; }
 
@@ -357,52 +358,35 @@ public static class Shell
 				var builder = new ConfigurationBuilder();
 				builder.AddJsonFile(sysPath);
 				builder.AddEnvironmentVariables();
+				builder.AddUserSecrets(Assembly.GetEntryAssembly());
 
-				_configuration = builder.Build();
+				_configuration = ApplyVariableValues(builder.Build());				
 			}
 
 			return _configuration;
 		}
 	}
-	
-	public static JsonDocument JsonConfiguration
+
+	private static IConfigurationRoot ApplyVariableValues(IConfigurationRoot configuration) 
 	{
-		get
+		var values = configuration.AsEnumerable();
+
+		foreach (var value in values)
 		{
-			if (_jsonConfiguration is not null)
-				return _jsonConfiguration;
+			var results = Regex.Matches(value.Value ?? "", @"\$\{(.*?)\}");
 
-			lock (Container)
+			foreach (var match in results.Cast<Match>())
 			{
-				if (_jsonConfiguration is not null)
-					return _jsonConfiguration;
+				var key = match.Groups[1].Value;
 
-				var appPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-				var sysPath = Path.Combine(appPath, "sys.json");
+				if (!configuration.GetSection(key).Exists())
+					continue;
 
-				while (!string.IsNullOrWhiteSpace(appPath))
-				{
-					if (File.Exists(sysPath))
-					{
-						_jsonConfiguration = JsonDocument.Parse(File.ReadAllText(sysPath), new JsonDocumentOptions
-						{
-							AllowTrailingCommas = true,
-							CommentHandling = JsonCommentHandling.Skip
-						});
-
-						break;
-					}
-
-					if (!sysPath.Contains('\\'))
-						throw new NullReferenceException("Could not find sys.json configuration file.");
-
-					appPath = appPath[..appPath.LastIndexOf('\\')];
-					sysPath = Path.Combine(appPath, "sys.json");
-				}
+				configuration[value.Key] = configuration.GetValue<string>(value.Key)?.Replace($"{match.Value}", configuration.GetValue<string>(key));
 			}
-
-			return _jsonConfiguration;
 		}
+
+		return configuration;
 	}
 
 	public static void Configure(IApplicationBuilder app)

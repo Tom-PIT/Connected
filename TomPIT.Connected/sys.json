@@ -1,14 +1,9 @@
 ﻿{
   "instanceName": "Default Instance",
-  "features": "Application, Sys, Development, Cdn, Worker",
+  "features": "Application, Worker, Cdn, Rest, Search, BigData, Sys, IoT, Development, Management",
   "platform": "OnPrem",
-  "microServicesFolder":  "/microServicesD",
   "stage": "Development",
   "optimization": "Debug",
-  "debugTarget": {
-    "url": "http://localhost:44004",
-    "token": "ZGVmYXVsdEF1dGhlbnRpY2F0aW9uVG9rZW4="
-  },
   "resourceGroups": [
     "Default"
   ],
@@ -17,22 +12,54 @@
     "jwToken": {
       "validIssuer": "tompit.net",
       "validAudience": "tompit.net",
-      "issuerSigningKey": "F221ECECDB704EFB9568A8756115EBEC"
+      "issuerSigningKey": null
     }
   },
-  "storageProviders": [
-    "TomPIT.StorageProvider.Sql.SqlStorageProvider, TomPIT.StorageProvider.Sql"
-  ],
-  "connectionStrings": {
-    "sys": "data source=PIT-Z2\\SQLEXPRESS;initial catalog=tompitSys;integrated security=true;TrustServerCertificate=true;"
+  "debugTarget": {
+    "url": null,
+    "token": null
   },
+  "sys": {
+    "name": "Local",
+    "url": "http://localhost:44003",
+    "token": null
+  },
+  "storage": {
+    "databases": {
+      "defaultConnectionString": null
+    }
+  },
+  "deployment": {
+    "userToken": null
+  },
+  "instanceEndpoints": [
+    {
+      "url": "${sys:url}",
+      "name": "All",
+      "features": "${features}"
+    }
+  ],
+  "settings": [
+    {
+      "name": "ConnectionString",
+      "value": null,
+      "namespace": "Common"
+    },
+    {
+      "name": "Cors Enabled",
+      "value": false
+    }
+  ],
   "sqlScriptPaths": {
-    "create": "/path/to/create.sql",
-    "update": "/path/to/update.json"
+    "create": null,
+    "update": null
   },
   "diagnostics": {
     "dumpEnabled": false
   },
+  "storageProviders": [
+    "TomPIT.StorageProvider.Sql.SqlStorageProvider, TomPIT.StorageProvider.Sql"
+  ],
   "dataProviders": [
     "TomPIT.DataProviders.Sql.SqlDataProvider, TomPIT.DataProviders.Sql",
     "TomPIT.DataProviders.BigData.BigDataProvider, TomPIT.DataProviders.BigData"
@@ -44,7 +71,7 @@
     "TomPIT.MicroServices.Reporting.Design.ReportTemplate, TomPIT.MicroServices.Reporting.Design"
   ],
   "plugins": {
-    "location": "c:/src/plugins",
+    "location": "",
     "shadowCopy": false,
     "items": [
       "TomPIT.MicroServices.Configuration.Runtime.Plugin, TomPIT.MicroServices",

@@ -15,7 +15,7 @@ namespace TomPIT.Sys.Configuration
 
       private static void Initialize()
       {
-         Sys = Shell.Configuration.GetValue<string>("connectionStrings:sys");
+         Sys = Shell.Configuration.GetValue<string>("storage:databases:defaultConnectionString");
       }
    }
 }
