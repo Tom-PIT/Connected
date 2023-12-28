@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using TomPIT.ComponentModel;
+using TomPIT.Configuration;
 using TomPIT.Connectivity;
 using TomPIT.Design.Ide.Designers;
 using TomPIT.Diagnostics;
@@ -31,28 +32,48 @@ namespace TomPIT.Design
 
 		private static string AuthenticationKey => Shell.Configuration.GetSection("deployment").GetValue<string>("userToken") ?? string.Empty;
 
-		public static void InitializeInstance() 
+		private enum InitializationStage
+		{
+			Undefined = 0,
+			Attempted = 1,
+			Successful = 2
+		}
+
+		public static void InitializeInstance()
 		{
 			var stage = Tenant.GetService<IRuntimeService>().Stage;
 
+			var settingsService = Tenant.GetService<ISettingService>();
+
+			var initializedFlag = settingsService.GetValue<InitializationStage>(stage.ToString(), nameof(BaseMicroServiceInstaller), null, null);
+
+			if (initializedFlag == InitializationStage.Successful)
+				return;
+
+			var reset = initializedFlag != InitializationStage.Undefined;
+
+			settingsService.Update(stage.ToString(), nameof(BaseMicroServiceInstaller), null, null, InitializationStage.Attempted);
+
 			switch (stage)
 			{
-				case EnvironmentStage.Development: { EnsureDevelopmentServices(); break; }
+				case EnvironmentStage.Development: { EnsureDevelopmentServices(reset); break; }
 				case EnvironmentStage.QualityAssurance: EnsureQualityAssuranceServices(); break;
 				case EnvironmentStage.Staging: EnsureStagingServices(); break;
 				case EnvironmentStage.Production: EnsureProductionServices(); break;
 				default: throw new NotImplementedException();
 			};
 
+			settingsService.Update(stage.ToString(), nameof(BaseMicroServiceInstaller), null, null, InitializationStage.Successful);
+
 			//Force restart
 			if (_stateChanged)
-				System.Environment.Exit(0);			
+				System.Environment.Exit(0);
 		}
 
 		private static List<RepositoryData> GetImageServices(long subscription, string name, string? authenticationKey = null)
 		{
 			var url = $"{BaseUrl}/Connected.Services.App/Development/QueryImageServices";
-			
+
 			var imageContents = MiddlewareDescriptor.Current.Tenant.Post<List<RepositoryData>>(url, new
 			{
 				Subscription = subscription,
@@ -62,16 +83,16 @@ namespace TomPIT.Design
 			return imageContents;
 		}
 
-		private static List<RepositoryData> GetMissingServices(List<RepositoryData> services) 
+		private static List<RepositoryData> GetMissingServices(List<RepositoryData> services)
 		{
 			var microServiceService = Tenant.GetService<IMicroServiceService>();
 
 			var toInstall = new List<RepositoryData>();
 
-			foreach (var service in services) 
+			foreach (var service in services)
 			{
 				var microService = microServiceService.Select(service.Token);
-				
+
 				if (microService is null)
 					toInstall.Add(service);
 			}
@@ -79,13 +100,13 @@ namespace TomPIT.Design
 			return toInstall;
 		}
 
-		private static void InstallServices(List<RepositoryData> services) 
+		private static void InstallServices(List<RepositoryData> services)
 		{
 			var logService = Tenant.GetService<ILoggingService>();
 
 			var deploymentService = Tenant.GetService<IDesignService>().Deployment;
 
-			foreach (var service in services) 
+			foreach (var service in services)
 			{
 				try
 				{
@@ -116,7 +137,7 @@ namespace TomPIT.Design
 
 					throw;
 				}
-				finally 
+				finally
 				{
 					_stateChanged = true;
 				}
@@ -167,7 +188,7 @@ namespace TomPIT.Design
 			}
 		}
 
-		private static void EnsureDevelopmentServices() 
+		private static void EnsureDevelopmentServices(bool reset)
 		{
 			var developmentSettings = new StageDeploymentConfiguration();
 
@@ -175,37 +196,36 @@ namespace TomPIT.Design
 			{
 				Shell.Configuration.GetSection("deployment").Bind("development", developmentSettings);
 			}
-			else 
+			else
 			{
 				developmentSettings.Subscription = 99;
 				developmentSettings.Image = "Development base";
 				developmentSettings.CredentialsOverride = null;
 			}
 
-			var services = GetImageServices(developmentSettings.Subscription, developmentSettings.Image, developmentSettings.CredentialsOverride);
+			var services = GetImageServices(developmentSettings.Subscription.GetValueOrDefault(), developmentSettings.Image, developmentSettings.CredentialsOverride);
 
 			var toInstall = services;
 
-			if (!developmentSettings.Reset)
-			{
-				toInstall = GetMissingServices(services);
-			}
-			else 
+			if (reset)
 			{
 				RemoveServices(toInstall);
-				return;
+			}
+			else
+			{
+				toInstall = GetMissingServices(services);
 			}
 
 			InstallServices(toInstall);
 		}
-				  
+
 		private static void EnsureQualityAssuranceServices() { }
-				  
+
 		private static void EnsureStagingServices() { }
-				  
+
 		private static void EnsureProductionServices() { }
 
-		private class RepositoryData 
+		private class RepositoryData
 		{
 			public Guid Token { get; set; }
 
@@ -218,13 +238,11 @@ namespace TomPIT.Design
 
 		private class StageDeploymentConfiguration
 		{
-			public int Subscription { get; set; }
+			public int? Subscription { get; set; }
 
-			public string Image { get; set; }
+			public string? Image { get; set; }
 
-			public string CredentialsOverride { get; set; }
-
-			public bool Reset { get; set; }
+			public string? CredentialsOverride { get; set; }
+		}
 	}
-}
 }
