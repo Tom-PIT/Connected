@@ -26,5 +26,8 @@ public class Text : TextConfiguration, ITextConfiguration, IStaticFileConfigurat
 	}
 
 	[PropertyCategory(PropertyCategoryAttribute.CategoryBehavior)]
-	public string Extension { get; set; } = "txt";
+	public string? Extension { get; set; } = "txt";
+
+	[PropertyCategory(PropertyCategoryAttribute.CategoryBehavior)]
+	public string? Url { get; set; }
 }
