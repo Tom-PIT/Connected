@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.Extensions.Configuration;
+
+using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text.Json;
 
@@ -18,11 +21,9 @@ namespace TomPIT.Sys.Configuration
 
 		private static void Initialize()
 		{
-			if (!Shell.Configuration.RootElement.TryGetProperty("storageProviders", out JsonElement element))
-				return;
+			var storageProviders = Shell.Configuration.GetSection("storageProviders").Get<string[]>();
 
-			foreach (var item in element.EnumerateArray())
-				_items.Add(item.GetString());
+			_items.AddRange(storageProviders);
 		}
 	}
 }

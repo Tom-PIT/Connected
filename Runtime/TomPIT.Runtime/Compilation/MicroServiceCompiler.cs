@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
+
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -11,6 +12,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using System.Text;
 using System.Threading.Tasks;
+
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
 using TomPIT.Reflection;
@@ -120,7 +122,11 @@ internal static class MicroServiceCompiler
 		var diagnostics = compilation.GetDiagnostics();
 
 		if (diagnostics.Any(f => f.Severity == DiagnosticSeverity.Error))
-			throw new Exception($"{microService.Name} - {diagnostics.First(f => f.Severity == DiagnosticSeverity.Error).GetMessage()}");
+		{
+			var firstError = diagnostics.First(f => f.Severity == DiagnosticSeverity.Error);
+			
+			throw new Exception($"{microService.Name} - {firstError.GetMessage()} {firstError.Location}");
+		}
 	}
 
 	private static string ParseAssemblyName(IMicroService microService) => $"{microService.Name}.dll";

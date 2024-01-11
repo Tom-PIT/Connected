@@ -12,7 +12,6 @@ public interface ISysManagementProxy
 	IEnvironmentManagementController Environment { get; }
 	IEventManagementController Events { get; }
 	IGlobalizationManagementController Globalization { get; }
-	IInstanceEndpointManagementController InstanceEndpoints { get; }
 	ILoggingManagementController Logging { get; }
 	IMailManagementController Mail { get; }
 	IPrintManagementController Printing { get; }

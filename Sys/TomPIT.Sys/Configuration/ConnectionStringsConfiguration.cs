@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿using Microsoft.Extensions.Configuration;
+
+using System.Text.Json;
 
 namespace TomPIT.Sys.Configuration
 {
@@ -13,13 +15,7 @@ namespace TomPIT.Sys.Configuration
 
       private static void Initialize()
       {
-         if (!Shell.Configuration.RootElement.TryGetProperty("connectionStrings", out JsonElement element))
-            return;
-
-         if (!element.TryGetProperty("sys", out JsonElement sys))
-            return;
-
-         Sys = sys.GetString();
+         Sys = Shell.Configuration.GetValue<string>("storage:databases:defaultConnectionString");
       }
    }
 }

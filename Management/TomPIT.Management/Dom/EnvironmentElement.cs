@@ -20,15 +20,12 @@ namespace TomPIT.Management.Dom
 
 		public override void LoadChildren()
 		{
-			Items.Add(new EndpointsElement(this));
 			Items.Add(new SettingsElement(this));
 		}
 
 		public override void LoadChildren(string id)
 		{
-			if (string.Compare(id, EndpointsElement.DomId, true) == 0)
-				Items.Add(new EndpointsElement(this));
-			else if (string.Compare(id, SettingsElement.ElementId, true) == 0)
+			if (string.Compare(id, SettingsElement.ElementId, true) == 0)
 				Items.Add(new SettingsElement(this));
 		}
 	}

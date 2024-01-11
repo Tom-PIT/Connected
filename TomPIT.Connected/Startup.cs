@@ -74,5 +74,7 @@ internal class Startup
 	public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 	{
 		Host.Configure(app, env);
+
+		Design.BaseMicroServiceInstaller.InitializeInstance();
 	}
 }

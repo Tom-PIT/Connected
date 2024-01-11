@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Configuration;
 
 using System;
 using System.Collections.Generic;
@@ -41,15 +42,15 @@ public static class Instance
 
 	static Instance()
 	{
-		if (Shell.Configuration.RootElement.TryGetProperty("features", out JsonElement element))
-			Features = Enum.Parse<InstanceFeatures>(element.GetString());
+		Features = Shell.Configuration.GetValue<InstanceFeatures>("features");
 	}
+
 	public static IStartupHostProxy Start()
 	{
 		return new StartupHost();
 	}
 
-	internal static bool IsShellMode => string.Equals(System.Environment.GetEnvironmentVariable("TP_SHELL_MODE"), "1");
+	internal static bool IsShellMode => string.Equals(Shell.Configuration.GetValue<string>("TP_SHELL_MODE"), "1");
 	public static bool ResourceGroupExists(Guid resourceGroup)
 	{
 		if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)

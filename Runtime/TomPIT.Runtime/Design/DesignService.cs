@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.Extensions.Configuration;
+
+using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text.Json;
 using TomPIT.Connectivity;
@@ -65,11 +68,10 @@ namespace TomPIT.Design
 
 		private void InitializeConfiguration()
 		{
-			if (!Shell.Configuration.RootElement.TryGetProperty("designers", out JsonElement element))
-				return;
+			var designers = Shell.Configuration.GetSection("designers").Get<string[]>();
 
-			foreach (var item in element.EnumerateArray())
-				Designers.Add(item.GetString());
+			foreach (var item in designers)
+				Designers.Add(item);
 		}
 	}
 }

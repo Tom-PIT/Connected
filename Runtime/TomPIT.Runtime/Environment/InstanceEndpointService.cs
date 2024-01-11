@@ -1,50 +1,32 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Server.Kestrel;
+using Microsoft.Extensions.Configuration;
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
+using System.ComponentModel;
+using System.Linq;
+
 using TomPIT.Caching;
 using TomPIT.Connectivity;
 using TomPIT.Distributed;
 
 namespace TomPIT.Environment
 {
-	internal class InstanceEndpointService : SynchronizedClientRepository<IInstanceEndpoint, Guid>, IInstanceEndpointService, IInstanceEndpointNotification
+	internal class InstanceEndpointService : CacheRepository<IInstanceEndpoint, Guid>, IInstanceEndpointService
 	{
 		private ConcurrentDictionary<string, RoundRobin> _rr = new ConcurrentDictionary<string, RoundRobin>();
 
-		public InstanceEndpointService(ITenant connection) : base(connection, "instanceendpoint")
+		public InstanceEndpointService(ITenant connection) : base(connection.Cache, "instanceendpoint")
 		{
-
-		}
-
-		protected override void OnInitializing()
-		{
-			var ds = Instance.SysProxy.InstanceEndpoints.Query();
-
-			foreach (var i in ds)
+			var endpoints = Shell.Configuration.GetSection("instanceEndpoints").Get<InstanceEndpointBindingModel[]>() ?? Array.Empty<InstanceEndpointBindingModel>();
+			foreach (var i in endpoints)
 			{
 				Set(i.Token, i, TimeSpan.Zero);
 
 				if (i.Status == InstanceStatus.Enabled)
 					Register(i.Features, i.Verbs, i.Token);
 			}
-		}
-
-		protected override void OnInvalidate(Guid id)
-		{
-			RemoveFromRobin(id);
-
-			var d = Load(id);
-
-			if (d == null)
-			{
-				Remove(id);
-				return;
-			}
-
-			if (d.Status == InstanceStatus.Enabled)
-				Register(d.Features, d.Verbs, d.Token);
-
-			Set(id, d, TimeSpan.Zero);
 		}
 
 		public ImmutableList<IInstanceEndpoint> Query()
@@ -78,9 +60,10 @@ namespace TomPIT.Environment
 			return Next(features, InstanceVerbs.All);
 		}
 
-		private IInstanceEndpoint Load(Guid endpoint)
+		private IInstanceEndpoint? Load(Guid endpoint)
 		{
-			return Instance.SysProxy.InstanceEndpoints.Select(endpoint);
+			var endpointConfiguration = Shell.Configuration.GetSection("instanceEndpoints").Get<InstanceEndpointBindingModel[]>() ?? Array.Empty<InstanceEndpointBindingModel>();
+			return endpointConfiguration.FirstOrDefault(e => e.Token == endpoint);
 		}
 
 		public string Url(InstanceFeatures features, InstanceVerbs verb)
@@ -115,8 +98,8 @@ namespace TomPIT.Environment
 		{
 			RoundRobin robin;
 
-			if (_rr.ContainsKey(key))
-				robin = _rr[key];
+			if (_rr.TryGetValue(key, out RoundRobin? value))
+				robin = value;
 			else
 			{
 				robin = new RoundRobin();
@@ -127,12 +110,6 @@ namespace TomPIT.Environment
 			robin.Register(endpoint);
 		}
 
-		private void RemoveFromRobin(Guid endpoint)
-		{
-			foreach (var i in _rr.Keys)
-				_rr[i].Remove(endpoint);
-		}
-
 		private static string CreateRobinKey(InstanceFeatures features, InstanceVerbs verbs)
 		{
 			return $"{features}.{verbs}";
@@ -140,8 +117,6 @@ namespace TomPIT.Environment
 
 		public IInstanceEndpoint Next(InstanceFeatures features, InstanceVerbs verb)
 		{
-			Initialize();
-
 			var key = CreateRobinKey(features, verb);
 
 			if (!_rr.ContainsKey(key))
@@ -175,15 +150,20 @@ namespace TomPIT.Environment
 			return Get(id);
 		}
 
-		public void NotifyChanged(object sender, InstanceEndpointEventArgs e)
+		private class InstanceEndpointBindingModel : IInstanceEndpoint
 		{
-			Refresh(e.Endpoint);
-		}
+			public string? Url { get; set; }
+			public InstanceStatus Status { get; set; } = InstanceStatus.Enabled;
+			public string? Name { get; set; }
+			public InstanceFeatures Features { get; set; }
+			public Guid Token { get; set; } = Guid.NewGuid();
+			public InstanceVerbs Verbs { get; set; } = InstanceVerbs.All;
+			public string? ReverseProxyUrl { get; set; }
 
-		public void NotifyRemoved(object sender, InstanceEndpointEventArgs e)
-		{
-			RemoveFromRobin(e.Endpoint);
-			Remove(e.Endpoint);
+			public override string ToString()
+			{
+				return string.IsNullOrWhiteSpace(Name) ? base.ToString() : Name;
+			}
 		}
 	}
 }

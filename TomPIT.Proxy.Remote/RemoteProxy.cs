@@ -17,7 +17,6 @@
 			DataCache = new DataCacheController();
 			Events = new EventController();
 			Folders = new FolderController();
-			InstanceEndpoints = new InstanceEndpointController();
 			IoT = new IoTController();
 			Languages = new LanguageController();
 			Locking = new LockingController();
@@ -51,7 +50,6 @@
 		public IDataCacheController DataCache { get; }
 		public IEventController Events { get; }
 		public IFolderController Folders { get; }
-		public IInstanceEndpointController InstanceEndpoints { get; }
 		public IIoTController IoT { get; }
 		public ILanguageController Languages { get; }
 		public ILockingController Locking { get; }
