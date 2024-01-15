@@ -225,7 +225,7 @@ internal class StartupHost : IStartupHostProxy
 		{
 			o.EnableEndpointRouting = false;
 
-			ConfiguringMvc(null, o);
+			ConfiguringMvc?.Invoke(null, o);
 		});
 
 		builder.AddNewtonsoftJson();
