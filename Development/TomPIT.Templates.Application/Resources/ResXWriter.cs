@@ -20,9 +20,9 @@ internal static class ResXWriter
 		var ms = Tenant.GetService<IMicroServiceService>().Select(configuration.MicroService());
 		var text = Tenant.GetService<IComponentService>().SelectText(ms.Token, configuration);
 		var identifier = configuration.ComponentName();
-		var members = CreateMembers(configuration.AccessModifier, ms.Name, identifier, text);
-		var usings = CreateUsings();
 		var nameSpace = string.IsNullOrWhiteSpace(configuration.Namespace) ? ms.Name : configuration.Namespace;
+		var members = CreateMembers(configuration.AccessModifier, nameSpace, identifier, text);
+		var usings = CreateUsings();
 		var ns = NamespaceDeclaration(ParseName(nameSpace)).AddUsings(usings).AddMembers(members);
 
 		ns = ns.NormalizeWhitespace();
