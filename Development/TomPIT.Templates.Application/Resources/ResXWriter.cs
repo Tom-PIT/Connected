@@ -1,17 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Resources;
-using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
-
-namespace TomPIT.MicroServices.Resources;
+﻿namespace TomPIT.MicroServices.Resources;
 
 internal static class ResXWriter
 {
@@ -20,9 +7,9 @@ internal static class ResXWriter
 		var ms = Tenant.GetService<IMicroServiceService>().Select(configuration.MicroService());
 		var text = Tenant.GetService<IComponentService>().SelectText(ms.Token, configuration);
 		var identifier = configuration.ComponentName();
-		var members = CreateMembers(configuration.AccessModifier, ms.Name, identifier, text);
-		var usings = CreateUsings();
 		var nameSpace = string.IsNullOrWhiteSpace(configuration.Namespace) ? ms.Name : configuration.Namespace;
+		var members = CreateMembers(configuration.AccessModifier, nameSpace, identifier, text);
+		var usings = CreateUsings();
 		var ns = NamespaceDeclaration(ParseName(nameSpace)).AddUsings(usings).AddMembers(members);
 
 		ns = ns.NormalizeWhitespace();

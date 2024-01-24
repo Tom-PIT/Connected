@@ -20,7 +20,6 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
-using System.Text.Json;
 using TomPIT.Configuration;
 using TomPIT.Connectivity;
 using TomPIT.Design;
@@ -166,11 +165,11 @@ internal class StartupHost : IStartupHostProxy
 		Shell.GetService<IConnectivityService>().InsertTenant(bindings.Name, bindings.Url, bindings.Token);
 	}
 
-	private class ConfigurationBindings 
+	private class ConfigurationBindings
 	{
 		public string? Name { get; set; }
 		public string? Url { get; set; }
-		public string? Token { get; set;  }
+		public string? Token { get; set; }
 	}
 
 	private void OnTenantInitialized(object sender, TenantArgs e)
@@ -225,7 +224,8 @@ internal class StartupHost : IStartupHostProxy
 		{
 			o.EnableEndpointRouting = false;
 
-			ConfiguringMvc(null, o);
+			if (ConfiguringMvc is not null)
+				ConfiguringMvc(null, o);
 		});
 
 		builder.AddNewtonsoftJson();

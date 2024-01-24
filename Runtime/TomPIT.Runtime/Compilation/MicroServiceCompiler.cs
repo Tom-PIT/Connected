@@ -8,7 +8,6 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using System.Text;
 using System.Threading.Tasks;
@@ -37,8 +36,13 @@ internal static class MicroServiceCompiler
 	public static ImmutableArray<Assembly> Compiled => _compiled.ToImmutableArray();
 	public static async Task Compile()
 	{
+		Console.WriteLine("Compiling Microservices...");
+
 		if (Instance.IsShellMode)
+		{
+			Console.WriteLine("Instance is in shell mode. Compilation skipped.");
 			return;
+		}
 
 		var microServices = new CompilationSet();
 
@@ -48,11 +52,18 @@ internal static class MicroServiceCompiler
 
 	private static async Task Compile(IMicroService microService)
 	{
+		Console.Write($"Compiling {microService.Name}...");
+
 		if (!Tenant.GetService<IRuntimeService>().IsMicroServiceSupported(microService.Token))
+		{
+			Console.Write($"Not supported on this platform. Compilation skipped.{System.Environment.NewLine}");
 			return;
+		}
 
 		if (!ShouldCompile(microService))
 		{
+			Console.Write($"Up to date.{System.Environment.NewLine}");
+
 			Load(microService);
 			return;
 		}
@@ -60,7 +71,10 @@ internal static class MicroServiceCompiler
 		var trees = await LoadSyntaxTrees(microService);
 
 		if (trees is null || !trees.Any())
+		{
+			Console.Write($"No syntax trees found.{System.Environment.NewLine}");
 			return;
+		}
 
 		CreateBuiltInTrees(microService, trees);
 
@@ -72,11 +86,12 @@ internal static class MicroServiceCompiler
 
 		try
 		{
+			Console.Write($"Compiled.{System.Environment.NewLine}");
 			Load(microService, compilation);
 		}
 		catch (Exception ex)
 		{
-			//TODO log to standard logging channel
+			Console.Error.WriteLine(ex.Message);
 		}
 	}
 
@@ -124,7 +139,7 @@ internal static class MicroServiceCompiler
 		if (diagnostics.Any(f => f.Severity == DiagnosticSeverity.Error))
 		{
 			var firstError = diagnostics.First(f => f.Severity == DiagnosticSeverity.Error);
-			
+
 			throw new Exception($"{microService.Name} - {firstError.GetMessage()} {firstError.Location}");
 		}
 	}
