@@ -1,4 +1,17 @@
-﻿namespace TomPIT.MicroServices.Resources;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Xml.Linq;
+using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Resources;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
+
+namespace TomPIT.MicroServices.Resources;
 
 internal static class ResXWriter
 {
