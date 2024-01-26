@@ -12,21 +12,7 @@ namespace TomPIT.MicroServices.Resources;
 public class Text : TextConfiguration, ITextConfiguration, IStaticFileConfiguration
 {
 	[Browsable(false)]
-	public override string FileName
-	{
-		get
-		{
-			var preferred = ToString();
-
-			if (preferred.Contains('.'))
-				return preferred;
-
-			return $"{preferred}.{Extension}";
-		}
-	}
-
-	[PropertyCategory(PropertyCategoryAttribute.CategoryBehavior)]
-	public string? Extension { get; set; } = "txt";
+	public override string FileName => ToString();
 
 	[PropertyCategory(PropertyCategoryAttribute.CategoryBehavior)]
 	public string? Url { get; set; }
