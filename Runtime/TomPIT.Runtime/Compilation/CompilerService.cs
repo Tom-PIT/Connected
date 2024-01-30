@@ -238,7 +238,12 @@ namespace TomPIT.Compilation
 
 			try
 			{
-				var name = AssemblyName.GetAssemblyName(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"{fileName}.dll"));
+				var assemblyPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"{fileName}.dll");
+
+				if (!File.Exists(assemblyPath))
+					return null;
+
+				var name = AssemblyName.GetAssemblyName(assemblyPath);
 
 				asm = Assembly.Load(name);
 			}
