@@ -2,8 +2,11 @@
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.IO;
+using System.Linq;
 using System.Reflection;
+
 using Microsoft.CodeAnalysis;
+
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
 using TomPIT.Connectivity;
@@ -15,10 +18,12 @@ namespace TomPIT.Compilation
 	public class AssemblyResolver : MetadataReferenceResolver
 	{
 		private static ConcurrentDictionary<string, PortableExecutableReference> _metaReferenceCache;
+		private static ConcurrentBag<string> _missingMetaReferenceCache;
 
 		static AssemblyResolver()
 		{
 			_metaReferenceCache = new ConcurrentDictionary<string, PortableExecutableReference>();
+			_missingMetaReferenceCache = new ConcurrentBag<string>();
 		}
 
 		public AssemblyResolver(ITenant tenant, Guid microService, bool reflectionOnly)
@@ -29,6 +34,7 @@ namespace TomPIT.Compilation
 		}
 
 		private static ConcurrentDictionary<string, PortableExecutableReference> MetaReferenceCache => _metaReferenceCache;
+		private static ConcurrentBag<string> MissingMetaReferenceCache => _missingMetaReferenceCache;
 
 		private bool ReflectionOnly { get; }
 		private ITenant Tenant { get; }
@@ -228,6 +234,9 @@ namespace TomPIT.Compilation
 			if (MetaReferenceCache.TryGetValue(d, out PortableExecutableReference existing))
 				return existing;
 
+			if (MissingMetaReferenceCache.Any(e => e.Equals(d)))
+				return null;
+
 			try
 			{
 				var asm = AppDomain.CurrentDomain.Load(d);
@@ -241,7 +250,13 @@ namespace TomPIT.Compilation
 			catch
 			{
 				//return ResolveUploadReference(Tenant, )
-				return base.ResolveMissingAssembly(definition, referenceIdentity);
+				var resolved = base.ResolveMissingAssembly(definition, referenceIdentity);
+				if (resolved is null)
+					MissingMetaReferenceCache.Add(d);
+				else
+					MetaReferenceCache.TryAdd(d, resolved);
+
+				return resolved;
 			}
 		}
 
