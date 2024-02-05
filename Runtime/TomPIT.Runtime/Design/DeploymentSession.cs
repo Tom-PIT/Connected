@@ -33,7 +33,7 @@ namespace TomPIT.Design
             return;
          }
 
-         if (Request.Components.Any())
+         if (Request?.Components?.Any() ?? false)
          {
 
             if (e.ResetMicroService)
