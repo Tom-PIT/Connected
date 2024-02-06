@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
 
 using System;
@@ -92,6 +93,7 @@ internal static class MicroServiceCompiler
 		catch (Exception ex)
 		{
 			Console.Error.WriteLine(ex.Message);
+			throw;
 		}
 	}
 
@@ -112,8 +114,8 @@ internal static class MicroServiceCompiler
 		var outputPath = Path.Combine(Shell.MicroServicesFolder, ParseAssemblyName(microService));
 		var pdbPath = Path.Combine(Shell.MicroServicesFolder, ParsePdbName(microService));
 
-		if (PlatformID.Unix == System.Environment.OSVersion.Platform)
-			pdbPath = null;
+		//if (PlatformID.Unix == System.Environment.OSVersion.Platform)
+		//	pdbPath = null;
 
 		if (File.Exists(outputPath))
 			File.Delete(outputPath);
@@ -122,10 +124,19 @@ internal static class MicroServiceCompiler
 			File.Delete(pdbPath);
 
 		var resources = ResourceGenerator.Generate(microService);
-		var result = compilation.Emit(outputPath, pdbPath, manifestResources: resources);
 
-		if (!result.Success)
-			throw new Exception($"{microService.Name} - {result.Diagnostics.First(f => f.Severity == DiagnosticSeverity.Error).GetMessage()}");
+		var options = new EmitOptions(false, DebugInformationFormat.PortablePdb, pdbPath);
+
+		using (var output = File.OpenWrite(outputPath))
+		{
+			using (var pdbOutput = File.OpenWrite(pdbPath))
+			{
+				var result = compilation.Emit(output, pdbStream: pdbOutput, manifestResources: resources, options: options);
+
+				if (!result.Success)
+					throw new Exception($"{microService.Name} - {result.Diagnostics.First(f => f.Severity == DiagnosticSeverity.Error).GetMessage()}");
+			}
+		}		
 
 		var assembly = Load(microService);
 

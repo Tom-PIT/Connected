@@ -33,50 +33,55 @@ namespace TomPIT.Design
             return;
          }
 
-         if (e.ResetMicroService)
+         if (Request?.Components?.Any() ?? false)
          {
-            for (var i = Request.Components.Count - 1; i >= 0; i--)
-            {
-               var component = Request.Components[i];
 
-               if (component.Verb == ComponentVerb.Delete)
+            if (e.ResetMicroService)
+            {
+               for (var i = Request.Components.Count - 1; i >= 0; i--)
                {
-                  Request.Components.RemoveAt(i);
-                  continue;
+                  var component = Request.Components[i];
+
+                  if (component.Verb == ComponentVerb.Delete)
+                  {
+                     Request.Components.RemoveAt(i);
+                     continue;
+                  }
+
+                  for (var j = component.Files.Count - 1; j >= 0; j--)
+                  {
+                     var file = component.Files[j];
+
+                     if (file.Verb == ComponentVerb.Delete)
+                        component.Files.RemoveAt(j);
+                  }
                }
 
-               for (var j = component.Files.Count - 1; j >= 0; j--)
+               foreach (var component in Request.Components)
                {
-                  var file = component.Files[j];
+                  if (component?.Files is null)
+                     continue;
 
-                  if (file.Verb == ComponentVerb.Delete)
-                     component.Files.RemoveAt(j);
+                  if (!component.Files.Any())
+                     continue;
+
+                  component.Verb = ComponentVerb.Add;
+
+                  foreach (var file in component.Files)
+                     file.Verb = ComponentVerb.Add;
                }
+
+               DropMicroService();
             }
 
-            foreach (var component in Request.Components)
-            {
-               if (component?.Files is null)
-                  continue;
-
-               if (!component.Files.Any())
-                  continue;
-
-               component.Verb = ComponentVerb.Add;
-
-               foreach (var file in component.Files)
-                  file.Verb = ComponentVerb.Add;
-            }
-
-            DropMicroService();
+            SynchronizeMicroService(e);
+            Drop();
+            DeployFolders();
+            DeployComponents();
+            SynchronizeEntities();
+            RunInstallers();
          }
 
-         SynchronizeMicroService(e);
-         Drop();
-         DeployFolders();
-         DeployComponents();
-         SynchronizeEntities();
-         RunInstallers();
          IncrementVersion();
       }
 

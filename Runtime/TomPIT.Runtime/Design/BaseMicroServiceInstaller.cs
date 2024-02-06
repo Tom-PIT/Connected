@@ -131,7 +131,7 @@ namespace TomPIT.Design
 					logService.Write(new LogEntry
 					{
 						Category = nameof(BaseMicroServiceInstaller),
-						Message = $"Failed to install repository {service.Repository}, branch {service.Branch}, commit {service.Commit}",
+						Message = $"Failed to install repository {service.Repository}, branch {service.Branch}, commit {service.Commit}. {ex}",
 						Level = System.Diagnostics.TraceLevel.Error
 					});
 
@@ -175,7 +175,7 @@ namespace TomPIT.Design
 					logService.Write(new LogEntry
 					{
 						Category = nameof(BaseMicroServiceInstaller),
-						Message = $"Failed to remove repository {service.Repository}, branch {service.Branch}, commit {service.Commit}",
+						Message = $"Failed to remove repository {service.Repository}, branch {service.Branch}, commit {service.Commit}. {ex}",
 						Level = System.Diagnostics.TraceLevel.Error
 					});
 

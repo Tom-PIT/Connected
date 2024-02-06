@@ -19,8 +19,6 @@ internal class DatabaseInitializer
 
 	public string UserName { get; set; } = "admin";
 
-	public string Url { get; set; } = "http://localhost/sys";
-
 	public string ApplicationVersion { get; set; }
 
 	private string InsertScriptPath { get; set; }
