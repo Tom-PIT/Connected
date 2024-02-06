@@ -70,6 +70,9 @@ namespace TomPIT.Runtime
 		private static void OnTenantInitialize(object sender, TenantArgs e)
 		{
 			e.Tenant.RegisterService(typeof(ISerializationService), typeof(SerializationService));
+			e.Tenant.RegisterService(typeof(IComponentService), typeof(ComponentService));
+			e.Tenant.RegisterService(typeof(IStorageService), typeof(StorageService));
+			e.Tenant.RegisterService(typeof(IMicroServiceService), typeof(MicroServiceService));
 
 			if (Shell.LegacyServices)
 			{
@@ -85,7 +88,6 @@ namespace TomPIT.Runtime
 			}
 
 			e.Tenant.RegisterService(typeof(INuGetService), typeof(NuGetService));
-			e.Tenant.RegisterService(typeof(IMicroServiceService), typeof(MicroServiceService));
 			e.Tenant.RegisterService(typeof(ISettingService), typeof(SettingService));
 			e.Tenant.RegisterService(typeof(INamingService), typeof(NamingService));
 			e.Tenant.RegisterService(typeof(ILoggingService), typeof(LoggingService));
@@ -93,10 +95,8 @@ namespace TomPIT.Runtime
 			e.Tenant.RegisterService(typeof(ILanguageService), typeof(LanguageService));
 			e.Tenant.RegisterService(typeof(IInstanceEndpointService), typeof(InstanceEndpointService));
 			e.Tenant.RegisterService(typeof(IAuthorizationService), typeof(AuthorizationService));
-			e.Tenant.RegisterService(typeof(IComponentService), typeof(ComponentService));
 			e.Tenant.RegisterService(typeof(IUserService), typeof(UserService));
 			e.Tenant.RegisterService(typeof(IRoleService), typeof(RoleService));
-			e.Tenant.RegisterService(typeof(IStorageService), typeof(StorageService));
 			e.Tenant.RegisterService(typeof(IDataProviderService), typeof(DataProviderService));
 			e.Tenant.RegisterService(typeof(IEventService), typeof(EventService));
 			e.Tenant.RegisterService(typeof(IAuditService), typeof(AuditService));
