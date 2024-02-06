@@ -70,7 +70,20 @@ namespace TomPIT.Runtime
 		private static async void OnTenantInitialize(object sender, TenantArgs e)
 		{
 			e.Tenant.RegisterService(typeof(ISerializationService), typeof(SerializationService));
-			e.Tenant.RegisterService(typeof(ICompilerService), typeof(CompilerService));
+
+			if (Shell.LegacyServices)
+			{
+				e.Tenant.RegisterService(typeof(ICompilerService), typeof(CompilerService));
+				e.Tenant.RegisterService(typeof(IIoCService), typeof(IoCService));
+				e.Tenant.RegisterService(typeof(INavigationService), typeof(NavigationService));
+				e.Tenant.RegisterService(typeof(IUIDependencyInjectionService), typeof(UIDependencyInjectionService));
+				e.Tenant.RegisterService(typeof(IDependencyInjectionService), typeof(DependencyInjectionService));
+				e.Tenant.RegisterService(typeof(IModelService), typeof(ModelService));
+				e.Tenant.RegisterService(typeof(ICdnService), typeof(CdnService));
+				e.Tenant.RegisterService(typeof(IWorkerService), typeof(WorkerService));
+				e.Tenant.RegisterService(typeof(IMicroServiceRuntimeService), new MicroServiceRuntimeService(e.Tenant));
+			}
+
 			e.Tenant.RegisterService(typeof(INuGetService), typeof(NuGetService));
 			e.Tenant.RegisterService(typeof(IMicroServiceService), typeof(MicroServiceService));
 			e.Tenant.RegisterService(typeof(ISettingService), typeof(SettingService));
@@ -100,23 +113,16 @@ namespace TomPIT.Runtime
 			e.Tenant.RegisterService(typeof(IGraphicsService), typeof(GraphicsService));
 			e.Tenant.RegisterService(typeof(ISearchService), typeof(SearchService));
 			e.Tenant.RegisterService(typeof(ILocalizationService), typeof(LocalizationService));
-			e.Tenant.RegisterService(typeof(INavigationService), typeof(NavigationService));
-			e.Tenant.RegisterService(typeof(IIoCService), typeof(IoCService));
 			e.Tenant.RegisterService(typeof(IPrintingService), typeof(PrintingService));
-			e.Tenant.RegisterService(typeof(IUIDependencyInjectionService), typeof(UIDependencyInjectionService));
-			e.Tenant.RegisterService(typeof(IDependencyInjectionService), typeof(DependencyInjectionService));
 			e.Tenant.RegisterService(typeof(IAnalyticsService), typeof(AnalyticsService));
-			e.Tenant.RegisterService(typeof(IModelService), typeof(ModelService));
 			e.Tenant.RegisterService(typeof(IDesignService), typeof(DesignService));
-			e.Tenant.RegisterService(typeof(ICdnService), typeof(CdnService));
 			e.Tenant.RegisterService(typeof(ILockingService), typeof(LockingService));
 			e.Tenant.RegisterService(typeof(IClientService), typeof(ClientService));
 			e.Tenant.RegisterService(typeof(IDocumentService), typeof(DocumentService));
 			e.Tenant.RegisterService(typeof(IFileSystemService), typeof(FileSystemService));
 			e.Tenant.RegisterService(typeof(IMicroServiceTemplateService), typeof(MicroServiceTemplateService));
-			e.Tenant.RegisterService(typeof(IWorkerService), typeof(WorkerService));
-			e.Tenant.RegisterService(typeof(IMicroServiceRuntimeService), new MicroServiceRuntimeService(e.Tenant));
 			e.Tenant.RegisterService(typeof(IDebugService), typeof(DebugService));
+			e.Tenant.RegisterService(typeof(IViewCompilerService), typeof(ViewCompilerService));
 
 			await MicroServiceCompiler.Compile();
 

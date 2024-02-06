@@ -5,18 +5,21 @@ using System.Reflection;
 namespace TomPIT.Compilation;
 internal class NuGetService : INuGetService
 {
+	private NuGetPackages _nuGet;
+	public NuGetPackages Nuget => _nuGet ??= new NuGetPackages();
 	public ImmutableList<Assembly> Resolve(Guid blob, bool entryOnly)
 	{
-		return ((CompilerService)Tenant.GetService<ICompilerService>()).Nuget.Resolve(blob, entryOnly);
+		return Nuget.Resolve(blob, entryOnly);
 	}
 
 	public ImmutableList<Assembly> Resolve(string id, string version, bool entryOnly)
 	{
-		return ((CompilerService)Tenant.GetService<ICompilerService>()).Nuget.Resolve(id, version, entryOnly);
+		return Nuget.Resolve(id, version, entryOnly);
 	}
 
 	public ImmutableList<string> ResolveRuntimePaths(string id, string version)
 	{
-		return ((CompilerService)Tenant.GetService<ICompilerService>()).Nuget.ResolveRuntimePaths(id, version).ToImmutableList();
+		return Nuget.ResolveRuntimePaths(id, version).ToImmutableList();
 	}
+
 }

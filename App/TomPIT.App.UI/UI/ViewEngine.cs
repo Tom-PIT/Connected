@@ -21,7 +21,7 @@ namespace TomPIT.App.UI
 {
 	internal class ViewEngine : ViewEngineBase, IViewEngine
 	{
-		private List<IRuntimeViewModifier> ViewModifiers => MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceRuntimeService>()
+		private List<IRuntimeViewModifier>? ViewModifiers => Tenant.GetService<IMicroServiceRuntimeService>()?
 			 .QueryRuntimes()
 			 .Select(e => e?.ViewModifier)
 			 .Where(e => e is not null)
@@ -47,7 +47,7 @@ namespace TomPIT.App.UI
 
 			var modifiers = this.ViewModifiers;
 
-			if (!modifiers.Any())
+			if (modifiers is null || !modifiers.Any())
 				return content;
 
 			var postRenderArgs = new PartialViewPostRenderModificationArguments
@@ -128,7 +128,7 @@ namespace TomPIT.App.UI
 
 				var modifiers = this.ViewModifiers;
 
-				if (modifiers.Any())
+				if (modifiers is not null && modifiers.Any())
 				{
 					var postRenderArgs = new ViewPostRenderModificationArguments
 					{
@@ -199,7 +199,7 @@ namespace TomPIT.App.UI
 
 			var modifiers = this.ViewModifiers;
 
-			if (modifiers.Any())
+			if (modifiers is not null && modifiers.Any())
 			{
 				var preRenderArgs = new ViewPreRenderModificationArguments
 				{

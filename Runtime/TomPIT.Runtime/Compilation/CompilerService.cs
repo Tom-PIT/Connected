@@ -26,7 +26,6 @@ namespace TomPIT.Compilation
 
 		private static readonly Lazy<ConcurrentDictionary<Guid, List<Guid>>> _references = new Lazy<ConcurrentDictionary<Guid, List<Guid>>>();
 		private static SingletonProcessor<Guid> _scriptProcessor = new SingletonProcessor<Guid>();
-		private NuGetPackages _nuGet;
 
 		public CompilerService(ITenant tenant) : base(tenant, "script")
 		{
@@ -38,7 +37,7 @@ namespace TomPIT.Compilation
 		private static ConcurrentDictionary<Guid, List<Guid>> References { get { return _references.Value; } }
 		private static SingletonProcessor<Guid> ScriptProcessor => _scriptProcessor;
 		internal ScriptCache Scripts { get; }
-		public NuGetPackages Nuget => _nuGet ??= new NuGetPackages(Tenant);
+
 		private bool ReadOnly => !Tenant.GetService<IRuntimeService>().IsHotSwappingSupported;
 
 		private void OnMicroServiceInstalled(object sender, MicroServiceEventArgs e)
@@ -281,8 +280,6 @@ namespace TomPIT.Compilation
 				}
 			}
 		}
-
-		public string CompileView(ITenant tenant, IText sourceCode) => ViewCompiler.Compile(tenant, sourceCode);
 
 		public Type ResolveType(Guid microService, IText sourceCode, string typeName)
 		{

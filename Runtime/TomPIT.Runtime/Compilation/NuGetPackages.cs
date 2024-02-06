@@ -17,13 +17,12 @@ using System.Reflection;
 using System.Runtime.Loader;
 using System.Threading;
 using System.Threading.Tasks;
-using TomPIT.Connectivity;
 using TomPIT.Runtime;
 using TomPIT.Storage;
 
 namespace TomPIT.Compilation
 {
-	internal class NuGetPackages : TenantObject, IDisposable
+	internal class NuGetPackages : IDisposable
 	{
 		private const string FrameworkVersion = "net7.0";
 		private const string RepositoryUrl = "https://api.nuget.org/v3/index.json";
@@ -40,7 +39,7 @@ namespace TomPIT.Compilation
 		private SourceRepository _repository;
 		private string _root;
 		private PackagePathResolver _pathResolver;
-		public NuGetPackages(ITenant tenant) : base(tenant)
+		public NuGetPackages()
 		{
 			var rt = Tenant.GetService<IRuntimeService>();
 
@@ -57,7 +56,7 @@ namespace TomPIT.Compilation
 		private ConcurrentDictionary<string, PackageDescriptor> Cache => _cache.Value;
 		private ConcurrentDictionary<Guid, PackageDescriptor> BlobCache => _blobCache.Value;
 		private SourceCacheContext CacheContext => _cacheContext ??= new SourceCacheContext();
-		private ILogger Logger => _logger ??= new NuGetLogger(Tenant);
+		private ILogger Logger => _logger ??= new NuGetLogger();
 		private NuGetFramework Framework => _framework ??= NuGetFramework.ParseFolder(FrameworkVersion);
 		private SourceRepository Repository
 		{
@@ -335,7 +334,7 @@ namespace TomPIT.Compilation
 
 					var downloadResource = await installer.Source.GetResourceAsync<DownloadResource>(CancellationToken.None);
 					var downloadResult = await downloadResource.GetDownloadResourceResultAsync(installer, new PackageDownloadContext(CacheContext), RootDirectory, Logger, CancellationToken.None);
-					
+
 					packageReader = downloadResult.PackageReader;
 				}
 				else
@@ -358,8 +357,8 @@ namespace TomPIT.Compilation
 					if (Directory.Exists(lowerCaseVariant))
 						folder = lowerCaseVariant;
 					else
-                  folder = PathResolver.GetInstallPath(installer);
-            }
+						folder = PathResolver.GetInstallPath(installer);
+				}
 
 				var files = packageReader.GetFiles();
 
@@ -473,7 +472,7 @@ namespace TomPIT.Compilation
 					dependencies.Add(dependency);
 			}
 
-			var dependencyInfo = new LocalPackageIdentity(reader, blob, Tenant, dependencies);
+			var dependencyInfo = new LocalPackageIdentity(reader, blob, dependencies);
 
 			if (dependencyInfo == null)
 				return;

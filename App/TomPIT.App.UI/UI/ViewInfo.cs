@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.FileProviders;
+using System;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.FileProviders;
 using TomPIT.Annotations.Design;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
@@ -142,7 +142,7 @@ namespace TomPIT.App.UI
 			if (!(MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(ViewComponent.Token) is IMailTemplateConfiguration config))
 				return;
 
-			var content = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CompileView(MiddlewareDescriptor.Current.Tenant, config);
+			var content = MiddlewareDescriptor.Current.Tenant.GetService<IViewCompilerService>().CompileView(MiddlewareDescriptor.Current.Tenant, config);
 
 			if (!string.IsNullOrWhiteSpace(content))
 				_viewContent = Encoding.UTF8.GetBytes(content);
@@ -162,7 +162,7 @@ namespace TomPIT.App.UI
 			ViewComponent = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(partial.Component);
 			Blob = MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Select(partial.TextBlob);
 
-			var content = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CompileView(MiddlewareDescriptor.Current.Tenant, partial);
+			var content = MiddlewareDescriptor.Current.Tenant.GetService<IViewCompilerService>().CompileView(MiddlewareDescriptor.Current.Tenant, partial);
 
 			if (!string.IsNullOrWhiteSpace(content))
 				_viewContent = Encoding.UTF8.GetBytes(content);
@@ -188,7 +188,7 @@ namespace TomPIT.App.UI
 			ViewComponent = report;
 			var reportConfig = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(report.Token) as IReportConfiguration;
 
-			var content = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CompileView(MiddlewareDescriptor.Current.Tenant, reportConfig);
+			var content = MiddlewareDescriptor.Current.Tenant.GetService<IViewCompilerService>().CompileView(MiddlewareDescriptor.Current.Tenant, reportConfig);
 
 			if (!string.IsNullOrWhiteSpace(content))
 				_viewContent = Encoding.UTF8.GetBytes(content);
@@ -220,7 +220,7 @@ namespace TomPIT.App.UI
 				LastModified = Blob == null ? DateTime.UtcNow : Blob.Modified;
 			}
 
-			var content = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CompileView(MiddlewareDescriptor.Current.Tenant, view);
+			var content = MiddlewareDescriptor.Current.Tenant.GetService<IViewCompilerService>().CompileView(MiddlewareDescriptor.Current.Tenant, view);
 
 			if (!string.IsNullOrWhiteSpace(content))
 				_viewContent = Encoding.UTF8.GetBytes(content);
@@ -239,7 +239,7 @@ namespace TomPIT.App.UI
 			ViewComponent = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(config.Component);
 			Blob = MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Select(master.TextBlob);
 
-			var content = MiddlewareDescriptor.Current.Tenant.GetService<ICompilerService>().CompileView(MiddlewareDescriptor.Current.Tenant, master);
+			var content = MiddlewareDescriptor.Current.Tenant.GetService<IViewCompilerService>().CompileView(MiddlewareDescriptor.Current.Tenant, master);
 
 			if (!string.IsNullOrWhiteSpace(content))
 				_viewContent = Encoding.UTF8.GetBytes(content);

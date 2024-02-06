@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Microsoft.CodeAnalysis;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.IO;
 using System.Reflection;
-using Microsoft.CodeAnalysis;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
 using TomPIT.Connectivity;
@@ -98,7 +98,7 @@ namespace TomPIT.Compilation
 
 			if (configuration is INuGetPackageEmbeddedResource embedded)
 			{
-				var nuget = ((CompilerService)tenant.GetService<ICompilerService>()).Nuget;
+				var nuget = ((NuGetService)tenant.GetService<INuGetService>()).Nuget;
 				var asms = nuget.Resolve(embedded.Blob, ReflectionOnly);
 
 				if (asms.IsEmpty)
@@ -119,7 +119,7 @@ namespace TomPIT.Compilation
 			}
 			else if (configuration is INuGetPackageResource resource)
 			{
-				var nuget = ((CompilerService)tenant.GetService<ICompilerService>()).Nuget;
+				var nuget = ((NuGetService)tenant.GetService<INuGetService>()).Nuget;
 				var asms = nuget.Resolve(resource.Id, resource.Version, ReflectionOnly);
 
 				if (asms.IsEmpty)

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -49,9 +50,10 @@ public static class Shell
 	private static readonly ConfigurationBindings _configurationBinder = new();
 	private static ServiceContainer Container { get; }
 	private static List<string> ProbingPaths { get; }
-	private static Dictionary<string, nint> LoadedNativeLibraries { get; }
+	private static ConcurrentDictionary<string, nint> LoadedNativeLibraries { get; }
 	public static string InstanceName => _configurationBinder.InstanceName ?? string.Empty;
 	public static string MicroServicesFolder => _configurationBinder.MicroServicesFolder ?? "/microServices";
+	public static bool LegacyServices => _configurationBinder.LegacyServices;
 	public static Version Version => typeof(Shell).Assembly.GetName().Version;
 	public static HttpContext HttpContext => Accessor?.HttpContext;
 	private static IHttpContextAccessor Accessor { get; set; }
@@ -69,6 +71,7 @@ public static class Shell
 		public string? InstanceName { get; set; }
 
 		public string? MicroServicesFolder { get; set; }
+		public bool LegacyServices { get; set; } = true;
 	}
 
 	private static nint OnResolvingUnmanagedDll(Assembly requestingAssembly, string libName)
@@ -83,7 +86,7 @@ public static class Shell
 
 		var handle = NativeLibrary.Load(path, requestingAssembly, null);
 
-		LoadedNativeLibraries.Add(libName, handle);
+		LoadedNativeLibraries.AddOrUpdate(libName, handle, (key, value) => value);
 
 		return handle;
 	}
@@ -360,14 +363,14 @@ public static class Shell
 				builder.AddEnvironmentVariables();
 				builder.AddUserSecrets(Assembly.GetEntryAssembly());
 
-				_configuration = ApplyVariableValues(builder.Build());				
+				_configuration = ApplyVariableValues(builder.Build());
 			}
 
 			return _configuration;
 		}
 	}
 
-	private static IConfigurationRoot ApplyVariableValues(IConfigurationRoot configuration) 
+	private static IConfigurationRoot ApplyVariableValues(IConfigurationRoot configuration)
 	{
 		var values = configuration.AsEnumerable();
 

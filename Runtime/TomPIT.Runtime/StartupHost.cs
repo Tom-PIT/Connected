@@ -304,6 +304,8 @@ internal class StartupHost : IStartupHostProxy
 	{
 		services.AddSignalR(o =>
 		{
+			o.EnableDetailedErrors = true;
+			o.DisableImplicitFromServicesParameters = false;
 			ConfiguringSignalR?.Invoke(null, o);
 		}).AddNewtonsoftJsonProtocol();
 	}

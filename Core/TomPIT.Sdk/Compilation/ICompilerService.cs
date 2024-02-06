@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Scripting;
-using TomPIT.Connectivity;
 using TomPIT.Middleware;
 
 namespace TomPIT.Compilation
@@ -27,7 +26,6 @@ namespace TomPIT.Compilation
 		IMicroService ResolveMicroService(object instance);
 		IComponent ResolveComponent(object instance);
 		IComponent ResolveComponent(Type type);
-		string CompileView(ITenant tenant, IText sourceCode);
 
 		Type ResolveType(Guid microService, IText sourceCode, string typeName);
 		Type ResolveType(Guid microService, IText sourceCode, string typeName, bool throwException);

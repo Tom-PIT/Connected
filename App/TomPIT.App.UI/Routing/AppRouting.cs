@@ -119,6 +119,11 @@ namespace TomPIT.App.Routing
 
 		private static bool Redirect(HttpContext context)
 		{
+			var navigationService = Tenant.GetService<INavigationService>();
+
+			if (navigationService is null)
+				return false;
+
 			if (context.Request.Path.ToString().StartsWith("/home"))
 			{
 				if (HomeResolved(context))
@@ -142,9 +147,13 @@ namespace TomPIT.App.Routing
 
 		private static bool Download(HttpContext context)
 		{
-			var routes = new RouteValueDictionary();
+			var navigationService = Tenant.GetService<INavigationService>();
 
-			var route = Tenant.GetService<INavigationService>().MatchRoute(context.Request.Path, routes);
+			if (navigationService is null)
+				return false;
+
+			var routes = new RouteValueDictionary();
+			var route = navigationService.MatchRoute(context.Request.Path, routes);
 
 			if (route is ISiteMapStreamRoute stream)
 			{
@@ -160,7 +169,12 @@ namespace TomPIT.App.Routing
 
 		private static bool HomeResolved(HttpContext context)
 		{
-			var runtimes = Tenant.GetService<IMicroServiceRuntimeService>().QueryRuntimes();
+			var runtimeService = Tenant.GetService<IMicroServiceRuntimeService>();
+
+			if (runtimeService is null)
+				return false;
+
+			var runtimes = runtimeService.QueryRuntimes();
 			var resolvedHomeUrls = new List<IRuntimeUrl>();
 
 			foreach (var middleware in runtimes)
