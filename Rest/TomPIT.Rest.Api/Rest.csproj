@@ -9,9 +9,9 @@
     <TargetFramework>net7.0</TargetFramework>
     <AssemblyName>TomPIT.Connected.Rest</AssemblyName>
     <RootNamespace>TomPIT.Rest</RootNamespace>
-    <AssemblyVersion>4.1.205.1</AssemblyVersion>
-    <FileVersion>4.1.205.1</FileVersion>
-    <Version>4.1.205.1</Version>
+    <AssemblyVersion>4.1.206.1</AssemblyVersion>
+    <FileVersion>4.1.206.1</FileVersion>
+    <Version>4.1.206.1</Version>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
