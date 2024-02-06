@@ -27,6 +27,7 @@ namespace TomPIT.Compilation
 		private const string FrameworkVersion = "net7.0";
 		private const string RepositoryUrl = "https://api.nuget.org/v3/index.json";
 
+		private static readonly List<string> UnmanagedExtensions = new() { ".dll", ".libdy", ".so", "" };
 		private Lazy<ConcurrentDictionary<string, ManualResetEvent>> _packageLoadState = new Lazy<ConcurrentDictionary<string, ManualResetEvent>>();
 		private Lazy<ConcurrentDictionary<Guid, ManualResetEvent>> _packageBlobLoadState = new Lazy<ConcurrentDictionary<Guid, ManualResetEvent>>();
 		private Lazy<ConcurrentDictionary<string, bool>> _initializeState = new Lazy<ConcurrentDictionary<string, bool>>();
@@ -364,8 +365,13 @@ namespace TomPIT.Compilation
 
 				foreach (var file in files)
 				{
-					if (file.ToLower().StartsWith("runtimes/") && file.ToLower().EndsWith(".dll"))
-						result.RuntimePaths.Add(Path.GetFullPath(Path.Combine(folder, file)));
+					if (file.ToLower().StartsWith("runtimes/"))
+					{
+						var extension = Path.GetExtension(file.ToLower());
+
+						if (UnmanagedExtensions.Contains(extension))
+							result.RuntimePaths.Add(Path.GetFullPath(Path.Combine(folder, file)));
+					}
 				}
 
 				var libItems = packageReader.GetLibItems();
