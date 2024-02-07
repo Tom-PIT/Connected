@@ -213,7 +213,10 @@ public static class ReferencePaths
 
 				foreach (var file in files)
 				{
-					var existingFile = Path.Combine(bin, Path.GetFileName(file));
+					var existingFile = ResolvePath(bin, file);
+
+					if (existingFile is null)
+						continue;
 
 					if (!File.Exists(existingFile))
 						File.Copy(file, existingFile);
@@ -228,5 +231,25 @@ public static class ReferencePaths
 				}
 			}
 		}
+	}
+
+	private static string? ResolvePath(string bin, string fileName)
+	{
+		var tokens = fileName.Split(Path.DirectorySeparatorChar);
+		var nativeIndex = -1;
+
+		for (var i = tokens.Length - 1; i >= 0; i--)
+		{
+			if (string.Equals(tokens[i], "native", StringComparison.OrdinalIgnoreCase))
+			{
+				nativeIndex = i;
+				break;
+			}
+		}
+
+		if (nativeIndex < 1)
+			return null;
+
+		return Path.Combine(bin, tokens[nativeIndex - 2], tokens[nativeIndex - 1], "native", Path.GetFileName(fileName));
 	}
 }
