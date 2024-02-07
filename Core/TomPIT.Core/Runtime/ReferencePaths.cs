@@ -192,4 +192,41 @@ public static class ReferencePaths
 	{
 		Update(new List<Assembly> { assembly });
 	}
+
+	public static void CopyRuntimes()
+	{
+		var entry = Assembly.GetEntryAssembly();
+
+		if (entry is null)
+			return;
+
+		var bin = Path.GetDirectoryName(entry.Location);
+
+		if (bin is null)
+			return;
+
+		foreach (var path in UnmanagedCache)
+		{
+			foreach (var folder in path.Value)
+			{
+				var files = Directory.GetFiles(folder);
+
+				foreach (var file in files)
+				{
+					var existingFile = Path.Combine(bin, Path.GetFileName(file));
+
+					if (!File.Exists(existingFile))
+						File.Copy(file, existingFile);
+					else
+					{
+						var packageFile = new FileInfo(file);
+						var binFile = new FileInfo(existingFile);
+
+						if (packageFile.CreationTimeUtc > binFile.CreationTimeUtc)
+							File.Copy(file, existingFile, true);
+					}
+				}
+			}
+		}
+	}
 }

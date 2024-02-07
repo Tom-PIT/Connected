@@ -49,6 +49,8 @@ internal static class MicroServiceCompiler
 
 		while (microServices.TryDequeue(out IMicroService microService))
 			await Compile(microService);
+
+		ReferencePaths.CopyRuntimes();
 	}
 
 	private static async Task Compile(IMicroService microService)
@@ -136,7 +138,7 @@ internal static class MicroServiceCompiler
 				if (!result.Success)
 					throw new Exception($"{microService.Name} - {result.Diagnostics.First(f => f.Severity == DiagnosticSeverity.Error).GetMessage()}");
 			}
-		}		
+		}
 
 		var assembly = Load(microService);
 

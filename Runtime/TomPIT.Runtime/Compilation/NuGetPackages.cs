@@ -14,6 +14,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using System.Threading;
 using System.Threading.Tasks;
@@ -365,7 +366,7 @@ namespace TomPIT.Compilation
 
 				foreach (var file in files)
 				{
-					if (file.ToLower().StartsWith("runtimes/"))
+					if (file.ToLower().StartsWith("runtimes/") && MatchRid(file))
 					{
 						var extension = Path.GetExtension(file.ToLower());
 
@@ -413,6 +414,24 @@ namespace TomPIT.Compilation
 			return result;
 		}
 
+		private static bool MatchRid(string fileName)
+		{
+			var tokens = fileName.Split('/');
+			/*
+			 * Not a runtime file. Skip.
+			 */
+			if (tokens.Length < 3 || !string.Equals(tokens[2], "native", StringComparison.OrdinalIgnoreCase))
+				return false;
+
+			var packageId = tokens[1];
+
+			if (string.Equals(packageId, "win-x64", StringComparison.OrdinalIgnoreCase) && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+				return true;
+			else if (string.Equals(packageId, "linux-x64", StringComparison.OrdinalIgnoreCase) && RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+				return true;
+
+			return false;
+		}
 		private async Task<IEnumerable<SourcePackageDependencyInfo>> CreateRestoreSet(Guid blob, PackageArchiveReader reader)
 		{
 			var identity = reader.GetIdentity();
