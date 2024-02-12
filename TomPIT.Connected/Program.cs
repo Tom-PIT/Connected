@@ -1,13 +1,9 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 using System;
-using System.Net;
-using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,7 +22,16 @@ namespace TomPIT.Connected
 
 			try
 			{
-				_host = CreateHostBuilder(args).Build();
+				var builder = WebApplication.CreateBuilder(args);
+				var boot = new Startup();
+
+				boot.ConfigureServices(builder.Services);
+
+				var webApp = builder.Build();
+
+				_host = webApp;
+
+				boot.Configure(webApp, builder.Environment);
 
 				foreach (var startup in MicroServices.Startups)
 					await startup.Initialize(_host);
@@ -78,12 +83,5 @@ namespace TomPIT.Connected
 
 			app.Run();
 		}
-
-		public static IHostBuilder CreateHostBuilder(string[] args) =>
-			 Host.CreateDefaultBuilder(args)
-				  .ConfigureWebHostDefaults(webBuilder =>
-				  {
-					  webBuilder.UseStartup<Startup>();
-				  });
 	}
 }
