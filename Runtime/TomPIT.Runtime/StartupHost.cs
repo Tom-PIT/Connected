@@ -57,6 +57,10 @@ internal class StartupHost : IStartupHostProxy
 		Boot();
 		Shell.GetService<IConnectivityService>().TenantInitialized += OnTenantInitialized;
 		ConfigureTenant();
+
+		foreach (var startup in MicroServices.Startups)
+			startup.ConfigureServices(services);
+
 		ConfigureLocalization(services);
 		ConfigureAuthentication(services);
 		ConfigureMvc(services);
@@ -74,9 +78,6 @@ internal class StartupHost : IStartupHostProxy
 		services.AddHttpClient();
 
 		ConfiguringServices?.Invoke(null, services);
-
-		foreach (var startup in MicroServices.Startups)
-			startup.ConfigureServices(services);
 	}
 
 	public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
