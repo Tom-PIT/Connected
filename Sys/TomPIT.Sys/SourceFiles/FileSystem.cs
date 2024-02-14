@@ -78,34 +78,34 @@ internal static class FileSystem
 
 		File.WriteAllText(SourceFilesFileName, JsonSerializer.Serialize(content));
 	}
-	public static void Serialize(Guid microService, Guid token, byte[] content)
+	public static void Serialize(Guid microService, Guid token, int type, byte[] content)
 	{
 		var path = Path.Combine(Folder, microService.ToString());
 
 		if (!Directory.Exists(path))
 			Directory.CreateDirectory(path);
 
-		File.WriteAllBytes(Path.Combine(path, $"{token}.txt"), content);
+		File.WriteAllBytes(Path.Combine(path, $"{type}-{token}.txt"), content);
 	}
 
-	public static void Delete(Guid microService, Guid token)
+	public static void Delete(Guid microService, Guid token, int type)
 	{
 		var path = Path.Combine(Folder, microService.ToString());
 
 		if (!Directory.Exists(path))
 			return;
 
-		File.Delete(Path.Combine(path, $"{token}.txt"));
+		File.Delete(Path.Combine(path, $"{type}-{token}.txt"));
 	}
 
-	public static byte[]? Deserialize(Guid microService, Guid token)
+	public static byte[]? Deserialize(Guid microService, Guid token, int type)
 	{
 		var path = Path.Combine(Folder, microService.ToString());
 
 		if (!Directory.Exists(path))
 			return null;
 
-		var fileName = Path.Combine(path, $"{token}.txt");
+		var fileName = Path.Combine(path, $"{type}-{token}.txt");
 
 		if (!File.Exists(fileName))
 			return null;

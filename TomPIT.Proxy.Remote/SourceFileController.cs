@@ -4,21 +4,23 @@ namespace TomPIT.Proxy.Remote;
 internal sealed class SourceFileController : ISourceFileController
 {
 	private const string Controller = "SourceFile";
-	public void Delete(Guid microService, Guid token)
+	public void Delete(Guid microService, Guid token, int type)
 	{
 		Connection.Post(Connection.CreateUrl(Controller, "Delete"), new
 		{
 			microService,
-			token
+			token,
+			type
 		});
 	}
 
-	public byte[] Download(Guid microService, Guid token)
+	public byte[] Download(Guid microService, Guid token, int type)
 	{
 		return Connection.Post<byte[]>(Connection.CreateUrl(Controller, "Download"), new
 		{
 			microService,
-			token
+			token,
+			type
 		});
 	}
 
