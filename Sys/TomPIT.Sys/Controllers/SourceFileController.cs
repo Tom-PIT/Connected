@@ -35,8 +35,9 @@ public class SourceFileController : SysController
 
 		var microService = body.Required<Guid>("microService");
 		var token = body.Required<Guid>("token");
+		var type = body.Required<int>("type");
 
-		return DataModel.SourceFiles.Select(microService, token);
+		return DataModel.SourceFiles.Select(microService, token, type);
 	}
 
 	[HttpPost]
@@ -46,7 +47,8 @@ public class SourceFileController : SysController
 
 		var microService = body.Required<Guid>("microService");
 		var token = body.Required<Guid>("token");
+		var type = body.Required<int>("type");
 
-		DataModel.SourceFiles.Delete(microService, token);
+		DataModel.SourceFiles.Delete(microService, token, type);
 	}
 }
