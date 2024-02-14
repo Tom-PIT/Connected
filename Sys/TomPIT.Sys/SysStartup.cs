@@ -16,7 +16,6 @@ using TomPIT.Sys.Exceptions;
 using TomPIT.Sys.Model;
 using TomPIT.Sys.Notifications;
 using TomPIT.Sys.Services;
-using TomPIT.Sys.SourceFiles;
 using TomPIT.Sys.Workers;
 
 namespace TomPIT.Sys
@@ -43,7 +42,6 @@ namespace TomPIT.Sys
 		private void OnConfiguring(object sender, System.Tuple<IApplicationBuilder, IWebHostEnvironment> e)
 		{
 			RegisterTraceService(e.Item1);
-			FileSystem.Initialize((e.Item1 as WebApplication).Configuration);
 			DataModel.Initialized = true;
 		}
 
