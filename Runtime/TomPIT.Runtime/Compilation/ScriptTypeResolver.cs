@@ -11,7 +11,7 @@ using TomPIT.Reflection;
 namespace TomPIT.Compilation;
 internal static class ScriptTypeResolver
 {
-	public static Type ResolveType(CompilerService service, Guid microService, IText sourceCode, string typeName, bool throwException)
+	public static Type? ResolveType(CompilerService service, Guid microService, IText sourceCode, string typeName, bool throwException)
 	{
 		var script = service.GetScript(new CompilerScriptArgs(microService, sourceCode));
 
@@ -44,7 +44,7 @@ internal static class ScriptTypeResolver
 		return result;
 	}
 
-	public static Type ResolveTypeName(string assembly, IText sourceCode, string typeName, bool throwException)
+	public static Type? ResolveTypeName(string assembly, IText sourceCode, string typeName, bool throwException)
 	{
 		var ns = ResolveNamespace(sourceCode);
 		var asm = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(f => string.Compare(f.ShortName(), assembly, true) == 0);
@@ -55,11 +55,11 @@ internal static class ScriptTypeResolver
 		if (ns is not null)
 			typeName = $"{ns.Namespace}.{typeName}";
 
-		if (!typeName.Contains("."))
+		if (!typeName.Contains('.'))
 		{
 			/*
-			 * We are looking for the type which is not nested since the namespace is not defined.
-			 */
+            * We are looking for the type which is not nested since the namespace is not defined.
+            */
 			var candidates = asm.GetTypes().Where(f => string.Equals(f.Name, typeName, StringComparison.OrdinalIgnoreCase));
 
 			if (!candidates.Any())
@@ -73,6 +73,7 @@ internal static class ScriptTypeResolver
 
 			return null;
 		}
+
 
 		var tokens = typeName.Split('.');
 		var fullTypeName = new StringBuilder();
