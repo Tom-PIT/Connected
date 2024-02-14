@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using TomPIT.ComponentModel;
 
 namespace TomPIT.Sys.SourceFiles;
@@ -15,14 +14,11 @@ public class MicroServiceIndexEntry : IMicroService
 	public string Version { get; set; }
 	public string Commit { get; set; }
 
-	public List<ComponentIndexEntry> Components { get; set; }
-
-	public static MicroServiceIndexEntry From(IMicroService microService, List<ComponentIndexEntry> components)
+	public static MicroServiceIndexEntry From(IMicroService microService)
 	{
 		return new MicroServiceIndexEntry
 		{
 			Commit = microService.Commit,
-			Components = components,
 			Name = microService.Name,
 			ResourceGroup = microService.ResourceGroup,
 			SupportedStages = microService.SupportedStages,

@@ -6,6 +6,7 @@ using TomPIT.Caching;
 using TomPIT.ComponentModel;
 using TomPIT.Sys.Api.Database;
 using TomPIT.Sys.Notifications;
+using TomPIT.Sys.SourceFiles;
 
 namespace TomPIT.Sys.Model.Components
 {
@@ -118,6 +119,7 @@ namespace TomPIT.Sys.Model.Components
 			Shell.GetService<IDatabaseService>().Proxy.Development.Folders.Insert(s, name, token, p);
 
 			Refresh(token);
+			FileSystem.Serialize(All());
 			CachingNotifications.FolderChanged(microService, token);
 
 			return token;
@@ -148,8 +150,8 @@ namespace TomPIT.Sys.Model.Components
 			}
 
 			Shell.GetService<IDatabaseService>().Proxy.Development.Folders.Insert(s, name, token, p);
-
 			Refresh(token);
+			FileSystem.Serialize(All());
 		}
 
 		public void Update(Guid microService, Guid folder, string name, Guid parent)
@@ -182,6 +184,7 @@ namespace TomPIT.Sys.Model.Components
 			Shell.GetService<IDatabaseService>().Proxy.Development.Folders.Update(f, name, p);
 
 			Refresh(folder);
+			FileSystem.Serialize(All());
 			CachingNotifications.FolderChanged(microService, folder);
 		}
 
@@ -195,6 +198,7 @@ namespace TomPIT.Sys.Model.Components
 			Shell.GetService<IDatabaseService>().Proxy.Development.Folders.Delete(f);
 
 			Remove(folder);
+			FileSystem.Serialize(All());
 			CachingNotifications.FolderRemoved(microService, folder);
 		}
 	}

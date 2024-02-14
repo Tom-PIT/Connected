@@ -51,13 +51,13 @@ public class SourceFilesModel : SynchronizedRepository<SourceFile, Guid>
 		}
 
 		FileSystem.Serialize(microService, token, content);
-		FileSystem.SerializeSourceFileIndex();
+		FileSystem.Serialize(All());
 	}
 
 	public void Delete(Guid microService, Guid token)
 	{
 		FileSystem.Delete(microService, token);
-		FileSystem.SerializeSourceFileIndex();
+		FileSystem.Serialize(All());
 	}
 
 	public byte[] Select(Guid microService, Guid token)
