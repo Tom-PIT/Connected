@@ -123,7 +123,7 @@ namespace TomPIT.Sys.Model.Components
 
 			Refresh(token);
 
-			FileSystem.SerializeIndex();
+			FileSystem.Serialize(All());
 			CachingNotifications.MicroServiceChanged(token);
 		}
 
@@ -156,7 +156,7 @@ namespace TomPIT.Sys.Model.Components
 
 			Refresh(token);
 
-			FileSystem.SerializeIndex();
+			FileSystem.Serialize(All());
 			CachingNotifications.MicroServiceChanged(token);
 		}
 
@@ -171,7 +171,7 @@ namespace TomPIT.Sys.Model.Components
 
 			Remove(token);
 
-			FileSystem.SerializeIndex();
+			FileSystem.Serialize(All());
 			CachingNotifications.MicroServiceRemoved(token);
 		}
 
