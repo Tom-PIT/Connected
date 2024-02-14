@@ -8,6 +8,7 @@ using TomPIT.ComponentModel;
 using TomPIT.Routing;
 using TomPIT.Sys.Api.Database;
 using TomPIT.Sys.Notifications;
+using TomPIT.Sys.SourceFiles;
 
 namespace TomPIT.Sys.Model.Components
 {
@@ -18,6 +19,10 @@ namespace TomPIT.Sys.Model.Components
 
 		}
 
+		public void Initialize(MicroServiceIndexEntry items)
+		{
+
+		}
 		public IMicroService Select(string name)
 		{
 			if (string.IsNullOrWhiteSpace(name))
@@ -118,6 +123,7 @@ namespace TomPIT.Sys.Model.Components
 
 			Refresh(token);
 
+			FileSystem.SerializeIndex();
 			CachingNotifications.MicroServiceChanged(token);
 		}
 
@@ -150,6 +156,7 @@ namespace TomPIT.Sys.Model.Components
 
 			Refresh(token);
 
+			FileSystem.SerializeIndex();
 			CachingNotifications.MicroServiceChanged(token);
 		}
 
@@ -164,6 +171,7 @@ namespace TomPIT.Sys.Model.Components
 
 			Remove(token);
 
+			FileSystem.SerializeIndex();
 			CachingNotifications.MicroServiceRemoved(token);
 		}
 

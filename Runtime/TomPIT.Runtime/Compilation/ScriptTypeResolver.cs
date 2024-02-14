@@ -56,7 +56,23 @@ internal static class ScriptTypeResolver
 			typeName = $"{ns.Namespace}.{typeName}";
 
 		if (!typeName.Contains("."))
-			return asm.GetTypes().FirstOrDefault(f => string.Equals(f.Name, typeName, StringComparison.OrdinalIgnoreCase));
+		{
+			/*
+			 * We are looking for the type which is not nested since the namespace is not defined.
+			 */
+			var candidates = asm.GetTypes().Where(f => string.Equals(f.Name, typeName, StringComparison.OrdinalIgnoreCase));
+
+			if (!candidates.Any())
+				return null;
+
+			foreach (var candidate in candidates)
+			{
+				if (candidate.DeclaringType is not null && candidate.DeclaringType.Name.StartsWith("Submission#0"))
+					return candidate;
+			}
+
+			return null;
+		}
 
 		var tokens = typeName.Split('.');
 		var fullTypeName = new StringBuilder();

@@ -35,6 +35,7 @@
 			Users = new UserController();
 			UserData = new UserDataController();
 			XmlKeys = new XmlKeyController();
+			SourceFiles = new SourceFileController();
 		}
 
 		public ISysManagementProxy Management { get; }
@@ -68,5 +69,6 @@
 		public IUserController Users { get; }
 		public IUserDataController UserData { get; }
 		public IXmlKeyController XmlKeys { get; }
+		public ISourceFileController SourceFiles { get; }
 	}
 }

@@ -5,15 +5,10 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-
-using System;
-using System.Configuration;
 using System.Diagnostics;
-using System.Text.Json;
 
 using TomPIT.Diagnostics;
 using TomPIT.Diagnostics.Tracing;
-using TomPIT.Environment;
 using TomPIT.Serialization;
 using TomPIT.Startup;
 using TomPIT.Sys.Configuration;
@@ -21,6 +16,7 @@ using TomPIT.Sys.Exceptions;
 using TomPIT.Sys.Model;
 using TomPIT.Sys.Notifications;
 using TomPIT.Sys.Services;
+using TomPIT.Sys.SourceFiles;
 using TomPIT.Sys.Workers;
 
 namespace TomPIT.Sys
@@ -47,6 +43,7 @@ namespace TomPIT.Sys
 		private void OnConfiguring(object sender, System.Tuple<IApplicationBuilder, IWebHostEnvironment> e)
 		{
 			RegisterTraceService(e.Item1);
+			FileSystem.Initialize((e.Item1 as WebApplication).Configuration);
 			DataModel.Initialized = true;
 		}
 
