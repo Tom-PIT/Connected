@@ -89,14 +89,14 @@ internal static class FileSystem
 		File.WriteAllText(SourceFilesFileName, JsonSerializer.Serialize(files));
 	}
 
-	public static void Serialize(Guid microService, Guid token, byte[] content)
+	public static void Serialize(Guid microService, Guid token, int type, byte[] content)
 	{
 		var path = Path.Combine(Folder, microService.ToString());
 
 		if (!Directory.Exists(path))
 			Directory.CreateDirectory(path);
 
-		File.WriteAllBytes(Path.Combine(path, $"{type}-{token}.txt"), content);
+		File.WriteAllBytes(Path.Combine(path, ParseFileName(token, type)), content);
 	}
 
 	public static void Delete(Guid microService, Guid token, int type)
@@ -106,7 +106,7 @@ internal static class FileSystem
 		if (!Directory.Exists(path))
 			return;
 
-		File.Delete(Path.Combine(path, $"{type}-{token}.txt"));
+		File.Delete(Path.Combine(path, ParseFileName(token, type)));
 	}
 
 	public static byte[]? Deserialize(Guid microService, Guid token, int type)
@@ -116,11 +116,13 @@ internal static class FileSystem
 		if (!Directory.Exists(path))
 			return null;
 
-		var fileName = Path.Combine(path, $"{type}-{token}.txt");
+		var fileName = Path.Combine(path, ParseFileName(token, type));
 
 		if (!File.Exists(fileName))
 			return null;
 
 		return File.ReadAllBytes(fileName);
 	}
+
+	private static string ParseFileName(Guid token, int type) => $"{token}-{type}.txt";
 }

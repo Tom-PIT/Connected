@@ -50,13 +50,13 @@ public class SourceFilesModel : SynchronizedRepository<SourceFile, Guid>
 			Set(token, existing, TimeSpan.Zero);
 		}
 
-		FileSystem.Serialize(microService, token, content);
+		FileSystem.Serialize(microService, token, type, content);
 		FileSystem.Serialize(All());
 	}
 
 	public void Delete(Guid microService, Guid token, int type)
 	{
-		FileSystem.Delete(microService, token);
+		FileSystem.Delete(microService, token, type);
 		FileSystem.Serialize(All());
 	}
 
