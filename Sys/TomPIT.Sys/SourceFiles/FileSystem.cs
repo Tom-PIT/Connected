@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using TomPIT.ComponentModel;
 using TomPIT.Sys.Model.Components;
@@ -22,36 +23,18 @@ internal static class FileSystem
 
 		Folder = section.GetValue<string>("folder");
 
-		LoadIndex();
+		if (!Directory.Exists(Folder))
+			Directory.CreateDirectory(Folder);
 	}
 
-	private static void LoadIndex()
+	public static List<IMicroService> LoadMicroServices()
 	{
-		//if (!Directory.Exists(Folder))
-		//	Directory.CreateDirectory(Folder);
+		if (!File.Exists(MicroServicesFileName))
+			return new List<IMicroService>();
 
-		//if (!File.Exists(IndexFileName))
-		//	return;
+		var text = File.ReadAllText(MicroServicesFileName);
 
-		//var text = File.ReadAllText(IndexFileName);
-		//var microServices = JsonSerializer.Deserialize<List<MicroServiceIndexEntry>>(text);
-
-		//foreach (var microService in microServices)
-		//{
-		//	foreach (var component in microService.Components)
-		//	{
-
-		//	}
-		//	//TODO: add microservices and components to the datamodel cache.
-		//}
-
-		//if (!File.Exists(SourceFilesFileName))
-		//	return;
-
-		//text = File.ReadAllText(SourceFilesFileName);
-		//var files = JsonSerializer.Deserialize<List<SourceFile>>(text);
-
-		//DataModel.SourceFiles.Initialize(files);
+		return JsonSerializer.Deserialize<List<MicroServiceIndexEntry>>(text).ToList<IMicroService>();
 	}
 
 	public static void Serialize(ImmutableList<IMicroService> microServices)

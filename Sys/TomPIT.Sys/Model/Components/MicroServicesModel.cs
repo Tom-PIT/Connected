@@ -6,7 +6,6 @@ using System.Linq;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
 using TomPIT.Routing;
-using TomPIT.Sys.Api.Database;
 using TomPIT.Sys.Notifications;
 using TomPIT.Sys.SourceFiles;
 
@@ -28,19 +27,7 @@ namespace TomPIT.Sys.Model.Components
 			if (string.IsNullOrWhiteSpace(name))
 				return null;
 
-			var r = Get(f => string.Compare(f.Name, name, true) == 0);
-
-			if (r != null)
-				return r;
-
-			var d = Shell.GetService<IDatabaseService>().Proxy.Development.MicroServices.Select(name);
-
-			if (d == null)
-				return null;
-
-			Set(d.Token, d, TimeSpan.Zero);
-
-			return d;
+			return Get(f => string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase));
 		}
 
 		public IMicroService SelectByUrl(string url)
@@ -48,30 +35,12 @@ namespace TomPIT.Sys.Model.Components
 			if (string.IsNullOrWhiteSpace(url))
 				return null;
 
-			var r = Get(f => string.Compare(f.Url, url, true) == 0);
-
-			if (r != null)
-				return r;
-
-			var d = Shell.GetService<IDatabaseService>().Proxy.Development.MicroServices.SelectByUrl(url);
-
-			if (d == null)
-				return null;
-
-			Set(d.Token, d, TimeSpan.Zero);
-
-			return d;
+			return Get(f => string.Equals(f.Url, url, StringComparison.OrdinalIgnoreCase));
 		}
 
 		public IMicroService Select(Guid token)
 		{
-			return Get(token,
-				 (f) =>
-				 {
-					 f.Duration = TimeSpan.Zero;
-
-					 return Shell.GetService<IDatabaseService>().Proxy.Development.MicroServices.Select(token);
-				 });
+			return Get(token);
 		}
 
 		public ImmutableList<IMicroService> Query(Guid resourceGroup)
@@ -91,37 +60,28 @@ namespace TomPIT.Sys.Model.Components
 
 		protected override void OnInitializing()
 		{
-			var ds = Shell.GetService<IDatabaseService>().Proxy.Development.MicroServices.Query();
+			var items = FileSystem.LoadMicroServices();
 
-			foreach (var i in ds)
-				Set(i.Token, i, TimeSpan.Zero);
-		}
-
-		protected override void OnInvalidate(Guid id)
-		{
-			var r = Shell.GetService<IDatabaseService>().Proxy.Development.MicroServices.Select(id);
-
-			if (r == null)
-			{
-				Remove(id);
-				return;
-			}
-
-			Set(id, r, TimeSpan.Zero);
+			foreach (var item in items)
+				Set(item.Token, item, TimeSpan.Zero);
 		}
 
 		public void Insert(Guid token, string name, MicroServiceStages supportedStages, Guid resourceGroup, Guid template, string version, string commit)
 		{
-			var g = DataModel.ResourceGroups.Select(resourceGroup);
-
-			if (g == null)
-				throw new SysException(SR.ErrResourceGroupNotFound);
-
+			_ = DataModel.ResourceGroups.Select(resourceGroup) ?? throw new SysException(SR.ErrResourceGroupNotFound);
 			var url = Url(Guid.Empty, name);
 
-			Shell.GetService<IDatabaseService>().Proxy.Development.MicroServices.Insert(token, name, url, supportedStages, g, template, version, commit);
-
-			Refresh(token);
+			Set(token, new MicroServiceIndexEntry
+			{
+				Commit = commit,
+				Name = name,
+				ResourceGroup = resourceGroup,
+				Template = template,
+				SupportedStages = supportedStages,
+				Token = token,
+				Url = url,
+				Version = version,
+			}, TimeSpan.Zero);
 
 			FileSystem.Serialize(All());
 			CachingNotifications.MicroServiceChanged(token);
@@ -129,32 +89,24 @@ namespace TomPIT.Sys.Model.Components
 
 		public void Update(Guid token, string name, MicroServiceStages supportedStages, Guid template, Guid resourceGroup, string version, string commit)
 		{
-			var microService = Select(token);
-
-			if (microService == null)
-				throw new SysException(SR.ErrMicroServiceNotFound);
-
-			var g = DataModel.ResourceGroups.Select(resourceGroup);
-
-			if (g == null)
-				throw new SysException(SR.ErrResourceGroupNotFound);
-
-			var r = DataModel.ResourceGroups.Select(resourceGroup);
-
-			if (r == null)
-				throw new SysException(SR.ErrResourceGroupNotFound);
-
-			var url = microService.Url;
-
-			//When running locally, the cached data is already modified here, so we need to generate the URL regardless
-			url = Url(token, name);
+			var microService = Select(token) ?? throw new SysException(SR.ErrMicroServiceNotFound);
+			_ = DataModel.ResourceGroups.Select(resourceGroup) ?? throw new SysException(SR.ErrResourceGroupNotFound);
+			var url = Url(token, name);
 
 			if (template == Guid.Empty)
 				template = microService.Template;
 
-			Shell.GetService<IDatabaseService>().Proxy.Development.MicroServices.Update(microService, name, url, supportedStages, template, r, version, commit);
-
-			Refresh(token);
+			Set(token, new MicroServiceIndexEntry
+			{
+				Commit = commit,
+				Name = name,
+				Template = template,
+				SupportedStages = supportedStages,
+				ResourceGroup = resourceGroup,
+				Token = token,
+				Url = url,
+				Version = version
+			}, TimeSpan.Zero);
 
 			FileSystem.Serialize(All());
 			CachingNotifications.MicroServiceChanged(token);
@@ -162,12 +114,7 @@ namespace TomPIT.Sys.Model.Components
 
 		public void Delete(Guid token)
 		{
-			var microService = Select(token);
-
-			if (microService == null)
-				throw new SysException(SR.ErrMicroServiceNotFound);
-
-			Shell.GetService<IDatabaseService>().Proxy.Development.MicroServices.Delete(microService);
+			_ = Select(token) ?? throw new SysException(SR.ErrMicroServiceNotFound);
 
 			Remove(token);
 
@@ -185,6 +132,5 @@ namespace TomPIT.Sys.Model.Components
 
 			return UrlGenerator.GenerateUrl(token.ToString(), name, urls);
 		}
-
 	}
 }
