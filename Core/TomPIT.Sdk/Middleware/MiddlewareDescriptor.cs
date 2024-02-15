@@ -2,9 +2,12 @@
 using System.Security.Principal;
 using System.Text;
 using System.Threading;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
+
 using Newtonsoft.Json.Linq;
+
 using TomPIT.Connectivity;
 using TomPIT.Exceptions;
 using TomPIT.Models;
@@ -32,12 +35,19 @@ namespace TomPIT.Middleware
 					if (Shell.HttpContext == null)
 						return null;
 
-					var user = Shell.HttpContext.User;
+					try
+					{
+						var user = Shell.HttpContext.User;
 
-					if (user == null)
+						if (user == null)
+							return null;
+						else
+							_identity = user.Identity;
+					}
+					catch (ObjectDisposedException)
+					{
 						return null;
-					else
-						_identity = user.Identity;
+					}
 				}
 
 				return _identity;
@@ -110,7 +120,7 @@ namespace TomPIT.Middleware
 								/*
 								 * do it anyway because we're gonna remove the mutitenant feature soon
 								 */
-								_tenant = Shell.GetService<IConnectivityService>().SelectDefaultTenant(); 
+								_tenant = Shell.GetService<IConnectivityService>().SelectDefaultTenant();
 						}
 					}
 					else
