@@ -18,10 +18,6 @@ namespace TomPIT.Sys.Model.Components
 
 		}
 
-		public void Initialize(MicroServiceIndexEntry items)
-		{
-
-		}
 		public IMicroService Select(string name)
 		{
 			if (string.IsNullOrWhiteSpace(name))

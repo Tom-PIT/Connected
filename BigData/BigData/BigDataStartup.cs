@@ -49,13 +49,9 @@ namespace TomPIT.BigData
 
         private void OnConfiguring(object sender, System.Tuple<IApplicationBuilder, IWebHostEnvironment> e)
         {
-            var traceHubContext = e.Item1.ApplicationServices.GetRequiredService<IHubContext<TraceHub>>();
             var traceService = e.Item1.ApplicationServices.GetService<ITraceService>();
 
             MiddlewareDescriptor.Current.Tenant.RegisterService(typeof(ITraceService), traceService);
-
-            traceService.TraceReceived += async (s, e) => await TraceHub.Trace(traceHubContext, e);
-            traceService.TraceReceived += async (s, e) => Tenant.GetService<ILoggingService>().Dump($"{e.Endpoint.Identifier} {e.Content}");
         }
 
         private void OnTenantInitialize(object sender, TenantArgs e)
