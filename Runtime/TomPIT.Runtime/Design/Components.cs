@@ -460,7 +460,7 @@ namespace TomPIT.Design
 				ContentType = "application/json",
 				FileName = text.FileName,
 				PrimaryKey = text.Id.ToString(),
-				Size = content.Length,
+				Size = content is null ? 0 : content.Length,
 				MicroService = s.Token,
 				ResourceGroup = s.ResourceGroup,
 				Type = BlobTypes.Template

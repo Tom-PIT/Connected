@@ -17,9 +17,9 @@ internal static class FileSystem
 	private static string ComponentsFileName => Path.Combine(Folder, "components.json");
 	private static string FoldersFileName => Path.Combine(Folder, "folders.json");
 	private static string SourceFilesFileName => Path.Combine(Folder, "files.json");
-	public static void Initialize(Microsoft.Extensions.Configuration.IConfiguration configuration)
+	static FileSystem()
 	{
-		var section = configuration.GetRequiredSection("sourceFiles");
+		var section = Shell.Configuration.GetRequiredSection("sourceFiles");
 
 		Folder = section.GetValue<string>("folder");
 

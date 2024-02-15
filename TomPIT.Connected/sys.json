@@ -1,12 +1,24 @@
 ﻿{
   "instanceName": "Default Instance",
-  "features": "Application, Worker, Cdn, Rest, Search, BigData, Sys, IoT, Development, Management",
+  "features": "Application, Sys",
   "platform": "OnPrem",
   "stage": "Development",
   "optimization": "Debug",
   "resourceGroups": [
     "Default"
   ],
+  "sourceFiles": {
+    "folder": null
+  },
+  "saas": {
+    "storage": {
+      "files": {
+        "accessToken": null,
+        "url": null
+      }
+    }
+  },
+  "legacyServices": "true",
   "database": "TomPIT.SysDb.Sql.SqlProxy, TomPIT.SysDb.Sql",
   "authentication": {
     "jwToken": {
