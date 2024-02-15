@@ -5,15 +5,10 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-
-using System;
-using System.Configuration;
 using System.Diagnostics;
-using System.Text.Json;
 
 using TomPIT.Diagnostics;
 using TomPIT.Diagnostics.Tracing;
-using TomPIT.Environment;
 using TomPIT.Serialization;
 using TomPIT.Startup;
 using TomPIT.Sys.Configuration;

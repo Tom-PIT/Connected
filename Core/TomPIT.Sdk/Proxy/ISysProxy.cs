@@ -32,5 +32,6 @@
 		IUserController Users { get; }
 		IUserDataController UserData { get; }
 		IXmlKeyController XmlKeys { get; }
+		ISourceFileController SourceFiles { get; }
 	}
 }

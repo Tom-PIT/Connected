@@ -244,7 +244,6 @@ namespace TomPIT.Sys.Model.Blobs
 
 					return existing.Token;
 				}
-
 			}
 		}
 
@@ -292,7 +291,6 @@ namespace TomPIT.Sys.Model.Blobs
 			if (SupportsNotification(blob.Type))
 				CachingNotifications.BlobChanged(blob.MicroService, blob.Token, blob.Type, blob.PrimaryKey);
 		}
-
 		private bool SupportsNotification(int type)
 		{
 			return type < 1000;

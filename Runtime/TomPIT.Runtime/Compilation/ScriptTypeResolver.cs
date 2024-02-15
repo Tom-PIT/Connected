@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Scripting;
@@ -65,15 +66,17 @@ internal static class ScriptTypeResolver
 			if (!candidates.Any())
 				return null;
 
+			if (candidates.Count() == 1)
+				return candidates.First();
+
 			foreach (var candidate in candidates)
 			{
 				if (candidate.DeclaringType is not null && candidate.DeclaringType.Name.StartsWith("Submission#0"))
 					return candidate;
 			}
 
-			return null;
+			throw new AmbiguousMatchException($"Cannot resolve script type {typeName}. More than one type matches the criteria. Are you missing the namespace?");
 		}
-
 
 		var tokens = typeName.Split('.');
 		var fullTypeName = new StringBuilder();
