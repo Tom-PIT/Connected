@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using TomPIT.Caching;
 using TomPIT.Sys.SourceFiles;
 
 namespace TomPIT.Sys.Model.Components;
 
-public class SourceFilesModel : SynchronizedRepository<SourceFile, Guid>
+public class SourceFilesModel : SynchronizedRepository<SourceFile, string>
 {
 	public SourceFilesModel(IMemoryCache container) : base(container, "sourceFiles")
 	{
@@ -14,14 +13,17 @@ public class SourceFilesModel : SynchronizedRepository<SourceFile, Guid>
 
 	public ImmutableList<SourceFile> Query() => All();
 
-	public void Initialize(List<SourceFile> files)
+	protected override void OnInitializing()
 	{
+		var files = FileSystem.LoadFiles();
+
 		foreach (var file in files)
-			Set(file.Token, file, TimeSpan.Zero);
+			Set(GenerateKey(file.Token, file.Type), file, TimeSpan.Zero);
 	}
 	public void Update(Guid token, int type, string primaryKey, Guid microService, string fileName, string contentType, int version, byte[] content)
 	{
-		var existing = Get(token);
+		Initialize();
+		var existing = Get(GenerateKey(token, type));
 
 		if (existing is not null)
 		{
@@ -47,7 +49,7 @@ public class SourceFilesModel : SynchronizedRepository<SourceFile, Guid>
 				Version = version
 			};
 
-			Set(token, existing, TimeSpan.Zero);
+			Set(GenerateKey(token, type), existing, TimeSpan.Zero);
 		}
 
 		FileSystem.Serialize(microService, token, type, content);
@@ -56,12 +58,24 @@ public class SourceFilesModel : SynchronizedRepository<SourceFile, Guid>
 
 	public void Delete(Guid microService, Guid token, int type)
 	{
+		Initialize();
 		FileSystem.Delete(microService, token, type);
 		FileSystem.Serialize(All());
 	}
 
 	public byte[] Select(Guid microService, Guid token, int type)
 	{
+		Initialize();
 		return FileSystem.Deserialize(microService, token, type);
+	}
+
+	public SourceFile SelectFileInfo(Guid token, int type)
+	{
+		return Get(GenerateKey(token, type));
+	}
+
+	private static string GenerateKey(Guid token, int type)
+	{
+		return $"{token}-{type}";
 	}
 }

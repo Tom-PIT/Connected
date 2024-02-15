@@ -77,8 +77,7 @@ namespace TomPIT.Design
 			 */
 			try
 			{
-				Tenant.GetService<IStorageService>().Delete(c.Token);
-				Instance.SysProxy.SourceFiles.Delete(c.MicroService, c.Token, BlobTypes.Configuration);
+				Instance.SysProxy.SourceFiles.Delete(c.MicroService, c.Token, Storage.BlobTypes.Configuration);
 			}
 			catch (SysException ex)
 			when (ex.Message == SR.ErrBlobNotFound)
@@ -114,7 +113,7 @@ namespace TomPIT.Design
 
 			if (config is IMultiFileElement multiFile)
 			{
-				AsyncUtils.RunSync(() => multiFile.ProcessRestored());
+				AsyncUtils.RunSync(multiFile.ProcessRestored);
 
 				MultiFilesSynchronized?.Invoke(this, new ComponentArgs(ms.Token, component.Token, component.Category));
 			}
@@ -122,25 +121,13 @@ namespace TomPIT.Design
 
 		private void RestoreConfiguration(IMicroService microService, IPullRequestComponent component)
 		{
-			var configuration = component.Files.FirstOrDefault(f => f.Type == BlobTypes.Configuration);
+			var configuration = component.Files.FirstOrDefault(f => f.Type == Storage.BlobTypes.Configuration);
 
 			if (configuration is null || configuration.Verb == ComponentVerb.Delete || configuration.Verb == ComponentVerb.NotModified)
 				return;
 
-			var blob = new Blob
-			{
-				ContentType = configuration.ContentType,
-				FileName = configuration.FileName,
-				ResourceGroup = microService.ResourceGroup,
-				MicroService = microService.Token,
-				Type = configuration.Type,
-				Token = component.Token,
-				PrimaryKey = component.Token.ToString()
-			};
-
-			Tenant.GetService<IStorageService>().Upload(blob, Unpack(configuration.Content), StoragePolicy.Singleton, component.Token);
-			Tenant.GetService<IDebugService>().ConfigurationChanged(configuration.Token);
 			Instance.SysProxy.SourceFiles.Upload(microService.Token, component.Token, configuration.Type, component.Token.ToString(), configuration.FileName, configuration.ContentType, Unpack(configuration.Content), 1);
+			Tenant.GetService<IDebugService>().ConfigurationChanged(configuration.Token);
 
 			if (Tenant.GetService<IComponentService>() is not IComponentNotification notification)
 				return;
@@ -157,17 +144,19 @@ namespace TomPIT.Design
 		{
 			foreach (var file in component.Files)
 			{
-				if (file.Type == BlobTypes.Configuration || file.Verb == ComponentVerb.NotModified)
+				if (file.Type == Storage.BlobTypes.Configuration || file.Verb == ComponentVerb.NotModified)
 					continue;
 
 				var elementId = ResolveElementId(component.Token, file.Token);
 
 				if (file.Verb == ComponentVerb.Delete)
 				{
-					Tenant.GetService<IStorageService>().Delete(file.Token);
-					Instance.SysProxy.SourceFiles.Delete(microService.Token, file.Token, file.Type);
+					if (IsSourceFile(file.Type))
+						Instance.SysProxy.SourceFiles.Delete(microService.Token, file.Token, file.Type);
+					else
+						TomPIT.Tenant.GetService<IStorageService>().Delete(file.Token);
 
-					if (file.Type == BlobTypes.Template && Tenant.GetService<ICompilerService>() is ICompilerNotification notification)
+					if (file.Type == Storage.BlobTypes.Template && Tenant.GetService<ICompilerService>() is ICompilerNotification notification)
 						notification.NotifyChanged(this, new ScriptChangedEventArgs(microService.Token, component.Token, elementId));
 
 					FileDeleted?.Invoke(this, new FileArgs(microService.Token, component.Token, file.Token));
@@ -176,22 +165,25 @@ namespace TomPIT.Design
 				{
 					var content = Unpack(file.Content);
 
-					Tenant.GetService<IStorageService>().Restore(new Blob
+					if (IsSourceFile(file.Type))
+						Instance.SysProxy.SourceFiles.Upload(microService.Token, file.Token, file.Type, file.PrimaryKey, file.FileName, file.ContentType, content, 1);
+					else
 					{
-						ContentType = file.ContentType,
-						FileName = file.FileName,
-						MicroService = microService.Token,
-						ResourceGroup = microService.ResourceGroup,
-						Token = file.Token,
-						PrimaryKey = file.PrimaryKey,
-						Topic = file.Topic,
-						Type = file.Type,
-						Version = file.BlobVersion
-					}, content);
+						Tenant.GetService<IStorageService>().Restore(new Blob
+						{
+							ContentType = file.ContentType,
+							FileName = file.FileName,
+							MicroService = microService.Token,
+							ResourceGroup = microService.ResourceGroup,
+							Token = file.Token,
+							PrimaryKey = file.PrimaryKey,
+							Topic = file.Topic,
+							Type = file.Type,
+							Version = file.BlobVersion
+						}, content);
+					}
 
-					Instance.SysProxy.SourceFiles.Upload(microService.Token, file.Token, file.Type, file.PrimaryKey, file.FileName, file.ContentType, content, 1);
-
-					if (file.Type == BlobTypes.Template && Tenant.GetService<ICompilerService>() is ICompilerNotification notification)
+					if (file.Type == Storage.BlobTypes.Template && Tenant.GetService<ICompilerService>() is ICompilerNotification notification)
 						notification.NotifyChanged(this, new ScriptChangedEventArgs(microService.Token, component.Token, ResolveElementId(component.Token, file.Token)));
 
 					FileRestored?.Invoke(this, new FileArgs(microService.Token, component.Token, file.Token));
@@ -286,8 +278,8 @@ namespace TomPIT.Design
 				if (blob.TextBlob == Guid.Empty)
 					continue;
 
-				var content = Tenant.GetService<IStorageService>().Download(blob.TextBlob);
-				var text = content == null || content.Content == null || content.Content.Length == 0 ? string.Empty : Encoding.UTF8.GetString(content.Content);
+				var content = Instance.SysProxy.SourceFiles.Download(microService, blob.TextBlob, Storage.BlobTypes.Template);
+				var text = content == null || content.Length == 0 ? string.Empty : Encoding.UTF8.GetString(content);
 
 				blob.TextBlob = Guid.Empty;
 
@@ -303,13 +295,13 @@ namespace TomPIT.Design
 
 				foreach (var resource in resources)
 				{
-					var resourceBlob = Tenant.GetService<IStorageService>().Select(resource);
+					var resourceBlob = Tenant.GetService<Storage.IStorageService>().Select(resource);
 
 					if (resourceBlob == null)
 						continue;
 
-					var resourceBlobContent = Tenant.GetService<IStorageService>().Download(resourceBlob.Token);
-					var newBlob = new Blob
+					var resourceBlobContent = Tenant.GetService<Storage.IStorageService>().Download(resourceBlob.Token);
+					var newBlob = new Storage.Blob
 					{
 						ContentType = resourceBlob.ContentType,
 						FileName = resourceBlob.FileName,
@@ -320,7 +312,7 @@ namespace TomPIT.Design
 						Topic = resourceBlob.Topic
 					};
 
-					var token = Tenant.GetService<IStorageService>().Upload(newBlob, resourceBlobContent.Content, StoragePolicy.Singleton);
+					var token = Tenant.GetService<Storage.IStorageService>().Upload(newBlob, resourceBlobContent.Content, Storage.StoragePolicy.Singleton);
 
 					external.Reset(resource, token);
 				}
@@ -341,22 +333,8 @@ namespace TomPIT.Design
 
 			var content = Tenant.GetService<ISerializationService>().Serialize(instance);
 
-			var blob = new Blob
-			{
-				ContentType = "application/json",
-				Draft = Guid.NewGuid().ToString(),
-				FileName = string.Format("{0}.json", name),
-				ResourceGroup = ms.ResourceGroup,
-				Size = content.Length,
-				MicroService = microService,
-				Type = BlobTypes.Configuration,
-				Token = instance.Component
-			};
-
-			Tenant.GetService<IStorageService>().Upload(blob, content, StoragePolicy.Singleton, instance.Component);
-			Instance.SysProxy.SourceFiles.Upload(microService, instance.Component, BlobTypes.Configuration, instance.Component.ToString(), string.Format("{0}.json", name), "application/json", content, 1);
+			Instance.SysProxy.SourceFiles.Upload(microService, instance.Component, Storage.BlobTypes.Configuration, instance.Component.ToString(), $"{name}.json", "application/json", content, 1);
 			Instance.SysProxy.Development.Components.Insert(microService, folder, instance.Component, ComponentCategories.ResolveNamespace(category), category, name, type);
-			Tenant.GetService<IStorageService>().Commit(blob.Draft, instance.Component.ToString());
 
 			if (Tenant.GetService<IComponentService>() is IComponentNotification notification)
 			{
@@ -376,7 +354,7 @@ namespace TomPIT.Design
 
 			if (instance is IMultiFileElement multiFile)
 			{
-				AsyncUtils.RunSync(() => multiFile.ProcessCreated());
+				AsyncUtils.RunSync(multiFile.ProcessCreated);
 
 				MultiFilesSynchronized?.Invoke(this, new ComponentArgs(microService, instance.Component, category));
 			}
@@ -398,7 +376,7 @@ namespace TomPIT.Design
 
 			if (config is IMultiFileElement multiFile)
 			{
-				AsyncUtils.RunSync(() => multiFile.ProcessChanged());
+				AsyncUtils.RunSync(multiFile.ProcessChanged);
 
 				MultiFilesSynchronized?.Invoke(this, new ComponentArgs(c.MicroService, component, c.Category));
 			}
@@ -420,19 +398,7 @@ namespace TomPIT.Design
 			var s = Tenant.GetService<IMicroServiceService>().Select(c.MicroService) ?? throw new TomPITException(SR.ErrMicroServiceNotFound);
 			var content = Tenant.GetService<ISerializationService>().Serialize(configuration);
 
-			var blob = new Blob
-			{
-				ContentType = "application/json",
-				FileName = string.Format("{0}.json", c.Name),
-				ResourceGroup = s.ResourceGroup,
-				Size = content.Length,
-				MicroService = c.MicroService,
-				Type = BlobTypes.Configuration,
-				PrimaryKey = configuration.Component.ToString()
-			};
-
-			Tenant.GetService<IStorageService>().Upload(blob, content, StoragePolicy.Singleton);
-			Instance.SysProxy.SourceFiles.Upload(c.MicroService, configuration.Component, BlobTypes.Configuration, configuration.Component.ToString(), $"{c.Name}.json", "application/json", content, 1);
+			Instance.SysProxy.SourceFiles.Upload(c.MicroService, configuration.Component, Storage.BlobTypes.Configuration, configuration.Component.ToString(), $"{c.Name}.json", "application/json", content, 1);
 
 			if (Tenant.GetService<IComponentService>() is IComponentNotification n)
 				n.NotifyChanged(this, new ConfigurationEventArgs(c.MicroService, configuration.Component, c.Category));
@@ -454,23 +420,12 @@ namespace TomPIT.Design
 		{
 			var s = Tenant.GetService<IMicroServiceService>().Select(text.Configuration().MicroService());
 			var raw = Encoding.UTF8.GetBytes(content is null ? string.Empty : content);
+			var token = text.TextBlob == Guid.Empty ? Guid.NewGuid() : text.TextBlob;
 
-			var b = new Blob
-			{
-				ContentType = "application/json",
-				FileName = text.FileName,
-				PrimaryKey = text.Id.ToString(),
-				Size = content.Length,
-				MicroService = s.Token,
-				ResourceGroup = s.ResourceGroup,
-				Type = BlobTypes.Template
-			};
+			Instance.SysProxy.SourceFiles.Upload(s.Token, token, Storage.BlobTypes.Template, text.Id.ToString(), text.FileName, "text/html", raw, 1);
 
-			var blob = Tenant.GetService<IStorageService>().Upload(b, raw, StoragePolicy.Singleton);
-			Instance.SysProxy.SourceFiles.Upload(s.Token, blob, BlobTypes.Template, text.Id.ToString(), text.FileName, "application/json", raw, 1);
-
-			if (text.TextBlob != blob)
-				text.TextBlob = blob;
+			if (text.TextBlob != token)
+				text.TextBlob = token;
 
 			Update(text.Configuration());
 
@@ -479,7 +434,7 @@ namespace TomPIT.Design
 			if (ComponentCategories.IsAssemblyCategory(component.Category))
 				Tenant.GetService<IDesignService>().MicroServices.IncrementVersion(s.Token);
 
-			Tenant.GetService<IDebugService>().ScriptChanged(text.Configuration().MicroService(), text.Configuration().Component, text.Id, blob);
+			Tenant.GetService<IDebugService>().ScriptChanged(text.Configuration().MicroService(), text.Configuration().Component, text.Id, token);
 		}
 
 		private void Delete(IText text, bool updateConfig)
@@ -491,8 +446,7 @@ namespace TomPIT.Design
 
 			try
 			{
-				Tenant.GetService<IStorageService>().Delete(text.TextBlob);
-				Instance.SysProxy.SourceFiles.Delete(text.Configuration().MicroService(), text.TextBlob, BlobTypes.Template);
+				Instance.SysProxy.SourceFiles.Delete(text.Configuration().MicroService(), text.TextBlob, Storage.BlobTypes.Template);
 				FileDeleted?.Invoke(this, new FileArgs(text.Configuration().MicroService(), text.Configuration().Component, text.Id));
 			}
 			catch { }
@@ -598,32 +552,104 @@ namespace TomPIT.Design
 				Token = c.Token,
 				Type = c.Type,
 				NameSpace = c.NameSpace,
-				Configuration = CreateImageBlob(component)
+				Configuration = CreateConfigurationBlob(component)
 			};
 
 			var config = Tenant.GetService<IComponentService>().SelectConfiguration(c.Token);
 
 			if (config != null)
 			{
-				var deps = Tenant.GetService<IDiscoveryService>().Configuration.QueryDependencies(config);
+				var textFiles = Tenant.GetService<IDiscoveryService>().Configuration.Query<IText>(config);
+				var externalDeps = Tenant.GetService<IDiscoveryService>().Configuration.Query<IExternalResourceElement>(config);
 
-				foreach (var j in deps)
-					r.Dependencies.Add(CreateImageBlob(j));
+				foreach (var j in textFiles)
+				{
+					if (j.TextBlob == Guid.Empty)
+						continue;
+
+					var blob = CreateSourceFileBlob(c.MicroService, j.TextBlob);
+
+					if (blob is not null)
+						r.Dependencies.Add(blob);
+				}
+
+				foreach (var external in externalDeps)
+				{
+					var resources = external.QueryResources();
+
+					if (resources is null)
+						continue;
+
+					foreach (var resource in resources)
+					{
+						if (resource == Guid.Empty)
+							continue;
+
+						var blob = CreateExternalResourceBlob(resource);
+
+						if (blob is null)
+							continue;
+
+						r.Dependencies.Add(blob);
+					}
+				}
 			}
 
 			return r;
 		}
 
-		private IComponentImageBlob CreateImageBlob(Guid blob)
+		private static IComponentImageBlob CreateSourceFileBlob(Guid microService, Guid token)
 		{
-			var b = Tenant.GetService<IStorageService>().Select(blob);
+			var b = Instance.SysProxy.SourceFiles.Select(token, Storage.BlobTypes.Template);
+
+			if (b is null)
+				return null;
+
+			var content = Instance.SysProxy.SourceFiles.Download(microService, token, Storage.BlobTypes.Template);
+
+			return new ComponentImageBlob
+			{
+				Content = content,
+				Token = b.Token,
+				ContentType = b.ContentType,
+				FileName = b.FileName,
+				PrimaryKey = b.PrimaryKey,
+				Type = b.Type,
+				Version = b.Version
+			};
+		}
+
+		private static IComponentImageBlob CreateConfigurationBlob(Guid component)
+		{
+			var b = Instance.SysProxy.SourceFiles.Select(component, Storage.BlobTypes.Configuration);
+
+			if (b is null)
+				return null;
+
+			var content = Instance.SysProxy.SourceFiles.Download(b.MicroService, component, Storage.BlobTypes.Configuration);
+
+			return new ComponentImageBlob
+			{
+				Content = content,
+				Token = b.Token,
+				ContentType = b.ContentType,
+				FileName = b.FileName,
+				PrimaryKey = b.PrimaryKey,
+				Type = b.Type,
+				Version = b.Version
+			};
+		}
+
+		private static IComponentImageBlob CreateExternalResourceBlob(Guid token)
+		{
+			var b = TomPIT.Tenant.GetService<Storage.IStorageService>().Select(token);
 
 			if (b == null)
 				return null;
 
 			return new ComponentImageBlob
 			{
-				Content = Tenant.GetService<IStorageService>().Download(b.Token)?.Content,
+				Content = TomPIT.Tenant.GetService<Storage.IStorageService>().Download(b.Token)?.Content,
 				Token = b.Token,
 				ContentType = b.ContentType,
 				FileName = b.FileName,
@@ -636,12 +662,7 @@ namespace TomPIT.Design
 
 		public IComponentImage SelectComponentImage(Guid blob)
 		{
-			var content = Tenant.GetService<IStorageService>().Download(blob);
-
-			if (content == null)
-				return null;
-
-			return Tenant.GetService<ISerializationService>().Deserialize(content.Content, typeof(ComponentImage)) as ComponentImage;
+			return CreateComponentImage(blob);
 		}
 
 		public List<IComponent> Query(Guid microService)
@@ -657,6 +678,11 @@ namespace TomPIT.Design
 		public void Update(Guid microService, Guid token, int blobType, string contentType, string fileName, string primaryKey, byte[] content)
 		{
 			Instance.SysProxy.SourceFiles.Upload(microService, token, blobType, primaryKey, fileName, contentType, content, 1);
+		}
+
+		private bool IsSourceFile(int type)
+		{
+			return type == Storage.BlobTypes.Configuration || type == Storage.BlobTypes.Template || type == Storage.BlobTypes.AutoGenerated;
 		}
 	}
 }

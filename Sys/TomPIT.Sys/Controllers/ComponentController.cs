@@ -102,7 +102,7 @@ namespace TomPIT.Sys.Controllers
 			var body = FromBody();
 			var token = body.Required<Guid>("component");
 
-			DataModel.Components.RefreshComponent(token);
+			//DataModel.Components.RefreshComponent(token);
 		}
 	}
 }

@@ -37,6 +37,36 @@ internal static class FileSystem
 		return JsonSerializer.Deserialize<List<MicroServiceIndexEntry>>(text).ToList<IMicroService>();
 	}
 
+	public static List<IFolder> LoadFolders()
+	{
+		if (!File.Exists(FoldersFileName))
+			return new List<IFolder>();
+
+		var text = File.ReadAllText(FoldersFileName);
+
+		return JsonSerializer.Deserialize<List<FolderIndexEntry>>(text).ToList<IFolder>();
+	}
+
+	public static List<IComponent> LoadComponents()
+	{
+		if (!File.Exists(ComponentsFileName))
+			return new List<IComponent>();
+
+		var text = File.ReadAllText(ComponentsFileName);
+
+		return JsonSerializer.Deserialize<List<ComponentIndexEntry>>(text).ToList<IComponent>();
+	}
+
+	public static List<SourceFile> LoadFiles()
+	{
+		if (!File.Exists(SourceFilesFileName))
+			return new List<SourceFile>();
+
+		var text = File.ReadAllText(SourceFilesFileName);
+
+		return JsonSerializer.Deserialize<List<SourceFile>>(text);
+	}
+
 	public static void Serialize(ImmutableList<IMicroService> microServices)
 	{
 		var content = new List<MicroServiceIndexEntry>();

@@ -14,7 +14,6 @@ using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
 using TomPIT.Runtime;
-using TomPIT.Storage;
 
 namespace TomPIT.ComponentModel
 {
@@ -144,16 +143,10 @@ namespace TomPIT.ComponentModel
 		{
 			var r = new List<IConfiguration>();
 			var ids = components.Select(f => f.Token).Distinct().ToList();
-			var contents = Tenant.GetService<IStorageService>().Download(ids);
 
-			foreach (var content in contents)
+			foreach (var id in ids)
 			{
-				var component = components.FirstOrDefault(f => f.Token == content.Blob);
-
-				if (component == null)
-					continue;
-
-				var config = SelectConfiguration(component, content, false);
+				var config = SelectConfiguration(id);
 
 				r.Add(config);
 			};
@@ -256,23 +249,23 @@ namespace TomPIT.ComponentModel
 		{
 			var cmp = SelectComponent(microService, category, name);
 
-			if (cmp == null)
+			if (cmp is null)
 				return null;
 
-			return SelectConfiguration(cmp, null, true);
+			return SelectConfiguration(cmp, true);
 		}
 
 		public IConfiguration SelectConfiguration(Guid component)
 		{
 			var cmp = SelectComponent(component);
 
-			if (cmp == null)
+			if (cmp is null)
 				return null;
 
-			return SelectConfiguration(cmp, null, true);
+			return SelectConfiguration(cmp, true);
 		}
 
-		private IConfiguration SelectConfiguration(IComponent component, IBlobContent blob, bool throwException)
+		private IConfiguration SelectConfiguration(IComponent component, bool throwException)
 		{
 			if (component is null)
 				throw new RuntimeException(SR.ErrComponentNotFound);
@@ -285,7 +278,7 @@ namespace TomPIT.ComponentModel
 			ConfigurationProcessor.Start(component.Token,
 				 () =>
 				 {
-					 result = LoadConfiguration(component, blob, throwException);
+					 result = LoadConfiguration(component, throwException);
 				 },
 				 () =>
 				 {
@@ -296,9 +289,9 @@ namespace TomPIT.ComponentModel
 			return result;
 		}
 
-		private IConfiguration LoadConfiguration(IComponent component, IBlobContent blob, bool throwException)
+		private IConfiguration LoadConfiguration(IComponent component, bool throwException)
 		{
-			var content = blob ?? Tenant.GetService<IStorageService>().Download(component.Token);
+			var content = Instance.SysProxy.SourceFiles.Download(component.MicroService, component.Token, Storage.BlobTypes.Configuration);
 
 			if (content is null)
 				return null;
@@ -308,12 +301,12 @@ namespace TomPIT.ComponentModel
 			if (type is null)
 				return throwException ? throw new RuntimeException($"{SR.ErrCannotCreateComponentInstance} ({component.Type})") : null;
 
-			var t = Reflection.TypeExtensions.GetType(component.Type);
+			var t = TypeExtensions.GetType(component.Type);
 			IConfiguration r = null;
 
 			try
 			{
-				r = Tenant.GetService<ISerializationService>().Deserialize(content.Content, t) as IConfiguration;
+				r = Tenant.GetService<ISerializationService>().Deserialize(content, t) as IConfiguration;
 			}
 			catch (Exception ex)
 			{
@@ -331,8 +324,6 @@ namespace TomPIT.ComponentModel
 					Instance = r,
 					State = Tenant.GetService<ISerializationService>().Serialize(r)
 				});
-
-				Tenant.GetService<IStorageService>().Release(component.Token);
 			}
 
 			return r;
@@ -343,17 +334,13 @@ namespace TomPIT.ComponentModel
 			if (text.TextBlob == Guid.Empty)
 				return null;
 
-			var s = Tenant.GetService<IMicroServiceService>().Select(microService);
+			_ = Tenant.GetService<IMicroServiceService>().Select(microService) ?? throw new RuntimeException(SR.ErrMicroServiceNotFound);
+			var r = Instance.SysProxy.SourceFiles.Download(microService, text.TextBlob, Storage.BlobTypes.Template);
 
-			if (s == null)
-				throw new RuntimeException(SR.ErrMicroServiceNotFound);
-
-			var r = Tenant.GetService<IStorageService>().Download(text.TextBlob);
-
-			if (r == null)
+			if (r is null)
 				return null;
 
-			return Encoding.UTF8.GetString(r.Content);
+			return Encoding.UTF8.GetString(r);
 		}
 
 		public void NotifyChanged(object sender, ConfigurationEventArgs e)

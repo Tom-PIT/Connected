@@ -70,7 +70,7 @@ namespace TomPIT.Proxy.Local
 
 		public void Refresh(Guid token)
 		{
-			DataModel.Components.RefreshComponent(token);
+			//DataModel.Components.RefreshComponent(token);
 		}
 	}
 }

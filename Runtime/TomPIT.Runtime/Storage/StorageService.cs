@@ -2,10 +2,8 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using TomPIT.Caching;
-using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
 
 namespace TomPIT.Storage
@@ -20,26 +18,11 @@ namespace TomPIT.Storage
 		public StorageService(ITenant tenant) : base(tenant, "blob")
 		{
 			BlobContent = new BlobContentCache(Tenant);
-			Tenant.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
 			PreloadCache = new();
 		}
 
 		private BlobContentCache BlobContent { get; } = null;
 		private ConcurrentDictionary<Guid, HashSet<int>> PreloadCache { get; }
-
-		private void OnMicroServiceInstalled(object sender, MicroServiceEventArgs e)
-		{
-			var blobs = All();
-
-			foreach (var i in blobs)
-			{
-				if (i.MicroService == e.MicroService)
-				{
-					Remove(i.Token);
-					BlobContent.Delete(i.Token);
-				}
-			}
-		}
 
 		public void Commit(string draft, string primaryKey)
 		{
@@ -194,53 +177,6 @@ namespace TomPIT.Storage
 			BlobContent.Delete(e.Blob);
 
 			BlobCommitted?.Invoke(Tenant, e);
-		}
-
-		public ImmutableList<Guid> Preload(int type, Guid microService)
-		{
-			lock (PreloadCache)
-			{
-				if (PreloadCache.TryGetValue(microService, out HashSet<int> items))
-				{
-					if (items.Contains(type))
-						return Query(type, microService);
-				}
-
-				if (microService != Guid.Empty && PreloadCache.TryGetValue(microService, out items))
-				{
-					if (items.Contains(type))
-						return Query(type, microService);
-				}
-
-				if (items == null)
-				{
-					items = new HashSet<int>();
-
-					PreloadCache.TryAdd(microService, items);
-				}
-
-				var blobs = Instance.SysProxy.Storage.Query(type, microService);
-
-				foreach (var blob in blobs)
-					Set(blob.Token, blob, TimeSpan.Zero);
-
-				items.Add(type);
-
-				return Query(type, microService);
-			}
-		}
-
-		private ImmutableList<Guid> Query(int type, Guid microService)
-		{
-			if (microService == Guid.Empty)
-				return Where(f => f.Type == type).Select(f => f.Token).ToImmutableList();
-			else
-				return Where(f => f.MicroService == microService && f.Type == type).Select(f => f.Token).ToImmutableList();
-		}
-
-		public ImmutableList<Guid> Preload(int type)
-		{
-			return Preload(type, Guid.Empty);
 		}
 
 		public void Release(Guid blob)

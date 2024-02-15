@@ -5,7 +5,6 @@ using System.Linq;
 using TomPIT.Api.ComponentModel;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
-using TomPIT.Sys.Api.Database;
 using TomPIT.Sys.Notifications;
 using TomPIT.Sys.SourceFiles;
 
@@ -19,51 +18,27 @@ namespace TomPIT.Sys.Model.Components
 
 		protected override void OnInitializing()
 		{
-			var ds = Shell.GetService<IDatabaseService>().Proxy.Development.Components.Query();
+			var ds = FileSystem.LoadComponents();
 
 			foreach (var i in ds)
 				Set(i.Token, i, TimeSpan.Zero);
 		}
 
-		protected override void OnInvalidate(Guid id)
-		{
-			var r = Shell.GetService<IDatabaseService>().Proxy.Development.Components.Select(id);
+		//public void RefreshComponent(Guid token)
+		//{
+		//	Refresh(token);
 
-			if (r == null)
-			{
-				Remove(id);
-				return;
-			}
-
-			Set(id, r, TimeSpan.Zero);
-		}
-
-		public void RefreshComponent(Guid token)
-		{
-			Refresh(token);
-
-			DataModel.Blobs.RefreshBlob(token);
-		}
+		//	DataModel.Blobs.RefreshBlob(token);
+		//}
 
 		public void NotifyChanged(IComponent component)
 		{
-			Refresh(component.Token);
 			CachingNotifications.ComponentChanged(component.MicroService, component.Folder, component.Token, component.NameSpace, component.Category, component.Name);
 		}
 
 		public IComponent Select(Guid token)
 		{
-			var r = Get(token);
-
-			if (r != null)
-				return r;
-
-			r = Shell.GetService<IDatabaseService>().Proxy.Development.Components.Select(token);
-
-			if (r != null)
-				Set(r.Token, r, TimeSpan.Zero);
-
-			return r;
+			return Get(token);
 		}
 
 		public IComponent SelectByNameSpace(Guid microService, string nameSpace, string name)
@@ -71,7 +46,7 @@ namespace TomPIT.Sys.Model.Components
 			var r = Where(f => f.MicroService == microService && string.Compare(f.Name, name, true) == 0
 				 && string.Compare(f.NameSpace, nameSpace, true) == 0);
 
-			if (r != null && r.Count > 0)
+			if (r is not null && r.Any())
 			{
 				if (r.Count > 1)
 					throw new SysException(string.Format("{0} ({1}.{2})", SR.ErrDuplicateComponentFound, nameSpace, name));
@@ -84,10 +59,10 @@ namespace TomPIT.Sys.Model.Components
 
 		public IComponent Select(string category, string name)
 		{
-			var r = Where(f => string.Compare(f.Name, name, true) == 0
-				 && string.Compare(f.Category, category, true) == 0);
+			var r = Where(f => string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase)
+				 && string.Equals(f.Category, category, StringComparison.OrdinalIgnoreCase));
 
-			if (r != null && r.Count > 0)
+			if (r is not null && r.Any())
 			{
 				if (r.Count > 1)
 					throw new SysException(string.Format("{0} ({1}.{2})", SR.ErrDuplicateComponentFound, category, name));
@@ -95,43 +70,14 @@ namespace TomPIT.Sys.Model.Components
 				return r[0];
 			}
 
-			r = Shell.GetService<IDatabaseService>().Proxy.Development.Components.Query(category, name).ToImmutableList();
-
-			if (r != null)
-			{
-				foreach (var i in r)
-					Set(i.Token, i, TimeSpan.Zero);
-
-				if (r.Count > 1)
-					throw new SysException(string.Format("{0} ({1}.{2})", SR.ErrDuplicateComponentFound, category, name));
-
-				if (r.Count > 0)
-					return r[0];
-			}
-
 			return null;
 		}
 
 		public IComponent Select(Guid microService, string category, string name)
 		{
-			var r = Get(f => f.MicroService == microService
-				 && string.Compare(f.Name, name, true) == 0
-				 && string.Compare(f.Category, category, true) == 0);
-
-			if (r != null)
-				return r;
-
-			var s = DataModel.MicroServices.Select(microService);
-
-			if (s == null)
-				throw new SysException(SR.ErrMicroServiceNotFound);
-
-			r = Shell.GetService<IDatabaseService>().Proxy.Development.Components.Select(s, category, name);
-
-			if (r != null)
-				Set(r.Token, r, TimeSpan.Zero);
-
-			return r;
+			return Get(f => f.MicroService == microService
+				 && string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase)
+				 && string.Equals(f.Category, category, StringComparison.OrdinalIgnoreCase));
 		}
 
 		public ImmutableList<IComponent> QueryCategories(Guid microService, string categories)
@@ -163,7 +109,7 @@ namespace TomPIT.Sys.Model.Components
 				if (string.IsNullOrWhiteSpace(j))
 					continue;
 
-				var ds = Where(f => string.Compare(f.Category, j.Trim()) == 0);
+				var ds = Where(f => string.Equals(f.Category, j.Trim(), StringComparison.OrdinalIgnoreCase));
 
 				if (ds.Any())
 					r.AddRange(ds);
@@ -252,28 +198,22 @@ namespace TomPIT.Sys.Model.Components
 
 		public ImmutableList<IComponent> QueryByNameSpace(Guid microService, string nameSpace)
 		{
-			return Where(f => f.MicroService == microService && string.Compare(f.NameSpace, nameSpace, true) == 0);
+			return Where(f => f.MicroService == microService && string.Equals(f.NameSpace, nameSpace, StringComparison.OrdinalIgnoreCase));
 		}
 
 		public ImmutableList<IComponent> Query(Guid microService, string category)
 		{
-			return Where(f => f.MicroService == microService && string.Compare(f.Category, category, true) == 0);
+			return Where(f => f.MicroService == microService && string.Equals(f.Category, category, StringComparison.OrdinalIgnoreCase));
 		}
 
 		public void Insert(Guid component, Guid microService, Guid folder, string category, string nameSpace, string name, string type)
 		{
-			var s = DataModel.MicroServices.Select(microService);
-
-			if (s == null)
-				throw new SysException(SR.ErrMicroServiceNotFound);
-
+			var s = DataModel.MicroServices.Select(microService) ?? throw new SysException(SR.ErrMicroServiceNotFound);
 			s.DemandDevelopmentStage();
 
-			IFolder f = folder == Guid.Empty
-				 ? null
-				 : DataModel.Folders.Select(folder);
+			IFolder f = folder == Guid.Empty ? null : DataModel.Folders.Select(folder);
 
-			if (folder != Guid.Empty && f == null)
+			if (folder != Guid.Empty && f is null)
 				throw new SysException(SR.ErrFolderNotFound);
 
 			var v = new Validator();
@@ -283,9 +223,18 @@ namespace TomPIT.Sys.Model.Components
 			if (!v.IsValid)
 				throw new SysException(v.ErrorMessage);
 
-			Shell.GetService<IDatabaseService>().Proxy.Development.Components.Insert(s, DateTime.UtcNow, f, category, nameSpace, name, component, type);
+			Set(component, new ComponentIndexEntry
+			{
+				Category = category,
+				Name = name,
+				Type = type,
+				Folder = folder,
+				MicroService = microService,
+				Modified = DateTime.UtcNow,
+				NameSpace = nameSpace,
+				Token = component
+			}, TimeSpan.Zero);
 
-			Refresh(component);
 			FileSystem.Serialize(All());
 			CachingNotifications.ComponentAdded(microService, folder, component, nameSpace, category, name);
 		}
@@ -299,11 +248,7 @@ namespace TomPIT.Sys.Model.Components
 
 		public void Update(Guid component, string name, Guid folder)
 		{
-			var c = Select(component);
-
-			if (c == null)
-				throw new SysException(SR.ErrComponentNotFound);
-
+			var c = Select(component) ?? throw new SysException(SR.ErrComponentNotFound);
 			c.DemandDevelopmentStage();
 
 			var v = new Validator();
@@ -319,27 +264,30 @@ namespace TomPIT.Sys.Model.Components
 			{
 				f = DataModel.Folders.Select(folder);
 
-				if (f == null)
+				if (f is null)
 					throw new SysException(SR.ErrFolderNotFound);
 			}
 
-			Shell.GetService<IDatabaseService>().Proxy.Development.Components.Update(c, DateTime.UtcNow, name, f);
+			Set(c.Token, new ComponentIndexEntry
+			{
+				Category = c.Category,
+				Name = name,
+				Folder = folder,
+				MicroService = c.MicroService,
+				Modified = DateTime.UtcNow,
+				NameSpace = c.NameSpace,
+				Token = c.Token,
+				Type = c.Type
+			}, TimeSpan.Zero);
 
-			Refresh(component);
 			FileSystem.Serialize(All());
 			CachingNotifications.ComponentChanged(c.MicroService, c.Folder, component, c.NameSpace, c.Category, c.Name);
 		}
 
 		public void Delete(Guid component, Guid user)
 		{
-			var c = Select(component);
-
-			if (c == null)
-				throw new SysException(SR.ErrComponentNotFound);
-
+			var c = Select(component) ?? throw new SysException(SR.ErrComponentNotFound);
 			c.DemandDevelopmentStage();
-
-			Shell.GetService<IDatabaseService>().Proxy.Development.Components.Delete(c);
 
 			Remove(component);
 			FileSystem.Serialize(All());

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
 using TomPIT.Sys.Model;
+using TomPIT.Sys.Model.Components;
 
 namespace TomPIT.Sys.Controllers;
 
@@ -50,5 +51,16 @@ public class SourceFileController : SysController
 		var type = body.Required<int>("type");
 
 		DataModel.SourceFiles.Delete(microService, token, type);
+	}
+
+	[HttpPost]
+	public SourceFile Select()
+	{
+		var body = FromBody();
+
+		var token = body.Required<Guid>("token");
+		var type = body.Required<int>("type");
+
+		return DataModel.SourceFiles.SelectFileInfo(token, type);
 	}
 }

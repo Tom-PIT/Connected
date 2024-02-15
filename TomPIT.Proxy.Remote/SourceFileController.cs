@@ -24,6 +24,15 @@ internal sealed class SourceFileController : ISourceFileController
 		});
 	}
 
+	public ISourceFileInfo Select(Guid token, int type)
+	{
+		return Connection.Post<SourceFileInfo>(Connection.CreateUrl(Controller, "Select"), new
+		{
+			token,
+			type
+		});
+	}
+
 	public void Upload(Guid microService, Guid token, int type, string primaryKey, string fileName, string contentType, byte[] content, int version)
 	{
 		Connection.Post(Connection.CreateUrl(Controller, "Upload"), new

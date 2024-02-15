@@ -4,7 +4,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
-using TomPIT.Sys.Api.Database;
 using TomPIT.Sys.Notifications;
 using TomPIT.Sys.SourceFiles;
 
@@ -18,53 +17,20 @@ namespace TomPIT.Sys.Model.Components
 
 		protected override void OnInitializing()
 		{
-			var ds = Shell.GetService<IDatabaseService>().Proxy.Development.Folders.Query();
+			var ds = FileSystem.LoadFolders();
 
 			foreach (var i in ds)
 				Set(i.Token, i, TimeSpan.Zero);
 		}
 
-		protected override void OnInvalidate(Guid id)
-		{
-			var r = Shell.GetService<IDatabaseService>().Proxy.Development.Folders.Select(id);
-
-			if (r == null)
-			{
-				Remove(id);
-				return;
-			}
-
-			Set(id, r, TimeSpan.Zero);
-		}
-
 		public IFolder Select(Guid microService, string name)
 		{
-			var r = Get(f => f.MicroService == microService && string.Compare(name, f.Name, true) == 0);
-
-			if (r != null)
-				return r;
-
-			var s = DataModel.MicroServices.Select(microService);
-
-			if (s == null)
-				throw new SysException(SR.ErrMicroServiceNotFound);
-
-			r = Shell.GetService<IDatabaseService>().Proxy.Development.Folders.Select(s, name);
-
-			if (r != null)
-				Set(r.Token, r, TimeSpan.Zero);
-			return r;
+			return Get(f => f.MicroService == microService && string.Equals(name, f.Name, StringComparison.OrdinalIgnoreCase));
 		}
 
 		public IFolder Select(Guid token)
 		{
-			return Get(token,
-				(f) =>
-				{
-					f.Duration = TimeSpan.Zero;
-
-					return Shell.GetService<IDatabaseService>().Proxy.Development.Folders.Select(token);
-				});
+			return Get(token);
 		}
 
 		public ImmutableList<IFolder> Query()
@@ -92,11 +58,7 @@ namespace TomPIT.Sys.Model.Components
 
 		public Guid Insert(Guid microService, string name, Guid parent)
 		{
-			var s = DataModel.MicroServices.Select(microService);
-
-			if (s == null)
-				throw new SysException(SR.ErrMicroServiceNotFound);
-
+			var s = DataModel.MicroServices.Select(microService) ?? throw new SysException(SR.ErrMicroServiceNotFound);
 			var v = new Validator();
 
 			v.Unique(null, name, nameof(IFolder.Name), Query(microService, parent));
@@ -110,15 +72,20 @@ namespace TomPIT.Sys.Model.Components
 			{
 				p = Select(parent);
 
-				if (p == null)
+				if (p is null)
 					throw new SysException(SR.ErrFolderNotFound);
 			}
 
 			var token = Guid.NewGuid();
 
-			Shell.GetService<IDatabaseService>().Proxy.Development.Folders.Insert(s, name, token, p);
+			Set(token, new FolderIndexEntry
+			{
+				MicroService = microService,
+				Parent = parent,
+				Name = name,
+				Token = token
+			}, TimeSpan.Zero);
 
-			Refresh(token);
 			FileSystem.Serialize(All());
 			CachingNotifications.FolderChanged(microService, token);
 
@@ -127,11 +94,7 @@ namespace TomPIT.Sys.Model.Components
 
 		public void Restore(Guid microService, Guid token, string name, Guid parent)
 		{
-			var s = DataModel.MicroServices.Select(microService);
-
-			if (s == null)
-				throw new SysException(SR.ErrMicroServiceNotFound);
-
+			var s = DataModel.MicroServices.Select(microService) ?? throw new SysException(SR.ErrMicroServiceNotFound);
 			var v = new Validator();
 
 			v.Unique(null, name, nameof(IFolder.Name), Query(microService, parent));
@@ -145,12 +108,18 @@ namespace TomPIT.Sys.Model.Components
 			{
 				p = Select(parent);
 
-				if (p == null)
+				if (p is null)
 					throw new SysException(SR.ErrFolderNotFound);
 			}
 
-			Shell.GetService<IDatabaseService>().Proxy.Development.Folders.Insert(s, name, token, p);
-			Refresh(token);
+			Set(token, new FolderIndexEntry
+			{
+				MicroService = microService,
+				Parent = parent,
+				Name = name,
+				Token = token
+			}, TimeSpan.Zero);
+
 			FileSystem.Serialize(All());
 		}
 
@@ -159,11 +128,7 @@ namespace TomPIT.Sys.Model.Components
 			if (folder == parent)
 				throw new SysException(SR.ErrFolderSelf);
 
-			var f = Select(folder);
-
-			if (f == null)
-				throw new SysException(SR.ErrFolderNotFound);
-
+			var f = Select(folder) ?? throw new SysException(SR.ErrFolderNotFound);
 			var v = new Validator();
 
 			v.Unique(f, name, nameof(IFolder.Name), Query(microService, parent));
@@ -177,25 +142,26 @@ namespace TomPIT.Sys.Model.Components
 			{
 				p = Select(parent);
 
-				if (p == null)
+				if (p is null)
 					throw new SysException(SR.ErrFolderNotFound);
 			}
 
-			Shell.GetService<IDatabaseService>().Proxy.Development.Folders.Update(f, name, p);
+			Set(f.Token, new FolderIndexEntry
+			{
+				MicroService = microService,
+				Token = folder,
+				Name = name,
+				Parent = parent,
 
-			Refresh(folder);
+			}, TimeSpan.Zero);
+
 			FileSystem.Serialize(All());
 			CachingNotifications.FolderChanged(microService, folder);
 		}
 
 		public void Delete(Guid microService, Guid folder)
 		{
-			var f = Select(folder);
-
-			if (f == null)
-				throw new SysException(SR.ErrFolderNotFound);
-
-			Shell.GetService<IDatabaseService>().Proxy.Development.Folders.Delete(f);
+			_ = Select(folder) ?? throw new SysException(SR.ErrFolderNotFound);
 
 			Remove(folder);
 			FileSystem.Serialize(All());
