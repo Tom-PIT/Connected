@@ -675,6 +675,9 @@ namespace TomPIT.Design
 		public void Update(Guid microService, Guid token, int blobType, string contentType, string fileName, string primaryKey, byte[] content)
 		{
 			Instance.SysProxy.SourceFiles.Upload(microService, token, blobType, primaryKey, fileName, contentType, content, 1);
+
+			if (Tenant.GetService<IComponentService>() is IComponentNotification cn)
+				cn.NotifySourceTextChanged(Tenant, new SourceTextChangedEventArgs(microService, Guid.Empty, token, blobType));
 		}
 
 		private bool IsSourceFile(int type)
@@ -685,6 +688,9 @@ namespace TomPIT.Design
 		public void Delete(Guid microService, Guid token, int blobType)
 		{
 			Instance.SysProxy.SourceFiles.Delete(microService, token, blobType);
+
+			if (Tenant.GetService<IComponentService>() is IComponentNotification cn)
+				cn.NotifySourceTextChanged(Tenant, new SourceTextChangedEventArgs(microService, Guid.Empty, token, blobType));
 		}
 	}
 }
