@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Routing;
+﻿using Microsoft.AspNetCore.Routing;
 
 namespace TomPIT.Search.Routing
 {
@@ -8,7 +7,6 @@ namespace TomPIT.Search.Routing
 		public static void Register(IEndpointRouteBuilder routes)
 		{
 			routes.MapPingRoute();
-			routes.MapControllerRoute("default", "{controller}/{action}");
 		}
 	}
 }

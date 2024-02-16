@@ -52,7 +52,9 @@ namespace TomPIT.Sys
 
 		private void OnConfiguringRouting(object sender, Microsoft.AspNetCore.Routing.IEndpointRouteBuilder e)
 		{
-			e.MapHub<CacheHub>("/caching");
+			e.MapControllerRoute("default", "{controller}/{action}");
+
+			e.MapHub<CacheHub>("hubs/caching");
 			e.MapHub<IoTHub>("/iot");
 			e.MapHub<BigDataHub>("/bigdata");
 			e.MapHub<DataCacheHub>("/datacaching");
