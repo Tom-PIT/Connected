@@ -10,5 +10,5 @@ public interface IMultiFileElement
 	Task ProcessDeleted();
 	Task ProcessRestored();
 
-	Task<List<Guid>> QueryAdditionalFiles();
+	Task<List<KeyValuePair<Guid, int>>> QueryAdditionalFiles();
 }
