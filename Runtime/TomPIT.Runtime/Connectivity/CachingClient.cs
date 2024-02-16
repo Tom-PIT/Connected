@@ -3,7 +3,6 @@ using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.Configuration;
 using TomPIT.Data;
-using TomPIT.Environment;
 using TomPIT.Globalization;
 using TomPIT.Messaging;
 using TomPIT.Security;
@@ -17,7 +16,7 @@ namespace TomPIT.Connectivity
 		{
 		}
 
-		protected override string HubName => "caching";
+		protected override string HubName => "hubs/caching";
 
 		protected override void Initialize()
 		{
@@ -229,12 +228,15 @@ namespace TomPIT.Connectivity
 					n.NotifyRemoved(Tenant, e.Args);
 			});
 
-			Hub.On<MessageEventArgs<ScriptChangedEventArgs>>("ScriptChanged", (e) =>
+			Hub.On<MessageEventArgs<SourceTextChangedEventArgs>>("SourceTextChanged", (e) =>
 			{
 				Hub.InvokeAsync("Confirm", e.Message);
 
 				if (Tenant.GetService<ICompilerService>() is ICompilerNotification n)
 					n.NotifyChanged(Tenant, e.Args);
+
+				if (Tenant.GetService<IComponentService>() is IComponentNotification cn)
+					cn.NotifySourceTextChanged(Tenant, e.Args);
 			});
 
 			Hub.On<MessageEventArgs<FolderEventArgs>>("FolderChanged", (e) =>

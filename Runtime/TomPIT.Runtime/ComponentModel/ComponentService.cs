@@ -12,8 +12,10 @@ using TomPIT.Diagnostics;
 using TomPIT.Environment;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
+using TomPIT.Proxy;
 using TomPIT.Reflection;
 using TomPIT.Runtime;
+using TomPIT.Storage;
 
 namespace TomPIT.ComponentModel
 {
@@ -32,12 +34,14 @@ namespace TomPIT.ComponentModel
 
 		public ComponentService(ITenant tenant) : base(tenant, "component")
 		{
+			TextCache = new();
 			Tenant.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
 			Tenant.GetService<IMicroServiceService>().MicroServiceRemoved += OnMicroServiceRemoved;
 			Folders = new FolderCache(Tenant);
 		}
 
 		private FolderCache Folders { get; }
+		private ConcurrentDictionary<string, SourceTextCacheEntry> TextCache { get; }
 
 		protected override void OnInitialized()
 		{
@@ -291,9 +295,9 @@ namespace TomPIT.ComponentModel
 
 		private IConfiguration LoadConfiguration(IComponent component, bool throwException)
 		{
-			var content = Instance.SysProxy.SourceFiles.Download(component.MicroService, component.Token, Storage.BlobTypes.Configuration);
+			var text = GetText(component.MicroService, component.Token, BlobTypes.Configuration);
 
-			if (content is null)
+			if (text is null)
 				return null;
 
 			var type = TypeExtensions.GetType(component.Type);
@@ -306,7 +310,7 @@ namespace TomPIT.ComponentModel
 
 			try
 			{
-				r = Tenant.GetService<ISerializationService>().Deserialize(content, t) as IConfiguration;
+				r = Tenant.GetService<ISerializationService>().Deserialize(Encoding.UTF8.GetBytes(text.Text ?? string.Empty), t) as IConfiguration;
 			}
 			catch (Exception ex)
 			{
@@ -335,12 +339,12 @@ namespace TomPIT.ComponentModel
 				return null;
 
 			_ = Tenant.GetService<IMicroServiceService>().Select(microService) ?? throw new RuntimeException(SR.ErrMicroServiceNotFound);
-			var r = Instance.SysProxy.SourceFiles.Download(microService, text.TextBlob, Storage.BlobTypes.Template);
+			var r = GetText(microService, text.TextBlob, BlobTypes.SourceText);
 
 			if (r is null)
 				return null;
 
-			return Encoding.UTF8.GetString(r);
+			return r.Text;
 		}
 
 		public void NotifyChanged(object sender, ConfigurationEventArgs e)
@@ -352,6 +356,8 @@ namespace TomPIT.ComponentModel
 
 			ConfigurationCache.Remove(e.Component, out _);
 			ConfigurationChanged?.Invoke(Tenant, e);
+
+			NotifySourceTextChanged(this, new SourceTextChangedEventArgs(e.MicroService, e.Component, e.Component, BlobTypes.Configuration));
 		}
 
 		public void NotifyAdded(object sender, ConfigurationEventArgs e)
@@ -361,7 +367,11 @@ namespace TomPIT.ComponentModel
 
 		public void NotifyRemoved(object sender, ConfigurationEventArgs e)
 		{
+			var existing = SelectConfiguration(e.Component);
+
 			ConfigurationRemoved?.Invoke(Tenant, e);
+
+			NotifySourceTextChanged(this, new SourceTextChangedEventArgs(e.MicroService, e.Component, e.Component, BlobTypes.Configuration));
 		}
 
 		public IFolder SelectFolder(Guid folder)
@@ -400,6 +410,41 @@ namespace TomPIT.ComponentModel
 				return Instance.SysProxy.Components.QueryByCategories(categories);
 			else
 				return Instance.SysProxy.Components.Query();
+		}
+
+		public string SelectText(Guid microService, Guid token, int type)
+		{
+			var result = GetText(microService, token, type);
+
+			if (result is null)
+				return null;
+
+			return result.Text;
+		}
+
+		public ISourceFileInfo SelectTextInfo(Guid microService, Guid token, int type)
+		{
+			return Instance.SysProxy.SourceFiles.Select(token, type);
+		}
+
+		public void NotifySourceTextChanged(object sender, SourceTextChangedEventArgs e)
+		{
+			TextCache.Remove($"{e.Token}.{e.Type}", out _);
+		}
+
+		private SourceTextCacheEntry GetText(Guid microService, Guid token, int type)
+		{
+			if (TextCache.TryGetValue($"{token}.{type}", out SourceTextCacheEntry? existing) && existing is not null)
+				return existing;
+
+			var source = Instance.SysProxy.SourceFiles.Download(microService, token, type);
+			var text = source is null ? null : Encoding.UTF8.GetString(source);
+
+			var result = new SourceTextCacheEntry { Text = text, Token = token, MicroService = microService, Type = type };
+
+			TextCache.TryAdd($"{token}.{type}", result);
+
+			return result;
 		}
 	}
 }

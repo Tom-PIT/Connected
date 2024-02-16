@@ -6,7 +6,6 @@ using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using System.Text;
 using TomPIT.App.Models;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
@@ -18,7 +17,6 @@ using TomPIT.Environment;
 using TomPIT.Exceptions;
 using TomPIT.Models;
 using TomPIT.Runtime;
-using TomPIT.Storage;
 using TomPIT.UI;
 
 namespace TomPIT.App.UI
@@ -209,12 +207,7 @@ namespace TomPIT.App.UI
 			if (ui.TextBlob == Guid.Empty)
 				return null;
 
-			var r = Tenant.GetService<IStorageService>().Download(ui.TextBlob);
-
-			if (r == null)
-				return null;
-
-			return Encoding.UTF8.GetString(r.Content);
+			return Tenant.GetService<IComponentService>().SelectText(ui.Configuration().MicroService(), ui);
 		}
 
 		public bool HasChanged(ViewKind kind, string url)

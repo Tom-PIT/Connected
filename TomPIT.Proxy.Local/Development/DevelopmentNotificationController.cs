@@ -26,9 +26,9 @@ namespace TomPIT.Proxy.Local.Development
 			CachingNotifications.MicroServiceInstalled(microService, success);
 		}
 
-		public void ScriptChanged(Guid microService, Guid component, Guid element)
+		public void SourceTextChanged(Guid microService, Guid component, Guid token, int type)
 		{
-			CachingNotifications.ScriptChanged(microService, component, element);
+			CachingNotifications.SourceTextChanged(microService, component, token, type);
 		}
 	}
 }

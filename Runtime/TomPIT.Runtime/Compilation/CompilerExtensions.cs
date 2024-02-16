@@ -26,7 +26,7 @@ namespace TomPIT.Compilation
 
 		public static Guid ScriptId(this IText sourceCode)
 		{
-			return sourceCode.Id;
+			return sourceCode.TextBlob;
 		}
 
 		public static Type ResolveScriptInfoType(Assembly assembly)

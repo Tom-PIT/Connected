@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 using TomPIT.Annotations.Design;
 using TomPIT.Compilation.Views;
 using TomPIT.ComponentModel;
@@ -8,7 +7,6 @@ using TomPIT.ComponentModel.Reports;
 using TomPIT.ComponentModel.UI;
 using TomPIT.Connectivity;
 using TomPIT.Reflection;
-using TomPIT.Storage;
 using TomPIT.UI;
 
 namespace TomPIT.Compilation;
@@ -33,12 +31,12 @@ internal static class ViewCompiler
 		}
 		else if (sourceCode.TextBlob != Guid.Empty)
 		{
-			var r = Tenant.GetService<IStorageService>().Download(sourceCode.TextBlob);
+			var text = Tenant.GetService<IComponentService>().SelectText(config.MicroService(), sourceCode);
 
-			if (r is null)
+			if (text is null)
 				return null;
 
-			content = Encoding.UTF8.GetString(r.Content);
+			content = text;
 		}
 
 		ProcessorBase processor = null;

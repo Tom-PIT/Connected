@@ -34,5 +34,6 @@ namespace TomPIT.Design
 		IComponentImage SelectComponentImage(Guid blob);
 
 		void Update(Guid microService, Guid token, int blobType, string contentType, string fileName, string primaryKey, byte[] content);
+		void Delete(Guid microService, Guid token, int blobType);
 	}
 }

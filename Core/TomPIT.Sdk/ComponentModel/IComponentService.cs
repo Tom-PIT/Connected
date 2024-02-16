@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using TomPIT.Connectivity;
+using TomPIT.Proxy;
 
 namespace TomPIT.ComponentModel
 {
@@ -39,6 +40,8 @@ namespace TomPIT.ComponentModel
 		IConfiguration SelectConfiguration(Guid component);
 
 		string SelectText(Guid microService, IText text);
+		string SelectText(Guid microService, Guid token, int type);
+		ISourceFileInfo SelectTextInfo(Guid microService, Guid token, int type);
 
 		ImmutableList<IComponent> QueryComponents(Guid microService, string category);
 		ImmutableList<IComponent> QueryComponents(Guid microService, Guid folder);

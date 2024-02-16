@@ -178,7 +178,7 @@ namespace TomPIT.Compilation
 		}
 		protected virtual string[] Usings => new string[] { };
 
-      public void Dispose()
+		public void Dispose()
 		{
 			Script = null;
 		}
@@ -189,7 +189,7 @@ namespace TomPIT.Compilation
 		{
 			var sb = new StringBuilder();
 
-         sb.AppendLine($"public static class {CompilerService.ScriptInfoClassName}");
+			sb.AppendLine($"public static class {CompilerService.ScriptInfoClassName}");
 			sb.AppendLine("{");
 			sb.AppendLine("private static readonly System.Collections.Generic.List<TomPIT.Compilation.SourceTypeDescriptor> _sourceTypes = new System.Collections.Generic.List<TomPIT.Compilation.SourceTypeDescriptor>{");
 
@@ -210,14 +210,14 @@ namespace TomPIT.Compilation
 					sb.AppendLine($"Component = new System.Guid(\"{component.Token}\"),");
 					sb.AppendLine($"ContainingType = \"{resolved.Item2}\",");
 					sb.AppendLine($"TypeName = \"{resolved.Item1}\",");
-					sb.AppendLine($"Script = new System.Guid(\"{file.Value.Id}\")");
+					sb.AppendLine($"Script = new System.Guid(\"{file.Value.TextBlob}\")");
 					sb.AppendLine("},");
 				}
 			}
 
 			sb.AppendLine("};");
 			sb.AppendLine($"public static System.Guid MicroService => new System.Guid(\"{MicroService}\");");
-			sb.AppendLine($"public static System.Guid SourceCode => new System.Guid(\"{SourceCode.Id}\");");
+			sb.AppendLine($"public static System.Guid SourceCode => new System.Guid(\"{SourceCode.TextBlob}\");");
 			sb.AppendLine($"public static System.Guid Component => new System.Guid(\"{SourceCode.Configuration().Component}\");");
 			sb.AppendLine($"public static System.Collections.Generic.List<TomPIT.Compilation.SourceTypeDescriptor> SourceTypes => _sourceTypes;");
 			sb.AppendLine("}");

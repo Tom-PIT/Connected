@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
-using TomPIT.Environment;
 
 namespace TomPIT.Storage
 {
@@ -16,12 +14,6 @@ namespace TomPIT.Storage
 
 		protected override void OnInitializing()
 		{
-			var resourceGroups = Tenant.GetService<IResourceGroupService>().Query().Select(f => f.Token).ToList();
-			var types = new List<int> { BlobTypes.Template, BlobTypes.Configuration };
-			var items = Instance.SysProxy.Storage.Download(resourceGroups, types);
-
-			foreach (var item in items)
-				Set(item.Blob, BlobContentCompression.Decompress(item.Blob, item.Content), TimeSpan.Zero);
 		}
 
 		public List<IBlobContent> Query(List<Guid> blobs)

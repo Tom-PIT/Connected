@@ -51,15 +51,16 @@ namespace TomPIT.Sys.Controllers.Development
 		}
 
 		[HttpPost]
-		public void ScriptChanged()
+		public void SourceTextChanged()
 		{
 			var body = FromBody();
 
 			var microService = body.Required<Guid>("microService");
-			var container = body.Required<Guid>("container");
-			var sourceCode = body.Required<Guid>("sourceCode");
+			var configuration = body.Required<Guid>("configuration");
+			var token = body.Required<Guid>("token");
+			var type = body.Required<int>("type");
 
-			CachingNotifications.ScriptChanged(microService, container, sourceCode);
+			CachingNotifications.SourceTextChanged(microService, configuration, token, type);
 		}
 
 		[HttpPost]

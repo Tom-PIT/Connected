@@ -2,21 +2,23 @@
 
 namespace TomPIT.ComponentModel
 {
-	public class ScriptChangedEventArgs : EventArgs
+	public class SourceTextChangedEventArgs : EventArgs
 	{
-		public ScriptChangedEventArgs()
+		public SourceTextChangedEventArgs()
 		{
 
 		}
-		public ScriptChangedEventArgs(Guid microService, Guid container, Guid sourceCode)
+		public SourceTextChangedEventArgs(Guid microService, Guid configuration, Guid token, int type)
 		{
-			SourceCode = sourceCode;
+			Token = token;
 			MicroService = microService;
-			Container = container;
+			Type = type;
+			Configuration = configuration;
 		}
 
-		public Guid SourceCode { get; set; }
-		public Guid Container { get; set; }
+		public int Type { get; set; }
+		public Guid Token { get; set; }
+		public Guid Configuration { get; set; }
 		public Guid MicroService { get; set; }
 	}
 }

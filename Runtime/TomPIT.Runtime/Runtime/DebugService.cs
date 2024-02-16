@@ -2,8 +2,6 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using TomPIT.Connectivity;
@@ -19,7 +17,7 @@ internal class DebugService : IDebugService, IDisposable
 		ConfigurationAdded = 1,
 		ConfigurationChanged = 2,
 		ConfigurationRemoved = 3,
-		ScriptChanged = 4
+		SourceTextChanged = 4
 	}
 	public DebugService()
 	{
@@ -27,10 +25,10 @@ internal class DebugService : IDebugService, IDisposable
 		Cancel = new();
 
 		Initialize();
-		
+
 	}
 
-	private void Initialize() 
+	private void Initialize()
 	{
 		Shell.Configuration.Bind("debugTarget", _binder);
 
@@ -58,7 +56,7 @@ internal class DebugService : IDebugService, IDisposable
 				{
 					try
 					{
-						switch (descriptor.Type)
+						switch (descriptor.MessageType)
 						{
 							case DebugType.ConfigurationAdded:
 								MiddlewareDescriptor.Current.Tenant.Post(CreateUrl("ConfigurationAdded"), new
@@ -80,13 +78,13 @@ internal class DebugService : IDebugService, IDisposable
 									descriptor.Component
 								}, new HttpRequestArgs().WithBearerCredentials(AuthenticationToken));
 								break;
-							case DebugType.ScriptChanged:
-								MiddlewareDescriptor.Current.Tenant.Post(CreateUrl("ScriptChanged"), new
+							case DebugType.SourceTextChanged:
+								MiddlewareDescriptor.Current.Tenant.Post(CreateUrl("SourceTextChanged"), new
 								{
 									descriptor.MicroService,
 									descriptor.Component,
-									descriptor.Element,
-									descriptor.Token
+									descriptor.Token,
+									descriptor.Type
 								}, new HttpRequestArgs().WithBearerCredentials(AuthenticationToken));
 
 								break;
@@ -108,7 +106,7 @@ internal class DebugService : IDebugService, IDisposable
 
 		Queue.Enqueue(new DebugDescriptor
 		{
-			Type = DebugType.ConfigurationAdded,
+			MessageType = DebugType.ConfigurationAdded,
 			Component = component
 		});
 	}
@@ -120,7 +118,7 @@ internal class DebugService : IDebugService, IDisposable
 
 		Queue.Enqueue(new DebugDescriptor
 		{
-			Type = DebugType.ConfigurationChanged,
+			MessageType = DebugType.ConfigurationChanged,
 			Component = component
 		});
 	}
@@ -132,12 +130,12 @@ internal class DebugService : IDebugService, IDisposable
 
 		Queue.Enqueue(new DebugDescriptor
 		{
-			Type = DebugType.ConfigurationRemoved,
+			MessageType = DebugType.ConfigurationRemoved,
 			Component = component
 		});
 	}
 
-	public void ScriptChanged(Guid microService, Guid component, Guid element, Guid token)
+	public void SourceTextChanged(Guid microService, Guid component, Guid token, int type)
 	{
 		if (!Enabled)
 			return;
@@ -146,9 +144,9 @@ internal class DebugService : IDebugService, IDisposable
 		{
 			Component = component,
 			MicroService = microService,
-			Element = element,
 			Token = token,
-			Type = DebugType.ScriptChanged
+			Type = type,
+			MessageType = DebugType.SourceTextChanged
 		});
 	}
 
@@ -164,11 +162,11 @@ internal class DebugService : IDebugService, IDisposable
 
 	private class DebugDescriptor
 	{
-		public DebugType Type { get; set; }
+		public DebugType MessageType { get; set; }
 		public Guid MicroService { get; set; }
 		public Guid Component { get; set; }
-		public Guid Element { get; set; }
 		public Guid Token { get; set; }
+		public int Type { get; set; }
 	}
 
 	private class ConfigurationBindings

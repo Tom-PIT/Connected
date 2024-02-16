@@ -15,6 +15,7 @@ using TomPIT.Middleware;
 using TomPIT.Reflection;
 using TomPIT.Runtime;
 using TomPIT.Serialization;
+using TomPIT.Storage;
 
 namespace TomPIT.Compilation
 {
@@ -47,7 +48,7 @@ namespace TomPIT.Compilation
 			foreach (var i in scripts)
 			{
 				if (i.MicroService == e.MicroService)
-					RemoveScript(i.Id);
+					RemoveScript(i.Token);
 			}
 		}
 
@@ -58,25 +59,25 @@ namespace TomPIT.Compilation
 
 		public IScriptDescriptor GetScript(CompilerScriptArgs e)
 		{
-			if (Instance.IsShellMode)
+			if (Instance.IsShellMode || e.SourceCode is null || e.SourceCode.TextBlob == Guid.Empty)
 				return null;
 
 			if (!Tenant.GetService<IRuntimeService>().IsMicroServiceSupported(e.MicroService))
 				return null;
 
-			if (GetCachedScript(e.SourceCode.Id) is IScriptDescriptor existing)
+			if (GetCachedScript(e.SourceCode.TextBlob) is IScriptDescriptor existing)
 				return existing;
 
 			IScriptDescriptor script = null;
 
-			ScriptProcessor.Start(e.SourceCode.Id,
+			ScriptProcessor.Start(e.SourceCode.TextBlob,
 				  () =>
 				  {
 					  script = CreateScript(e);
 				  },
 				  () =>
 				  {
-					  script = GetCachedScript(e.SourceCode.Id);
+					  script = GetCachedScript(e.SourceCode.TextBlob);
 				  });
 
 			return script;
@@ -88,7 +89,7 @@ namespace TomPIT.Compilation
 
 			var result = new ScriptDescriptor
 			{
-				Id = e.SourceCode.Id,
+				Token = e.SourceCode.TextBlob,
 				MicroService = e.MicroService,
 				Component = e.SourceCode.Configuration().Component
 			};
@@ -114,7 +115,7 @@ namespace TomPIT.Compilation
 
 			var result = new ScriptDescriptor
 			{
-				Id = sourceCode.Id,
+				Token = sourceCode.TextBlob,
 				MicroService = microService,
 				Component = sourceCode.Configuration().Component
 			};
@@ -147,10 +148,10 @@ namespace TomPIT.Compilation
 			}
 
 			if (compiler.ScriptReferences is not null && compiler.ScriptReferences.Any())
-				References.AddOrUpdate(compiler.SourceCode.Id, compiler.ScriptReferences, (key, oldValue) => oldValue = compiler.ScriptReferences);
+				References.AddOrUpdate(compiler.SourceCode.TextBlob, compiler.ScriptReferences, (key, oldValue) => oldValue = compiler.ScriptReferences);
 
 			if (cache)
-				Set(script.Id, script, TimeSpan.Zero);
+				Set(script.Token, script, TimeSpan.Zero);
 
 			GC.Collect();
 
@@ -216,12 +217,12 @@ namespace TomPIT.Compilation
 
 			var id = sourceCode.ScriptId();
 
-			Instance.SysProxy.Development.Notifications.ScriptChanged(microService, component, id);
-			RemoveScript(sourceCode.Id);
+			Instance.SysProxy.Development.Notifications.SourceTextChanged(microService, component, sourceCode.TextBlob, BlobTypes.SourceText);
+			RemoveScript(sourceCode.TextBlob);
 
 			try
 			{
-				Invalidated?.Invoke(this, sourceCode.Id);
+				Invalidated?.Invoke(this, sourceCode.TextBlob);
 			}
 			catch { }
 
@@ -251,20 +252,20 @@ namespace TomPIT.Compilation
 			return asm;
 		}
 
-		public void NotifyChanged(object sender, ScriptChangedEventArgs e)
+		public void NotifyChanged(object sender, SourceTextChangedEventArgs e)
 		{
 			if (ReadOnly)
 				return;
 
-			RemoveScript(e.SourceCode);
+			RemoveScript(e.Token);
 
 			try
 			{
-				Invalidated?.Invoke(this, e.SourceCode);
+				Invalidated?.Invoke(this, e.Token);
 			}
 			catch { }
 
-			InvalidateReferences(e.Container, e.SourceCode);
+			InvalidateReferences(e.Configuration, e.Token);
 		}
 
 		private void InvalidateReferences(Guid container, Guid script)

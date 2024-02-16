@@ -1,11 +1,8 @@
 ﻿using Microsoft.CodeAnalysis;
 using System;
 using System.IO;
-using System.Linq;
 using System.Text;
 using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Apis;
-using TomPIT.ComponentModel.IoC;
 using TomPIT.Connectivity;
 using TomPIT.Reflection;
 
@@ -87,13 +84,5 @@ namespace TomPIT.Compilation
 
 			return resolvedPath;
 		}
-
-		private static string TrimExtension(string fileName) => fileName.EndsWith(".csx") ? fileName[0..^4] : fileName;
-
-		private static bool IsOfCategory(IComponent component, string category) => string.Compare(component?.Category, category, true) == 0;
-
-		private IConfiguration GetConfiguration(Guid token) => Tenant.GetService<IComponentService>().SelectConfiguration(token);
-
-		private T GetConfiguration<T>(Guid token) => GetConfiguration(token) is T matching ? matching : default;
 	}
 }

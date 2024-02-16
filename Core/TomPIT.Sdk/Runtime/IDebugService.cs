@@ -8,5 +8,5 @@ public interface IDebugService
 	void ConfigurationAdded(Guid component);
 	void ConfigurationChanged(Guid component);
 	void ConfigurationRemoved(Guid component);
-	void ScriptChanged(Guid microService, Guid component, Guid element, Guid blob);
+	void SourceTextChanged(Guid microService, Guid configuration, Guid token, int type);
 }

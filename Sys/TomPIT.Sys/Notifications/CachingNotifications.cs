@@ -90,6 +90,6 @@ namespace TomPIT.Sys.Notifications
 		public static void ConfigurationRemoved(Guid microService, Guid configuration, string category) { Notify(nameof(ConfigurationRemoved), new ConfigurationEventArgs(microService, configuration, category)); }
 		public static void ConfigurationAdded(Guid microService, Guid configuration, string category) { Notify(nameof(ConfigurationAdded), new ConfigurationEventArgs(microService, configuration, category)); }
 
-		public static void ScriptChanged(Guid microService, Guid container, Guid sourceCode) { Notify(nameof(ScriptChanged), new ScriptChangedEventArgs(microService, container, sourceCode)); }
+		public static void SourceTextChanged(Guid microService, Guid configuration, Guid token, int type) { Notify(nameof(SourceTextChanged), new SourceTextChangedEventArgs(microService, configuration, token, type)); }
 	}
 }

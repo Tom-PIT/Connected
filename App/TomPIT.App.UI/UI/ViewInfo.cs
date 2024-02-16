@@ -71,8 +71,6 @@ namespace TomPIT.App.UI
 		public bool IsDirectory => false;
 		public DateTimeOffset LastModified { get; private set; } = DateTimeOffset.MinValue;
 		public IComponent ViewComponent { get; private set; }
-		private IBlob Blob { get; set; }
-
 		public long Length
 		{
 			get
@@ -143,11 +141,12 @@ namespace TomPIT.App.UI
 				return;
 
 			var content = MiddlewareDescriptor.Current.Tenant.GetService<IViewCompilerService>().CompileView(MiddlewareDescriptor.Current.Tenant, config);
+			var info = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectTextInfo(ViewComponent.MicroService, config.TextBlob, BlobTypes.SourceText);
 
 			if (!string.IsNullOrWhiteSpace(content))
 				_viewContent = Encoding.UTF8.GetBytes(content);
 
-			LastModified = Blob == null ? DateTime.UtcNow : Blob.Modified;
+			LastModified = info is null ? DateTime.UtcNow : info.Modified;
 		}
 
 		private void LoadPartial()
@@ -160,14 +159,14 @@ namespace TomPIT.App.UI
 				return;
 
 			ViewComponent = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(partial.Component);
-			Blob = MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Select(partial.TextBlob);
+			var info = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectTextInfo(partial.MicroService(), partial.TextBlob, BlobTypes.SourceText);
+
+			LastModified = info is null ? DateTime.UtcNow : info.Modified;
 
 			var content = MiddlewareDescriptor.Current.Tenant.GetService<IViewCompilerService>().CompileView(MiddlewareDescriptor.Current.Tenant, partial);
 
 			if (!string.IsNullOrWhiteSpace(content))
 				_viewContent = Encoding.UTF8.GetBytes(content);
-
-			LastModified = Blob == null ? DateTime.UtcNow : Blob.Modified;
 		}
 
 		private void LoadReport()
@@ -187,13 +186,13 @@ namespace TomPIT.App.UI
 
 			ViewComponent = report;
 			var reportConfig = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(report.Token) as IReportConfiguration;
-
 			var content = MiddlewareDescriptor.Current.Tenant.GetService<IViewCompilerService>().CompileView(MiddlewareDescriptor.Current.Tenant, reportConfig);
+			var info = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectTextInfo(report.MicroService, reportConfig.TextBlob, BlobTypes.SourceText);
 
 			if (!string.IsNullOrWhiteSpace(content))
 				_viewContent = Encoding.UTF8.GetBytes(content);
 
-			LastModified = Blob == null ? DateTime.UtcNow : Blob.Modified;
+			LastModified = info is null ? DateTime.UtcNow : info.Modified;
 		}
 
 		private void LoadView(ActionContext context)
@@ -216,8 +215,9 @@ namespace TomPIT.App.UI
 				LastModified = ViewComponent.Modified;
 			else
 			{
-				Blob = MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Select(view.TextBlob);
-				LastModified = Blob == null ? DateTime.UtcNow : Blob.Modified;
+				var info = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectTextInfo(config.MicroService(), view.TextBlob, BlobTypes.SourceText);
+
+				LastModified = info is null ? DateTime.UtcNow : info.Modified;
 			}
 
 			var content = MiddlewareDescriptor.Current.Tenant.GetService<IViewCompilerService>().CompileView(MiddlewareDescriptor.Current.Tenant, view);
@@ -237,14 +237,14 @@ namespace TomPIT.App.UI
 
 			var config = master.Configuration();
 			ViewComponent = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectComponent(config.Component);
-			Blob = MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Select(master.TextBlob);
+			var info = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectTextInfo(config.MicroService(), master.TextBlob, BlobTypes.SourceText);
+
+			LastModified = info is null ? DateTime.UtcNow : info.Modified;
 
 			var content = MiddlewareDescriptor.Current.Tenant.GetService<IViewCompilerService>().CompileView(MiddlewareDescriptor.Current.Tenant, master);
 
 			if (!string.IsNullOrWhiteSpace(content))
 				_viewContent = Encoding.UTF8.GetBytes(content);
-
-			LastModified = Blob == null ? DateTime.UtcNow : Blob.Modified;
 		}
 	}
 }
