@@ -126,7 +126,7 @@ namespace TomPIT.Design
 			if (configuration is null || configuration.Verb == ComponentVerb.Delete || configuration.Verb == ComponentVerb.NotModified)
 				return;
 
-			Instance.SysProxy.SourceFiles.Upload(microService.Token, component.Token, configuration.Type, component.Token.ToString(), configuration.FileName, configuration.ContentType, Unpack(configuration.Content), 1);
+			Instance.SysProxy.SourceFiles.Upload(microService.Token, component.Token, component.Token, configuration.Type, component.Token.ToString(), configuration.FileName, configuration.ContentType, Unpack(configuration.Content), 1);
 			Tenant.GetService<IDebugService>().ConfigurationChanged(configuration.Token);
 
 			if (Tenant.GetService<IComponentService>() is not IComponentNotification notification)
@@ -164,7 +164,7 @@ namespace TomPIT.Design
 					var content = Unpack(file.Content);
 
 					if (IsSourceFile(file.Type))
-						Instance.SysProxy.SourceFiles.Upload(microService.Token, file.Token, file.Type, file.PrimaryKey, file.FileName, file.ContentType, content, 1);
+						Instance.SysProxy.SourceFiles.Upload(microService.Token, component.Token, file.Token, file.Type, file.PrimaryKey, file.FileName, file.ContentType, content, 1);
 					else
 					{
 						Tenant.GetService<IStorageService>().Restore(new Blob
@@ -327,7 +327,7 @@ namespace TomPIT.Design
 
 			var content = Tenant.GetService<ISerializationService>().Serialize(instance);
 
-			Instance.SysProxy.SourceFiles.Upload(microService, instance.Component, Storage.BlobTypes.Configuration, instance.Component.ToString(), $"{name}.json", "application/json", content, 1);
+			Instance.SysProxy.SourceFiles.Upload(microService, instance.Component, instance.Component, Storage.BlobTypes.Configuration, instance.Component.ToString(), $"{name}.json", "application/json", content, 1);
 			Instance.SysProxy.Development.Components.Insert(microService, folder, instance.Component, ComponentCategories.ResolveNamespace(category), category, name, type);
 
 			if (Tenant.GetService<IComponentService>() is IComponentNotification notification)
@@ -392,7 +392,7 @@ namespace TomPIT.Design
 			var s = Tenant.GetService<IMicroServiceService>().Select(c.MicroService) ?? throw new TomPITException(SR.ErrMicroServiceNotFound);
 			var content = Tenant.GetService<ISerializationService>().Serialize(configuration);
 
-			Instance.SysProxy.SourceFiles.Upload(c.MicroService, configuration.Component, Storage.BlobTypes.Configuration, configuration.Component.ToString(), $"{c.Name}.json", "application/json", content, 1);
+			Instance.SysProxy.SourceFiles.Upload(c.MicroService, configuration.Component, configuration.Component, Storage.BlobTypes.Configuration, configuration.Component.ToString(), $"{c.Name}.json", "application/json", content, 1);
 
 			if (Tenant.GetService<IComponentService>() is IComponentNotification n)
 				n.NotifyChanged(this, new ConfigurationEventArgs(c.MicroService, configuration.Component, c.Category));
@@ -416,7 +416,7 @@ namespace TomPIT.Design
 			var raw = Encoding.UTF8.GetBytes(content is null ? string.Empty : content);
 			var token = text.TextBlob == Guid.Empty ? Guid.NewGuid() : text.TextBlob;
 
-			Instance.SysProxy.SourceFiles.Upload(s.Token, token, Storage.BlobTypes.Template, text.Id.ToString(), text.FileName, "text/html", raw, 1);
+			Instance.SysProxy.SourceFiles.Upload(s.Token, text.Configuration().Component, token, Storage.BlobTypes.Template, text.Id.ToString(), text.FileName, "text/html", raw, 1);
 
 			if (text.TextBlob != token)
 				text.TextBlob = token;
@@ -672,9 +672,9 @@ namespace TomPIT.Design
 			return Instance.SysProxy.Components.QueryForMicroServices(microServices.ToList()).ToList();
 		}
 
-		public void Update(Guid microService, Guid token, int blobType, string contentType, string fileName, string primaryKey, byte[] content)
+		public void Update(Guid microService, Guid configuration, Guid token, int blobType, string contentType, string fileName, string primaryKey, byte[] content)
 		{
-			Instance.SysProxy.SourceFiles.Upload(microService, token, blobType, primaryKey, fileName, contentType, content, 1);
+			Instance.SysProxy.SourceFiles.Upload(microService, configuration, token, blobType, primaryKey, fileName, contentType, content, 1);
 
 			if (Tenant.GetService<IComponentService>() is IComponentNotification cn)
 				cn.NotifySourceTextChanged(Tenant, new SourceTextChangedEventArgs(microService, Guid.Empty, token, blobType));

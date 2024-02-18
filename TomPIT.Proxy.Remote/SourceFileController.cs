@@ -33,11 +33,12 @@ internal sealed class SourceFileController : ISourceFileController
 		});
 	}
 
-	public void Upload(Guid microService, Guid token, int type, string primaryKey, string fileName, string contentType, byte[] content, int version)
+	public void Upload(Guid microService, Guid configuration, Guid token, int type, string primaryKey, string fileName, string contentType, byte[] content, int version)
 	{
 		Connection.Post(Connection.CreateUrl(Controller, "Upload"), new
 		{
 			microService,
+			configuration,
 			token,
 			type,
 			primaryKey,

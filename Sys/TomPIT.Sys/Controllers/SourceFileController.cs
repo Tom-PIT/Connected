@@ -15,6 +15,7 @@ public class SourceFileController : SysController
 		var type = body.Required<int>("type");
 		var primaryKey = body.Optional("primaryKey", string.Empty);
 		var microService = body.Optional("microService", Guid.Empty);
+		var configuration = body.Optional("configuration", Guid.Empty);
 		var fileName = body.Required<string>("fileName");
 		var contentType = body.Required<string>("contentType");
 		var content = body.Optional("content", string.Empty);
@@ -24,7 +25,7 @@ public class SourceFileController : SysController
 		if (token == Guid.Empty)
 			token = Guid.NewGuid();
 
-		DataModel.SourceFiles.Update(token, type, primaryKey, microService, fileName, contentType, version, Convert.FromBase64String(content));
+		DataModel.SourceFiles.Update(token, type, primaryKey, microService, configuration, fileName, contentType, version, Convert.FromBase64String(content));
 
 		return token;
 	}

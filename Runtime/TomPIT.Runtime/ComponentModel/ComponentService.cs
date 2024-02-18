@@ -446,5 +446,10 @@ namespace TomPIT.ComponentModel
 
 			return result;
 		}
+
+		public IComponent? SelectComponent(Guid microService, Guid folder, string name)
+		{
+			return Get(f => f.MicroService == microService && f.Folder == folder && string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase));
+		}
 	}
 }

@@ -33,7 +33,7 @@ namespace TomPIT.ComponentModel
 		ImmutableList<IConfiguration> QueryConfigurations(string categories);
 		ImmutableList<IConfiguration> QueryConfigurations(Guid microService, string categories);
 		IComponent SelectComponent(Guid microService, string category, string name);
-		//IComponent SelectComponent(Guid microService, Guid folder, string category, string name);
+		IComponent? SelectComponent(Guid microService, Guid folder, string name);
 		IComponent SelectComponentByNameSpace(Guid microService, string nameSpace, string name);
 		IComponent SelectComponent(Guid token);
 		IConfiguration SelectConfiguration(Guid microService, string category, string name);

@@ -218,7 +218,7 @@ namespace TomPIT.Sys.Model.Components
 
 			var v = new Validator();
 
-			v.Unique(null, name, nameof(IComponent.Name), QueryByNameSpace(microService, nameSpace));
+			v.Unique(null, name, nameof(IComponent.Name), QueryExisting(microService, category, nameSpace, folder));
 
 			if (!v.IsValid)
 				throw new SysException(v.ErrorMessage);
@@ -237,6 +237,17 @@ namespace TomPIT.Sys.Model.Components
 
 			FileSystem.Serialize(All());
 			CachingNotifications.ComponentAdded(microService, folder, component, nameSpace, category, name);
+		}
+
+		private ImmutableList<IComponent> QueryExisting(Guid microService, string category, string nameSpace, Guid folder)
+		{
+			if (string.Equals(category, ComponentCategories.Code, StringComparison.OrdinalIgnoreCase)
+				|| string.Equals(category, ComponentCategories.Text, StringComparison.OrdinalIgnoreCase)
+				|| string.Equals(category, ComponentCategories.AssemblyResource, StringComparison.OrdinalIgnoreCase)
+				|| string.Equals(category, ComponentCategories.View, StringComparison.OrdinalIgnoreCase))
+				return Where(f => f.MicroService == microService && f.Folder == folder);
+
+			return QueryByNameSpace(microService, nameSpace);
 		}
 
 		public void UpdateModified(Guid microService, string category, string name)

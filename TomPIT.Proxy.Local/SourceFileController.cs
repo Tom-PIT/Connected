@@ -35,8 +35,8 @@ internal sealed class SourceFileController : ISourceFileController
 		};
 	}
 
-	public void Upload(Guid microService, Guid token, int type, string primaryKey, string fileName, string contentType, byte[] content, int version)
+	public void Upload(Guid microService, Guid configuration, Guid token, int type, string primaryKey, string fileName, string contentType, byte[] content, int version)
 	{
-		DataModel.SourceFiles.Update(token, type, primaryKey, microService, fileName, contentType, version, content);
+		DataModel.SourceFiles.Update(token, type, primaryKey, microService, configuration, fileName, contentType, version, content);
 	}
 }

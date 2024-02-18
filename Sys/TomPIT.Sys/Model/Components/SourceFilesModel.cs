@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Immutable;
 using TomPIT.Caching;
+using TomPIT.Sys.Notifications;
 using TomPIT.Sys.SourceFiles;
 
 namespace TomPIT.Sys.Model.Components;
@@ -20,7 +21,7 @@ public class SourceFilesModel : SynchronizedRepository<SourceFile, string>
 		foreach (var file in files)
 			Set(GenerateKey(file.Token, file.Type), file, TimeSpan.Zero);
 	}
-	public void Update(Guid token, int type, string primaryKey, Guid microService, string fileName, string contentType, int version, byte[] content)
+	public void Update(Guid token, int type, string primaryKey, Guid microService, Guid configuration, string fileName, string contentType, int version, byte[] content)
 	{
 		Initialize();
 		var existing = Get(GenerateKey(token, type));
@@ -54,6 +55,8 @@ public class SourceFilesModel : SynchronizedRepository<SourceFile, string>
 
 		FileSystem.Serialize(microService, token, type, content);
 		FileSystem.Serialize(All());
+
+		CachingNotifications.SourceTextChanged(microService, configuration, token, type);
 	}
 
 	public void Delete(Guid microService, Guid token, int type)
