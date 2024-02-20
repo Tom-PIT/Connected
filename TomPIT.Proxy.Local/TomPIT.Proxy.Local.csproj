@@ -2,9 +2,9 @@
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <AssemblyVersion>4.1.220.2</AssemblyVersion>
-    <FileVersion>4.1.220.2</FileVersion>
-    <Version>4.1.220.2</Version>
+    <AssemblyVersion>4.1.220.3</AssemblyVersion>
+    <FileVersion>4.1.220.3</FileVersion>
+    <Version>4.1.220.3</Version>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Core\TomPIT.Sdk\TomPIT.Sdk.csproj" />
