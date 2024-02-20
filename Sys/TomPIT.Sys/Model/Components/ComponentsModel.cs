@@ -243,8 +243,7 @@ namespace TomPIT.Sys.Model.Components
 		{
 			if (string.Equals(category, ComponentCategories.Code, StringComparison.OrdinalIgnoreCase)
 				|| string.Equals(category, ComponentCategories.Text, StringComparison.OrdinalIgnoreCase)
-				|| string.Equals(category, ComponentCategories.AssemblyResource, StringComparison.OrdinalIgnoreCase)
-				|| string.Equals(category, ComponentCategories.View, StringComparison.OrdinalIgnoreCase))
+				|| string.Equals(category, ComponentCategories.AssemblyResource, StringComparison.OrdinalIgnoreCase))
 				return Where(f => f.MicroService == microService && f.Folder == folder);
 
 			return QueryByNameSpace(microService, nameSpace);
