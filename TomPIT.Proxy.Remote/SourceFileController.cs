@@ -47,6 +47,15 @@ internal sealed class SourceFileController : ISourceFileController
 			content = Convert.ToBase64String(content ?? Array.Empty<byte>()),
 			version
 		});
+	}
 
+	public void BeginUpdate()
+	{
+		Connection.Post(Connection.CreateUrl(Controller, "BeginUpdate"));
+	}
+
+	public void EndUpdate()
+	{
+		Connection.Post(Connection.CreateUrl(Controller, "EndUpdate"));
 	}
 }

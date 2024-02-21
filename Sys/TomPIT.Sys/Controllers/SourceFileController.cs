@@ -64,4 +64,16 @@ public class SourceFileController : SysController
 
 		return DataModel.SourceFiles.SelectFileInfo(token, type);
 	}
+
+	[HttpPost]
+	public void BeginUpdate()
+	{
+		DataModel.SourceFiles.BeginUpdate();
+	}
+
+	[HttpPost]
+	public void EndUpdate()
+	{
+		DataModel.SourceFiles.EndUpdate();
+	}
 }

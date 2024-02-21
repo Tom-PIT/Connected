@@ -54,7 +54,9 @@ public class SourceFilesModel : SynchronizedRepository<SourceFile, string>
 		}
 
 		FileSystem.Serialize(microService, token, type, content);
-		FileSystem.Serialize(All());
+
+		if (!FileSystem.LockUpdate)
+			FileSystem.Serialize(All());
 
 		CachingNotifications.SourceTextChanged(microService, configuration, token, type);
 	}
@@ -63,7 +65,9 @@ public class SourceFilesModel : SynchronizedRepository<SourceFile, string>
 	{
 		Initialize();
 		FileSystem.Delete(microService, token, type);
-		FileSystem.Serialize(All());
+
+		if (!FileSystem.LockUpdate)
+			FileSystem.Serialize(All());
 	}
 
 	public byte[] Select(Guid microService, Guid token, int type)
@@ -80,5 +84,18 @@ public class SourceFilesModel : SynchronizedRepository<SourceFile, string>
 	private static string GenerateKey(Guid token, int type)
 	{
 		return $"{token}-{type}";
+	}
+
+	public void BeginUpdate()
+	{
+		FileSystem.LockUpdate = true;
+	}
+
+	public void EndUpdate()
+	{
+		FileSystem.LockUpdate = false;
+
+		FileSystem.Serialize(DataModel.Components.Query());
+		FileSystem.Serialize(All());
 	}
 }

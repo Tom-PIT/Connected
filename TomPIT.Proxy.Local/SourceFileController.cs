@@ -39,4 +39,14 @@ internal sealed class SourceFileController : ISourceFileController
 	{
 		DataModel.SourceFiles.Update(token, type, primaryKey, microService, configuration, fileName, contentType, version, content);
 	}
+
+	public void BeginUpdate()
+	{
+		DataModel.SourceFiles.BeginUpdate();
+	}
+
+	public void EndUpdate()
+	{
+		DataModel.SourceFiles.EndUpdate();
+	}
 }

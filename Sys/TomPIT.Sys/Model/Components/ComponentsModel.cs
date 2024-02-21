@@ -235,7 +235,9 @@ namespace TomPIT.Sys.Model.Components
 				Token = component
 			}, TimeSpan.Zero);
 
-			FileSystem.Serialize(All());
+			if (!FileSystem.LockUpdate)
+				FileSystem.Serialize(All());
+
 			CachingNotifications.ComponentAdded(microService, folder, component, nameSpace, category, name);
 		}
 
@@ -290,7 +292,9 @@ namespace TomPIT.Sys.Model.Components
 				Type = c.Type
 			}, TimeSpan.Zero);
 
-			FileSystem.Serialize(All());
+			if (!FileSystem.LockUpdate)
+				FileSystem.Serialize(All());
+
 			CachingNotifications.ComponentChanged(c.MicroService, c.Folder, component, c.NameSpace, c.Category, c.Name);
 		}
 
@@ -300,7 +304,10 @@ namespace TomPIT.Sys.Model.Components
 			c.DemandDevelopmentStage();
 
 			Remove(component);
-			FileSystem.Serialize(All());
+
+			if (!FileSystem.LockUpdate)
+				FileSystem.Serialize(All());
+
 			CachingNotifications.ComponentRemoved(c.MicroService, c.Folder, component, c.NameSpace, c.Category, c.Name);
 		}
 

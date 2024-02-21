@@ -33,7 +33,7 @@ namespace TomPIT.Design
 				ResetMicroService = startCommit == 0,
 				Verb = verb
 			};
-						
+
 			var pullRequest = Tenant.Post<PullRequest>(url, new
 			{
 				repository,
@@ -44,10 +44,10 @@ namespace TomPIT.Design
 				Reason = "Install",
 			}, new HttpRequestArgs().WithBearerCredentials(authenticationToken));
 
-         args.Commit.Branch = pullRequest.Branch;
-         args.Commit.Commit = pullRequest.Commit;
+			args.Commit.Branch = pullRequest.Branch;
+			args.Commit.Commit = pullRequest.Commit;
 
-         Deploy(pullRequest, args); ;
+			Deploy(pullRequest, args); ;
 		}
 
 		public void Deploy(IPullRequest request, DeployArgs e)
@@ -66,12 +66,16 @@ namespace TomPIT.Design
 						DeployingMicroServicesList.Add(request.Token);
 				}
 
+				Instance.SysProxy.SourceFiles.BeginUpdate();
+
 				new DeploymentSession(Tenant, request).Deploy(e);
 			}
 			finally
 			{
 				lock (DeployingMicroServicesList)
 					DeployingMicroServicesList.Remove(request.Token);
+
+				Instance.SysProxy.SourceFiles.EndUpdate();
 			}
 		}
 
