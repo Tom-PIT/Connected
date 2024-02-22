@@ -14,14 +14,18 @@
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
-    <AssemblyVersion>4.1.220.3</AssemblyVersion>
-    <FileVersion>4.1.220.3</FileVersion>
-    <Version>4.1.220.3</Version>
+    <AssemblyVersion>4.1.220.2</AssemblyVersion>
+    <FileVersion>4.1.220.2</FileVersion>
+    <Version>4.1.220.2</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <DefineConstants>$(DefineConstants);NORECOMPILE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>$(DefineConstants);NORECOMPILE</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="lz4net" Version="1.0.15.93" />

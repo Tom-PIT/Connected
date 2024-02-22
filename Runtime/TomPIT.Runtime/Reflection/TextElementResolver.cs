@@ -33,7 +33,7 @@ internal class TextElementResolver
 	private IText Result { get; set; }
 	public IText Resolve()
 	{
-		var tokens = Path.Split('/');
+		var tokens = Path.Split(new char[] { '/', '\\' });
 
 		if (tokens.Length < 2)
 			return null;

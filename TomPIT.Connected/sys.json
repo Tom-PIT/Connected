@@ -1,15 +1,13 @@
 ﻿{
   "instanceName": "Default Instance",
-  "features": "Application, Sys",
+  "features": "Application, Sys, Development",
   "platform": "OnPrem",
+  "microServicesFolder": "/microServicesD",
   "stage": "Development",
   "optimization": "Debug",
   "resourceGroups": [
     "Default"
   ],
-  "sourceFiles": {
-    "folder": null
-  },
   "saas": {
     "storage": {
       "files": {
@@ -28,13 +26,11 @@
     }
   },
   "debugTarget": {
-    "url": null,
-    "token": null
+    "url": "http://localhost:44004"
   },
   "sys": {
     "name": "Local",
-    "url": "http://localhost:44003",
-    "token": null
+    "url": "http://localhost:44003"
   },
   "storage": {
     "databases": {
@@ -51,6 +47,9 @@
       "features": "${features}"
     }
   ],
+  "sourceFiles": {
+    "folder": null
+  },
   "settings": [
     {
       "name": "ConnectionString",
