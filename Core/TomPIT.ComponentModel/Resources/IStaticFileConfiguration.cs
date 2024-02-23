@@ -1,5 +1,5 @@
 ﻿namespace TomPIT.ComponentModel.Resources;
-public interface IStaticFileConfiguration
+public interface IStaticFileConfiguration : ITextConfiguration
 {
 	string? Url { get; }
 }
