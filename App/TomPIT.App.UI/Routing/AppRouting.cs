@@ -97,7 +97,7 @@ namespace TomPIT.App.Routing
 
 			var builder = routes.Map("{*.}", RenderView);
 
-			builder.Add(b => ((RouteEndpointBuilder)b).Order = int.MaxValue);
+			builder.Add(static b => ((RouteEndpointBuilder)b).Order = int.MaxValue);
 		}
 
 		private static async Task RenderView(HttpContext context)

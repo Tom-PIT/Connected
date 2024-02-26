@@ -61,7 +61,7 @@ public static class MicroServices
 				}
 
 				if (_startups.Any())
-					_startups.SortByOrdinal();
+					_startups.SortByPriority();
 			}
 
 			return _startups.ToImmutableArray();
