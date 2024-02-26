@@ -393,11 +393,11 @@ namespace TomPIT.Design
 			var content = Tenant.GetService<ISerializationService>().Serialize(configuration);
 
 			Instance.SysProxy.SourceFiles.Upload(c.MicroService, configuration.Component, configuration.Component, Storage.BlobTypes.Configuration, configuration.Component.ToString(), $"{c.Name}.json", "application/json", content, 1);
+			Instance.SysProxy.Development.Notifications.ConfigurationChanged(c.MicroService, c.Token, c.Category);
 
 			if (Tenant.GetService<IComponentService>() is IComponentNotification n)
 				n.NotifyChanged(this, new ConfigurationEventArgs(c.MicroService, configuration.Component, c.Category));
 
-			Instance.SysProxy.Development.Notifications.ConfigurationChanged(c.MicroService, c.Token, c.Category);
 			Tenant.GetService<IDebugService>().ConfigurationChanged(c.Token);
 
 			var config = Tenant.GetService<IComponentService>().SelectConfiguration(c.Token);
