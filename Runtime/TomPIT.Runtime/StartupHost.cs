@@ -82,6 +82,13 @@ internal class StartupHost : IStartupHostProxy
 
 	public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 	{
+		ConfigureStaticFiles(app, env);
+
+		app.UseRouting();
+
+		foreach (var startup in MicroServices.Startups)
+			startup.Configure(app, env);
+
 		RuntimeService._host = app;
 		app.UseAuthentication();
 		app.UseMiddleware<AuthenticationCookieMiddleware>();
@@ -96,13 +103,9 @@ internal class StartupHost : IStartupHostProxy
 			Instance.Stopped = lifetime.ApplicationStopped;
 		}
 
-		ConfigureStaticFiles(app, env);
-
 		app.UseStatusCodePagesWithReExecute("/sys/status/{0}");
 
 		Configuring?.Invoke(null, new(app, env));
-
-		app.UseRouting();
 
 		app.UseAuthorization();
 
@@ -137,9 +140,6 @@ internal class StartupHost : IStartupHostProxy
 			plugin.Initialize(app, env);
 
 		Run(app, env);
-
-		foreach (var startup in MicroServices.Startups)
-			startup.Configure(app, env);
 	}
 
 	private void Boot()

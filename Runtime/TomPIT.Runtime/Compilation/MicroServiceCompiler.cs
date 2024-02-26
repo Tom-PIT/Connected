@@ -151,8 +151,9 @@ internal static class MicroServiceCompiler
 		if (diagnostics.Any(f => f.Severity == DiagnosticSeverity.Error))
 		{
 			var firstError = diagnostics.First(f => f.Severity == DiagnosticSeverity.Error);
+			var line = firstError.Location.GetLineSpan();
 
-			throw new Exception($"{microService.Name} - {firstError.GetMessage()} {firstError.Location}");
+			throw new Exception($"{microService.Name} - {firstError.GetMessage()} {line.Path}:{line.StartLinePosition.Line + 1}");
 		}
 	}
 

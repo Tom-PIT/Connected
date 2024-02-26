@@ -15,7 +15,7 @@ namespace TomPIT.Proxy.Remote
 			Connection.Post(Connection.CreateUrl(Controller, "Enqueue"), new
 			{
 				component,
-				name,
+				worker = name,
 				expire,
 				nextVisible,
 				arguments,
