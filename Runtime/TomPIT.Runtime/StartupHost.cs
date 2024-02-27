@@ -13,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -20,6 +21,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
+
 using TomPIT.Configuration;
 using TomPIT.Connectivity;
 using TomPIT.Design;
@@ -85,6 +87,10 @@ internal class StartupHost : IStartupHostProxy
 		ConfigureStaticFiles(app, env);
 
 		app.UseRouting();
+		
+		if (Shell.LegacyServices)
+			app.UseStatusCodePagesWithReExecute("/sys/status/{0}");
+		
 		app.UseAuthentication();
 		app.UseAuthorization();
 
@@ -104,7 +110,6 @@ internal class StartupHost : IStartupHostProxy
 			Instance.Stopped = lifetime.ApplicationStopped;
 		}
 
-		app.UseStatusCodePagesWithReExecute("/sys/status/{0}");
 
 		Configuring?.Invoke(null, new(app, env));
 
