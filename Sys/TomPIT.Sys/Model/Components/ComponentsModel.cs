@@ -265,7 +265,7 @@ namespace TomPIT.Sys.Model.Components
 
 			var v = new Validator();
 
-			v.Unique(c, name, nameof(IComponent.Name), QueryByNameSpace(c.MicroService, c.NameSpace));
+			v.Unique(c, name, nameof(IComponent.Name), QueryExisting(c.MicroService, c.Category, c.NameSpace, folder));
 
 			if (!v.IsValid)
 				throw new SysException(v.ErrorMessage);

@@ -85,12 +85,13 @@ internal class StartupHost : IStartupHostProxy
 		ConfigureStaticFiles(app, env);
 
 		app.UseRouting();
+		app.UseAuthentication();
+		app.UseAuthorization();
 
 		foreach (var startup in MicroServices.Startups)
 			startup.Configure(app, env);
 
 		RuntimeService._host = app;
-		app.UseAuthentication();
 		app.UseMiddleware<AuthenticationCookieMiddleware>();
 		app.UseRequestLocalization(app.ApplicationServices.GetService<IOptions<RequestLocalizationOptions>>()?.Value);
 		app.UseResponseCompression();
@@ -106,8 +107,6 @@ internal class StartupHost : IStartupHostProxy
 		app.UseStatusCodePagesWithReExecute("/sys/status/{0}");
 
 		Configuring?.Invoke(null, new(app, env));
-
-		app.UseAuthorization();
 
 		if (Types.TryConvert(Tenant.GetService<ISettingService>().Select("Cors Enabled", null, null, null)?.Value, out bool corsEnabled) && corsEnabled)
 			app.UseCors("TomPITPolicy");
