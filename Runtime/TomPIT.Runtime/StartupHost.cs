@@ -87,10 +87,12 @@ internal class StartupHost : IStartupHostProxy
 		ConfigureStaticFiles(app, env);
 
 		app.UseRouting();
-		
+
 		if (Shell.LegacyServices)
+		{
+			app.UseAjaxExceptionMiddleware();
 			app.UseStatusCodePagesWithReExecute("/sys/status/{0}");
-		
+		}
 		app.UseAuthentication();
 		app.UseAuthorization();
 
@@ -117,7 +119,6 @@ internal class StartupHost : IStartupHostProxy
 			app.UseCors("TomPITPolicy");
 
 		app.UseRequestLocalizationCookies();
-		app.UseAjaxExceptionMiddleware();
 
 		Shell.GetService<IRuntimeService>().Initialize(env);
 
