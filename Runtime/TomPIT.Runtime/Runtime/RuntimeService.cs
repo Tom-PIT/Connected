@@ -61,6 +61,9 @@ namespace TomPIT.Runtime
 
 		public bool IsMicroServiceSupported(Guid microService)
 		{
+			if (Stage != EnvironmentStage.Development)
+				return true;
+
 			if (InfoMap.TryGetValue(microService, out MicroServiceInfo existing) && existing is not null)
 				return existing.SupportsDevelopment;
 
