@@ -12,7 +12,6 @@ namespace TomPIT.Proxy.Remote
 		public string Url { get; set; }
 		[Browsable(false)]
 		public Guid Token { get; set; }
-		public MicroServiceStages SupportedStages { get; set; }
 		[Browsable(false)]
 		public Guid ResourceGroup { get; set; }
 		[Browsable(false)]

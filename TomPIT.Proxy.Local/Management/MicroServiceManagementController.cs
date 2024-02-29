@@ -13,9 +13,9 @@ namespace TomPIT.Proxy.Local.Management
 			DataModel.MicroServices.Delete(token);
 		}
 
-		public void Insert(Guid token, string name, Guid resourceGroup, Guid template, MicroServiceStages supportedStages, string version, string commit)
+		public void Insert(Guid token, string name, Guid resourceGroup, Guid template, string version, string commit)
 		{
-			DataModel.MicroServices.Insert(token, name, supportedStages, resourceGroup, template, version, commit);
+			DataModel.MicroServices.Insert(token, name, resourceGroup, template, version, commit);
 		}
 
 		public ImmutableList<IMicroService> Query(Guid resourceGroup)
@@ -23,9 +23,9 @@ namespace TomPIT.Proxy.Local.Management
 			return DataModel.MicroServices.Query(resourceGroup).ToImmutableList();
 		}
 
-		public void Update(Guid token, string name, Guid resourceGroup, Guid template, MicroServiceStages supportedStages, string version, string commit)
+		public void Update(Guid token, string name, Guid resourceGroup, Guid template, string version, string commit)
 		{
-			DataModel.MicroServices.Update(token, name, supportedStages, template, resourceGroup, version, commit);
+			DataModel.MicroServices.Update(token, name, template, resourceGroup, version, commit);
 		}
 	}
 }
