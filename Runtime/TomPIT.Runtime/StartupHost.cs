@@ -86,6 +86,10 @@ internal class StartupHost : IStartupHostProxy
 	{
 		ConfigureStaticFiles(app, env);
 
+		app.UseMiddleware<AuthenticationCookieMiddleware>();
+		app.UseRequestLocalization(app.ApplicationServices.GetService<IOptions<RequestLocalizationOptions>>()?.Value);
+		app.UseResponseCompression();
+		
 		app.UseRouting();
 
 		if (Shell.LegacyServices)
@@ -100,10 +104,7 @@ internal class StartupHost : IStartupHostProxy
 			startup.Configure(app, env);
 
 		RuntimeService._host = app;
-		app.UseMiddleware<AuthenticationCookieMiddleware>();
-		app.UseRequestLocalization(app.ApplicationServices.GetService<IOptions<RequestLocalizationOptions>>()?.Value);
-		app.UseResponseCompression();
-
+		
 		var lifetime = app.ApplicationServices.GetService<IHostApplicationLifetime>();
 
 		if (lifetime is not null)
