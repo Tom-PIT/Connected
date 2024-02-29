@@ -40,17 +40,17 @@ namespace TomPIT.Management.ComponentModel
 			Tenant.GetService<IDesignService>().Components.DeleteFolder(model.Folder.MicroService, model.Folder.Token, true);
 		}
 
-		public void Insert(Guid token, string name, Guid resourceGroup, Guid template, MicroServiceStages supportedStages, string version, string commit)
+		public void Insert(Guid token, string name, Guid resourceGroup, Guid template, string version, string commit)
 		{
-			Instance.SysProxy.Management.MicroServices.Insert(token, name, resourceGroup, template, supportedStages, version, commit);
+			Instance.SysProxy.Management.MicroServices.Insert(token, name, resourceGroup, template, version, commit);
 
 			if (Tenant.GetService<IMicroServiceService>() is IMicroServiceNotification svc)
 				svc.NotifyChanged(this, new MicroServiceEventArgs(token));
 		}
 
-		public void Update(Guid microService, string name, MicroServiceStages supportedStages, Guid template, Guid resourceGroup, string version, string commit)
+		public void Update(Guid microService, string name, Guid template, Guid resourceGroup, string version, string commit)
 		{
-			Instance.SysProxy.Management.MicroServices.Update(microService, name, resourceGroup, template, supportedStages, version, commit);
+			Instance.SysProxy.Management.MicroServices.Update(microService, name, resourceGroup, template, version, commit);
 
 			if (Tenant.GetService<IMicroServiceService>() is IMicroServiceNotification svc)
 				svc.NotifyChanged(this, new MicroServiceEventArgs(microService));

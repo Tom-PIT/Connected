@@ -62,7 +62,7 @@ namespace TomPIT.Sys.Model.Components
 				Set(item.Token, item, TimeSpan.Zero);
 		}
 
-		public void Insert(Guid token, string name, MicroServiceStages supportedStages, Guid resourceGroup, Guid template, string version, string commit)
+		public void Insert(Guid token, string name, Guid resourceGroup, Guid template, string version, string commit)
 		{
 			_ = DataModel.ResourceGroups.Select(resourceGroup) ?? throw new SysException(SR.ErrResourceGroupNotFound);
 			var url = Url(Guid.Empty, name);
@@ -73,7 +73,6 @@ namespace TomPIT.Sys.Model.Components
 				Name = name,
 				ResourceGroup = resourceGroup,
 				Template = template,
-				SupportedStages = supportedStages,
 				Token = token,
 				Url = url,
 				Version = version,
@@ -83,7 +82,7 @@ namespace TomPIT.Sys.Model.Components
 			CachingNotifications.MicroServiceChanged(token);
 		}
 
-		public void Update(Guid token, string name, MicroServiceStages supportedStages, Guid template, Guid resourceGroup, string version, string commit)
+		public void Update(Guid token, string name, Guid template, Guid resourceGroup, string version, string commit)
 		{
 			var microService = Select(token) ?? throw new SysException(SR.ErrMicroServiceNotFound);
 			_ = DataModel.ResourceGroups.Select(resourceGroup) ?? throw new SysException(SR.ErrResourceGroupNotFound);
@@ -97,7 +96,6 @@ namespace TomPIT.Sys.Model.Components
 				Commit = commit,
 				Name = name,
 				Template = template,
-				SupportedStages = supportedStages,
 				ResourceGroup = resourceGroup,
 				Token = token,
 				Url = url,

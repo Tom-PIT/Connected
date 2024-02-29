@@ -83,7 +83,7 @@ namespace TomPIT.Management.Dom
 		public override bool Commit(object component, string property, string attribute)
 		{
 			Environment.Context.Tenant.GetService<IMicroServiceManagementService>().Update(MicroService.Token, MicroService.Name,
-				 MicroService.SupportedStages, MicroService.Template, MicroService.ResourceGroup, MicroService.Version, MicroService.Commit);
+				 MicroService.Template, MicroService.ResourceGroup, MicroService.Version, MicroService.Commit);
 
 			return true;
 		}

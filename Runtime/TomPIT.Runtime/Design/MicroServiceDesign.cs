@@ -10,9 +10,9 @@ namespace TomPIT.Design
 		{
 		}
 
-		public void Insert(Guid token, string name, Guid resourceGroup, Guid template, MicroServiceStages stages, string version, string commit)
+		public void Insert(Guid token, string name, Guid resourceGroup, Guid template, string version, string commit)
 		{
-			Instance.SysProxy.Management.MicroServices.Insert(token, name, resourceGroup, template, stages, version, commit);
+			Instance.SysProxy.Management.MicroServices.Insert(token, name, resourceGroup, template, version, commit);
 		}
 
 		public void Delete(Guid token)
@@ -42,9 +42,9 @@ namespace TomPIT.Design
 			Tenant.GetService<IDesignService>().Components.DeleteFolder(model.Folder.MicroService, model.Folder.Token, true);
 		}
 
-		public void Update(Guid token, string name, Guid resourceGroup, Guid template, MicroServiceStages stages, string version, string commit)
+		public void Update(Guid token, string name, Guid resourceGroup, Guid template, string version, string commit)
 		{
-			Instance.SysProxy.Management.MicroServices.Update(token, name, resourceGroup, template, stages, version, commit);
+			Instance.SysProxy.Management.MicroServices.Update(token, name, resourceGroup, template, version, commit);
 
 			if (Tenant.GetService<IMicroServiceService>() is IMicroServiceNotification notification)
 				notification.NotifyChanged(this, new MicroServiceEventArgs(token));
@@ -73,7 +73,7 @@ namespace TomPIT.Design
 
 			version = $"{major}.{minor}.{build}.{revision}";
 
-			Update(token, ms.Name, ms.ResourceGroup, ms.Template, ms.SupportedStages, version, ms.Commit);
+			Update(token, ms.Name, ms.ResourceGroup, ms.Template, version, ms.Commit);
 		}
 	}
 }

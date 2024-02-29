@@ -15,13 +15,12 @@ namespace TomPIT.Sys.Controllers.Management
 
 			var name = body.Required<string>("name");
 			var microService = body.Required<Guid>("microService");
-			var supportedStages = body.Required<MicroServiceStages>("supportedStages");
 			var resourceGroup = body.Required<Guid>("resourceGroup");
 			var template = body.Required<Guid>("template");
 			var version = body.Optional("version", string.Empty);
 			var commit = body.Optional("commit", string.Empty);
 
-			DataModel.MicroServices.Insert(microService, name, supportedStages, resourceGroup, template, version, commit);
+			DataModel.MicroServices.Insert(microService, name, resourceGroup, template, version, commit);
 		}
 
 		[HttpPost]
@@ -31,13 +30,12 @@ namespace TomPIT.Sys.Controllers.Management
 
 			var microService = body.Required<Guid>("microService");
 			var name = body.Required<string>("name");
-			var supportedStages = body.Required<MicroServiceStages>("supportedStages");
 			var template = body.Optional("template", Guid.Empty);
 			var resourceGroup = body.Required<Guid>("resourceGroup");
 			var version = body.Optional("version", string.Empty);
 			var commit = body.Optional("commit", string.Empty);
 
-			DataModel.MicroServices.Update(microService, name, supportedStages, template, resourceGroup, version, commit);
+			DataModel.MicroServices.Update(microService, name, template, resourceGroup, version, commit);
 		}
 
 		[HttpPost]

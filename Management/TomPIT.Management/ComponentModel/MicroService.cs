@@ -20,8 +20,6 @@ namespace TomPIT.Management.ComponentModel
 		[Browsable(false)]
 		[KeyProperty]
 		public Guid Token { get; set; }
-		[PropertyCategory(PropertyCategoryAttribute.CategoryBehavior)]
-		public MicroServiceStages SupportedStages { get; set; }
 		[Browsable(false)]
 		public Guid ResourceGroup { get; set; }
 		[PropertyCategory(PropertyCategoryAttribute.CategoryData)]
