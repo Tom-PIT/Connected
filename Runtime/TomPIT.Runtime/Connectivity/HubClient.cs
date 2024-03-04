@@ -20,6 +20,8 @@ namespace TomPIT.Connectivity
 				return Task.FromResult(AuthenticationToken);
 			};
 
+			f.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.WebSockets;
+
 			f.Headers.Add("TomPITInstanceId", Instance.Id.ToString());
 		};
 
