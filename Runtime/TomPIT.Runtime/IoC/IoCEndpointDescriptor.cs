@@ -1,4 +1,5 @@
 ﻿using System;
+
 using TomPIT.Compilation;
 using TomPIT.ComponentModel.IoC;
 using TomPIT.Connectivity;
@@ -22,21 +23,37 @@ namespace TomPIT.IoC
 		public Guid MicroService { get; set; }
 		public IIoCEndpoint Endpoint { get; set; }
 
-		public Type Type
-		{
-			get
-			{
-				if (_type == null && !_typeInitialized)
-				{
-					lock (_sync)
-						if (_type == null && !_typeInitialized)
-						{
-							_typeInitialized = true;
-							_type = Tenant.GetService<ICompilerService>().ResolveType(MicroService, Endpoint, Endpoint.Name, false);
-						}
-				}
+		public Type Type => _type;
+		//{
+		//	get
+		//	{
+		//		if (_type == null && !_typeInitialized)
+		//		{
+		//			lock (_sync)
+		//				if (_type == null && !_typeInitialized)
+		//				{
+		//					_typeInitialized = true;
+		//					_type = Tenant.GetService<ICompilerService>().ResolveType(MicroService, Endpoint, Endpoint.Name, false);
+		//				}
+		//		}
 
-				return _type;
+		//		return _type;
+		//	}
+		//}
+
+		public bool Initialized => _typeInitialized;
+		public void Initialize()
+		{
+			if (_typeInitialized)
+				return;
+
+			lock (_sync)
+			{
+				if (_typeInitialized)
+					return;
+
+				_type = Tenant.GetService<ICompilerService>().ResolveType(MicroService, Endpoint, Endpoint.Name, false);
+				_typeInitialized = true;
 			}
 		}
 	}
