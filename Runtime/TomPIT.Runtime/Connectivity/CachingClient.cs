@@ -1,4 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
+
+using System.Threading.Tasks;
+
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.Configuration;
@@ -192,8 +195,11 @@ namespace TomPIT.Connectivity
 			{
 				Hub.InvokeAsync("Confirm", e.Message);
 
-				if (Tenant.GetService<IComponentService>() is IComponentNotification n)
-					n.NotifyChanged(Tenant, e.Args);
+				Task.Run(() =>
+				{
+					if (Tenant.GetService<IComponentService>() is IComponentNotification n)
+						n.NotifyChanged(Tenant, e.Args);
+				});
 			});
 
 			Hub.On<MessageEventArgs<ConfigurationEventArgs>>("ConfigurationRemoved", (e) =>
@@ -215,9 +221,11 @@ namespace TomPIT.Connectivity
 			Hub.On<MessageEventArgs<ComponentEventArgs>>("ComponentChanged", (e) =>
 			{
 				Hub.InvokeAsync("Confirm", e.Message);
-
-				if (Tenant.GetService<IComponentService>() is IComponentNotification n)
-					n.NotifyChanged(Tenant, e.Args);
+				Task.Run(() =>
+				{
+					if (Tenant.GetService<IComponentService>() is IComponentNotification n)
+						n.NotifyChanged(Tenant, e.Args);
+				});
 			});
 
 			Hub.On<MessageEventArgs<ComponentEventArgs>>("ComponentRemoved", (e) =>
@@ -232,11 +240,14 @@ namespace TomPIT.Connectivity
 			{
 				Hub.InvokeAsync("Confirm", e.Message);
 
-				if (Tenant.GetService<ICompilerService>() is ICompilerNotification n)
-					n.NotifyChanged(Tenant, e.Args);
+				Task.Run(() =>
+				{
+					if (Tenant.GetService<ICompilerService>() is ICompilerNotification n)
+						n.NotifyChanged(Tenant, e.Args);
 
-				if (Tenant.GetService<IComponentService>() is IComponentNotification cn)
-					cn.NotifySourceTextChanged(Tenant, e.Args);
+					if (Tenant.GetService<IComponentService>() is IComponentNotification cn)
+						cn.NotifySourceTextChanged(Tenant, e.Args);
+				});
 			});
 
 			Hub.On<MessageEventArgs<FolderEventArgs>>("FolderChanged", (e) =>
