@@ -46,7 +46,9 @@ namespace TomPIT.Compilation
 		public override string NormalizePath(string path, string baseFilePath)
 		{
 			if (path.Contains(":"))
-				return path.Split(':')[1];
+				path = path.Split(':')[1];
+
+			return path.Replace("\\", "/");
 
 			return path;
 		}
@@ -84,5 +86,7 @@ namespace TomPIT.Compilation
 
 			return resolvedPath;
 		}
+
+		
 	}
 }
