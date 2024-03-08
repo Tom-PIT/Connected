@@ -43,12 +43,12 @@ namespace TomPIT.Compilation
 				return hashCode;
 			}
 		}
-		public override string NormalizePath(string path, string baseFilePath)
+		public override string? NormalizePath(string path, string baseFilePath)
 		{
 			if (path.Contains(":"))
 				path = path.Split(':')[1];
 
-			return path.Replace("\\", "/");
+			return $"{path.Replace("\\", "/")}";
 
 			return path;
 		}
