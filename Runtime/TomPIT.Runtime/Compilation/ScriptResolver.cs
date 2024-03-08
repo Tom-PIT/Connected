@@ -48,7 +48,7 @@ namespace TomPIT.Compilation
 			if (path.Contains(":"))
 				path = path.Split(':')[1];
 
-			return $"{path.Replace("\\", "/")}";
+			return $"/{path.Replace("\\", "/")}";
 
 			return path;
 		}
