@@ -45,12 +45,13 @@ namespace TomPIT.Compilation
 		}
 		public override string? NormalizePath(string path, string baseFilePath)
 		{
+			if (path.StartsWith("tp://"))
+				return path;
+
 			if (path.Contains(":"))
 				path = path.Split(':')[1];
 
-			return $"/{path.Replace("\\", "/")}";
-
-			return path;
+			return $"tp://{path.Replace("\\", "/")}";
 		}
 
 		public override Stream OpenRead(string resolvedPath)
