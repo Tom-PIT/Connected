@@ -51,7 +51,7 @@ namespace TomPIT.Compilation
 			if (path.Contains(":"))
 				path = path.Split(':')[1];
 
-			return $"tp://{path.Replace("\\", "/")}";
+			return $"tp:////{path.Replace("\\", "/")}";
 		}
 
 		public override Stream OpenRead(string resolvedPath)
