@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -373,7 +374,7 @@ internal static class MicroServiceCompiler
 			if (string.IsNullOrEmpty(sourceCode))
 				continue;
 
-			result.Add(CSharpSyntaxTree.ParseText(SourceText.From(sourceCode, Encoding.UTF8), ParseOptions, $"{component.Name}.cs"));
+			result.Add(CSharpSyntaxTree.ParseText(SourceText.From(sourceCode, Encoding.UTF8), ParseOptions, ResolveComponentPath(config)));
 
 			if (config is IMultiFileElement multiFile)
 			{
@@ -391,6 +392,11 @@ internal static class MicroServiceCompiler
 		}
 
 		return result;
+	}
+
+	private static string ResolveComponentPath(IText configuration) 
+	{
+		return $"{configuration.ResolvePath()}.cs";
 	}
 
 	private static async Task<List<SyntaxTree>?> LoadResources(IMicroService microService)
@@ -426,11 +432,17 @@ internal static class MicroServiceCompiler
 	{
 		var text = Tenant.GetService<IComponentService>().SelectText(microService, token.Key, token.Value);
 		var info = Tenant.GetService<IComponentService>().SelectTextInfo(microService, token.Key, token.Value);
+		var component = Tenant.GetService<IComponentService>().SelectConfiguration(token.Key);
 
 		if (info is null || text is null || !text.Any())
 			return null;
 
-		return CSharpSyntaxTree.ParseText(SourceText.From(text, Encoding.UTF8), ParseOptions, info.FileName);
+		var fileName = info.FileName;
+
+		if (component is IText textConfiguration)
+			fileName = ResolveComponentPath(textConfiguration);
+
+		return CSharpSyntaxTree.ParseText(SourceText.From(text, Encoding.UTF8), ParseOptions, fileName);
 	}
 
 
@@ -452,6 +464,6 @@ internal static class MicroServiceCompiler
 		text.AppendLine($"[assembly: AssemblyVersion(\"{microService.Version}\")]");
 		text.AppendLine($"[assembly: AssemblyFileVersion(\"{microService.Version}\")]");
 
-		trees.Add(CSharpSyntaxTree.ParseText(SourceText.From(text.ToString(), Encoding.UTF8), ParseOptions, "AssemblyInfo.cs"));
+		trees.Add(CSharpSyntaxTree.ParseText(SourceText.From(text.ToString(), Encoding.UTF8), ParseOptions, $"{microService.Name}/AssemblyInfo.cs"));
 	}
 }
