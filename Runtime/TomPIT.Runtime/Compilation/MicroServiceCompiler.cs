@@ -396,7 +396,7 @@ internal static class MicroServiceCompiler
 
 	private static string ResolveComponentPath(IText configuration) 
 	{
-		return $"{configuration.ResolvePath()}.cs";
+		return $"/MicroServices/{configuration.ResolvePath()}";
 	}
 
 	private static async Task<List<SyntaxTree>?> LoadResources(IMicroService microService)
@@ -432,17 +432,11 @@ internal static class MicroServiceCompiler
 	{
 		var text = Tenant.GetService<IComponentService>().SelectText(microService, token.Key, token.Value);
 		var info = Tenant.GetService<IComponentService>().SelectTextInfo(microService, token.Key, token.Value);
-		var component = Tenant.GetService<IComponentService>().SelectConfiguration(token.Key);
 
 		if (info is null || text is null || !text.Any())
 			return null;
 
-		var fileName = info.FileName;
-
-		if (component is IText textConfiguration)
-			fileName = ResolveComponentPath(textConfiguration);
-
-		return CSharpSyntaxTree.ParseText(SourceText.From(text, Encoding.UTF8), ParseOptions, fileName);
+		return CSharpSyntaxTree.ParseText(SourceText.From(text, Encoding.UTF8), ParseOptions, info.FileName);
 	}
 
 
