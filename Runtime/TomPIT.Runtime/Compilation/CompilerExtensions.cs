@@ -18,13 +18,13 @@ namespace TomPIT.Compilation
 			var ms = sourceCode.Configuration().MicroService();
 			var microService = Tenant.GetService<IMicroServiceService>().Select(ms);
 
-			if (sourceCode is IConfiguration)
-			{
-				return $"{microService.Name}/{name}";
-			}
-			else if (sourceCode.Configuration() is ITextConfiguration textConfiguration)
+			if (sourceCode is ITextConfiguration textConfiguration)
 			{
 				return ResolveFileName(textConfiguration);
+			}
+			else if (sourceCode is IConfiguration)
+			{
+				return $"{microService.Name}/{name}";
 			}
 			else
 			{
