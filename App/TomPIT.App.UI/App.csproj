@@ -11,9 +11,9 @@
     <AssemblyName>TomPIT.Connected.App</AssemblyName>
     <RootNamespace>TomPIT.App</RootNamespace>
     <CopyRefAssembliesToPublishDirectory>true</CopyRefAssembliesToPublishDirectory>
-    <AssemblyVersion>4.1.412.1</AssemblyVersion>
-    <FileVersion>4.1.412.1</FileVersion>
-    <Version>4.1.412.1</Version>
+    <AssemblyVersion>4.1.412.2</AssemblyVersion>
+    <FileVersion>4.1.412.2</FileVersion>
+    <Version>4.1.412.2</Version>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
