@@ -14,9 +14,9 @@
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
-    <AssemblyVersion>4.1.412.7</AssemblyVersion>
-    <FileVersion>4.1.412.7</FileVersion>
-    <Version>4.1.412.7</Version>
+    <AssemblyVersion>4.1.412.8</AssemblyVersion>
+    <FileVersion>4.1.412.8</FileVersion>
+    <Version>4.1.412.8</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugType>portable</DebugType>
