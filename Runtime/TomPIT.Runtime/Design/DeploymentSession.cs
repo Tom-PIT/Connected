@@ -32,6 +32,9 @@ namespace TomPIT.Design
 				return;
 			}
 
+			SynchronizeMicroService(e);
+			DeployFolders();
+
 			if (Request?.Components?.Any() ?? false)
 			{
 
@@ -73,13 +76,12 @@ namespace TomPIT.Design
 					DropMicroService();
 				}
 
-				SynchronizeMicroService(e);
 				Drop();
-				DeployFolders();
 				DeployComponents();
 				SynchronizeEntities();
-				RunInstallers();
 			}
+
+			RunInstallers();
 
 			IncrementVersion();
 		}
