@@ -10,9 +10,9 @@
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <RootNamespace>TomPIT.Management</RootNamespace>
     <AssemblyName>TomPIT.Connected.Management</AssemblyName>
-    <AssemblyVersion>4.1.412.5</AssemblyVersion>
-    <FileVersion>4.1.412.5</FileVersion>
-    <Version>4.1.412.5</Version>
+    <AssemblyVersion>4.1.312.4</AssemblyVersion>
+    <FileVersion>4.1.312.4</FileVersion>
+    <Version>4.1.312.4</Version>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
@@ -88,8 +88,8 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Features" Version="4.8.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="7.0.0" />
-    <PackageReference Include="SkiaSharp" Version="2.88.6" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.6" />
+    <PackageReference Include="SkiaSharp" Version="2.88.8" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.8" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="7.0.14" />
   </ItemGroup>
   <ItemGroup>

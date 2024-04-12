@@ -2,9 +2,9 @@
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-    <AssemblyVersion>4.1.412.5</AssemblyVersion>
-    <FileVersion>4.1.412.5</FileVersion>
-    <Version>4.1.412.5</Version>
+    <AssemblyVersion>4.1.312.4</AssemblyVersion>
+    <FileVersion>4.1.312.4</FileVersion>
+    <Version>4.1.312.4</Version>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
@@ -31,8 +31,8 @@
     <PackageReference Include="System.CodeDom" Version="7.0.0" />
     <PackageReference Include="DevExpress.Pdf.SkiaRenderer" Version="23.1.6" />
     <PackageReference Include="DevExpress.AspNetCore.Reporting" Version="23.1.6" />
-    <PackageReference Include="SkiaSharp" Version="2.88.6" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.6" />
+    <PackageReference Include="SkiaSharp" Version="2.88.8" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.8" />
     <PackageReference Include="DevExpress.Drawing.Skia" Version="23.1.6" />
   </ItemGroup>
   <ItemGroup>
