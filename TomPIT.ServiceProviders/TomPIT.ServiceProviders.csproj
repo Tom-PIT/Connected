@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <AssemblyVersion>4.1.412.5</AssemblyVersion>
-    <FileVersion>4.1.412.5</FileVersion>
-    <Version>4.1.412.5</Version>
+    <AssemblyVersion>4.1.412.6</AssemblyVersion>
+    <FileVersion>4.1.412.6</FileVersion>
+    <Version>4.1.412.6</Version>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Core\TomPIT.Core\TomPIT.Core.csproj" />
