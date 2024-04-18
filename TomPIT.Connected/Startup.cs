@@ -7,6 +7,7 @@ using TomPIT.BigData;
 using TomPIT.Cdn;
 using TomPIT.Development;
 using TomPIT.Environment;
+using TomPIT.IoT;
 using TomPIT.Management;
 using TomPIT.Rest;
 using TomPIT.Runtime;
@@ -46,6 +47,9 @@ internal class Startup
 
 		if (Instance.Features.HasFlag(InstanceFeatures.Worker))
 			startups.Add(new WorkerStartup());
+
+		if (Instance.Features.HasFlag(InstanceFeatures.IoT))
+			startups.Add(new IoTStartup());
 
 		if (Instance.Features.HasFlag(InstanceFeatures.Application))
 			startups.Add(new AppStartup());
