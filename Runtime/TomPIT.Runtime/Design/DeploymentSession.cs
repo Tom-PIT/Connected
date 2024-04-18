@@ -32,12 +32,8 @@ namespace TomPIT.Design
 				return;
 			}
 
-			SynchronizeMicroService(e);
-			DeployFolders();
-
 			if (Request?.Components?.Any() ?? false)
 			{
-
 				if (e.ResetMicroService)
 				{
 					for (var i = Request.Components.Count - 1; i >= 0; i--)
@@ -75,8 +71,14 @@ namespace TomPIT.Design
 
 					DropMicroService();
 				}
+			}
 
-				Drop();
+			SynchronizeMicroService(e);
+			Drop();
+			DeployFolders();
+
+			if (Request?.Components?.Any() ?? false)
+			{
 				DeployComponents();
 				SynchronizeEntities();
 			}
