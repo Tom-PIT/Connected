@@ -99,6 +99,8 @@ namespace TomPIT.Data
 		protected virtual void OnRollback()
 		{
 			Transaction.Rollback();
+			Transaction.Dispose();
+			Transaction = null;
 		}
 
 		public void Open()
