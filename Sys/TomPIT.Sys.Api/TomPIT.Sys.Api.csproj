@@ -8,9 +8,9 @@
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <RootNamespace>TomPIT.Api</RootNamespace>
-    <AssemblyVersion>4.1.515.1</AssemblyVersion>
-    <FileVersion>4.1.515.1</FileVersion>
-    <Version>4.1.515.1</Version>
+    <AssemblyVersion>4.1.515.2</AssemblyVersion>
+    <FileVersion>4.1.515.2</FileVersion>
+    <Version>4.1.515.2</Version>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
