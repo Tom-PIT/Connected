@@ -4,9 +4,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <OutputType>Library</OutputType>
-    <AssemblyVersion>4.1.520.2</AssemblyVersion>
-    <FileVersion>4.1.520.2</FileVersion>
-    <Version>4.1.520.2</Version>
+    <AssemblyVersion>4.1.520.3</AssemblyVersion>
+    <FileVersion>4.1.520.3</FileVersion>
+    <Version>4.1.520.3</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
