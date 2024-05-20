@@ -2,9 +2,9 @@
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <AssemblyVersion>4.1.520.4</AssemblyVersion>
-    <FileVersion>4.1.520.4</FileVersion>
-    <Version>4.1.520.4</Version>
+    <AssemblyVersion>4.1.520.5</AssemblyVersion>
+    <FileVersion>4.1.520.5</FileVersion>
+    <Version>4.1.520.5</Version>
     <UserSecretsId>c813067a-68a7-478d-9a86-b7d0c008a8dc</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
