@@ -107,7 +107,7 @@ namespace TomPIT.IoT.Hubs
 			{
 				using var processor = new DataProcessor(e);
 				var schema = processor.Process();
-
+				processor.Commit();
 				var changes = MiddlewareDescriptor.Current.Tenant.GetService<IIoTHubService>().SetData(processor.DeviceName, schema);
 
 				if (changes == null || changes.Count == 0)

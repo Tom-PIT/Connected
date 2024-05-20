@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+
+using Microsoft.AspNetCore.Http;
+
 using Newtonsoft.Json.Linq;
+
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.IoT;
@@ -89,6 +93,11 @@ namespace TomPIT.IoT.Hubs
 		protected List<IIoTDeviceMiddleware> Devices => Middleware.GetType().GetProperty(nameof(IIoTHubMiddleware<object>.Devices)).GetValue(Middleware) as List<IIoTDeviceMiddleware>;
 		protected List<IIoTTransactionMiddleware> Transactions => Middleware.GetType().GetProperty(nameof(IIoTHubMiddleware<object>.Transactions)).GetValue(Middleware) as List<IIoTTransactionMiddleware>;
 
+		public virtual void Commit()
+		{
+			foreach (var device in Devices)
+				Context.Commit((IMiddlewareOperation)device);
+		}
 
 		protected IIoTDeviceMiddleware FindDevice(string name)
 		{
