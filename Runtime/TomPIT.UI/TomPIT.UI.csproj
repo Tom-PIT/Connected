@@ -8,9 +8,9 @@
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-    <AssemblyVersion>4.1.515.3</AssemblyVersion>
-    <FileVersion>4.1.515.3</FileVersion>
-    <Version>4.1.515.3</Version>
+    <AssemblyVersion>4.1.520.1</AssemblyVersion>
+    <FileVersion>4.1.520.1</FileVersion>
+    <Version>4.1.520.1</Version>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
