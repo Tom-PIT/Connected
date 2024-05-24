@@ -97,6 +97,9 @@ namespace TomPIT.IoT.Hubs
 		{
 			foreach (var device in Devices)
 				Context.Commit((IMiddlewareOperation)device);
+
+			foreach (var transaction in Transactions)
+				Context.Commit((IMiddlewareOperation)transaction);
 		}
 
 		protected IIoTDeviceMiddleware FindDevice(string name)
