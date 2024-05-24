@@ -13,7 +13,7 @@ namespace TomPIT.StorageProvider.Sql
     {
         public void Delete(IServerResourceGroup resourceGroup, Guid blob)
         {
-            var r = new ResourceGroupWriter(resourceGroup, "tompit.blob_content_del");
+            using var r = new ResourceGroupWriter(resourceGroup, "tompit.blob_content_del");
 
             r.CreateParameter("@blob", blob);
 
@@ -41,7 +41,7 @@ namespace TomPIT.StorageProvider.Sql
         }
         public IBlobContent Download(IServerResourceGroup resourceGroup, Guid blob)
         {
-            var r = new ResourceGroupReader<BlobContent>(resourceGroup, "tompit.blob_content_sel");
+            using var r = new ResourceGroupReader<BlobContent>(resourceGroup, "tompit.blob_content_sel");
 
             r.CreateParameter("@blob", blob);
 
@@ -50,7 +50,7 @@ namespace TomPIT.StorageProvider.Sql
 
         public List<IBlobContent> Download(IServerResourceGroup resourceGroup, List<Guid> blobs)
         {
-            var r = new ResourceGroupReader<BlobContent>(resourceGroup, "tompit.blob_content_que");
+            using var r = new ResourceGroupReader<BlobContent>(resourceGroup, "tompit.blob_content_que");
 
             var dt = new DataTable();
 
@@ -67,7 +67,7 @@ namespace TomPIT.StorageProvider.Sql
 
         public void Upload(IServerResourceGroup resourceGroup, Guid blob, byte[] content)
         {
-            var w = new ResourceGroupWriter(resourceGroup, "tompit.blob_content_mdf");
+            using var w = new ResourceGroupWriter(resourceGroup, "tompit.blob_content_mdf");
 
             w.CreateParameter("@blob", blob);
             w.CreateParameter("@content", content, true);

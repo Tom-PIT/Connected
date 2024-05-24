@@ -47,7 +47,7 @@ namespace TomPIT.Data.Sql
 
 		public static bool Delete(string procedureName, int recordId)
 		{
-			var p = new Writer(procedureName);
+			using var p = new Writer(procedureName);
 
 			p.CreateParameter("@id", recordId);
 
@@ -68,12 +68,12 @@ namespace TomPIT.Data.Sql
 
 		public static void ExecuteParameterless(string procedureName)
 		{
-			new Writer(procedureName).Execute();
-		}
+			using var writer = new Writer(procedureName);
+			writer.Execute();		}
 
 		public static void ExecuteWithId(string procedureName, int id)
 		{
-			var p = new Writer(procedureName);
+			using var p = new Writer(procedureName);
 
 			p.CreateParameter("@id", id);
 
@@ -82,7 +82,7 @@ namespace TomPIT.Data.Sql
 
 		public static bool Delete(string procedureName, int recordId, IDataTransaction transaction)
 		{
-			var p = new Writer(procedureName);
+			using var p = new Writer(procedureName);
 
 			p.CreateParameter("@id", recordId);
 

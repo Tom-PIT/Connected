@@ -46,7 +46,7 @@ namespace TomPIT.BigData.Providers.Sql
 		private JArray Execute(IPartitionFile file)
 		{
 			var node = Owner.Context.Tenant.GetService<INodeService>().Select(file.Node);
-			var reader = new NodeReader<QueryRecord>(node, ParseCommandText(file), System.Data.CommandType.Text);
+			using var reader = new NodeReader<QueryRecord>(node, ParseCommandText(file), System.Data.CommandType.Text);
 
 			foreach (var parameter in Owner.Parameters)
 			{
