@@ -4,9 +4,9 @@
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
-    <AssemblyVersion>4.1.524.1</AssemblyVersion>
-    <FileVersion>4.1.524.1</FileVersion>
-    <Version>4.1.524.1</Version>
+    <AssemblyVersion>4.1.524.2</AssemblyVersion>
+    <FileVersion>4.1.524.2</FileVersion>
+    <Version>4.1.524.2</Version>
   </PropertyGroup>
   <Target Name="PostBuildLnx" AfterTargets="PostBuildEvent" Condition="'$(OS)' != 'Windows_NT'">
     <!-- <Exec Command="mkdir -p &quot;/src/plugins/TomPIT.StorageProviders.Azure/&quot;" />
