@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
-    <AssemblyVersion>4.1.528.2</AssemblyVersion>
-    <FileVersion>4.1.528.2</FileVersion>
-    <Version>4.1.528.2</Version>
+    <AssemblyVersion>4.1.528.3</AssemblyVersion>
+    <FileVersion>4.1.528.3</FileVersion>
+    <Version>4.1.528.3</Version>
     <RootNamespace>TomPIT.Cdn</RootNamespace>
     <AssemblyName>TomPIT.Connected.Cdn</AssemblyName>
     <Authors>Tom PIT</Authors>
