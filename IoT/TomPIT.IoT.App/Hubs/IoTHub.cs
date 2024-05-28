@@ -94,15 +94,16 @@ namespace TomPIT.IoT.Hubs
 				throw new NotFoundException($"{SR.ErrCannotFindConfiguration} ({identifier})");
 
 			var type = ctx.Tenant.GetService<ICompilerService>().ResolveType(descriptor.MicroService.Token, descriptor.Configuration, descriptor.ComponentName);
-			
+		
 			var instance = ctx.Tenant.GetService<ICompilerService>().CreateInstance<IMiddlewareComponent>(descriptor.Context, type);
 
 			var itf = instance.GetType().GetInterface(typeof(IIoTHubMiddleware<>).FullName);
 			var args = new IoTConnectionArgs(Context.ConnectionId, method);
 
 			itf.InvokeMember("Authorize", BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.InvokeMethod, null, instance, new object[] { args });
-			
-			ctx.Dispose();			
+
+			ctx.Dispose();
+			instance.Context.Dispose();
 			instance.Dispose();
 		}
 
