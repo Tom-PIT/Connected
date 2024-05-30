@@ -2,9 +2,9 @@
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-    <AssemblyVersion>4.1.528.3</AssemblyVersion>
-    <FileVersion>4.1.528.3</FileVersion>
-    <Version>4.1.528.3</Version>
+    <AssemblyVersion>4.1.530.1</AssemblyVersion>
+    <FileVersion>4.1.530.1</FileVersion>
+    <Version>4.1.530.1</Version>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
