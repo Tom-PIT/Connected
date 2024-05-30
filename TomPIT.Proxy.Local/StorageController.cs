@@ -75,7 +75,7 @@ namespace TomPIT.Proxy.Local
 
 		public Guid Upload(IBlob blob, byte[] content, StoragePolicy policy, Guid token)
 		{
-			return DataModel.Blobs.Upload(blob.ResourceGroup, blob.Type, blob.PrimaryKey, blob.MicroService, blob.Topic, blob.FileName, blob.ContentType, blob.Draft, content, policy, token);
+			return DataModel.Blobs.Upload(blob.ResourceGroup, blob.Type, blob.PrimaryKey, blob.MicroService, blob.Topic, blob.FileName, blob.ContentType, blob.Draft ?? "", content, policy, token);
 		}
 
 		public void Refresh(Guid token)
