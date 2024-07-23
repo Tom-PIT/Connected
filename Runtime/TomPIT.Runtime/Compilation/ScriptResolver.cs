@@ -1,10 +1,12 @@
 ﻿using Microsoft.CodeAnalysis;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
 using System.Text;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
 using TomPIT.Reflection;
+using TomPIT.Storage;
 
 namespace TomPIT.Compilation
 {
@@ -45,10 +47,17 @@ namespace TomPIT.Compilation
 		}
 		public override string NormalizePath(string path, string baseFilePath)
 		{
-			if (path.Contains(":"))
-				return path.Split(':')[1];
+			var sourceFiles = Shell.Configuration.GetRequiredSection("sourceFiles").GetValue<string>("folder");
 
-			return path;
+			if (path.StartsWith(sourceFiles))
+				return path;
+
+			var text = Tenant.GetService<IDiscoveryService>().Configuration.Find(path);
+
+			if (text is null)
+				return path;
+
+			return Path.Combine(sourceFiles, text.Configuration().MicroService().ToString(), $"{text.TextBlob}-{BlobTypes.SourceText}.txt");
 		}
 
 		public override Stream OpenRead(string resolvedPath)

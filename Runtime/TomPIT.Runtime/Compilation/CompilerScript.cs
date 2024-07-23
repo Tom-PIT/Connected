@@ -4,9 +4,11 @@ using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.CodeAnalysis.Scripting.Hosting;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
@@ -15,6 +17,7 @@ using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
 using TomPIT.Reflection;
 using TomPIT.Runtime;
+using TomPIT.Storage;
 
 namespace TomPIT.Compilation
 {
@@ -52,14 +55,18 @@ namespace TomPIT.Compilation
 			if (refs.Count > 0)
 				ScriptReferences = refs;
 
+			var sourceFiles = Shell.Configuration.GetRequiredSection("sourceFiles").GetValue<string>("folder");
+			var filePath = Path.Combine(sourceFiles, msv.Token.ToString(), $"{SourceCode.TextBlob}-{BlobTypes.SourceText}.txt");
+
 			var options = ScriptOptions.Default
 					.WithImports(Usings)
 					.WithReferences(References)
 					.WithSourceResolver(new ScriptResolver(Tenant, MicroService))
 					.WithMetadataResolver(new AssemblyResolver(Tenant, MicroService, true))
 					.WithEmitDebugInformation(Tenant.GetService<IRuntimeService>().Stage != EnvironmentStage.Production)
-					.WithFilePath(SourceCode.FileName)
-					.WithFileEncoding(Encoding.UTF8);
+					.WithFilePath(filePath)
+					.WithFileEncoding(Encoding.UTF8)
+					.WithOptimizationLevel(Tenant.GetService<IRuntimeService>().Stage == EnvironmentStage.Production ? OptimizationLevel.Release : OptimizationLevel.Debug);
 
 			foreach (var reference in ScriptContext.References)
 			{
@@ -122,7 +129,7 @@ namespace TomPIT.Compilation
 			var element = Tenant.GetService<IDiscoveryService>().Configuration.Find(SourceCode.Configuration().Component, SourceCode.Id) as IText;
 			var ms = Tenant.GetService<IMicroServiceService>().Select(element.Configuration().MicroService());
 
-			if (element is IConfiguration config)
+			if (element is ComponentModel.IConfiguration config)
 				return $"{ms.Name}/{element.Configuration().ComponentName()}.csx";
 			else
 				return $"{ms.Name}/{element.Configuration().ComponentName()}/{element.FileName}";

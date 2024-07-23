@@ -129,7 +129,7 @@ namespace TomPIT.App
 			//	opts.XmlRepository = new XmlKeyRepository();
 			//});
 
-			//e.AddDataProtection();
+			e.AddDataProtection();
 
 			e.AddAntiforgery(o =>
 			{

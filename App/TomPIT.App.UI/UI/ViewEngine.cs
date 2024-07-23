@@ -83,7 +83,7 @@ namespace TomPIT.App.UI
 			await Context.Response.CompleteAsync();
 		}
 
-		public async Task Render(string name)
+		public async Task<bool> Render(string name)
 		{
 			name = name.Trim('/');
 
@@ -92,7 +92,7 @@ namespace TomPIT.App.UI
 			if (model is null)
 			{
 				Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-				return;
+				return false;
 			}
 
 			var content = string.Empty;
@@ -101,7 +101,7 @@ namespace TomPIT.App.UI
 			{
 				var user = model.Services.Identity.IsAuthenticated ? model.Services.Identity.User.Token : Guid.Empty;
 				if (model.ViewConfiguration.AuthorizationEnabled && string.Compare(model.ViewConfiguration.Url, "login", true) != 0 && !SecurityExtensions.AuthorizeUrl(model, model.ViewConfiguration.Url, user))
-					return;
+					return false;
 
 				if (!model.ActionContext.RouteData.Values.ContainsKey("Action"))
 					model.ActionContext.RouteData.Values.Add("Action", name);
@@ -115,14 +115,14 @@ namespace TomPIT.App.UI
 					else
 					{
 						Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-						return;
+						return false;
 					}
 				}
 
 				var view = viewEngineResult.View;
 
 				if (Context.Response.StatusCode != (int)HttpStatusCode.OK)
-					return;
+					return false;
 
 				content = await CreateContent(view, model);
 
@@ -158,6 +158,8 @@ namespace TomPIT.App.UI
 				}
 
 				await Context.Response.CompleteAsync();
+
+				return true;
 			}
 			catch (CompilerException)
 			{
@@ -166,7 +168,10 @@ namespace TomPIT.App.UI
 			catch (Exception ex)
 			{
 				if (ex is NotFoundException || ex.InnerException is NotFoundException)
+				{
 					Context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+					return false;
+				}
 				else
 					throw new CompilerException(model.ViewConfiguration, ex);
 			}
