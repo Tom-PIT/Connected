@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Client;
 
+using TomPIT.Messaging;
+
 namespace TomPIT.Connectivity
 {
 	public abstract class HubClient : ClientConnection
@@ -19,6 +21,8 @@ namespace TomPIT.Connectivity
 			{
 				return Task.FromResult(AuthenticationToken);
 			};
+
+			f.Transports = Microsoft.AspNetCore.Http.Connections.HttpTransportType.WebSockets;
 
 			f.Headers.Add("TomPITInstanceId", Instance.Id.ToString());
 		};
@@ -46,6 +50,13 @@ namespace TomPIT.Connectivity
 		protected override void OnConnected()
 		{
 			new Task(Heartbeat, Cancel.Token, TaskCreationOptions.LongRunning).Start();
+		}
+
+		protected Task ConfirmAndHandle<T>(MessageEventArgs<T> args, Action<MessageEventArgs<T>> handler)
+		{
+			Hub.InvokeAsync("Confirm", args.Message);
+
+			return Task.Run(() => handler.Invoke(args));
 		}
 	}
 }

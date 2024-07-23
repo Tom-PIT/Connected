@@ -160,6 +160,9 @@ namespace TomPIT.Reflection
 				if (value is not IEnumerable en)
 					return;
 
+				if(value is T compatibleElement && !items.Contains(compatibleElement))
+					items.Add(compatibleElement);				
+
 				var enm = en.GetEnumerator();
 
 				while (enm.MoveNext())

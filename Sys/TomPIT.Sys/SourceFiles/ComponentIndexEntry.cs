@@ -14,6 +14,14 @@ public class ComponentIndexEntry : IComponent
 	public Guid Folder { get; set; }
 	public string NameSpace { get; set; }
 
+	public override string ToString()
+	{
+		if (string.IsNullOrWhiteSpace(Name))
+			return base.ToString();
+
+		return Name;
+	}
+
 	public static ComponentIndexEntry From(IComponent component)
 	{
 		return new ComponentIndexEntry

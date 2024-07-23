@@ -2,8 +2,10 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.IoC;
@@ -34,6 +36,8 @@ namespace TomPIT.IoC
 				{
 					foreach (var endpoint in container.Value)
 					{
+						if (!endpoint.Initialized)
+							continue;
 						/*
 						 * It's possible the endpoint couldn't compile and it would mean
 						 * it's lost because it's type is null and initialized property set
@@ -184,6 +188,8 @@ namespace TomPIT.IoC
 			lock (endpoints)
 				foreach (var endpoint in endpoints)
 				{
+					endpoint.Initialize();
+
 					if (endpoint.Type == null)
 						continue;
 
@@ -217,6 +223,8 @@ namespace TomPIT.IoC
 			lock (endpoints)
 				foreach (var endpoint in endpoints)
 				{
+					endpoint.Initialize();
+
 					if (endpoint.Type == null)
 						continue;
 

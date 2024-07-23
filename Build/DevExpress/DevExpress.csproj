@@ -2,15 +2,15 @@
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <AssemblyVersion>4.1.229.2</AssemblyVersion>
-    <FileVersion>4.1.229.2</FileVersion>
-    <Version>4.1.229.2</Version>
+    <AssemblyVersion>4.1.531.1</AssemblyVersion>
+    <FileVersion>4.1.531.1</FileVersion>
+    <Version>4.1.531.1</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="DevExpress.Pdf.SkiaRenderer" Version="23.1.6" />
     <PackageReference Include="DevExpress.AspNetCore.Reporting" Version="23.1.6" />
-    <PackageReference Include="SkiaSharp" Version="2.88.6" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.6" />
+    <PackageReference Include="SkiaSharp" Version="2.88.8" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.8" />
     <PackageReference Include="DevExpress.Drawing.Skia" Version="23.1.6" />
   </ItemGroup>
   <ItemGroup>

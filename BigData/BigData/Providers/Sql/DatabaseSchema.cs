@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+
 using TomPIT.BigData.Data;
 using TomPIT.BigData.Transactions;
 using TomPIT.ComponentModel;
@@ -40,31 +41,14 @@ namespace TomPIT.BigData.Providers.Sql
 		{
 			get
 			{
-				return new NodeAdminScalarReader<int>(Node, string.Format(SqlStrings.TableExists, TableName), CommandType.Text).ExecuteScalar(0) == 1;
+				using var reader = new NodeAdminScalarReader<int>(Node, string.Format(SqlStrings.TableExists, TableName), CommandType.Text);
+				return reader.ExecuteScalar(0) == 1;
 			}
 		}
 
-		private IPartitionConfiguration Partition
-		{
-			get
-			{
-				if (_partition == null)
-					_partition = MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(File.Partition) as IPartitionConfiguration;
+		private IPartitionConfiguration Partition => _partition ??= MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>().SelectConfiguration(File.Partition) as IPartitionConfiguration;
 
-				return _partition;
-			}
-		}
-
-		private PartitionSchema Schema
-		{
-			get
-			{
-				if (_schema == null)
-					_schema = new PartitionSchema(Partition);
-
-				return _schema;
-			}
-		}
+		private PartitionSchema Schema => _schema ??= new PartitionSchema(Partition);
 
 		private void AlterTable()
 		{
@@ -95,10 +79,10 @@ namespace TomPIT.BigData.Providers.Sql
 				else
 				{
 					//create index if column has it, else drop index
-					if (i.Index)
-						new NodeAdminWriter(Node, string.Format(SqlStrings.CreateIndex, TableName, i.Name), CommandType.Text).Execute();
-					else
-						new NodeAdminWriter(Node, string.Format(SqlStrings.DropIndex, TableName, i.Name), CommandType.Text).Execute();
+					var action = i.Index ? SqlStrings.CreateIndex : SqlStrings.DropIndex;
+
+					using var writer = new NodeAdminWriter(Node, string.Format(SqlStrings.CreateIndex, TableName, i.Name), CommandType.Text);
+					writer.Execute();
 				}
 			}
 		}
@@ -107,36 +91,47 @@ namespace TomPIT.BigData.Providers.Sql
 		{
 			string fieldName = field.Name.ToLowerInvariant();
 
-			new NodeAdminWriter(Node, string.Format(SqlStrings.ColumnCreate, TableName, fieldName, ParseColumnMetaData(field)), System.Data.CommandType.Text).Execute();
+			using var columnCreateWriter = new NodeAdminWriter(Node, string.Format(SqlStrings.ColumnCreate, TableName, fieldName, ParseColumnMetaData(field)), System.Data.CommandType.Text);
+			columnCreateWriter.Execute();
 
 			if (field.Index)
-				new NodeAdminWriter(Node, string.Format(SqlStrings.CreateIndex, TableName, fieldName), CommandType.Text).Execute();
+			{
+				using var createIndexWriter = new NodeAdminWriter(Node, string.Format(SqlStrings.CreateIndex, TableName, fieldName), CommandType.Text);
+				createIndexWriter.Execute();
+			}
 		}
 
 		private void CreateTable()
 		{
-			new NodeAdminWriter(Node, string.Format(SqlStrings.TableCreate, TableName), CommandType.Text).Execute();
-			new NodeAdminWriter(Node, string.Format(SqlStrings.TableAddTimestampDefault, TableName), CommandType.Text).Execute();
+			using var createWriter = new NodeAdminWriter(Node, string.Format(SqlStrings.TableCreate, TableName), CommandType.Text);
+			createWriter.Execute();
+
+			using var timestampWriter = new NodeAdminWriter(Node, string.Format(SqlStrings.TableAddTimestampDefault, TableName), CommandType.Text);
+			timestampWriter.Execute();
 
 			//create index on timestamp field
-			new NodeAdminWriter(Node, string.Format(SqlStrings.CreateIndex, TableName, Merger.TimestampColumn), CommandType.Text).Execute();
+			using var indexWriter = new NodeAdminWriter(Node, string.Format(SqlStrings.CreateIndex, TableName, Merger.TimestampColumn), CommandType.Text);
+			indexWriter.Execute();
 		}
 
 		private List<ExistingColumn> LoadExistingColumns()
 		{
-			return new NodeAdminReader<ExistingColumn>(Node, string.Format(SqlStrings.ColumnQuery, TableName), CommandType.Text).Execute();
+			using var reader = new NodeAdminReader<ExistingColumn>(Node, string.Format(SqlStrings.ColumnQuery, TableName), CommandType.Text);
+			return reader.Execute();
 		}
 
 		private void DropColumn(ExistingColumn col)
 		{
-			new NodeAdminWriter(Node, string.Format(SqlStrings.ColumnDrop, TableName, col.ColumnName.ToLowerInvariant()), CommandType.Text).Execute();
+			using var writer = new NodeAdminWriter(Node, string.Format(SqlStrings.ColumnDrop, TableName, col.ColumnName.ToLowerInvariant()), CommandType.Text);
+			writer.Execute();
 		}
 
 		internal void Drop()
 		{
 			try
 			{
-				new NodeAdminWriter(Node, string.Format(SqlStrings.DropTable, TableName), CommandType.Text).Execute();
+				using var writer = new NodeAdminWriter(Node, string.Format(SqlStrings.DropTable, TableName), CommandType.Text);
+				writer.Execute();
 			}
 			catch (Exception ex)
 			{

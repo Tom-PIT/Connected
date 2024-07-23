@@ -58,4 +58,14 @@ public abstract class Startup : IStartup
 	{
 		await Task.CompletedTask;
 	}
+
+	public async Task ConfigureEndpoints()
+	{
+		await OnConfigureEndpoints();
+	}
+
+	protected virtual Task OnConfigureEndpoints()
+	{
+		return Task.CompletedTask;
+	}
 }

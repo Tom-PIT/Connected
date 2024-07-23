@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -373,7 +374,7 @@ internal static class MicroServiceCompiler
 			if (string.IsNullOrEmpty(sourceCode))
 				continue;
 
-			result.Add(CSharpSyntaxTree.ParseText(SourceText.From(sourceCode, Encoding.UTF8), ParseOptions, $"{component.Name}.cs"));
+			result.Add(CSharpSyntaxTree.ParseText(SourceText.From(sourceCode, Encoding.UTF8), ParseOptions, ResolveComponentPath(config)));
 
 			if (config is IMultiFileElement multiFile)
 			{
@@ -391,6 +392,11 @@ internal static class MicroServiceCompiler
 		}
 
 		return result;
+	}
+
+	private static string ResolveComponentPath(IText configuration) 
+	{
+		return $"/MicroServices/{configuration.ResolvePath()}";
 	}
 
 	private static async Task<List<SyntaxTree>?> LoadResources(IMicroService microService)
@@ -452,6 +458,6 @@ internal static class MicroServiceCompiler
 		text.AppendLine($"[assembly: AssemblyVersion(\"{microService.Version}\")]");
 		text.AppendLine($"[assembly: AssemblyFileVersion(\"{microService.Version}\")]");
 
-		trees.Add(CSharpSyntaxTree.ParseText(SourceText.From(text.ToString(), Encoding.UTF8), ParseOptions, "AssemblyInfo.cs"));
+		trees.Add(CSharpSyntaxTree.ParseText(SourceText.From(text.ToString(), Encoding.UTF8), ParseOptions, $"{microService.Name}/AssemblyInfo.cs"));
 	}
 }

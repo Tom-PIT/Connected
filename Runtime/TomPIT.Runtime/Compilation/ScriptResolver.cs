@@ -45,7 +45,7 @@ namespace TomPIT.Compilation
 				return hashCode;
 			}
 		}
-		public override string NormalizePath(string path, string baseFilePath)
+		public override string? NormalizePath(string path, string baseFilePath)
 		{
 			var sourceFiles = Shell.Configuration.GetRequiredSection("sourceFiles").GetValue<string>("folder");
 
@@ -93,5 +93,7 @@ namespace TomPIT.Compilation
 
 			return resolvedPath;
 		}
+
+		
 	}
 }
