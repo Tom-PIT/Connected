@@ -388,7 +388,8 @@ namespace TomPIT.Compilation
 
 				foreach (var item in lib.Items)
 				{
-					var entry = string.Compare(installer.Id, id, true) == 0;
+					var isSatellite = item.Split('/').Length > 3;
+					var entry = !isSatellite && string.Compare(installer.Id, id, true) == 0;
 
 					if (string.Compare(Path.GetExtension(item), ".dll", true) == 0)
 					{
