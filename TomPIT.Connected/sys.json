@@ -2,7 +2,7 @@
   "instanceName": "Default Instance",
   "features": "Application, Sys, Development",
   "platform": "OnPrem",
-  "microServicesFolder": "/microServicesD",
+  "microServicesFolder": "/microServices",
   "stage": "Development",
   "optimization": "Debug",
   "resourceGroups": [
@@ -26,7 +26,7 @@
     }
   },
   "debugTarget": {
-    "url": "http://localhost:44004"
+    "url": null
   },
   "sys": {
     "name": "Local",
