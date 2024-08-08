@@ -118,7 +118,18 @@ namespace TomPIT.Design
 		private void InsertMicroService(DeployArgs e)
 		{
 			var commitKey = $"{e.Commit.Branch}.{e.Commit.Commit}";
-			var resourceGroup = Tenant.GetService<IResourceGroupService>().Default.Token;
+
+			var resourceGroupService = Tenant.GetService<IResourceGroupService>();
+			
+			var resourceGroup = resourceGroupService.Default.Token;
+			
+			if (!string.IsNullOrWhiteSpace(e.ResourceGroup)) 
+			{
+				var candidate = resourceGroupService.Select(e.ResourceGroup);
+
+				if (candidate is not null)
+					resourceGroup = candidate.Token;
+			}			
 
 			Tenant.GetService<IDesignService>().MicroServices.Insert(Request.Token, Request.Name, resourceGroup, Request.Template, null, commitKey);
 		}

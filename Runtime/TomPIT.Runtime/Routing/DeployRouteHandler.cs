@@ -36,8 +36,9 @@ namespace TomPIT.Routing
 			var commit = body.Optional("commit", 0L);
          var verb = body.Optional("verb", DeploymentVerb.Deploy);
          var startCommit = body.Optional("startCommit", 0L);
+			var resourceGroup = body.Optional<string?>("resourceGroup", null);
 
-         ctx.GetService<IDesignService>().Deployment.Deploy(BaseUrl, repository, branch, commit, startCommit, key, verb);
+         ctx.GetService<IDesignService>().Deployment.Deploy(BaseUrl, repository, branch, commit, startCommit, key, verb, resourceGroup);
 		}
 	}
 }
