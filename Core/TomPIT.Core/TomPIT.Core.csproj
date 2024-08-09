@@ -17,9 +17,9 @@
     <Product>Tom PIT.connected</Product>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <RootNamespace>TomPIT</RootNamespace>
-    <AssemblyVersion>4.1.808.1</AssemblyVersion>
-    <FileVersion>4.1.808.1</FileVersion>
-    <Version>4.1.808.1</Version>
+    <AssemblyVersion>4.1.809.1</AssemblyVersion>
+    <FileVersion>4.1.809.1</FileVersion>
+    <Version>4.1.809.1</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugType>portable</DebugType>
