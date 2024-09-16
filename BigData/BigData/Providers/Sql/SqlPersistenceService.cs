@@ -1,13 +1,9 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
-
-using Newtonsoft.Json.Linq;
-
-using NuGet.Common;
-
 using TomPIT.Annotations.BigData;
 using TomPIT.BigData.Data;
 using TomPIT.BigData.Partitions;
@@ -36,7 +32,7 @@ namespace TomPIT.BigData.Providers.Sql
 
 		private DataTable PartialMerge(IUpdateProvider provider, INode node, DataFileContext context)
 		{
-			using var w = new NodeReader<MergeResultRecord>(node, CreateCommandText(provider, context, false), CommandType.StoredProcedure);
+			using var w = new NodeReader<MergeResultRecord>(node, CreateCommandText(provider, context, false), CommandType.Text);
 
 			w.CreateParameter("@rows", CreateParameter(context.Data));
 

@@ -25,10 +25,12 @@ namespace TomPIT.BigData.Partitions
 					return Guid.Empty;
 
 				Tenant.GetService<IPartitionService>().NotifyFileChanged(fileId);
+
 				file = Tenant.GetService<IPartitionService>().SelectFile(fileId);
 
 				Tenant.GetService<IPersistenceService>().SynchronizeSchema(node, file);
 				Tenant.GetService<IPartitionService>().UpdateFile(file.FileName, file.StartTimestamp, file.EndTimestamp, file.Count, PartitionFileStatus.Open);
+				Tenant.GetService<IPartitionService>().NotifyFileChanged(fileId);
 
 				return fileId;
 			}
