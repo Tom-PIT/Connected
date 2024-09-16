@@ -24,6 +24,7 @@ namespace TomPIT.BigData.Partitions
 				if (fileId == Guid.Empty)
 					return Guid.Empty;
 
+				Tenant.GetService<IPartitionService>().NotifyFileChanged(fileId);
 				file = Tenant.GetService<IPartitionService>().SelectFile(fileId);
 
 				Tenant.GetService<IPersistenceService>().SynchronizeSchema(node, file);
