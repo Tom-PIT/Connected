@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup Label="Globals">
     <SccProjectName>SAK</SccProjectName>
     <SccProvider>SAK</SccProvider>
@@ -14,9 +14,9 @@
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
-    <AssemblyVersion>4.1.822.1</AssemblyVersion>
-    <FileVersion>4.1.822.1</FileVersion>
-    <Version>4.1.822.1</Version>
+    <AssemblyVersion>4.1.916.2</AssemblyVersion>
+    <FileVersion>4.1.916.2</FileVersion>
+    <Version>4.1.916.2</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugType>portable</DebugType>
