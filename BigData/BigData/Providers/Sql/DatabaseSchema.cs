@@ -135,7 +135,7 @@ namespace TomPIT.BigData.Providers.Sql
 			}
 			catch (Exception ex)
 			{
-				MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, "BigData");
+				MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.ToString(), "BigData");
 			}
 		}
 

@@ -46,7 +46,7 @@ namespace TomPIT.BigData.Transactions
 			catch (Exception ex)
 			{
 				Dump(ex.Message);
-				Tenant.LogError(ex.Source, ex.Message, "BigData");
+				Tenant.LogError(ex.Source, ex.ToString(), "BigData");
 
 				throw;
 			}
@@ -365,7 +365,7 @@ namespace TomPIT.BigData.Transactions
 
 		private bool CompareRows(DataRow a, DataRow b)
 		{
-			foreach (var field in Provider.Schema.Fields) 
+			foreach (var field in Provider.Schema.Fields)
 			{
 				if (!field.Key && !field.Index)
 					continue;

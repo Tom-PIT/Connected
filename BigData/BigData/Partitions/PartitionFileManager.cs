@@ -33,7 +33,7 @@ namespace TomPIT.BigData.Partitions
 			}
 			catch (Exception ex)
 			{
-				Tenant.LogError(ex.Source, ex.Message, "BigData");
+				Tenant.LogError(ex.Source, ex.ToString(), "BigData");
 
 				if (file != null)
 					TryRollbackFileCreate(file.FileName);
@@ -50,7 +50,7 @@ namespace TomPIT.BigData.Partitions
 			}
 			catch (Exception ex)
 			{
-				Tenant.LogError(ex.Source, ex.Message, "BigData");
+				Tenant.LogError(ex.Source, ex.ToString(), "BigData");
 			}
 		}
 
