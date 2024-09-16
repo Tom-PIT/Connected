@@ -3,9 +3,9 @@
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <AssemblyVersion>4.1.916.2</AssemblyVersion>
-    <FileVersion>4.1.916.2</FileVersion>
-    <Version>4.1.916.2</Version>
+    <AssemblyVersion>4.1.916.3</AssemblyVersion>
+    <FileVersion>4.1.916.3</FileVersion>
+    <Version>4.1.916.3</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.2" />
