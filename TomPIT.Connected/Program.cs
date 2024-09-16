@@ -19,6 +19,7 @@ namespace TomPIT.Connected
 		public static async Task Main(string[] args)
 		{
 			AppDomain.CurrentDomain.UnhandledException += OnUnhandledExceptionThrown;
+			AppDomain.CurrentDomain.FirstChanceException += OnFirstChanceException;
 
 			try
 			{
@@ -48,6 +49,15 @@ namespace TomPIT.Connected
 					while (true)
 						System.Threading.Thread.Sleep(1000);
 				}
+			}
+		}
+
+		private static void OnFirstChanceException(object? sender, System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs e)
+		{
+			if (e.Exception is OutOfMemoryException)
+			{
+				Console.WriteLine("Out of memory exception caught, shutting down");
+				System.Environment.Exit(101);
 			}
 		}
 

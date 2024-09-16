@@ -25,7 +25,7 @@ namespace TomPIT.Design
 
 		public ImmutableArray<Guid> DeployingMicroServices => DeployingMicroServicesList.ToImmutableArray();
 
-		public void Deploy(string remote, Guid repository, long branch, long commit, long startCommit, string authenticationToken, DeploymentVerb verb = DeploymentVerb.Deploy)
+		public void Deploy(string remote, Guid repository, long branch, long commit, long startCommit, string authenticationToken, DeploymentVerb verb = DeploymentVerb.Deploy, string? resourceGroup = null)
 		{
 			var url = $"{remote}/Connected.Repositories/Branches/Pull";
 			var args = new DeployArgs
@@ -44,10 +44,9 @@ namespace TomPIT.Design
 				Reason = "Install",
 			}, new HttpRequestArgs().WithBearerCredentials(authenticationToken));
 
-			args.Commit.Branch = pullRequest.Branch;
-			args.Commit.Commit = pullRequest.Commit;
+			args.ResourceGroup = resourceGroup;
 
-			Deploy(pullRequest, args); ;
+			Deploy(pullRequest, args);
 		}
 
 		public void Deploy(IPullRequest request, DeployArgs e)
