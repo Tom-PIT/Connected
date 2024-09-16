@@ -205,7 +205,8 @@ namespace TomPIT.BigData.Transactions
 					var result = new DataFileContext
 					{
 						Data = Data.Clone(),
-						Lock = FileManager.Lock(target.FileName)
+						Lock = FileManager.Lock(target.FileName),
+						File = target
 					};
 
 					if (result.Lock == Guid.Empty)
