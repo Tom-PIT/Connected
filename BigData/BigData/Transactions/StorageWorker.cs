@@ -150,11 +150,10 @@ namespace TomPIT.BigData.Transactions
 
 						var config = Tenant.GetService<IComponentService>().SelectConfiguration(item.Block.Partition) as IPartitionConfiguration;
 
+						Tenant.GetService<ITransactionService>().Complete(item.Message.PopReceipt, item.Block.Token);
 						Tenant.GetService<ITransactionService>().Prepare(config, updater.LockedItems);
 					}
 				}
-
-				Tenant.GetService<ITransactionService>().Complete(item.Message.PopReceipt, item.Block.Token);
 			}
 			finally
 			{

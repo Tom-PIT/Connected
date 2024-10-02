@@ -108,7 +108,10 @@ namespace TomPIT.BigData.Transactions
 				 * for every file until we find all updates. If updates still remain on the last block we'll call full merge
 				 * with inserts as well
 				 */
-				var targetFiles = r.Where(f => ((f.File.Status == PartitionFileStatus.Open) || f.File.StartTimestamp <= timestampValue) && (f.File.EndTimestamp == DateTime.MinValue || f.File.EndTimestamp >= timestampValue));
+				var targetFiles = r.Where(f => (f.File.Status == PartitionFileStatus.Open)
+					|| (f.File.Status == PartitionFileStatus.Closed
+						&& (f.File.StartTimestamp <= timestampValue)
+						&& (f.File.EndTimestamp == DateTime.MinValue || f.File.EndTimestamp >= timestampValue)));
 
 				if (targetFiles.Count() == 0)
 				{
@@ -190,7 +193,7 @@ namespace TomPIT.BigData.Transactions
 				}
 			}
 
-			return r.OrderBy(f => f.File.Status).ThenByDescending(f => f.File.StartTimestamp).ToList();
+			return r.OrderByDescending(f => f.File.Status).ThenByDescending(f => f.File.StartTimestamp).ToList();
 		}
 
 		private DataFileContext CreateDataFileContext(DateTime timestamp, DateTime min, DateTime max)
@@ -249,32 +252,23 @@ namespace TomPIT.BigData.Transactions
 			for (var i = 0; i < transactions.Count; i++)
 			{
 				var transaction = transactions[i];
+				var dt = PartialMerge(transaction);
+
+				RemoveUpdated(transactions, dt);
+			}
+
+			for (var i = 0; i < transactions.Count; i++)
+			{
+				var transaction = transactions[i];
 
 				Dump($"merging transaction on file {transaction.File.FileName}");
 
 				if (transaction.File.Status == PartitionFileStatus.Closed)
-				{
-					Dump($"partial merge on file {transaction.File.FileName}");
+					continue;
 
-					var dt = PartialMerge(transaction);
+				FullMerge(transaction);
 
-					Dump($"partial merge updates {Updater.ToCsv(dt)}");
-
-					RemoveUpdated(transactions, dt);
-				}
-				else
-				{
-					if (i > 0)
-						MergeRemainingRows(transaction, transactions);
-
-					var dt = FullMerge(transaction);
-
-					Dump($"full merge on file {transaction.File.FileName}");
-					Dump($"full merge updates {Updater.ToCsv(dt)}");
-
-					if (i < transactions.Count - 1)
-						RemoveUpdated(transactions, dt);
-				}
+				break;
 			}
 		}
 
@@ -283,47 +277,25 @@ namespace TomPIT.BigData.Transactions
 			if (context.Data.Rows.Count == 0)
 				return null;
 
-			try
-			{
-				if (context.Lock == Guid.Empty)
-					context.Lock = FileManager.Lock(context.File.FileName);
+			if (context.Lock == Guid.Empty)
+				context.Lock = FileManager.Lock(context.File.FileName);
 
-				if (context.Lock == Guid.Empty)
-					return context.Data;
+			if (context.Lock == Guid.Empty)
+				return context.Data;
 
-				var node = Tenant.GetService<INodeService>().Select(context.File.Node);
+			var node = Tenant.GetService<INodeService>().Select(context.File.Node);
 
-				return Tenant.GetService<IPersistenceService>().Merge(Provider, node, context, MergePolicy.Full);
-			}
-			finally
-			{
-				if (context.Lock != Guid.Empty)
-				{
-					FileManager.Release(context.Lock);
-					context.Lock = Guid.Empty;
-				}
-			}
+			return Tenant.GetService<IPersistenceService>().Merge(Provider, node, context, MergePolicy.Full);
 		}
 
 		private DataTable PartialMerge(DataFileContext context)
 		{
-			try
-			{
-				if (context.Data.Rows.Count == 0)
-					return null;
+			if (context.Data.Rows.Count == 0)
+				return null;
 
-				var node = Tenant.GetService<INodeService>().Select(context.File.Node);
+			var node = Tenant.GetService<INodeService>().Select(context.File.Node);
 
-				return Tenant.GetService<IPersistenceService>().Merge(Provider, node, context, MergePolicy.Partial);
-			}
-			finally
-			{
-				if (context.Lock != Guid.Empty)
-				{
-					FileManager.Release(context.Lock);
-					context.Lock = Guid.Empty;
-				}
-			}
+			return Tenant.GetService<IPersistenceService>().Merge(Provider, node, context, MergePolicy.Partial);
 		}
 
 		private void ReleaseLocks(List<DataFileContext> items)
