@@ -231,9 +231,9 @@ namespace TomPIT.BigData.Providers.Sql
 			}
 
 			if (fullMerge)
-				result.AppendLine("OUTPUT $action, inserted.*;");
+				result.AppendLine("\nOUTPUT $action, inserted.*;");
 			else
-				result.AppendLine("OUTPUT inserted.*;");
+				result.AppendLine("\nOUTPUT inserted.*;");
 
 			return result.ToString();
 		}
