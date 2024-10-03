@@ -107,7 +107,7 @@ namespace TomPIT
 			svc.Write(e);
 
 			try {
-				System.Console.WriteLine($"{level}\t{source}\t{message}\t{category}\t{eventId}}");
+				System.Console.WriteLine($"{level}\t{source}\t{message}\t{category}\t{eventId}");
 			}
 			catch{ }
 		}
