@@ -154,6 +154,10 @@ namespace TomPIT.BigData.Transactions
 						Tenant.GetService<ITransactionService>().Prepare(config, updater.LockedItems);
 					}
 				}
+				else
+				{
+					Tenant.GetService<ITransactionService>().Complete(item.Message.PopReceipt, item.Block.Token);
+				}
 			}
 			finally
 			{
