@@ -58,142 +58,145 @@ namespace TomPIT.BigData.Transactions
 
 		private List<DataFileContext> CreateDataFileContext()
 		{
-			var r = new List<DataFileContext>();
-			var minValue = Data.Compute(string.Format("Min({0})", TimestampColumn), string.Empty);
-			var maxValue = Data.Compute(string.Format("Max({0})", TimestampColumn), string.Empty);
-			var min = minValue == null || minValue == DBNull.Value ? DateTime.UtcNow : (DateTime)minValue;
-			var max = maxValue == null || maxValue == DBNull.Value ? DateTime.UtcNow : (DateTime)maxValue;
-			/*
-			 * performance gain
-			 * we'll select all rows at once which targets our data and then
-			 * operate on that set
-			 */
-			var files = Tenant.GetService<IPartitionService>().QueryFiles(Provider.Block.Partition, Provider.Block.Timezone, PartitionKey, min, max);
-
-			foreach (var i in files)
+			lock (FileManager)
 			{
-				var ctx = new DataFileContext
-				{
-					Data = Data.Clone(),
-					File = i
-				};
-
-				r.Add(ctx);
-			}
-
-			foreach (DataRow i in Data.Rows)
-			{
-				var timestampValue = (DateTime)i[TimestampColumn];
-
-				if (r.Count == 0)
-				{
-					var dfc = CreateDataFileContext(timestampValue, min, max);
-					/*
-					 * if context can't be acquired it is possible that we have a locking 
-					 * issue. transaction will probably be postponed
-					 */
-					if (dfc == null)
-					{
-						ReleaseLocks(r);
-						Locked = true;
-						//Dump($"{dfc.File.FileName} locked");
-						return null;
-					}
-
-					files.Add(dfc.File);
-					r.Add(dfc);
-				}
+				var r = new List<DataFileContext>();
+				var minValue = Data.Compute(string.Format("Min({0})", TimestampColumn), string.Empty);
+				var maxValue = Data.Compute(string.Format("Max({0})", TimestampColumn), string.Empty);
+				var min = minValue == null || minValue == DBNull.Value ? DateTime.UtcNow : (DateTime)minValue;
+				var max = maxValue == null || maxValue == DBNull.Value ? DateTime.UtcNow : (DateTime)maxValue;
 				/*
-				 * now, we'll append row to the file that fits in the timestamp range. this way, we'll repeatedly call merge
-				 * for every file until we find all updates. If updates still remain on the last block we'll call full merge
-				 * with inserts as well
+				 * performance gain
+				 * we'll select all rows at once which targets our data and then
+				 * operate on that set
 				 */
-				var targetFiles = r.Where(f => (f.File.Status == PartitionFileStatus.Open)
-					|| (f.File.Status == PartitionFileStatus.Closed
-						&& (f.File.StartTimestamp <= timestampValue)
-						&& (f.File.EndTimestamp == DateTime.MinValue || f.File.EndTimestamp >= timestampValue)));
+				var files = Tenant.GetService<IPartitionService>().QueryFiles(Provider.Block.Partition, Provider.Block.Timezone, PartitionKey, min, max);
 
-				if (targetFiles.Count() == 0)
+				foreach (var i in files)
 				{
-					Dump($"no target files");
-					var dfc = CreateDataFileContext(timestampValue, min, max);
-
-					if (dfc == null)
+					var ctx = new DataFileContext
 					{
-						ReleaseLocks(r);
-						Locked = true;
-						Dump($"{dfc.File.FileName} locked (in target files)");
-						return null;
+						Data = Data.Clone(),
+						File = i
+					};
+
+					r.Add(ctx);
+				}
+
+				foreach (DataRow i in Data.Rows)
+				{
+					var timestampValue = (DateTime)i[TimestampColumn];
+
+					if (r.Count == 0)
+					{
+						var dfc = CreateDataFileContext(timestampValue, min, max);
+						/*
+						 * if context can't be acquired it is possible that we have a locking 
+						 * issue. transaction will probably be postponed
+						 */
+						if (dfc == null)
+						{
+							ReleaseLocks(r);
+							Locked = true;
+							//Dump($"{dfc.File.FileName} locked");
+							return null;
+						}
+
+						files.Add(dfc.File);
+						r.Add(dfc);
 					}
+					/*
+					 * now, we'll append row to the file that fits in the timestamp range. this way, we'll repeatedly call merge
+					 * for every file until we find all updates. If updates still remain on the last block we'll call full merge
+					 * with inserts as well
+					 */
+					var targetFiles = r.Where(f => (f.File.Status == PartitionFileStatus.Open)
+						|| (f.File.Status == PartitionFileStatus.Closed
+							&& (f.File.StartTimestamp <= timestampValue)
+							&& (f.File.EndTimestamp == DateTime.MinValue || f.File.EndTimestamp >= timestampValue)));
 
-					files.Add(dfc.File);
-					r.Add(dfc);
+					if (targetFiles.Count() == 0)
+					{
+						Dump($"no target files");
+						var dfc = CreateDataFileContext(timestampValue, min, max);
 
-					var tfs = new List<DataFileContext>
+						if (dfc == null)
+						{
+							ReleaseLocks(r);
+							Locked = true;
+							Dump($"{dfc.File.FileName} locked (in target files)");
+							return null;
+						}
+
+						files.Add(dfc.File);
+						r.Add(dfc);
+
+						var tfs = new List<DataFileContext>
 					{
 						dfc
 					};
 
-					targetFiles = tfs;
-				}
+						targetFiles = tfs;
+					}
 
-				foreach (var j in targetFiles)
-				{
-					if (j.Lock == Guid.Empty)
+					foreach (var j in targetFiles)
 					{
-						j.Lock = FileManager.Lock(j.File.FileName);
-
 						if (j.Lock == Guid.Empty)
 						{
-							ReleaseLocks(r);
-							Locked = true;
-							Dump($"{j.File.FileName} locked");
-							return null;
+							j.Lock = FileManager.Lock(j.File.FileName);
+
+							if (j.Lock == Guid.Empty)
+							{
+								ReleaseLocks(r);
+								Locked = true;
+								Dump($"{j.File.FileName} locked");
+								return null;
+							}
+						}
+
+						j.Data.Rows.Add(i.ItemArray);
+					}
+
+					/*
+					 * check if all files are full.
+					 * in that case this could case the row to go awol, because no merge
+					 * call would insert it because block is already full and on
+					 * full blocks only updates are allowed.
+					 * we'll create a new empty bock instead and this will allow us to
+					 * safely complete the last merge on empty block.
+					 */
+					var full = true;
+
+					foreach (var j in targetFiles)
+					{
+						if (j.File.Status == PartitionFileStatus.Open)
+						{
+							full = false;
+							break;
 						}
 					}
 
-					j.Data.Rows.Add(i.ItemArray);
-				}
-
-				/*
-				 * check if all files are full.
-				 * in that case this could case the row to go awol, because no merge
-				 * call would insert it because block is already full and on
-				 * full blocks only updates are allowed.
-				 * we'll create a new empty bock instead and this will allow us to
-				 * safely complete the last merge on empty block.
-				 */
-				var full = true;
-
-				foreach (var j in targetFiles)
-				{
-					if (j.File.Status == PartitionFileStatus.Open)
+					if (full)
 					{
-						full = false;
-						break;
+						var file = CreateDataFileContext(timestampValue, min, max);
+
+						if (file == null)
+						{
+							ReleaseLocks(r);
+							Locked = true;
+							Dump($"cannot obtain lock");
+							return null;
+						}
+
+						file.Data.Rows.Add(i.ItemArray);
+
+						files.Add(file.File);
+						r.Add(file);
 					}
 				}
 
-				if (full)
-				{
-					var file = CreateDataFileContext(timestampValue, min, max);
-
-					if (file == null)
-					{
-						ReleaseLocks(r);
-						Locked = true;
-						Dump($"cannot obtain lock");
-						return null;
-					}
-
-					file.Data.Rows.Add(i.ItemArray);
-
-					files.Add(file.File);
-					r.Add(file);
-				}
+				return r.OrderByDescending(f => f.File.Status).ThenByDescending(f => f.File.StartTimestamp).ToList();
 			}
-
-			return r.OrderByDescending(f => f.File.Status).ThenByDescending(f => f.File.StartTimestamp).ToList();
 		}
 
 		private DataFileContext CreateDataFileContext(DateTime timestamp, DateTime min, DateTime max)
