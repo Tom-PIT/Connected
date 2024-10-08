@@ -6,7 +6,7 @@ namespace TomPIT.Worker.Services
 {
 	internal class QueueWorkerDispatcher : Dispatcher<IQueueMessage>
 	{
-		public QueueWorkerDispatcher() : base(256)
+		public QueueWorkerDispatcher() : base(4)
 		{
 		}
 
