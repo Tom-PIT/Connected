@@ -69,7 +69,7 @@ namespace TomPIT.BigData.Transactions
 			{
 				while (StoragePool.Dequeue(Partition, out item))
 				{
-					if (item.Message.NextVisible <= DateTime.UtcNow)
+					if (item.Message.NextVisible.AddSeconds(-10) <= DateTime.UtcNow)
 					{
 						Dump(item, "expired");
 						continue;
@@ -92,11 +92,19 @@ namespace TomPIT.BigData.Transactions
 
 		private void DoWork(StorageWorkerItem item)
 		{
+			Tenant.GetService<ITransactionService>().Ping(item.Message.PopReceipt, TimeSpan.FromMinutes(6));
+
+			if (item.Message.NextVisible <= DateTime.UtcNow)
+			{
+				Dump(item, "expired");
+				return;
+			}
+
 			var timeout = new TimeoutTask(() =>
 			{
 				Dump(item, "timeout");
 
-				Tenant.GetService<ITransactionService>().Ping(item.Message.PopReceipt, TimeSpan.FromMinutes(10));
+				Tenant.GetService<ITransactionService>().Ping(item.Message.PopReceipt, TimeSpan.FromMinutes(6));
 
 				return Task.CompletedTask;
 			}, TimeSpan.FromMinutes(5), Cancel);
