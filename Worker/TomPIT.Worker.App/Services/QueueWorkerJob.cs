@@ -38,7 +38,7 @@ namespace TomPIT.Worker.Services
 
 			_timeout = new TimeoutTask(() =>
 			{
-				Instance.SysProxy.Management.Queue.Ping(item.PopReceipt, TimeSpan.FromSeconds(90));
+				Instance.SysProxy.Management.Queue.Ping(item.PopReceipt, TimeSpan.FromSeconds(120));
 
 				return Task.CompletedTask;
 			}, TimeSpan.FromSeconds(90), Cancel);
