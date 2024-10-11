@@ -1,9 +1,12 @@
 ﻿using LZ4;
+
 using Newtonsoft.Json.Linq;
+
 using System;
 using System.Linq;
 using System.Text;
 using System.Threading;
+
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.BigData;
 using TomPIT.Diagnostics;
@@ -46,31 +49,27 @@ namespace TomPIT.BigData.Transactions
 				Complete(item.Partition, TimeSpan.FromMinutes(1), 0);
 				return;
 			}
-
+			//TODO check this out
 			var items = MiddlewareDescriptor.Current.Tenant.GetService<IBufferingService>().QueryData(item.Partition);
-			var array = new JArray();
 
 			foreach (var i in items)
 			{
 				var data = Serializer.Deserialize<JArray>(Encoding.UTF8.GetString(LZ4Codec.Unwrap(i.Data)));
 
-				foreach (var j in data)
-					array.Add(j);
-			}
-
-			if (array.Count > 0)
-			{
-				if (config != null)
+				if (data.Any())
 				{
 					try
 					{
-						MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().CreateTransactions(config, array);
+						MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().CreateTransactions(config, data);
+						data.Clear();
 					}
 					catch (Exception ex)
 					{
 						ctx.Services.Diagnostic.Error(nameof(BufferingJob), ex.ToString(), LogCategories.BigData);
 					}
 				}
+				
+				GC.Collect();
 			}
 
 			Complete(item.Partition, middleware.BufferTimeout, items == null || items.Count == 0 ? 0 : items.Max(f => f.Id));
