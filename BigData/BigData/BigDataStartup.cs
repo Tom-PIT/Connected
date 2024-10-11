@@ -36,10 +36,10 @@ namespace TomPIT.BigData
 
         private void OnConfiguringServices(object sender, IServiceCollection e)
         {
-            e.AddSingleton<IHostedService, StorageService>();
-            e.AddSingleton<IHostedService, MaintenanceService>();
-            e.AddSingleton<IHostedService, BufferingWorker>();
-            e.AddSingleton<ITraceService, TraceService>();
+         e.AddSingleton<IHostedService, StorageService>();
+         e.AddSingleton<IHostedService, MaintenanceService>();
+         e.AddSingleton<IHostedService, BufferingWorker>();
+         //e.AddSingleton<ITraceService, TraceService>();
         }
 
         private void OnBooting(object sender, System.EventArgs e)
@@ -49,9 +49,9 @@ namespace TomPIT.BigData
 
         private void OnConfiguring(object sender, System.Tuple<IApplicationBuilder, IWebHostEnvironment> e)
         {
-            var traceService = e.Item1.ApplicationServices.GetService<ITraceService>();
+            //var traceService = e.Item1.ApplicationServices.GetService<ITraceService>();
 
-            MiddlewareDescriptor.Current.Tenant.RegisterService(typeof(ITraceService), traceService);
+            //MiddlewareDescriptor.Current.Tenant.RegisterService(typeof(ITraceService), traceService);
         }
 
         private void OnTenantInitialize(object sender, TenantArgs e)
