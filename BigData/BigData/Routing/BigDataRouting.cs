@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using TomPIT.BigData.Controllers;
@@ -18,6 +19,7 @@ namespace TomPIT.BigData.Configuration
 
 				handler.ProcessRequest();
 
+				GC.Collect();
 				return Task.CompletedTask;
 			});
 
