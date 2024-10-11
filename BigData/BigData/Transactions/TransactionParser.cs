@@ -1,7 +1,10 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+
 using Newtonsoft.Json.Linq;
+
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.BigData;
@@ -11,11 +14,11 @@ using TomPIT.Serialization;
 
 namespace TomPIT.BigData.Transactions
 {
-	internal class TransactionParser
+	internal class TransactionParser: IDisposable
 	{
 		private List<List<object>> _blocks = null;
 		public const int FileSize = 10000000;
-		private const int BlockSize = 25;
+		private const int BlockSize = 250;
 		private IMicroService _microService = null;
 
 		public TransactionParser(IPartitionConfiguration partition, JArray items)
@@ -37,7 +40,7 @@ namespace TomPIT.BigData.Transactions
 			var argument = type.GetInterface(typeof(IPartitionMiddleware<>).FullName).GetGenericArguments()[0];
 			using var ctx = new MicroServiceContext(MicroService);
 			var middleware = Tenant.GetService<ICompilerService>().CreateInstance<MiddlewareComponent>(ctx, type);
-			var items = (IList)typeof(List<>).MakeGenericType(argument).CreateInstance();
+			var items = (IList)typeof(List<>).MakeGenericType(argument).CreateInstance(new[] { (object)Items.Count });
 
 			foreach (var item in Items)
 			{
@@ -100,6 +103,15 @@ namespace TomPIT.BigData.Transactions
 				result.Add(Items[i]);
 
 			return result;
+		}
+
+		public void Dispose()
+		{
+			this.Items?.Clear();
+			this.Items = null;
+			this.Blocks?.ForEach(e => e?.Clear());
+			this.Blocks?.Clear();
+			this._blocks = null;
 		}
 	}
 }
