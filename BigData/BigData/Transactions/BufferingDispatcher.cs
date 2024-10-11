@@ -5,7 +5,7 @@ namespace TomPIT.BigData.Transactions
 {
 	internal class BufferingDispatcher : Dispatcher<IPartitionBuffer>
 	{
-		public BufferingDispatcher(string resourceGroup) : base(32)
+		public BufferingDispatcher(string resourceGroup) : base(1)
 		{
 			ResourceGroup = resourceGroup;
 		}
