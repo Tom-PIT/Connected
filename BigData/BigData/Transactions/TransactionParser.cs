@@ -18,7 +18,7 @@ namespace TomPIT.BigData.Transactions
 	{
 		private List<List<object>> _blocks = null;
 		public const int FileSize = 10000000;
-		private const int BlockSize = 250;
+		private const int BlockSize = 10000;
 		private IMicroService _microService = null;
 
 		public TransactionParser(IPartitionConfiguration partition, JArray items)
