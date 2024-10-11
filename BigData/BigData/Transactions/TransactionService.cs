@@ -94,7 +94,7 @@ namespace TomPIT.BigData.Transactions
 
 		public void CreateTransactions(IPartitionConfiguration partition, JArray items)
 		{
-			var parser = new TransactionParser(partition, items);
+			using var parser = new TransactionParser(partition, items);
 
 			parser.Execute();
 
@@ -102,13 +102,13 @@ namespace TomPIT.BigData.Transactions
 			var timezones = supportsTimezone ? Tenant.GetService<ITimeZoneService>().Query() : null;
 			var blobs = new Dictionary<Guid, List<Guid>>();
 
-			_traceService?.Trace(new TraceMessage(_createTransactionEndpoint, Serializer.Serialize(new
-			{
-				Partition = partition.FileName,
-				ItemCount = items?.Count,
-				SupportsTimezone = supportsTimezone,
-				Timezones = timezones?.Select(e => e.Name)
-			})));
+			//_traceService?.Trace(new TraceMessage(_createTransactionEndpoint, Serializer.Serialize(new
+			//{
+			//	Partition = partition.FileName,
+			//	ItemCount = items?.Count,
+			//	SupportsTimezone = supportsTimezone,
+			//	Timezones = timezones?.Select(e => e.Name)
+			//})));
 
 			try
 			{
