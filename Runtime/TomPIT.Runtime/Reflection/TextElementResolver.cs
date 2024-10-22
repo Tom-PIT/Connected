@@ -13,6 +13,7 @@ using TomPIT.ComponentModel.Management;
 using TomPIT.ComponentModel.Messaging;
 using TomPIT.ComponentModel.Navigation;
 using TomPIT.ComponentModel.Quality;
+using TomPIT.ComponentModel.Resources;
 using TomPIT.ComponentModel.Runtime;
 using TomPIT.ComponentModel.Scripting;
 using TomPIT.ComponentModel.Search;
@@ -43,6 +44,16 @@ internal class TextElementResolver
 		if (MicroService is null)
 			return null;
 
+		if (tokens.Length == 2)
+		{
+			Component = tokens[1];
+
+			ResolveComponent();
+
+			if (Result is not null)
+				return Result;
+		}
+
 		Component = TrimExtension(tokens[1]);
 
 		if (tokens.Length > 2)
@@ -64,6 +75,9 @@ internal class TextElementResolver
 	private void ResolveComponent()
 	{
 		if (LoadCode())
+			return;
+
+		if (LoadText())
 			return;
 
 		if (LoadScript())
@@ -162,7 +176,12 @@ internal class TextElementResolver
 
 	private bool LoadCode()
 	{
-		return LoadSimple<IScriptConfiguration>(ComponentCategories.Code);
+		return LoadSimple<ITextConfiguration>(ComponentCategories.Code);
+	}
+
+	private bool LoadText()
+	{
+		return LoadSimple<ITextConfiguration>(ComponentCategories.Text);
 	}
 
 	private bool LoadScript()
