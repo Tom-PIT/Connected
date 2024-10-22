@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System;
+﻿using System;
 using System.Text.Json.Serialization;
 using System.Threading;
 using TomPIT.Connectivity;
@@ -22,7 +21,8 @@ namespace TomPIT.Middleware
 		private object _authorizationOwner;
 		private CancellationTokenSource _cancellationTokenSource = new();
 		private readonly object _sync = new();
-		private IServiceScope? _scope;
+		private object? _provider;
+		private object? _scope;
 		#endregion
 
 		#region Constructors
@@ -100,15 +100,41 @@ namespace TomPIT.Middleware
 					if (host is null)
 						return default;
 
-					_scope ??= host.ApplicationServices.CreateScope();
+					var providerType = Type.GetType("TomPIT.Services.IContextProvider, TomPIT.Core.Model.dll");
+
+					if (providerType is null)
+						return default;
+
+					_provider = host.ApplicationServices.GetService(providerType);
+
+					if (_provider is null)
+						return default;
+
+					var contextType = Type.GetType("TomPIT.Services.IContext, TomPIT.Core.Model.dll");
+
+					if (contextType is null)
+						return default;
+
+					_scope = GetService(contextType);
 				}
 			}
 
-			if (_scope.ServiceProvider is null)
+			if (_scope is null)
 				return default;
 
-			return _scope.ServiceProvider.GetService<TService>();
+			var result = GetService(typeof(TService));
+
+			if (result is null)
+				return default;
+
+			return (TService)result;
 		}
+
+		private object? GetService(Type type)
+		{
+			return _provider.GetType().GetMethod("GetService").MakeGenericMethod(type)?.Invoke(_provider, null);
+		}
+
 
 		public void Cancel()
 		{
@@ -227,7 +253,7 @@ namespace TomPIT.Middleware
 				{
 					if (_scope is not null)
 					{
-						_scope.Dispose();
+						_scope?.GetType()?.GetMethod("Dispose")?.Invoke(_scope, null);
 						_scope = null;
 					}
 

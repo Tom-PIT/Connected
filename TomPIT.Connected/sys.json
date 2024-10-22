@@ -3,7 +3,7 @@
   "features": "Application, Sys, Development",
   "platform": "OnPrem",
   "microServicesFolder": "/microServices",
-  "stage": "Development",
+  "stage": "QualityAssurance",
   "optimization": "Debug",
   "resourceGroups": [
     "Default"
