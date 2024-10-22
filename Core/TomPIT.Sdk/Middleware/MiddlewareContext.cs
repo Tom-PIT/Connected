@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
+
 using TomPIT.Connectivity;
 using TomPIT.Data;
 using TomPIT.Data.Storage;
@@ -10,6 +12,7 @@ using TomPIT.Middleware.Storage;
 using TomPIT.Reflection;
 using TomPIT.Runtime;
 using TomPIT.Security;
+
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Middleware
@@ -115,7 +118,7 @@ namespace TomPIT.Middleware
 					if (contextType is null)
 						return default;
 
-					_scope = GetService(contextType);
+					_scope = _provider.GetType().GetMethod("Create")?.Invoke(_provider, null);
 				}
 			}
 
@@ -132,7 +135,12 @@ namespace TomPIT.Middleware
 
 		private object? GetService(Type type)
 		{
-			return _provider.GetType().GetMethod("GetService").MakeGenericMethod(type)?.Invoke(_provider, null);
+			var method = _scope.GetType().GetMethods().FirstOrDefault((f) => f.Name == "GetService" && f.ContainsGenericParameters);
+
+			if (method is null)
+				return default;
+
+			return method.MakeGenericMethod(type)?.Invoke(_scope, null);
 		}
 
 
