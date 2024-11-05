@@ -146,8 +146,9 @@ namespace TomPIT.Exceptions
 				{
 
 					var ms = tenant.GetService<IMicroServiceService>().Select(script.MicroService);
+					var stage = tenant.GetService<IRuntimeService>().Stage;
 
-					if (ms != null && ms.Status != MicroServiceStatus.Production)
+					if (ms != null && stage != EnvironmentStage.Production)
 					{
 						if (tenant != null && !string.IsNullOrWhiteSpace(devUrl))
 						{

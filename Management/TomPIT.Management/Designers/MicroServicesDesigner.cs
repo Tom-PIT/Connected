@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 using TomPIT.Annotations.Design;
 using TomPIT.ComponentModel;
 using TomPIT.Design;
@@ -53,7 +53,7 @@ namespace TomPIT.Management.Designers
 			var template = ts.Count == 0 ? Guid.Empty : ts[0].Token;
 			var id = Guid.NewGuid();
 
-			Environment.Context.Tenant.GetService<IMicroServiceManagementService>().Insert(id, name, DomQuery.Closest<IResourceGroupScope>(Owner).ResourceGroup.Token, template, MicroServiceStatus.Development, null, null);
+			Environment.Context.Tenant.GetService<IMicroServiceManagementService>().Insert(id, name, DomQuery.Closest<IResourceGroupScope>(Owner).ResourceGroup.Token, template, null, null);
 			var ms = Environment.Context.Tenant.GetService<IMicroServiceService>().Select(id);
 
 			var r = Result.SectionResult(this, EnvironmentSection.Designer | EnvironmentSection.Explorer);

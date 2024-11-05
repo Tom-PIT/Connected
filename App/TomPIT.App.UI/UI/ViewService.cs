@@ -6,7 +6,6 @@ using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using System.Text;
 using TomPIT.App.Models;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
@@ -18,7 +17,6 @@ using TomPIT.Environment;
 using TomPIT.Exceptions;
 using TomPIT.Models;
 using TomPIT.Runtime;
-using TomPIT.Storage;
 using TomPIT.UI;
 
 namespace TomPIT.App.UI
@@ -29,6 +27,9 @@ namespace TomPIT.App.UI
 
 		public ViewService(ITenant tenant) : base(tenant, "view")
 		{
+			if (!tenant.GetService<IRuntimeService>().IsHotSwappingSupported)
+				return;
+
 			tenant.GetService<IComponentService>().ComponentChanged += OnComponentChanged;
 
 			tenant.GetService<IComponentService>().ConfigurationChanged += OnConfigurationChanged;
@@ -128,7 +129,7 @@ namespace TomPIT.App.UI
 
 			foreach (var i in views)
 			{
-				if (i == null)
+				if (i is null || !Tenant.GetService<IRuntimeService>().IsMicroServiceSupported(i.MicroService()))
 					continue;
 
 				Set(i.Component, i, TimeSpan.Zero);
@@ -137,10 +138,21 @@ namespace TomPIT.App.UI
 
 		protected override void OnInvalidate(Guid id)
 		{
-			if (Tenant.GetService<IComponentService>().SelectConfiguration(id) is IConfiguration ui)
-				Set(ui.Component, ui, TimeSpan.Zero);
-			else
+			if (!Tenant.GetService<IRuntimeService>().IsHotSwappingSupported)
+				return;
+
+			var configuration = Tenant.GetService<IComponentService>().SelectConfiguration(id);
+
+			if (configuration is null)
+			{
 				Remove(id);
+				return;
+			}
+
+			if (!Tenant.GetService<IRuntimeService>().IsMicroServiceSupported(configuration.MicroService()))
+				return;
+
+			Set(configuration.Component, configuration, TimeSpan.Zero);
 		}
 
 		public IViewConfiguration Select(string url, ActionContext context)
@@ -173,7 +185,12 @@ namespace TomPIT.App.UI
 						Url = url
 					};
 
-					foreach (var runtime in Tenant.GetService<IMicroServiceRuntimeService>().QueryRuntimes())
+					var runtimeService = Tenant.GetService<IMicroServiceRuntimeService>();
+
+					if (runtimeService is null)
+						return view;
+
+					foreach (var runtime in runtimeService.QueryRuntimes())
 					{
 						if (runtime?.Resolver?.ResolveView(viewResolutionArgs) is IViewConfiguration config)
 							return config;
@@ -190,12 +207,7 @@ namespace TomPIT.App.UI
 			if (ui.TextBlob == Guid.Empty)
 				return null;
 
-			var r = Tenant.GetService<IStorageService>().Download(ui.TextBlob);
-
-			if (r == null)
-				return null;
-
-			return Encoding.UTF8.GetString(r.Content);
+			return Tenant.GetService<IComponentService>().SelectText(ui.Configuration().MicroService(), ui);
 		}
 
 		public bool HasChanged(ViewKind kind, string url)
@@ -295,10 +307,15 @@ namespace TomPIT.App.UI
 				Name = name
 			};
 
-			foreach (var runtime in Tenant.GetService<IMicroServiceRuntimeService>().QueryRuntimes())
+			var runtimeService = Tenant.GetService<IMicroServiceRuntimeService>();
+
+			if (runtimeService is not null)
 			{
-				if (runtime?.Resolver?.ResolveMaster(masterResolutionArgs) is IMasterViewConfiguration config)
-					return config;
+				foreach (var runtime in runtimeService.QueryRuntimes())
+				{
+					if (runtime?.Resolver?.ResolveMaster(masterResolutionArgs) is IMasterViewConfiguration config)
+						return config;
+				}
 			}
 
 			return Get(c.Token) as IMasterViewConfiguration;
@@ -325,10 +342,15 @@ namespace TomPIT.App.UI
 				Url = url
 			};
 
-			foreach (var runtime in Tenant.GetService<IMicroServiceRuntimeService>().QueryRuntimes())
+			var runtimeService = Tenant.GetService<IMicroServiceRuntimeService>();
+
+			if (runtimeService is not null)
 			{
-				if (runtime?.Resolver?.ResolveMailTemplate(mailTemplateResolutionArgs) is IMailTemplateConfiguration config)
-					return config;
+				foreach (var runtime in Tenant.GetService<IMicroServiceRuntimeService>().QueryRuntimes())
+				{
+					if (runtime?.Resolver?.ResolveMailTemplate(mailTemplateResolutionArgs) is IMailTemplateConfiguration config)
+						return config;
+				}
 			}
 
 			return Get(component.Token) as IMailTemplateConfiguration;
@@ -356,10 +378,15 @@ namespace TomPIT.App.UI
 				Name = name
 			};
 
-			foreach (var runtime in Tenant.GetService<IMicroServiceRuntimeService>().QueryRuntimes())
+			var runtimeService = Tenant.GetService<IMicroServiceRuntimeService>();
+
+			if (runtimeService is not null)
 			{
-				if (runtime?.Resolver?.ResolvePartial(partialResolutionArgs) is IPartialViewConfiguration config)
-					return config;
+				foreach (var runtime in Tenant.GetService<IMicroServiceRuntimeService>().QueryRuntimes())
+				{
+					if (runtime?.Resolver?.ResolvePartial(partialResolutionArgs) is IPartialViewConfiguration config)
+						return config;
+				}
 			}
 
 			return Get(c.Token) as IPartialViewConfiguration;
@@ -389,10 +416,15 @@ namespace TomPIT.App.UI
 				Name = name
 			};
 
-			foreach (var runtime in Tenant.GetService<IMicroServiceRuntimeService>().QueryRuntimes())
+			var runtimeService = Tenant.GetService<IMicroServiceRuntimeService>();
+
+			if (runtimeService is not null)
 			{
-				if (runtime?.Resolver?.ResolveReport(reportResolutionArgs) is IReportConfiguration config)
-					return config;
+				foreach (var runtime in Tenant.GetService<IMicroServiceRuntimeService>().QueryRuntimes())
+				{
+					if (runtime?.Resolver?.ResolveReport(reportResolutionArgs) is IReportConfiguration config)
+						return config;
+				}
 			}
 
 			return Get(c.Token) as IReportConfiguration;

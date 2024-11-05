@@ -40,7 +40,9 @@ namespace TomPIT.MicroServices.Design
 		{
 			_items = new ConcurrentDictionary<string, IItemDescriptor>(new Dictionary<string, IItemDescriptor>
 				{
-					 //{ ComponentCategories.Entity,      new ItemDescriptor("Entity",       ComponentCategories.Entity,        typeof(EntityConfiguration))                          { Glyph = "fal fa-database",             Category = "Data" ,           Ordinal=9} },
+				{ ComponentCategories.Code,             new ItemDescriptor("Code",              ComponentCategories.Code,               typeof(Code))                                 { Glyph = "fal fa-file-code",    Category = "Microservice" ,     Ordinal=5} },
+				{ ComponentCategories.Text,    new ItemDescriptor("File",    ComponentCategories.Text,      typeof(Resources.Text))          { Glyph = "fal fa-file-alt",          Category = "Microservice" ,      Ordinal=6} },
+				{ ComponentCategories.AssemblyResource,             new ItemDescriptor("Resource file",              ComponentCategories.AssemblyResource,               typeof(AssemblyResource))                                 { Glyph = "fal fa-font-case",    Category = "Microservice" ,     Ordinal=7} },
 					{ ComponentCategories.Connection,      new ItemDescriptor("Connection",       ComponentCategories.Connection,        typeof(Connection))                          { Glyph = "fal fa-server",             Category = "Data" ,           Ordinal=10} },
 					 { ComponentCategories.Model,             new ItemDescriptor("Model",              ComponentCategories.Model,               typeof(Model))                                 { Glyph = "fal fa-file-code",    Category = "Data" ,     Ordinal=20} },
 
@@ -78,7 +80,6 @@ namespace TomPIT.MicroServices.Design
 					 { ComponentCategories.EmbeddedNuGetPackage,new ItemDescriptor("NuGet embedded package",ComponentCategories.EmbeddedNuGetPackage,  typeof(NuGetPackageEmbeddedResource))            { Glyph = "fal fa-cube",          Category = "Resources" ,      Ordinal=403 }  } ,
 					 { ComponentCategories.EmbeddedAssembly,new ItemDescriptor("Embedded assembly",ComponentCategories.EmbeddedAssembly,  typeof(AssemblyEmbeddedResource))            { Glyph = "fal fa-file-code",          Category = "Resources" ,      Ordinal=404 }  } ,
 					 { ComponentCategories.FileAssembly,    new ItemDescriptor("File assembly",    ComponentCategories.FileAssembly,      typeof(AssemblyFileSystemResource))          { Glyph = "fal fa-file-code",          Category = "Resources" ,      Ordinal=405} },
-					 { ComponentCategories.Text,    new ItemDescriptor("Text",    ComponentCategories.Text,      typeof(Resources.Text))          { Glyph = "fal fa-file-alt",          Category = "Resources" ,      Ordinal=406} },
 
 					 { ComponentCategories.MicroServiceInfo,     new ItemDescriptor("Microservice info",   ComponentCategories.MicroServiceInfo,       typeof(MicroServiceInfoConfiguration))                       { Glyph = "fal fa-cogs",   Category = "Infrastructure" ,     Ordinal=504} },
 					 { ComponentCategories.Settings,     new ItemDescriptor("Settings",   ComponentCategories.Settings,       typeof(SettingsConfiguration))                       { Glyph = "fal fa-cogs",   Category = "Infrastructure" ,     Ordinal=505} },

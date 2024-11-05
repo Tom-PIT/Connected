@@ -21,5 +21,7 @@ namespace TomPIT.Proxy
 		IBlobContent Download(Guid blob);
 		ImmutableList<IBlobContent> Download(List<Guid> blobs);
 		ImmutableList<IBlobContent> Download(List<Guid> resourceGroups, List<int> types);
+
+		void Refresh(Guid token);
 	}
 }

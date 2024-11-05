@@ -6,7 +6,6 @@ using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.ComponentModel.IoC;
 using TomPIT.ComponentModel.UI;
-using TomPIT.Connectivity;
 using TomPIT.Exceptions;
 
 namespace TomPIT.Compilation
@@ -15,14 +14,14 @@ namespace TomPIT.Compilation
 	{
 		private string _message = string.Empty;
 
-		public CompilerException(ITenant tenant, IViewConfiguration view, Exception inner) : base(view, inner)
+		public CompilerException(IViewConfiguration view, Exception inner) : base(view, inner)
 		{
 			_message = inner.Message;
 
 			if (view == null)
 				return;
 
-			var ms = tenant.GetService<IMicroServiceService>().Select(view.MicroService());
+			var ms = Tenant.GetService<IMicroServiceService>().Select(view.MicroService());
 
 			Source = $"{view.ComponentName()}.cshtml";
 			Path = $"{ms.Name}/{view.ComponentName()}.cshtml";
@@ -40,7 +39,7 @@ namespace TomPIT.Compilation
 				}
 			}
 		}
-		public CompilerException(ITenant tenant, IScriptDescriptor script, IText sourceCode)
+		public CompilerException(IScriptDescriptor script, IText sourceCode)
 		{
 			var sb = new StringBuilder();
 
@@ -53,16 +52,16 @@ namespace TomPIT.Compilation
 			var lastError = LastScriptError(script.Errors);
 
 			if (lastError != null)
-				ResolveComponent(tenant, sourceCode, lastError);
+				ResolveComponent(sourceCode, lastError);
 			else
 			{
 				if (script.Errors.Count > 0)
 					Line = (script.Errors[^1].StartLine + 1).ToString();
 
-				var ms = tenant.GetService<IMicroServiceService>().Select(sourceCode.Configuration().MicroService());
+				var ms = Tenant.GetService<IMicroServiceService>().Select(sourceCode.Configuration().MicroService());
 
 				Source = sourceCode.FileName;
-				Path = sourceCode.ResolvePath(tenant);
+				Path = sourceCode.ResolvePath();
 				MicroService = ms.Name;
 				Component = sourceCode.Configuration().Component;
 				Element = sourceCode.Id;
@@ -72,7 +71,7 @@ namespace TomPIT.Compilation
 		}
 
 		public override string Message => _message;
-		private void ResolveComponent(ITenant tenant, IText sourceCode, IDiagnostic diagnostic)
+		private void ResolveComponent(IText sourceCode, IDiagnostic diagnostic)
 		{
 			Path = diagnostic.SourcePath;
 			Line = (diagnostic.StartLine + 1).ToString();
@@ -81,7 +80,7 @@ namespace TomPIT.Compilation
 
 			if (tokens.Length == 1)
 			{
-				var ms = tenant.GetService<IMicroServiceService>().Select(sourceCode.Configuration().MicroService());
+				var ms = Tenant.GetService<IMicroServiceService>().Select(sourceCode.Configuration().MicroService());
 
 				if (ms == null)
 					return;
@@ -93,21 +92,21 @@ namespace TomPIT.Compilation
 				return;
 			}
 
-			var microService = tenant.GetService<IMicroServiceService>().Select(tokens[0]);
+			var microService = Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
 
 			if (microService == null)
 				return;
 
 			MicroService = microService.Name;
 
-			var component = tenant.GetService<IComponentService>().SelectComponentByNameSpace(microService.Token, ComponentCategories.NameSpacePublicScript, System.IO.Path.GetFileNameWithoutExtension(tokens[1]));
+			var component = Tenant.GetService<IComponentService>().SelectComponentByNameSpace(microService.Token, ComponentCategories.NameSpacePublicScript, System.IO.Path.GetFileNameWithoutExtension(tokens[1]));
 
 			if (component == null)
 				return;
 
 			Component = component.Token;
 
-			var config = tenant.GetService<IComponentService>().SelectConfiguration(component.Token);
+			var config = Tenant.GetService<IComponentService>().SelectConfiguration(component.Token);
 
 			if (config == null)
 				return;

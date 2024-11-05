@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using TomPIT.BigData.Controllers;
@@ -9,7 +10,7 @@ namespace TomPIT.BigData.Configuration
 	{
 		public static void Register(IEndpointRouteBuilder builder)
 		{
-			builder.MapControllerRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
+			builder.MapPingRoute();
 			builder.MapControllerRoute("sys.tracing.endpoints", "sys/tracing/endpoints", new { controller = "Tracing", action = "Endpoints" });
 
 			builder.Map("data/{microService}/{partition}", (t) =>
@@ -18,6 +19,7 @@ namespace TomPIT.BigData.Configuration
 
 				handler.ProcessRequest();
 
+				GC.Collect();
 				return Task.CompletedTask;
 			});
 

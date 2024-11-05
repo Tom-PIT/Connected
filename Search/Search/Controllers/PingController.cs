@@ -5,6 +5,7 @@ using TomPIT.Controllers;
 namespace TomPIT.Search.Controllers
 {
 	[AllowAnonymous]
+	[Route("sys/search/pingcontroller")]
 	public class PingController : ServerController
 	{
 		[HttpGet]

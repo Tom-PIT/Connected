@@ -1,7 +1,4 @@
-﻿using System;
-using TomPIT.ComponentModel.Diagnostics;
-using TomPIT.Diagnostics;
-using TomPIT.Exceptions;
+﻿using TomPIT.Exceptions;
 
 namespace TomPIT.Middleware.Services
 {
@@ -12,10 +9,6 @@ namespace TomPIT.Middleware.Services
 		void Info(string source, string message, string category);
 
 		void Console(string message);
-
-		Guid StartMetric(IMetricOptions metric, object args);
-		Guid StartMetric(IMetricOptions metric, Guid element, object args);
-		void StopMetric(Guid metricId, SessionResult result, object args);
 
 		RuntimeException Exception(string message);
 		RuntimeException Exception(string format, string message);

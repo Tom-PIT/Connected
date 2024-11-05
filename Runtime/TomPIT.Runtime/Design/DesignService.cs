@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.Extensions.Configuration;
+
+using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text.Json;
 using TomPIT.Connectivity;
@@ -8,9 +11,7 @@ namespace TomPIT.Design
 	internal class DesignService : TenantObject, IDesignService
 	{
 		private IComponentModel _components = null;
-		private IDesignSearch _search = null;
 		private IDeployment _deployment = null;
-		private ITextDiff _diff = null;
 		private IMicroServiceDesign _microServices = null;
 
 		public DesignService(ITenant tenant) : base(tenant)
@@ -38,17 +39,6 @@ namespace TomPIT.Design
 			}
 		}
 
-		public ITextDiff TextDiff
-		{
-			get
-			{
-				if (_diff == null)
-					_diff = new TextDiff();
-
-				return _diff;
-			}
-		}
-
 		public IDeployment Deployment
 		{
 			get
@@ -57,17 +47,6 @@ namespace TomPIT.Design
 					_deployment = new Deployment(Tenant);
 
 				return _deployment;
-			}
-		}
-
-		public IDesignSearch Search
-		{
-			get
-			{
-				if (_search == null)
-					_search = new DesignSearch(Tenant);
-
-				return _search;
 			}
 		}
 
@@ -89,11 +68,10 @@ namespace TomPIT.Design
 
 		private void InitializeConfiguration()
 		{
-			if (!Shell.Configuration.RootElement.TryGetProperty("designers", out JsonElement element))
-				return;
+			var designers = Shell.Configuration.GetSection("designers").Get<string[]>();
 
-			foreach (var item in element.EnumerateArray())
-				Designers.Add(item.GetString());
+			foreach (var item in designers)
+				Designers.Add(item);
 		}
 	}
 }

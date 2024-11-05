@@ -29,7 +29,7 @@ namespace TomPIT.Compilation
 
 		private void LoadScript(IText sourceCode)
 		{
-			ProcessScript(sourceCode.Id, Tenant.GetService<IComponentService>().SelectText(MicroService.Token, sourceCode), sourceCode.ResolvePath(Tenant));
+			ProcessScript(sourceCode.Id, Tenant.GetService<IComponentService>().SelectText(MicroService.Token, sourceCode), sourceCode.ResolvePath());
 		}
 
 		private void ProcessScript(Guid id, string sourceCode, string basePath)

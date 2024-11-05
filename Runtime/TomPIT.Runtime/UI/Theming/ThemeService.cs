@@ -11,6 +11,9 @@ namespace TomPIT.UI.Theming
 	{
 		public ThemeService(ITenant Tenant) : base(Tenant, "theme")
 		{
+			if (!Tenant.GetService<IRuntimeService>().IsHotSwappingSupported)
+				return;
+
 			Tenant.GetService<IComponentService>().ConfigurationChanged += OnConfigurationChanged;
 			Tenant.GetService<IComponentService>().ConfigurationAdded += OnConfigurationAdded;
 			Tenant.GetService<IComponentService>().ConfigurationRemoved += OnConfigurationRemoved;
@@ -47,12 +50,15 @@ namespace TomPIT.UI.Theming
 
 		private void Invalidate(ConfigurationEventArgs e)
 		{
+			if (!Tenant.GetService<IRuntimeService>().IsHotSwappingSupported || !Tenant.GetService<IRuntimeService>().IsMicroServiceSupported(e.MicroService))
+				return;
+
 			if (string.Compare(e.Category, "Theme", true) != 0)
 				return;
 
 			var c = Tenant.GetService<IComponentService>().SelectComponent(e.Component);
 
-			if (c == null)
+			if (c is null)
 				return;
 
 			Remove(GenerateKey(e.MicroService, c.Name.ToLowerInvariant()));

@@ -14,13 +14,11 @@
 		IDataCacheController DataCache { get; }
 		IEventController Events { get; }
 		IFolderController Folders { get; }
-		IInstanceEndpointController InstanceEndpoints { get; }
 		IIoTController IoT { get; }
 		ILanguageController Languages { get; }
 		ILockingController Locking { get; }
 		ILoggingController Logging { get; }
 		IMailController Mail { get; }
-		IMetricController Metrics { get; }
 		IMicroServiceController MicroServices { get; }
 		IPrintingController Printing { get; }
 		IQueueController Queue { get; }
@@ -34,5 +32,6 @@
 		IUserController Users { get; }
 		IUserDataController UserData { get; }
 		IXmlKeyController XmlKeys { get; }
+		ISourceFileController SourceFiles { get; }
 	}
 }

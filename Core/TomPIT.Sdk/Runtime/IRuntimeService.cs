@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using System;
+using System.Collections.Immutable;
+using System.Reflection;
 using TomPIT.Environment;
-using TomPIT.Proxy;
 
 namespace TomPIT.Runtime
 {
@@ -14,8 +16,9 @@ namespace TomPIT.Runtime
 	public enum EnvironmentStage
 	{
 		Development = 1,
-		Staging = 2,
-		Production = 3
+		QualityAssurance = 2,
+		Staging = 3,
+		Production = 4
 	}
 
 	public enum EnvironmentMode
@@ -45,6 +48,12 @@ namespace TomPIT.Runtime
 		ReadOnly = 2
 	}
 
+	public enum EnvironmentOptimization
+	{
+		Debug = 1,
+		Release = 2
+	}
+
 	public interface IRuntimeService
 	{
 		void Initialize(IWebHostEnvironment environment);
@@ -58,9 +67,14 @@ namespace TomPIT.Runtime
 		Platform Platform { get; }
 		EnvironmentConnectivity Connectivity { get; }
 		EnvironmentIOBehavior IOBehavior { get; }
+		EnvironmentOptimization Optimization { get; }
 
 		IApplicationBuilder Host { get; }
 
 		bool IsInitialized { get; }
+		bool IsHotSwappingSupported { get; }
+		bool IsMicroServiceSupported(Guid microService);
+		ImmutableArray<Assembly> RecompiledMicroServices { get; }
+		ImmutableArray<Assembly> MicroServices { get; }
 	}
 }

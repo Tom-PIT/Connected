@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Immutable;
-using Microsoft.AspNetCore.Mvc;
 using TomPIT.ComponentModel;
 using TomPIT.Sys.Model;
 
@@ -15,13 +15,12 @@ namespace TomPIT.Sys.Controllers.Management
 
 			var name = body.Required<string>("name");
 			var microService = body.Required<Guid>("microService");
-			var status = body.Required<MicroServiceStatus>("status");
 			var resourceGroup = body.Required<Guid>("resourceGroup");
 			var template = body.Required<Guid>("template");
-			var meta = body.Required<string>("meta");
 			var version = body.Optional("version", string.Empty);
+			var commit = body.Optional("commit", string.Empty);
 
-			DataModel.MicroServices.Insert(microService, name, status, resourceGroup, template, meta, version);
+			DataModel.MicroServices.Insert(microService, name, resourceGroup, template, version, commit);
 		}
 
 		[HttpPost]
@@ -31,15 +30,12 @@ namespace TomPIT.Sys.Controllers.Management
 
 			var microService = body.Required<Guid>("microService");
 			var name = body.Required<string>("name");
-			var status = body.Required<MicroServiceStatus>("status");
-			var template = body.Optional<Guid>("template", Guid.Empty);
+			var template = body.Optional("template", Guid.Empty);
 			var resourceGroup = body.Required<Guid>("resourceGroup");
-			var package = body.Optional("package", Guid.Empty);
-			var plan = body.Optional("plan", Guid.Empty);
-			var updateStatus = body.Required<UpdateStatus>("updateStatus");
-			var commitStatus = body.Required<CommitStatus>("commitStatus");
+			var version = body.Optional("version", string.Empty);
+			var commit = body.Optional("commit", string.Empty);
 
-			DataModel.MicroServices.Update(microService, name, status, template, resourceGroup, package, plan, updateStatus, commitStatus);
+			DataModel.MicroServices.Update(microService, name, template, resourceGroup, version, commit);
 		}
 
 		[HttpPost]
@@ -69,11 +65,5 @@ namespace TomPIT.Sys.Controllers.Management
 
 		//	return Shell.GetService<ICryptographyService>().Encrypt(this, JsonConvert.SerializeObject(parameters));
 		//}
-
-		[HttpGet]
-		public ImmutableList<IMicroServiceString> QueryStrings(Guid microService)
-		{
-			return DataModel.MicroServiceStrings.Query(microService);
-		}
 	}
 }

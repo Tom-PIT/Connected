@@ -2050,6 +2050,15 @@ namespace TomPIT {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Microservice is in read only mode and does not allow any changes to be mase..
+        /// </summary>
+        public static string ErrMsReadOnly {
+            get {
+                return ResourceManager.GetString("ErrMsReadOnly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to NewPath not set.
         /// </summary>
         public static string ErrNewPathNotSet {

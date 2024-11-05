@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Text;
@@ -10,7 +8,6 @@ using TomPIT.ComponentModel;
 using TomPIT.Design.Ide.Designers;
 using TomPIT.Design.Ide.Dom;
 using TomPIT.Exceptions;
-using TomPIT.Ide.ComponentModel;
 using TomPIT.Ide.Designers;
 using TomPIT.Reflection;
 
@@ -37,8 +34,7 @@ namespace TomPIT.Ide.Dom
 
 			ValidateValue(instance, property, validatedValue);
 
-			if (!SaveLocalizedValue(instance, property, validatedValue))
-				SaveNonLocalizedValue(instance, property, validatedValue);
+			property.SetValue(instance, validatedValue);
 
 			var r = new TransactionResult(true);
 			var att = property.FindAttribute<InvalidateEnvironmentAttribute>();
@@ -58,31 +54,6 @@ namespace TomPIT.Ide.Dom
 			}
 
 			return r;
-		}
-
-		private void SaveNonLocalizedValue(object instance, PropertyInfo property, object value)
-		{
-			property.SetValue(instance, value);
-		}
-
-		private bool SaveLocalizedValue(object instance, PropertyInfo property, object value)
-		{
-			var element = instance as IElement;
-
-			if (element == null)
-				return false;
-
-			if (Element.Environment.Globalization.LanguageToken == Guid.Empty)
-				return false;
-
-			var loc = property.FindAttribute<LocalizableAttribute>();
-
-			if (loc == null || !loc.IsLocalizable)
-				return false;
-
-			Element.Environment.Context.Tenant.GetService<IMicroServiceDevelopmentService>().UpdateString(Element.MicroService(), Element.Environment.Globalization.LanguageToken, element.Id, property.Name, property.GetValue(instance) as string);
-
-			return true;
 		}
 
 		protected void ValidateValue(object instance, PropertyInfo pi, object value)

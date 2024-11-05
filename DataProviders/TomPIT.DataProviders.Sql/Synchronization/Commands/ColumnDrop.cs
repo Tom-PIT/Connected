@@ -31,7 +31,7 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 			{
 				var text = new StringBuilder();
 
-				text.AppendLine($"ALTER TABLE {Escape(Model.SchemaName(), Model.Name)} DROP COLUMN {Column.Name};");
+				text.AppendLine($"ALTER TABLE {Escape(Model.SchemaName(), Model.Name)} DROP COLUMN {Escape(Column.Name)};");
 
 				return text.ToString();
 			}

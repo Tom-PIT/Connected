@@ -11,112 +11,121 @@ using TomPIT.Middleware;
 
 namespace TomPIT.Runtime
 {
-    internal class MicroServiceRuntimeService : SynchronizedClientRepository<IRuntimeMiddleware, Guid>, IMicroServiceRuntimeService
-    {
-        public MicroServiceRuntimeService(ITenant tenant) : base(tenant, "runtimeMiddleware")
-        {
-            Tenant.GetService<IComponentService>().ComponentChanged += OnComponentChanged;
-            Tenant.GetService<IComponentService>().ConfigurationChanged += OnConfigurationChanged;
-            Tenant.GetService<IComponentService>().ConfigurationAdded += OnConfigurationAdded;
-            Tenant.GetService<IComponentService>().ConfigurationRemoved += OnConfigurationRemoved;
-        }
+	internal class MicroServiceRuntimeService : SynchronizedClientRepository<IRuntimeMiddleware, Guid>, IMicroServiceRuntimeService
+	{
+		public MicroServiceRuntimeService(ITenant tenant) : base(tenant, "runtimeMiddleware")
+		{
+			Tenant.GetService<IComponentService>().ComponentChanged += OnComponentChanged;
+			Tenant.GetService<IComponentService>().ConfigurationChanged += OnConfigurationChanged;
+			Tenant.GetService<IComponentService>().ConfigurationAdded += OnConfigurationAdded;
+			Tenant.GetService<IComponentService>().ConfigurationRemoved += OnConfigurationRemoved;
+		}
 
-        private IApplicationBuilder Host { get; set; }
-        private IServiceCollection Services { get; set; }
+		private IApplicationBuilder Host { get; set; }
+		private IServiceCollection Services { get; set; }
 
-        public void Configure(IApplicationBuilder app)
-        {
-            Host = app;
+		public void Configure(IApplicationBuilder app)
+		{
+			if (Instance.IsShellMode)
+				return;
 
-            foreach (var runtime in QueryRuntimes())
-                runtime.Initialize(new RuntimeInitializeArgs(app));
-        }
+			Host = app;
 
-        public void Configure(IServiceCollection services)
-        {
-            Services = services;
+			foreach (var runtime in QueryRuntimes())
+				runtime.Initialize(new RuntimeInitializeArgs(app));
+		}
 
-            Initialize();
-        }
+		public void Configure(IServiceCollection services)
+		{
+			if (Instance.IsShellMode)
+				return;
 
-        protected override void OnInitializing()
-        {
-            var configurations = Tenant.GetService<IComponentService>().QueryConfigurations(ComponentCategories.Runtime);
+			Services = services;
 
-            foreach (var i in configurations)
-                LoadRuntime(i as IRuntimeConfiguration);
-        }
+			Initialize();
+		}
 
-        protected override void OnInvalidate(Guid id)
-        {
-            LoadRuntime(Tenant.GetService<IComponentService>().SelectConfiguration(id) as IRuntimeConfiguration);
-        }
-        private void OnConfigurationChanged(ITenant sender, ConfigurationEventArgs e)
-        {
-            if (string.Compare(e.Category, ComponentCategories.Runtime, true) != 0)
-                return;
+		protected override void OnInitializing()
+		{
+			if (Instance.IsShellMode)
+				return;
 
-            Refresh(e.Component);
-        }
+			var configurations = Tenant.GetService<IComponentService>().QueryConfigurations(ComponentCategories.Runtime);
 
-        private void OnConfigurationAdded(ITenant sender, ConfigurationEventArgs e)
-        {
-            if (string.Compare(e.Category, ComponentCategories.Runtime, true) != 0)
-                return;
+			foreach (var i in configurations)
+				LoadRuntime(i as IRuntimeConfiguration);
+		}
 
-            Refresh(e.Component);
-        }
+		protected override void OnInvalidate(Guid id)
+		{
+			LoadRuntime(Tenant.GetService<IComponentService>().SelectConfiguration(id) as IRuntimeConfiguration);
+		}
+		private void OnConfigurationChanged(ITenant sender, ConfigurationEventArgs e)
+		{
+			if (string.Compare(e.Category, ComponentCategories.Runtime, true) != 0)
+				return;
 
-        private void OnConfigurationRemoved(ITenant sender, ConfigurationEventArgs e)
-        {
-            if (string.Compare(e.Category, ComponentCategories.Runtime, true) != 0)
-                return;
+			Refresh(e.Component);
+		}
 
-            Remove(e.Component);
-        }
+		private void OnConfigurationAdded(ITenant sender, ConfigurationEventArgs e)
+		{
+			if (string.Compare(e.Category, ComponentCategories.Runtime, true) != 0)
+				return;
 
-        private void OnComponentChanged(ITenant sender, ComponentEventArgs e)
-        {
-            if (string.Compare(e.Category, ComponentCategories.Runtime, true) != 0)
-                return;
+			Refresh(e.Component);
+		}
 
-            Refresh(e.Component);
-        }
+		private void OnConfigurationRemoved(ITenant sender, ConfigurationEventArgs e)
+		{
+			if (string.Compare(e.Category, ComponentCategories.Runtime, true) != 0)
+				return;
 
-        private void LoadRuntime(IRuntimeConfiguration config)
-        {
-            if (config is null)
-                return;
+			Remove(e.Component);
+		}
 
-            if (Tenant.GetService<ICompilerService>().ResolveType(config.MicroService(), config, config.ComponentName(), false) is not Type type)
-                return;
+		private void OnComponentChanged(ITenant sender, ComponentEventArgs e)
+		{
+			if (string.Compare(e.Category, ComponentCategories.Runtime, true) != 0)
+				return;
 
-            using var ctx = new MicroServiceContext(config.MicroService());
+			Refresh(e.Component);
+		}
 
-            try
-            {
-                var instance = Tenant.GetService<ICompilerService>().CreateInstance<IRuntimeMiddleware>(ctx, type);
+		private void LoadRuntime(IRuntimeConfiguration config)
+		{
+			if (config is null)
+				return;
 
-                if (instance is not null)
-                {
-                    if (Services is not null)
-                        instance.Configure(Services);
+			if (Tenant.GetService<ICompilerService>().ResolveType(config.MicroService(), config, config.ComponentName(), false) is not Type type)
+				return;
 
-                    if (Host is not null)
-                        instance.Initialize(new RuntimeInitializeArgs(Host));
+			using var ctx = new MicroServiceContext(config.MicroService());
 
-                    Set(config.Component, instance, TimeSpan.Zero);
-                }
-            }
-            catch
-            {
-                //nothing to do here
-            }
-        }
+			try
+			{
+				var instance = Tenant.GetService<ICompilerService>().CreateInstance<IRuntimeMiddleware>(ctx, type);
 
-        public ImmutableList<IRuntimeMiddleware> QueryRuntimes()
-        {
-            return All();
-        }
-    }
+				if (instance is not null)
+				{
+					if (Services is not null)
+						instance.Configure(Services);
+
+					if (Host is not null)
+						instance.Initialize(new RuntimeInitializeArgs(Host));
+
+					Set(config.Component, instance, TimeSpan.Zero);
+				}
+			}
+			catch
+			{
+				//nothing to do here
+			}
+		}
+
+		public ImmutableList<IRuntimeMiddleware> QueryRuntimes()
+		{
+			return All();
+		}
+	}
 }

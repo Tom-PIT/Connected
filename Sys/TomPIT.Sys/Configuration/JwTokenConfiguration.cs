@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿using Microsoft.Extensions.Configuration;
+
+using System.Text.Json;
 
 namespace TomPIT.Sys.Configuration
 {
@@ -15,20 +17,7 @@ namespace TomPIT.Sys.Configuration
 
 		private void Initialize()
 		{
-			if (!Shell.Configuration.RootElement.TryGetProperty("authentication", out JsonElement element))
-				return;
-
-			if (!element.TryGetProperty("jwToken", out JsonElement jwToken))
-				return;
-
-			if (jwToken.TryGetProperty("validIssuer", out JsonElement validIssuer))
-				ValidIssuer = validIssuer.GetString();
-
-			if (jwToken.TryGetProperty("validAudience", out JsonElement validAudience))
-				ValidAudience = validAudience.GetString();
-
-			if (jwToken.TryGetProperty("issuerSigningKey", out JsonElement issuerSigningKey))
-				IssuerSigningKey = issuerSigningKey.GetString();
+			Shell.Configuration.Bind("authentication:jwToken", this);
 		}
 	}
 }

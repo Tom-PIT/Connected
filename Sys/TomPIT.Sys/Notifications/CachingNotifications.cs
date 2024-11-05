@@ -45,8 +45,6 @@ namespace TomPIT.Sys.Notifications
 		public static void AuthenticationTokenRemoved(Guid token) { Notify(nameof(AuthenticationTokenRemoved), new AuthenticationTokenEventArgs(token)); }
 		public static void FolderChanged(Guid microService, Guid folder) { Notify(nameof(FolderChanged), new FolderEventArgs(microService, folder)); }
 		public static void FolderRemoved(Guid microService, Guid folder) { Notify(nameof(FolderRemoved), new FolderEventArgs(microService, folder)); }
-		public static void InstanceEndpointChanged(Guid endpoint) { Notify(nameof(InstanceEndpointChanged), new InstanceEndpointEventArgs(endpoint)); }
-		public static void InstanceEndpointRemoved(Guid endpoint) { Notify(nameof(InstanceEndpointRemoved), new InstanceEndpointEventArgs(endpoint)); }
 		public static void ResourceGroupChanged(Guid resourceGroup) { Notify(nameof(ResourceGroupChanged), new ResourceGroupEventArgs(resourceGroup)); }
 		public static void ResourceGroupRemoved(Guid resourceGroup) { Notify(nameof(ResourceGroupRemoved), new ResourceGroupEventArgs(resourceGroup)); }
 		public static void SettingChanged(string name, string nameSpace, string type, string primaryKey) { Notify(nameof(SettingChanged), new SettingEventArgs(name, nameSpace, type, primaryKey)); }
@@ -92,6 +90,6 @@ namespace TomPIT.Sys.Notifications
 		public static void ConfigurationRemoved(Guid microService, Guid configuration, string category) { Notify(nameof(ConfigurationRemoved), new ConfigurationEventArgs(microService, configuration, category)); }
 		public static void ConfigurationAdded(Guid microService, Guid configuration, string category) { Notify(nameof(ConfigurationAdded), new ConfigurationEventArgs(microService, configuration, category)); }
 
-		public static void ScriptChanged(Guid microService, Guid container, Guid sourceCode) { Notify(nameof(ScriptChanged), new ScriptChangedEventArgs(microService, container, sourceCode)); }
+		public static void SourceTextChanged(Guid microService, Guid configuration, Guid token, int type) { Notify(nameof(SourceTextChanged), new SourceTextChangedEventArgs(microService, configuration, token, type)); }
 	}
 }

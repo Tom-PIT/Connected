@@ -2,7 +2,6 @@
 using TomPIT.SysDb.BigData;
 using TomPIT.SysDb.Cdn;
 using TomPIT.SysDb.Data;
-using TomPIT.SysDb.Deployment;
 using TomPIT.SysDb.Development;
 using TomPIT.SysDb.Diagnostics;
 using TomPIT.SysDb.Environment;
@@ -32,7 +31,6 @@ namespace TomPIT.SysDb
 		IEventHandler Events { get; }
 		IDataHandler Data { get; }
 		IIoTHandler IoT { get; }
-		IDeploymentHandler Deployment { get; }
 		ICdnHandler Cdn { get; }
 		IBigDataHandler BigData { get; }
 		IMessagingHandler Messaging { get; }

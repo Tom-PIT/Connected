@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using TomPIT.Connectivity;
 
 namespace TomPIT.Storage
@@ -29,8 +28,8 @@ namespace TomPIT.Storage
 		IBlobContent Download(Guid microService, int kind, Guid resourceGroup, string primaryKey, string topic);
 		List<IBlobContent> Download(List<Guid> blobs);
 
-		ImmutableList<Guid> Preload(int kind, Guid microService);
-		ImmutableList<Guid> Preload(int kind);
+		//ImmutableList<Guid> Preload(int kind, Guid microService);
+		//ImmutableList<Guid> Preload(int kind);
 		void Release(Guid blob);
 	}
 }

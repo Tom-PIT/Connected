@@ -3,7 +3,6 @@ using TomPIT.Caching;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
 using TomPIT.Runtime;
-using TomPIT.Runtime.Configuration;
 
 namespace TomPIT.Services
 {
@@ -98,6 +97,9 @@ namespace TomPIT.Services
 
 		protected override void OnInitializing()
 		{
+			if (Instance.IsShellMode)
+				return;
+
 			var configurations = Tenant.GetService<IComponentService>().QueryConfigurations(Categories);
 
 			foreach (var i in configurations)

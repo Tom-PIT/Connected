@@ -80,9 +80,10 @@ namespace TomPIT.Exceptions
 			if (ex is ValidationAggregateException || ex is System.ComponentModel.DataAnnotations.ValidationException)
 			{
 				var ms = ex.Data.Contains("MicroService") ? ex.Data["MicroService"] as IMicroService : null;
+				var stage = Tenant.GetService<IRuntimeService>().Stage;
 
-				if (ms != null && ms.Status != MicroServiceStatus.Production && ex.Data.Contains("Script"))
-					source = $"{ms.Name}/{ex.Data["Script"].ToString()}";
+				if (stage != EnvironmentStage.Production && ex.Data.Contains("Script"))
+					source = $"{ms.Name}/{ex.Data["Script"]}";
 
 				severity = ExceptionSeverity.Warning;
 			}

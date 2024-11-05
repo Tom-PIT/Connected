@@ -1,11 +1,11 @@
-﻿using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using NuGet.Common;
+﻿using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using System;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using TomPIT.Connectivity;
 using TomPIT.Storage;
 
@@ -13,9 +13,8 @@ namespace TomPIT.Compilation
 {
 	internal class LocalDownloadResource : DownloadResource
 	{
-		public LocalDownloadResource(ITenant tenant, Guid blob)
+		public LocalDownloadResource(Guid blob)
 		{
-			Tenant = tenant;
 			Blob = blob;
 		}
 
@@ -34,9 +33,9 @@ namespace TomPIT.Compilation
 
 			var folder = Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile), ".tompit", "packages");
 			var packagePathResolver = new PackagePathResolver(folder, false);
-			
+
 			var packageExtractionContext = new PackageExtractionContext(PackageSaveMode.Defaultv3, XmlDocFileSaveMode.None, null, logger);
-			
+
 			await PackageExtractor.ExtractPackageAsync("local", ms, packagePathResolver, packageExtractionContext, CancellationToken.None);
 			await Task.CompletedTask;
 

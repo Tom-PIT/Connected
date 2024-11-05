@@ -8,7 +8,7 @@ namespace TomPIT.Design
 		NotModified = 0,
 		Add = 1,
 		Edit = 2,
-		Delete=3
+		Delete = 3
 	}
 	public interface IPullRequestComponent
 	{
@@ -19,7 +19,6 @@ namespace TomPIT.Design
 		Guid Folder { get; }
 		string Category { get; }
 		string Namespace { get; }
-		Guid RuntimeConfiguration { get; }
 		ComponentVerb Verb { get; set; }
 
 		List<IPullRequestFile> Files { get; }

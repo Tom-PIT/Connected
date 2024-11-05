@@ -13,6 +13,7 @@ using TomPIT.ComponentModel.Management;
 using TomPIT.ComponentModel.Messaging;
 using TomPIT.ComponentModel.Navigation;
 using TomPIT.ComponentModel.Quality;
+using TomPIT.ComponentModel.Resources;
 using TomPIT.ComponentModel.Runtime;
 using TomPIT.ComponentModel.Scripting;
 using TomPIT.ComponentModel.Search;
@@ -33,7 +34,7 @@ internal class TextElementResolver
 	private IText Result { get; set; }
 	public IText Resolve()
 	{
-		var tokens = Path.Split('/');
+		var tokens = Path.Split(new char[] { '/', '\\' });
 
 		if (tokens.Length < 2)
 			return null;
@@ -42,6 +43,16 @@ internal class TextElementResolver
 
 		if (MicroService is null)
 			return null;
+
+		if (tokens.Length == 2)
+		{
+			Component = tokens[1];
+
+			ResolveComponent();
+
+			if (Result is not null)
+				return Result;
+		}
 
 		Component = TrimExtension(tokens[1]);
 
@@ -63,13 +74,13 @@ internal class TextElementResolver
 
 	private void ResolveComponent()
 	{
+		if (LoadCode())
+			return;
+
+		if (LoadText())
+			return;
+
 		if (LoadScript())
-			return;
-
-		if (LoadEntity())
-			return;
-
-		if (LoadMiddleware())
 			return;
 
 		if (LoadModel())
@@ -163,14 +174,19 @@ internal class TextElementResolver
 			return;
 	}
 
+	private bool LoadCode()
+	{
+		return LoadSimple<ITextConfiguration>(ComponentCategories.Code);
+	}
+
+	private bool LoadText()
+	{
+		return LoadSimple<ITextConfiguration>(ComponentCategories.Text);
+	}
+
 	private bool LoadScript()
 	{
 		return LoadSimple<IScriptConfiguration>(ComponentCategories.Script);
-	}
-
-	private bool LoadEntity()
-	{
-		return LoadSimple<IEntityConfiguration>(ComponentCategories.Entity);
 	}
 
 	private bool LoadConnection()
@@ -181,11 +197,6 @@ internal class TextElementResolver
 	private bool LoadModel()
 	{
 		return LoadSimple<IModelConfiguration>(ComponentCategories.Model);
-	}
-
-	private bool LoadMiddleware()
-	{
-		return LoadSimple<IMiddlewareConfiguration>(ComponentCategories.Middleware);
 	}
 
 	private bool LoadApiComponent()

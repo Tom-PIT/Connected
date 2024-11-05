@@ -7,8 +7,6 @@ using TomPIT.Sys.Model.Cdn;
 using TomPIT.Sys.Model.Components;
 using TomPIT.Sys.Model.Configuration;
 using TomPIT.Sys.Model.Data;
-using TomPIT.Sys.Model.Deployment;
-using TomPIT.Sys.Model.Development;
 using TomPIT.Sys.Model.Diagnostics;
 using TomPIT.Sys.Model.Environment;
 using TomPIT.Sys.Model.Globalization;
@@ -24,9 +22,7 @@ namespace TomPIT.Sys.Model
 	{
 		private static readonly Lazy<MemoryCache> _cache = new Lazy<MemoryCache>();
 
-		private static readonly Lazy<MicroServicesMetaModel> _meta = new Lazy<MicroServicesMetaModel>(() => { return new MicroServicesMetaModel(Container); });
 		private static readonly Lazy<MicroServicesModel> _microServices = new Lazy<MicroServicesModel>(() => { return new MicroServicesModel(Container); });
-		private static readonly Lazy<MicroServiceStringsModel> _microServiceStrings = new Lazy<MicroServiceStringsModel>(() => { return new MicroServiceStringsModel(Container); });
 		private static readonly Lazy<SettingsModel> _settings = new Lazy<SettingsModel>(() => { return new SettingsModel(Container); });
 		private static readonly Lazy<UsersModel> _users = new Lazy<UsersModel>(() => { return new UsersModel(Container); });
 		private static readonly Lazy<RolesModel> _roles = new Lazy<RolesModel>(() => { return new RolesModel(Container); });
@@ -49,10 +45,7 @@ namespace TomPIT.Sys.Model
 		private static readonly Lazy<EventsModel> _events = new Lazy<EventsModel>(() => { return new EventsModel(Container); });
 		private static readonly Lazy<AuditModel> _audit = new Lazy<AuditModel>(() => { return new AuditModel(); });
 		private static readonly Lazy<AuthenticationTokensModel> _authTokens = new Lazy<AuthenticationTokensModel>(() => { return new AuthenticationTokensModel(Container); });
-		private static readonly Lazy<MetricsModel> _metrics = new Lazy<MetricsModel>(() => { return new MetricsModel(); });
 		private static readonly Lazy<IoTStateModel> _iotState = new Lazy<IoTStateModel>(() => { return new IoTStateModel(Container); });
-		private static readonly Lazy<MarketplaceDeploymentModel> _deployment = new Lazy<MarketplaceDeploymentModel>(() => { return new MarketplaceDeploymentModel(); });
-		private static readonly Lazy<VersionControlModel> _versionControl = new Lazy<VersionControlModel>(() => { return new VersionControlModel(); });
 		private static readonly Lazy<UserDataModel> _userData = new Lazy<UserDataModel>(() => { return new UserDataModel(Container); });
 		private static readonly Lazy<MailModel> _mail = new Lazy<MailModel>(() => { return new MailModel(); });
 		private static readonly Lazy<SubscriptionsModel> _subscribers = new Lazy<SubscriptionsModel>(() => { return new SubscriptionsModel(); });
@@ -64,11 +57,9 @@ namespace TomPIT.Sys.Model
 		private static readonly Lazy<BigDataPartitionFilesModel> _bigDataPartitionFiles = new Lazy<BigDataPartitionFilesModel>(() => { return new BigDataPartitionFilesModel(Container); });
 		private static readonly Lazy<BigDataPartitionFieldStatisticsModel> _bigDataPartitionFieldStatistics = new Lazy<BigDataPartitionFieldStatisticsModel>(() => { return new BigDataPartitionFieldStatisticsModel(Container); });
 		private static readonly Lazy<BigDataTimezonesModel> _bigDataTimezones = new Lazy<BigDataTimezonesModel>(() => { return new BigDataTimezonesModel(Container); });
-		private static readonly Lazy<DevelopmentErrorsModels> _devErrors = new Lazy<DevelopmentErrorsModels>(() => { return new DevelopmentErrorsModels(); });
 		private static readonly Lazy<QueueingModel> _queue = new Lazy<QueueingModel>(() => { return new QueueingModel(Container); });
 		private static readonly Lazy<SearchModel> _search = new Lazy<SearchModel>(() => { return new SearchModel(); });
 		private static readonly Lazy<SysSearchModel> _sysSearch = new Lazy<SysSearchModel>(() => { return new SysSearchModel(); });
-		private static readonly Lazy<ToolsModel> _tools = new Lazy<ToolsModel>(() => { return new ToolsModel(); });
 		private static readonly Lazy<PrintingModel> _printing = new Lazy<PrintingModel>(() => { return new PrintingModel(Container); });
 		private static readonly Lazy<MrusModel> _mrus = new Lazy<MrusModel>(() => { return new MrusModel(); });
 		private static readonly Lazy<PartitionBufferingModel> _partitionBuffering = new Lazy<PartitionBufferingModel>(() => { return new PartitionBufferingModel(Container); });
@@ -77,12 +68,9 @@ namespace TomPIT.Sys.Model
 		private static readonly Lazy<ClientsModel> _clients = new Lazy<ClientsModel>(() => { return new ClientsModel(Container); });
 		private static readonly Lazy<PrintingSerialNumbersModel> _printingSerialNumbers = new Lazy<PrintingSerialNumbersModel>(() => { return new PrintingSerialNumbersModel(Container); });
 		private static readonly Lazy<XmlKeysModel> _xmlKeys = new Lazy<XmlKeysModel>(() => { return new XmlKeysModel(Container); });
-		private static readonly Lazy<DevelopmentStatesModel> _devStates = new Lazy<DevelopmentStatesModel>(() => { return new DevelopmentStatesModel(Container); });
+		private static readonly Lazy<SourceFilesModel> _sourceFiles = new Lazy<SourceFilesModel>(() => { return new SourceFilesModel(Container); });
 
-
-		public static MicroServicesMetaModel MicroServicesMeta => _meta.Value;
 		public static MicroServicesModel MicroServices => _microServices.Value;
-		public static MicroServiceStringsModel MicroServiceStrings => _microServiceStrings.Value;
 		public static SettingsModel Settings => _settings.Value;
 		public static UsersModel Users => _users.Value;
 		public static RolesModel Roles => _roles.Value;
@@ -105,10 +93,7 @@ namespace TomPIT.Sys.Model
 		public static EventsModel Events => _events.Value;
 		public static AuditModel Audit => _audit.Value;
 		public static AuthenticationTokensModel AuthenticationTokens => _authTokens.Value;
-		public static MetricsModel Metrics => _metrics.Value;
 		public static IoTStateModel IoTState => _iotState.Value;
-		public static MarketplaceDeploymentModel Deployment => _deployment.Value;
-		public static VersionControlModel VersionControl => _versionControl.Value;
 		public static UserDataModel UserData => _userData.Value;
 		public static MailModel Mail => _mail.Value;
 		public static SubscriptionsModel Subscriptions => _subscribers.Value;
@@ -120,12 +105,9 @@ namespace TomPIT.Sys.Model
 		public static BigDataPartitionFilesModel BigDataPartitionFiles => _bigDataPartitionFiles.Value;
 		public static BigDataPartitionFieldStatisticsModel BigDataPartitionFieldStatistics => _bigDataPartitionFieldStatistics.Value;
 		public static BigDataTimezonesModel BigDataTimeZones => _bigDataTimezones.Value;
-		public static DevelopmentErrorsModels DevelopmentErrors => _devErrors.Value;
-		public static DevelopmentStatesModel DevelopmentStates => _devStates.Value;
 		public static QueueingModel Queue => _queue.Value;
 		public static SearchModel Search => _search.Value;
 		public static SysSearchModel SysSearch => _sysSearch.Value;
-		public static ToolsModel Tools => _tools.Value;
 		public static PrintingModel Printing => _printing.Value;
 		public static MrusModel Mrus => _mrus.Value;
 		public static PartitionBufferingModel BigDataPartitionBuffering => _partitionBuffering.Value;
@@ -134,6 +116,7 @@ namespace TomPIT.Sys.Model
 		public static ClientsModel Clients => _clients.Value;
 		public static PrintingSerialNumbersModel PrintingSerialNumbers => _printingSerialNumbers.Value;
 		public static XmlKeysModel XmlKeys => _xmlKeys.Value;
+		public static SourceFilesModel SourceFiles => _sourceFiles.Value;
 		internal static MemoryCache Container => _cache.Value;
 
 		public static bool Initialized { get; set; }

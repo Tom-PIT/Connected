@@ -1,4 +1,8 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Configuration;
+
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
@@ -10,88 +14,101 @@ using TomPIT.Reflection;
 using TomPIT.Runtime;
 using TomPIT.Runtime.Configuration;
 
-namespace TomPIT
+namespace TomPIT;
+
+public enum AuthenticationType
 {
-	public enum AuthenticationType
+	None = 0,
+	MultiTenant = 1,
+	SingleTenant = 2
+}
+
+public enum InstanceState
+{
+	Initializing = 1,
+	Running = 2
+}
+public static class Instance
+{
+	private static bool _pingRouteRegistered = false;
+	private static List<IPlugin> _plugins = null;
+	internal static RequestLocalizationOptions RequestLocalizationOptions { get; set; }
+	public static Guid Id { get; } = Guid.NewGuid();
+	public static InstanceState State { get; internal set; } = InstanceState.Initializing;
+	public static CancellationToken Stopping { get; internal set; }
+	public static CancellationToken Stopped { get; internal set; }
+	public static InstanceFeatures Features { get; internal set; }
+	public static ISysProxy SysProxy { get; internal set; }
+
+	static Instance()
 	{
-		None = 0,
-		MultiTenant = 1,
-		SingleTenant = 2
+		Features = Shell.Configuration.GetValue<InstanceFeatures>("features");
 	}
 
-	public enum InstanceState
+	public static IStartupHostProxy Start()
 	{
-		Initializing = 1,
-		Running = 2
+		return new StartupHost();
 	}
-	public static class Instance
+
+	internal static bool IsShellMode => string.Equals(Shell.Configuration.GetValue<string>("TP_SHELL_MODE"), "1");
+	public static bool ResourceGroupExists(Guid resourceGroup)
 	{
-		private static List<IPlugin> _plugins = null;
-		internal static RequestLocalizationOptions RequestLocalizationOptions { get; set; }
-		public static Guid Id { get; } = Guid.NewGuid();
-		public static InstanceState State { get; internal set; } = InstanceState.Initializing;
-		public static CancellationToken Stopping { get; internal set; }
-		public static CancellationToken Stopped { get; internal set; }
-		public static InstanceFeatures Features { get; internal set; }
-		public static ISysProxy SysProxy { get; internal set; }
+		if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)
+			return true;
 
-		static Instance()
-		{
-			if (Shell.Configuration.RootElement.TryGetProperty("features", out JsonElement element))
-				Features = Enum.Parse<InstanceFeatures>(element.GetString());
-		}
-		public static IStartupHostProxy Start()
-		{
-			return new StartupHost();
-		}
+		if (resourceGroup == Guid.Empty)
+			return true;
 
-		public static bool ResourceGroupExists(Guid resourceGroup)
+		var resourceGroupService = MiddlewareDescriptor.Current.Tenant.GetService<IResourceGroupService>();
+
+		var groupInstance = resourceGroupService.Select(resourceGroup);
+
+		foreach (var i in Tenant.GetService<IResourceGroupService>().QuerySupported())
 		{
-			if (Shell.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)
+			var rg = resourceGroupService.Select(i.Token);
+
+			if (rg == groupInstance)
 				return true;
-
-			if (resourceGroup == Guid.Empty)
-				return true;
-
-			var resourceGroupService = MiddlewareDescriptor.Current.Tenant.GetService<IResourceGroupService>();
-
-			var groupInstance = resourceGroupService.Select(resourceGroup);
-
-			foreach (var i in Tenant.GetService<IResourceGroupService>().QuerySupported())
-			{
-				var rg = resourceGroupService.Select(i.Token);
-
-				if (rg == groupInstance)
-					return true;
-			}
-
-			return false;
 		}
 
-		public static List<IPlugin> Plugins
+		return false;
+	}
+
+	public static List<IPlugin> Plugins
+	{
+		get
 		{
-			get
+			if (_plugins is null)
 			{
-				if (_plugins is null)
+				_plugins = new List<IPlugin>();
+
+				foreach (var i in Runtime.Configuration.Plugins.Items)
 				{
-					_plugins = new List<IPlugin>();
+					var t = TypeExtensions.GetType(i);
 
-					foreach (var i in Runtime.Configuration.Plugins.Items)
-					{
-						var t = TypeExtensions.GetType(i);
+					if (t is null)
+						continue;
 
-						if (t is null)
-							continue;
+					var plugin = t.CreateInstance<IPlugin>();
 
-						var plugin = t.CreateInstance<IPlugin>();
-
-						if (plugin is not null)
-							_plugins.Add(plugin);
-					}
+					if (plugin is not null)
+						_plugins.Add(plugin);
 				}
-
-				return _plugins;
 			}
+
+			return _plugins;
 		}
+	}
+
+	public static void MapPingRoute(this IEndpointRouteBuilder routes)
+	{
+		if (_pingRouteRegistered)
+			return;
+
+		routes.Map("sys/ping", () => Results.Ok());
+
+		//routes.MapControllerRoute("sys.ping", "sys/ping", new { controller = "Ping", action = "Invoke" });
+
+		_pingRouteRegistered = true;
 	}
 }

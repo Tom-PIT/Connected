@@ -44,7 +44,7 @@ namespace TomPIT.Middleware
 
 		public void Validate()
 		{
-			AsyncUtils.RunSync(Validator.Validate);
+			AsyncUtils.RunSync(() => Validator.Validate());
 		}
 
 		protected void Validate(object instance)

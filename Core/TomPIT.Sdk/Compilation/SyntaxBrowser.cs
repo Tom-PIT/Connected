@@ -57,6 +57,8 @@ public static class SyntaxBrowser
 		if (string.IsNullOrWhiteSpace(sourceCode))
 			return null;
 
+		sourceCode = Tenant.GetService<ICompilerService>().Rewrite(sourceCode);
+
 		return CSharpSyntaxTree.ParseText(sourceCode, new CSharpParseOptions(LanguageVersion.Latest, DocumentationMode.None, SourceCodeKind.Script)) as CSharpSyntaxTree;
 	}
 }

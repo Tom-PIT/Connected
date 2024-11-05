@@ -36,10 +36,10 @@ namespace TomPIT.BigData
 
         private void OnConfiguringServices(object sender, IServiceCollection e)
         {
-            e.AddSingleton<IHostedService, StorageService>();
-            e.AddSingleton<IHostedService, MaintenanceService>();
-            e.AddSingleton<IHostedService, BufferingWorker>();
-            e.AddSingleton<ITraceService, TraceService>();
+         e.AddSingleton<IHostedService, StorageService>();
+         e.AddSingleton<IHostedService, MaintenanceService>();
+         e.AddSingleton<IHostedService, BufferingWorker>();
+         //e.AddSingleton<ITraceService, TraceService>();
         }
 
         private void OnBooting(object sender, System.EventArgs e)
@@ -49,13 +49,9 @@ namespace TomPIT.BigData
 
         private void OnConfiguring(object sender, System.Tuple<IApplicationBuilder, IWebHostEnvironment> e)
         {
-            var traceHubContext = e.Item1.ApplicationServices.GetRequiredService<IHubContext<TraceHub>>();
-            var traceService = e.Item1.ApplicationServices.GetService<ITraceService>();
+            //var traceService = e.Item1.ApplicationServices.GetService<ITraceService>();
 
-            MiddlewareDescriptor.Current.Tenant.RegisterService(typeof(ITraceService), traceService);
-
-            traceService.TraceReceived += async (s, e) => await TraceHub.Trace(traceHubContext, e);
-            traceService.TraceReceived += async (s, e) => Tenant.GetService<ILoggingService>().Dump($"{e.Endpoint.Identifier} {e.Content}");
+            //MiddlewareDescriptor.Current.Tenant.RegisterService(typeof(ITraceService), traceService);
         }
 
         private void OnTenantInitialize(object sender, TenantArgs e)

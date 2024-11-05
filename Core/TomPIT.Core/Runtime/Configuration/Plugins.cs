@@ -1,37 +1,30 @@
-﻿using System.Collections.Generic;
-using System.Text.Json;
+﻿using Microsoft.Extensions.Configuration;
 
-namespace TomPIT.Runtime.Configuration
+using System.Collections.Generic;
+
+namespace TomPIT.Runtime.Configuration;
+
+public static class Plugins
 {
-	public static class Plugins
+	private static readonly PluginBindings _binder = new();
+
+	static Plugins()
 	{
-		static Plugins()
-		{
-			Items = new();
+		Initialize();
+	}
 
-			Initialize();
-		}
+	public static string? Location => _binder.Location;
+	public static bool ShadowCopy => _binder.ShadowCopy;
+	public static List<string>? Items => _binder.Items;
 
-		public static string Location { get; private set; }
-		public static bool ShadowCopy { get; private set; }
-		public static List<string> Items { get; }
-
-		private static void Initialize()
-		{
-			if (!Shell.Configuration.RootElement.TryGetProperty("plugins", out JsonElement element))
-				return;
-
-			if (element.TryGetProperty("location", out JsonElement location))
-				Location = location.GetString();
-
-			if (element.TryGetProperty("shadowCopy", out JsonElement shadowCopy))
-				ShadowCopy = shadowCopy.GetBoolean();
-
-			if (element.TryGetProperty("items", out JsonElement items))
-			{
-				foreach (var item in items.EnumerateArray())
-					Items.Add(item.GetString());
-			}
-		}
+	private static void Initialize()
+	{
+		Shell.Configuration.Bind("plugins", _binder);
+	}
+	private class PluginBindings
+	{
+		public string? Location { get; set; }
+		public bool ShadowCopy { get; set; }
+		public List<string>? Items { get; set; }
 	}
 }

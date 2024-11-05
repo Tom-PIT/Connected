@@ -16,6 +16,8 @@ namespace TomPIT.Middleware
 
 		CancellationToken CancellationToken { get; }
 
+		TService? GetService<TService>();
+
 		void Cancel();
 		IDataReader<T> OpenReader<T>(IDataConnection connection, [CIP(CIP.CommandTextProvider)] string commandText);
 		IDataReader<T> OpenReader<T>([CIP(CIP.ConnectionProvider)] string connection, [CIP(CIP.CommandTextProvider)] string commandText);

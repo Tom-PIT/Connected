@@ -1,23 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using NuGet.Packaging;
+﻿using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
-using TomPIT.Connectivity;
+using System;
+using System.Collections.Generic;
 
 namespace TomPIT.Compilation
 {
 	internal class LocalPackageIdentity : SourcePackageDependencyInfo
 	{
-		public LocalPackageIdentity(PackageArchiveReader reader, Guid blob, ITenant tenant, List<PackageDependency> dependencies) :
-			base(reader.NuspecReader.GetId(), reader.NuspecReader.GetVersion(), dependencies, true, new LocalRepository(tenant, blob), new Uri(ResolveDownloadUrl(reader)),null)
+		public LocalPackageIdentity(PackageArchiveReader reader, Guid blob, List<PackageDependency> dependencies) :
+			base(reader.NuspecReader.GetId(), reader.NuspecReader.GetVersion(), dependencies, true, new LocalRepository(blob), new Uri(ResolveDownloadUrl(reader)), null)
 		{
 
 			Blob = blob;
-			Tenant = tenant;
 		}
 		public Guid Blob { get; }
-		public ITenant Tenant { get; }
 
 		private static string ResolveDownloadUrl(PackageArchiveReader reader)
 		{

@@ -2,39 +2,27 @@
 
 namespace TomPIT.ComponentModel
 {
-	public enum MicroServiceStatus
-	{
-		Development = 1,
-		Staging = 2,
-		Production = 3
-	}
-
-	public enum UpdateStatus
-	{
-		UpToDate = 0,
-		UpdateAvailable = 1
-	}
-
-	public enum CommitStatus
-	{
-		Synchronized = 0,
-		Invalidated = 1,
-		Publishing = 2,
-		PublishError = 3
-	}
+	//[Flags]
+	//[JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+	//public enum MicroServiceStages
+	//{
+	//	None = 0,
+	//	Development = 1,
+	//	QualityAssurance = 2,
+	//	Staging = 4,
+	//	Production = 8,
+	//	Any = int.MaxValue
+	//}
 
 	public interface IMicroService
 	{
 		string Name { get; }
 		string Url { get; }
 		Guid Token { get; }
-		MicroServiceStatus Status { get; }
+		//	MicroServiceStages SupportedStages { get; }
 		Guid ResourceGroup { get; }
 		Guid Template { get; }
-		Guid Package { get; }
-		Guid Plan { get; }
-		UpdateStatus UpdateStatus { get; }
-		CommitStatus CommitStatus { get; }
 		string Version { get; }
+		string Commit { get; }
 	}
 }

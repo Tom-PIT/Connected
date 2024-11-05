@@ -1,6 +1,10 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
+using System.Linq;
+
 using TomPIT.Caching;
 using TomPIT.Distributed;
 using TomPIT.Environment;
@@ -9,17 +13,13 @@ using TomPIT.Sys.Notifications;
 
 namespace TomPIT.Sys.Model.Environment
 {
-	public class InstanceEndpointsModel : SynchronizedRepository<IInstanceEndpoint, Guid>
+	public class InstanceEndpointsModel : CacheRepository<IInstanceEndpoint, Guid>
 	{
 		private ConcurrentDictionary<string, RoundRobin> _rr = new ConcurrentDictionary<string, RoundRobin>();
 
 		public InstanceEndpointsModel(IMemoryCache container) : base(container, "instanceendpoint")
 		{
-		}
-
-		protected override void OnInitializing()
-		{
-			var ds = Shell.GetService<IDatabaseService>().Proxy.Environment.QueryInstanceEndpoints();
+			var ds = Shell.Configuration.GetSection("instanceEndpoints").Get<InstanceEndpointBindingModel[]>();
 
 			foreach (var i in ds)
 			{
@@ -28,24 +28,6 @@ namespace TomPIT.Sys.Model.Environment
 				if (i.Status == InstanceStatus.Enabled)
 					Register(i.Features, i.Verbs, i.Token);
 			}
-		}
-
-		protected override void OnInvalidate(Guid id)
-		{
-			RemoveFromRobin(id);
-
-			var r = Shell.GetService<IDatabaseService>().Proxy.Environment.SelectInstanceEndpoint(id);
-
-			if (r == null)
-			{
-				Remove(id);
-				return;
-			}
-
-			Set(id, r, TimeSpan.Zero);
-
-			if (r.Status == InstanceStatus.Enabled)
-				Register(r.Features, r.Verbs, r.Token);
 		}
 
 		public ImmutableList<IInstanceEndpoint> Query()
@@ -60,7 +42,7 @@ namespace TomPIT.Sys.Model.Environment
 				{
 					f.Duration = TimeSpan.Zero;
 
-					var r = Shell.GetService<IDatabaseService>().Proxy.Environment.SelectInstanceEndpoint(token);
+					var r = Shell.Configuration.GetSection("instanceEndpoints").Get<InstanceEndpointBindingModel[]>().FirstOrDefault(e=> e.Token == token);
 
 					if (r != null && r.Status == InstanceStatus.Enabled)
 						Register(r.Features, r.Verbs, r.Token);
@@ -113,12 +95,6 @@ namespace TomPIT.Sys.Model.Environment
 			robin.Register(endpoint);
 		}
 
-		private void RemoveFromRobin(Guid endpoint)
-		{
-			foreach (var i in _rr.Keys)
-				_rr[i].Remove(endpoint);
-		}
-
 		private static string CreateRobinKey(InstanceFeatures features, InstanceVerbs verbs)
 		{
 			return $"{features}.{verbs}";
@@ -138,45 +114,20 @@ namespace TomPIT.Sys.Model.Environment
 
 			return Get(id);
 		}
-
-		public Guid Insert(InstanceFeatures features, string name, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs)
+				private class InstanceEndpointBindingModel : IInstanceEndpoint
 		{
-			var token = Guid.NewGuid();
+			public string? Url { get; set; }
+			public InstanceStatus Status { get; set; } = InstanceStatus.Enabled;
+			public string? Name { get; set; }
+			public InstanceFeatures Features { get; set; }
+			public Guid Token { get; set; } = Guid.NewGuid();
+			public InstanceVerbs Verbs { get; set; } = InstanceVerbs.All;
+			public string? ReverseProxyUrl { get; set; }
 
-			Shell.GetService<IDatabaseService>().Proxy.Environment.InsertInstanceEndpoint(token, features, name, url, reverseProxyUrl, status, verbs);
-
-			Refresh(token);
-
-			CachingNotifications.InstanceEndpointChanged(token);
-
-			return token;
-		}
-
-		public void Update(Guid token, InstanceFeatures features, string name, string url, string reverseProxyUrl, InstanceStatus status, InstanceVerbs verbs)
-		{
-			var target = GetByToken(token);
-
-			if (target == null)
-				throw new SysException(SR.ErrInstanceEndpointNotFound);
-
-			Shell.GetService<IDatabaseService>().Proxy.Environment.UpdateInstanceEndpoint(target, features, name, url, reverseProxyUrl, status, verbs);
-
-			Refresh(token);
-
-			CachingNotifications.InstanceEndpointChanged(token);
-		}
-
-		public void Delete(Guid token)
-		{
-			var target = GetByToken(token);
-
-			if (target == null)
-				throw new SysException(SR.ErrInstanceEndpointNotFound);
-
-			Shell.GetService<IDatabaseService>().Proxy.Environment.DeleteInstanceEndpoint(target);
-
-			Remove(token);
-			CachingNotifications.InstanceEndpointRemoved(token);
+			public override string ToString()
+			{
+				return string.IsNullOrWhiteSpace(Name) ? base.ToString() : Name;
+			}
 		}
 	}
 }

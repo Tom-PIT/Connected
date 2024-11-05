@@ -6,182 +6,125 @@ using System.Linq;
 using TomPIT.Caching;
 using TomPIT.ComponentModel;
 using TomPIT.Routing;
-using TomPIT.Sys.Api.Database;
 using TomPIT.Sys.Notifications;
+using TomPIT.Sys.SourceFiles;
 
 namespace TomPIT.Sys.Model.Components
 {
-   public class MicroServicesModel : SynchronizedRepository<IMicroService, Guid>
-   {
-      public MicroServicesModel(IMemoryCache container) : base(container, "microservice")
-      {
+	public class MicroServicesModel : SynchronizedRepository<IMicroService, Guid>
+	{
+		public MicroServicesModel(IMemoryCache container) : base(container, "microservice")
+		{
 
-      }
+		}
 
-      public IMicroService SelectByPackage(Guid package)
-      {
-         return Get(f => f.Package == package);
-      }
+		public IMicroService Select(string name)
+		{
+			if (string.IsNullOrWhiteSpace(name))
+				return null;
 
-      public IMicroService Select(string name)
-      {
-         if (string.IsNullOrWhiteSpace(name))
-            return null;
+			return Get(f => string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase));
+		}
 
-         var r = Get(f => string.Compare(f.Name, name, true) == 0);
+		public IMicroService SelectByUrl(string url)
+		{
+			if (string.IsNullOrWhiteSpace(url))
+				return null;
 
-         if (r != null)
-            return r;
+			return Get(f => string.Equals(f.Url, url, StringComparison.OrdinalIgnoreCase));
+		}
 
-         var d = Shell.GetService<IDatabaseService>().Proxy.Development.MicroServices.Select(name);
+		public IMicroService Select(Guid token)
+		{
+			return Get(token);
+		}
 
-         if (d == null)
-            return null;
+		public ImmutableList<IMicroService> Query(Guid resourceGroup)
+		{
+			return Where(f => f.ResourceGroup == resourceGroup);
+		}
 
-         Set(d.Token, d, TimeSpan.Zero);
+		public ImmutableList<IMicroService> Query(List<Guid> resourceGroups)
+		{
+			return Where(f => resourceGroups.Any(t => t == f.ResourceGroup));
+		}
 
-         return d;
-      }
+		public ImmutableList<IMicroService> Query()
+		{
+			return All();
+		}
 
-      public IMicroService SelectByUrl(string url)
-      {
-         if (string.IsNullOrWhiteSpace(url))
-            return null;
+		protected override void OnInitializing()
+		{
+			var items = FileSystem.LoadMicroServices();
 
-         var r = Get(f => string.Compare(f.Url, url, true) == 0);
+			foreach (var item in items)
+				Set(item.Token, item, TimeSpan.Zero);
+		}
 
-         if (r != null)
-            return r;
+		public void Insert(Guid token, string name, Guid resourceGroup, Guid template, string version, string commit)
+		{
+			_ = DataModel.ResourceGroups.Select(resourceGroup) ?? throw new SysException(SR.ErrResourceGroupNotFound);
+			var url = Url(Guid.Empty, name);
 
-         var d = Shell.GetService<IDatabaseService>().Proxy.Development.MicroServices.SelectByUrl(url);
+			Set(token, new MicroServiceIndexEntry
+			{
+				Commit = commit,
+				Name = name,
+				ResourceGroup = resourceGroup,
+				Template = template,
+				Token = token,
+				Url = url,
+				Version = version,
+			}, TimeSpan.Zero);
 
-         if (d == null)
-            return null;
+			FileSystem.Serialize(All());
+			CachingNotifications.MicroServiceChanged(token);
+		}
 
-         Set(d.Token, d, TimeSpan.Zero);
+		public void Update(Guid token, string name, Guid template, Guid resourceGroup, string version, string commit)
+		{
+			var microService = Select(token) ?? throw new SysException(SR.ErrMicroServiceNotFound);
+			_ = DataModel.ResourceGroups.Select(resourceGroup) ?? throw new SysException(SR.ErrResourceGroupNotFound);
+			var url = Url(token, name);
 
-         return d;
-      }
+			if (template == Guid.Empty)
+				template = microService.Template;
 
-      public IMicroService Select(Guid token)
-      {
-         return Get(token,
-             (f) =>
-             {
-                f.Duration = TimeSpan.Zero;
+			Set(token, new MicroServiceIndexEntry
+			{
+				Commit = commit,
+				Name = name,
+				Template = template,
+				ResourceGroup = resourceGroup,
+				Token = token,
+				Url = url,
+				Version = version
+			}, TimeSpan.Zero);
 
-                return Shell.GetService<IDatabaseService>().Proxy.Development.MicroServices.Select(token);
-             });
-      }
+			FileSystem.Serialize(All());
+			CachingNotifications.MicroServiceChanged(token);
+		}
 
-      public ImmutableList<IMicroService> Query(Guid resourceGroup)
-      {
-         return Where(f => f.ResourceGroup == resourceGroup);
-      }
+		public void Delete(Guid token)
+		{
+			_ = Select(token) ?? throw new SysException(SR.ErrMicroServiceNotFound);
 
-      public ImmutableList<IMicroService> Query(List<Guid> resourceGroups)
-      {
-         return Where(f => resourceGroups.Any(t => t == f.ResourceGroup));
-      }
+			Remove(token);
 
-      public ImmutableList<IMicroService> Query()
-      {
-         return All();
-      }
+			FileSystem.Serialize(All());
+			CachingNotifications.MicroServiceRemoved(token);
+		}
 
-      protected override void OnInitializing()
-      {
-         var ds = Shell.GetService<IDatabaseService>().Proxy.Development.MicroServices.Query();
+		private string Url(Guid token, string name)
+		{
+			var ds = Query();
+			var urls = new List<IUrlRecord>();
 
-         foreach (var i in ds)
-            Set(i.Token, i, TimeSpan.Zero);
-      }
+			foreach (var i in ds)
+				urls.Add(new UrlRecord(i.Token.ToString(), i.Name));
 
-      protected override void OnInvalidate(Guid id)
-      {
-         var r = Shell.GetService<IDatabaseService>().Proxy.Development.MicroServices.Select(id);
-
-         if (r == null)
-         {
-            Remove(id);
-            return;
-         }
-
-         Set(id, r, TimeSpan.Zero);
-      }
-
-      public void Insert(Guid token, string name, MicroServiceStatus status, Guid resourceGroup, Guid template, string meta, string version)
-      {
-         var g = DataModel.ResourceGroups.Select(resourceGroup);
-
-         if (g == null)
-            throw new SysException(SR.ErrResourceGroupNotFound);
-
-         var url = Url(Guid.Empty, name);
-
-         Shell.GetService<IDatabaseService>().Proxy.Development.MicroServices.Insert(token, name, url, status, g, template, meta, version);
-
-         Refresh(token);
-
-         CachingNotifications.MicroServiceChanged(token);
-      }
-
-      public void Update(Guid token, string name, MicroServiceStatus status, Guid template, Guid resourceGroup, Guid package, Guid plan, UpdateStatus updateStatus, CommitStatus commitStatus)
-      {
-         var microService = Select(token);
-
-         if (microService == null)
-            throw new SysException(SR.ErrMicroServiceNotFound);
-
-         var g = DataModel.ResourceGroups.Select(resourceGroup);
-
-         if (g == null)
-            throw new SysException(SR.ErrResourceGroupNotFound);
-
-         var r = DataModel.ResourceGroups.Select(resourceGroup);
-
-         if (r == null)
-            throw new SysException(SR.ErrResourceGroupNotFound);
-
-         var url = microService.Url;
-
-         //When running locally, the cached data is already modified here, so we need to generate the URL regardless
-         url = Url(token, name);
-
-         if (template == Guid.Empty)
-            template = microService.Template;
-
-         Shell.GetService<IDatabaseService>().Proxy.Development.MicroServices.Update(microService, name, url, status, template, r, package, plan, updateStatus, commitStatus);
-
-         Refresh(token);
-
-         CachingNotifications.MicroServiceChanged(token);
-      }
-
-      public void Delete(Guid token)
-      {
-         var microService = Select(token);
-
-         if (microService == null)
-            throw new SysException(SR.ErrMicroServiceNotFound);
-
-         Shell.GetService<IDatabaseService>().Proxy.Development.MicroServices.Delete(microService);
-
-         Remove(token);
-
-         CachingNotifications.MicroServiceRemoved(token);
-      }
-
-      private string Url(Guid token, string name)
-      {
-         var ds = Query();
-         var urls = new List<IUrlRecord>();
-
-         foreach (var i in ds)
-            urls.Add(new UrlRecord(i.Token.ToString(), i.Name));
-
-         return UrlGenerator.GenerateUrl(token.ToString(), name, urls);
-      }
-
-   }
+			return UrlGenerator.GenerateUrl(token.ToString(), name, urls);
+		}
+	}
 }

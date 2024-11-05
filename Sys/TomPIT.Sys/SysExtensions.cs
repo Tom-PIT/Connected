@@ -1,8 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using TomPIT.ComponentModel;
+using TomPIT.Design;
+using TomPIT.Runtime;
 using TomPIT.Sys.Exceptions;
 using TomPIT.Sys.Model;
 using TomPIT.Sys.Security;
@@ -66,10 +69,15 @@ namespace TomPIT.Sys
 
 		public static void DemandDevelopmentStage(this IMicroService microService)
 		{
-			if (microService.Status == MicroServiceStatus.Production)
-				throw new SysException(SR.ErrProductionStage);
-			else if (microService.Status == MicroServiceStatus.Staging)
-				throw new SysException(SR.ErrStagingStage);
+			var stage = Tenant.GetService<IRuntimeService>().Stage;
+
+			if (stage == EnvironmentStage.Development || stage == EnvironmentStage.QualityAssurance)
+				return;
+
+			var isDeploying = Tenant.GetService<IDesignService>().Deployment.DeployingMicroServices.FirstOrDefault(f => f == microService.Token);
+
+			if (isDeploying == Guid.Empty)
+				throw new SysException(SR.ErrMsReadOnly);
 		}
 
 		public static void DemandDevelopmentStage(this IComponent component)

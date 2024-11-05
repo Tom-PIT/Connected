@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Immutable;
+using System.Collections.Generic;
 using System.Linq;
 
 using TomPIT.ComponentModel;
@@ -12,7 +12,6 @@ using TomPIT.Diagnostics;
 using TomPIT.Environment;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
-using TomPIT.Runtime;
 
 namespace TomPIT.Design
 {
@@ -27,32 +26,66 @@ namespace TomPIT.Design
 
 		public void Deploy(DeployArgs e)
 		{
-			if (e.ResetMicroService)
+			if (e.Verb == DeploymentVerb.Delete)
 			{
-				foreach (var component in Request.Components)
-				{
-					if (component?.Files is null)
-						continue;
-
-					if (!component.Files.Any())
-						continue;
-
-					component.Verb = ComponentVerb.Add;
-
-					foreach (var file in component.Files)
-						file.Verb = ComponentVerb.Add;
-				}
-
 				DropMicroService();
+				return;
 			}
 
-			SynchronizeMicroService();
+			if (Request?.Components?.Any() ?? false)
+			{
+				if (e.ResetMicroService)
+				{
+					for (var i = Request.Components.Count - 1; i >= 0; i--)
+					{
+						var component = Request.Components[i];
+
+						if (component.Verb == ComponentVerb.Delete)
+						{
+							Request.Components.RemoveAt(i);
+							continue;
+						}
+
+						for (var j = component.Files.Count - 1; j >= 0; j--)
+						{
+							var file = component.Files[j];
+
+							if (file.Verb == ComponentVerb.Delete)
+								component.Files.RemoveAt(j);
+						}
+					}
+
+					foreach (var component in Request.Components)
+					{
+						if (component?.Files is null)
+							continue;
+
+						if (!component.Files.Any())
+							continue;
+
+						component.Verb = ComponentVerb.Add;
+
+						foreach (var file in component.Files)
+							file.Verb = ComponentVerb.Add;
+					}
+
+					DropMicroService();
+				}
+			}
+
+			SynchronizeMicroService(e);
 			Drop();
 			DeployFolders();
-			DeployComponents();
-			SynchronizeEntities();
+
+			if (Request?.Components?.Any() ?? false)
+			{
+				DeployComponents();
+				SynchronizeEntities();
+			}
+
 			RunInstallers();
-			CommitMicroService();
+
+			IncrementVersion();
 		}
 
 		private void DropMicroService()
@@ -62,58 +95,56 @@ namespace TomPIT.Design
 			if (ms is null)
 				return;
 
-			if (ms.Status != MicroServiceStatus.Development)
-				UpdateMicroService(ms);
-
 			Tenant.GetService<IDesignService>().MicroServices.Delete(ms.Token);
 		}
 
-		private void CommitMicroService()
-		{
-			var ms = Tenant.GetService<IMicroServiceService>().Select(Request.Token);
-
-			Tenant.GetService<IDesignService>().MicroServices.Update(Request.Token, Request.Name, ms.ResourceGroup, Request.Template, ResolveStatus(), UpdateStatus.UpToDate, CommitStatus.Synchronized);
-		}
-
-		private void SynchronizeMicroService()
+		private void SynchronizeMicroService(DeployArgs e)
 		{
 			var ms = Tenant.GetService<IMicroServiceService>().Select(Request.Token);
 
 			if (ms == null)
-				InsertMicroService();
+				InsertMicroService(e);
 			else
-				UpdateMicroService(ms);
+				UpdateMicroService(ms, e);
 		}
 
-		private void UpdateMicroService(IMicroService microService)
+		private void UpdateMicroService(IMicroService microService, DeployArgs e)
 		{
-			Tenant.GetService<IDesignService>().MicroServices.Update(Request.Token, Request.Name, microService.ResourceGroup, Request.Template, MicroServiceStatus.Development, microService.UpdateStatus, microService.CommitStatus);
+			var commitKey = $"{e.Commit.Branch}.{e.Commit.Commit}";
+
+			Tenant.GetService<IDesignService>().MicroServices.Update(Request.Token, Request.Name, microService.ResourceGroup, Request.Template, microService.Version, commitKey);
 		}
 
-		private void InsertMicroService()
+		private void InsertMicroService(DeployArgs e)
 		{
-			var resourceGroup = Tenant.GetService<IResourceGroupService>().Default.Token;
+			var commitKey = $"{e.Commit.Branch}.{e.Commit.Commit}";
 
-			Tenant.GetService<IDesignService>().MicroServices.Insert(Request.Token, Request.Name, resourceGroup, Request.Template, MicroServiceStatus.Development);
-		}
-
-		private MicroServiceStatus ResolveStatus()
-		{
-			var stage = Tenant.GetService<IRuntimeService>().Stage;
-
-			switch (stage)
+			var resourceGroupService = Tenant.GetService<IResourceGroupService>();
+			
+			var resourceGroup = resourceGroupService.Default.Token;
+			
+			if (!string.IsNullOrWhiteSpace(e.ResourceGroup)) 
 			{
-				case EnvironmentStage.Development:
-					return MicroServiceStatus.Development;
-				case EnvironmentStage.Staging:
-					return MicroServiceStatus.Staging;
-				case EnvironmentStage.Production:
-					return MicroServiceStatus.Production;
-				default:
-					throw new NotSupportedException();
+				var candidate = resourceGroupService.Select(e.ResourceGroup);
+
+				if (candidate is not null)
+					resourceGroup = candidate.Token;
+			}			
+
+			Tenant.GetService<IDesignService>().MicroServices.Insert(Request.Token, Request.Name, resourceGroup, Request.Template, null, commitKey);
+		}
+
+		private void IncrementVersion()
+		{
+			foreach (var component in Request.Components)
+			{
+				if (string.Equals(component.Category, ComponentCategories.Code, StringComparison.OrdinalIgnoreCase))
+				{
+					Tenant.GetService<IDesignService>().MicroServices.IncrementVersion(Request.Token);
+					return;
+				}
 			}
 		}
-
 		private void SynchronizeEntities()
 		{
 			var components = Tenant.GetService<IComponentService>().QueryComponents(Request.Token, ComponentCategories.Model);
@@ -173,7 +204,7 @@ namespace TomPIT.Design
 			foreach (var component in Request.Components)
 			{
 				if (component.Verb == ComponentVerb.Delete)
-					ComponentModel.Delete(component.Token, true);
+					ComponentModel.Delete(component.Token);
 			}
 		}
 
@@ -198,8 +229,8 @@ namespace TomPIT.Design
 		{
 			var folders = Tenant.GetService<IComponentService>().QueryFolders(Request.Token);
 			/*
-		 * remove
-		 */
+          * remove
+          */
 			foreach (var folder in folders)
 			{
 				if (Request.Folders?.FirstOrDefault(f => f.Id == folder.Token) != null)
@@ -208,12 +239,12 @@ namespace TomPIT.Design
 				ComponentModel.DeleteFolder(Request.Token, folder.Token, false);
 			}
 			/*
-		 * add and modify
-		 */
-			DeployFolders(Guid.Empty, folders);
+          * add and modify
+          */
+			DeployFolders(Guid.Empty, folders.ToList());
 		}
 
-		private void DeployFolders(Guid parent, ImmutableList<IFolder> existing)
+		private void DeployFolders(Guid parent, List<IFolder> existing)
 		{
 			if (Request.Folders == null)
 				return;
@@ -249,9 +280,9 @@ namespace TomPIT.Design
 			}
 		}
 
-		private string EnumerateFolder(IPullRequestFolder folder, ImmutableList<IFolder> existing, int index)
+		private string EnumerateFolder(IPullRequestFolder folder, List<IFolder> existing, int index)
 		{
-			var name = index == 0 ? folder.Name : $"{folder}{index}";
+			var name = index == 0 ? folder.Name : $"{folder.Name}{index}";
 
 			var target = existing.FirstOrDefault(f => string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase) && f.Parent == folder.Parent);
 

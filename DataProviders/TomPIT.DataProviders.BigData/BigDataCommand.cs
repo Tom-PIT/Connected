@@ -100,7 +100,7 @@ namespace TomPIT.DataProviders.BigData
 					{
 						interval = interval == 0 ? 1 : interval *= 3;
 
-						Thread.Sleep(interval);
+						Thread.Sleep(interval*1000);
 					}
 				}
 			}

@@ -26,10 +26,5 @@ namespace TomPIT.Proxy.Local
 		{
 			return DataModel.MicroServices.SelectByUrl(url);
 		}
-
-		public string SelectMeta(Guid microService)
-		{
-			return DataModel.MicroServicesMeta.Select(microService)?.Content;
-		}
 	}
 }

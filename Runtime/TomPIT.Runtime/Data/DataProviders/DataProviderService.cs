@@ -1,9 +1,13 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+
+using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text.Json;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
 using TomPIT.Reflection;
+using TomPIT.UI.Theming.Parser.Functions;
 
 namespace TomPIT.Data.DataProviders
 {
@@ -31,12 +35,11 @@ namespace TomPIT.Data.DataProviders
 
 		private void Initialize()
 		{
-			if (!Shell.Configuration.RootElement.TryGetProperty("dataProviders", out JsonElement element))
-				return;
+			var providers = Shell.Configuration.GetSection("dataProviders").Get<string[]>();
 
-			foreach (var item in element.EnumerateArray())
+			foreach (var item in providers) 
 			{
-				var t = TypeExtensions.GetType(item.GetString());
+				var t = TypeExtensions.GetType(item);
 
 				if (t is null)
 					continue;

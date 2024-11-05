@@ -11,7 +11,5 @@ namespace TomPIT.Proxy
 		IMicroService Select(string name);
 
 		ImmutableList<IMicroService> Query();
-
-		string SelectMeta(Guid microService);
 	}
 }

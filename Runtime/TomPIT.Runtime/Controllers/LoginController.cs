@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
@@ -31,8 +32,19 @@ namespace TomPIT.Controllers
 			if (Request.Cookies.ContainsKey(key))
 				Response.Cookies.Delete(key);
 
+			var m = CreateModel(this);
+
+			var returnUrl = m.Services.Routing.RootUrl;
+
+			try
+			{
+				if (!string.IsNullOrWhiteSpace(Request.Query["returnUrl"]))
+					returnUrl = Request.Query["returnUrl"];
+			}
+			catch { }
+
 			if (Shell.GetService<IRuntimeService>().Features.HasFlag(InstanceFeatures.Application))
-				return new RedirectResult("~/login");
+				return new RedirectResult($"~/login?returnUrl={returnUrl}");
 
 			return View(LoginView, CreateModel(this));
 		}

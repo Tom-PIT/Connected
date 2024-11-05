@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
+
 using TomPIT.Caching;
 using TomPIT.Messaging;
 
@@ -20,28 +21,28 @@ namespace TomPIT.Connectivity
 		private void Data()
 		{
 			Hub.On<MessageEventArgs<DataCacheEventArgs>>("Clear", (e) =>
-			{
-				Hub.InvokeAsync("Confirm", e.Message);
-
-				if (Tenant.GetService<IDataCachingService>() is IDataCachingNotification n)
-					n.NotifyClear(e.Args);
-			});
+				ConfirmAndHandle(e, (e) =>
+				{
+					if (Tenant.GetService<IDataCachingService>() is IDataCachingNotification n)
+						n.NotifyClear(e.Args);
+				})
+			);
 
 			Hub.On<MessageEventArgs<DataCacheEventArgs>>("Invalidate", (e) =>
-			{
-				Hub.InvokeAsync("Confirm", e.Message);
-
-				if (Tenant.GetService<IDataCachingService>() is IDataCachingNotification n)
-					n.NotifyInvalidate(e.Args);
-			});
+				ConfirmAndHandle(e, (e) =>
+				{
+					if (Tenant.GetService<IDataCachingService>() is IDataCachingNotification n)
+						n.NotifyInvalidate(e.Args);
+				})
+			);
 
 			Hub.On<MessageEventArgs<DataCacheEventArgs>>("Remove", (e) =>
-			{
-				Hub.InvokeAsync("Confirm", e.Message);
-
-				if (Tenant.GetService<IDataCachingService>() is IDataCachingNotification n)
-					n.NotifyRemove(e.Args);
-			});
+				ConfirmAndHandle(e, (e) =>
+				{
+					if (Tenant.GetService<IDataCachingService>() is IDataCachingNotification n)
+						n.NotifyRemove(e.Args);
+				})
+			);
 		}
 	}
 }

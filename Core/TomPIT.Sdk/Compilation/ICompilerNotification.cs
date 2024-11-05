@@ -4,6 +4,6 @@ namespace TomPIT.Compilation
 {
 	public interface ICompilerNotification
 	{
-		void NotifyChanged(object sender, ScriptChangedEventArgs e);
+		void NotifyChanged(object sender, SourceTextChangedEventArgs e);
 	}
 }

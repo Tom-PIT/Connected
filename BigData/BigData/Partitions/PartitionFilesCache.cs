@@ -46,6 +46,9 @@ namespace TomPIT.BigData.Partitions
 
 		private bool IntersectsWith(DateTime startValue, DateTime endValue, DateTime start, DateTime end)
 		{
+			//TODO rethink optimization
+			return true;
+
 			if (end == DateTime.MinValue)
 				end = DateTime.MaxValue;
 

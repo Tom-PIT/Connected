@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading;
+
 using TomPIT.Connectivity;
 using TomPIT.Data;
 using TomPIT.Data.Storage;
@@ -10,6 +12,7 @@ using TomPIT.Middleware.Storage;
 using TomPIT.Reflection;
 using TomPIT.Runtime;
 using TomPIT.Security;
+
 using CIP = TomPIT.Annotations.Design.CompletionItemProviderAttribute;
 
 namespace TomPIT.Middleware
@@ -20,12 +23,15 @@ namespace TomPIT.Middleware
 		private ElevationContextState _elevationState = ElevationContextState.Revoked;
 		private object _authorizationOwner;
 		private CancellationTokenSource _cancellationTokenSource = new();
+		private readonly object _sync = new();
+		private object? _provider;
+		private object? _scope;
 		#endregion
 
 		#region Constructors
 		public MiddlewareContext()
 		{
-			Transactions = new TransactionContext();
+			Transactions = new TransactionContext(this);
 			Interop = new MiddlewareInterop(this);
 			Services = new MiddlewareServices(this, Transactions);
 			Environment = new MiddlewareEnvironment();
@@ -41,6 +47,11 @@ namespace TomPIT.Middleware
 		public MiddlewareContext(bool interactive) : this()
 		{
 			((MiddlewareEnvironment)Environment).IsInteractive = interactive;
+		}
+
+		[Obsolete("Remains to keep code compatibility. Use the parameterless constructor instead.")]
+		public MiddlewareContext(string endpoint = null) : this()
+		{
 		}
 		#endregion
 
@@ -77,6 +88,61 @@ namespace TomPIT.Middleware
 		#endregion
 
 		#region Methods
+
+		public TService? GetService<TService>()
+		{
+			if (Disposed)
+				return default;
+
+			if (_scope is null)
+			{
+				lock (_sync)
+				{
+					var host = Tenant.GetService<IRuntimeService>().Host;
+
+					if (host is null)
+						return default;
+
+					var providerType = Type.GetType("TomPIT.Services.IContextProvider, TomPIT.Core.Model.dll");
+
+					if (providerType is null)
+						return default;
+
+					_provider = host.ApplicationServices.GetService(providerType);
+
+					if (_provider is null)
+						return default;
+
+					var contextType = Type.GetType("TomPIT.Services.IContext, TomPIT.Core.Model.dll");
+
+					if (contextType is null)
+						return default;
+
+					_scope = _provider.GetType().GetMethod("Create")?.Invoke(_provider, null);
+				}
+			}
+
+			if (_scope is null)
+				return default;
+
+			var result = GetService(typeof(TService));
+
+			if (result is null)
+				return default;
+
+			return (TService)result;
+		}
+
+		private object? GetService(Type type)
+		{
+			var method = _scope.GetType().GetMethods().FirstOrDefault((f) => f.Name == "GetService" && f.ContainsGenericParameters);
+
+			if (method is null)
+				return default;
+
+			return method.MakeGenericMethod(type)?.Invoke(_scope, null);
+		}
+
 
 		public void Cancel()
 		{
@@ -193,6 +259,12 @@ namespace TomPIT.Middleware
 			{
 				if (disposing)
 				{
+					if (_scope is not null)
+					{
+						_scope?.GetType()?.GetMethod("Dispose")?.Invoke(_scope, null);
+						_scope = null;
+					}
+
 					//Connections.Dispose();
 					ModelConnections.Dispose();
 					Interop.Dispose();

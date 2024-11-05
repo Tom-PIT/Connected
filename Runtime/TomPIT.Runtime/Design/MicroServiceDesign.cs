@@ -1,9 +1,6 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using TomPIT.ComponentModel;
 using TomPIT.Connectivity;
-using TomPIT.Security;
 
 namespace TomPIT.Design
 {
@@ -13,9 +10,9 @@ namespace TomPIT.Design
 		{
 		}
 
-		public void Insert(Guid token, string name, Guid resourceGroup, Guid template, MicroServiceStatus status)
+		public void Insert(Guid token, string name, Guid resourceGroup, Guid template, string version, string commit)
 		{
-			Instance.SysProxy.Management.MicroServices.Insert(token, name, resourceGroup, template, status, CreateMeta(token), null);
+			Instance.SysProxy.Management.MicroServices.Insert(token, name, resourceGroup, template, version, commit);
 		}
 
 		public void Delete(Guid token)
@@ -23,7 +20,7 @@ namespace TomPIT.Design
 			var components = Tenant.GetService<IDesignService>().Components.Query(token);
 
 			foreach (var i in components)
-				Tenant.GetService<IDesignService>().Components.Delete(i.Token, true);
+				Tenant.GetService<IDesignService>().Components.Delete(i.Token);
 
 			var folders = FolderModel.Create(Tenant.GetService<IComponentService>().QueryFolders(token));
 
@@ -45,28 +42,38 @@ namespace TomPIT.Design
 			Tenant.GetService<IDesignService>().Components.DeleteFolder(model.Folder.MicroService, model.Folder.Token, true);
 		}
 
-		public void Update(Guid token, string name, Guid resourceGroup, Guid template, MicroServiceStatus status, UpdateStatus updateStatus, CommitStatus commitStatus)
+		public void Update(Guid token, string name, Guid resourceGroup, Guid template, string version, string commit)
 		{
-			var ms = Tenant.GetService<IMicroServiceService>().Select(token);
-
-			Instance.SysProxy.Management.MicroServices.Update(token, name, resourceGroup, template, status, updateStatus, commitStatus, ms.Package, ms.Plan);
+			Instance.SysProxy.Management.MicroServices.Update(token, name, resourceGroup, template, version, commit);
 
 			if (Tenant.GetService<IMicroServiceService>() is IMicroServiceNotification notification)
 				notification.NotifyChanged(this, new MicroServiceEventArgs(token));
 		}
 
-		/*
-	  * Microservice meta is obsolete so this is a temporary fix.
-	  */
-		private string CreateMeta(Guid microService)
+		public void IncrementVersion(Guid token)
 		{
-			var meta = new JObject
-					 {
-							{"microService", microService },
-							{"created", DateTime.Today }
-					 };
+			var ms = Tenant.GetService<IMicroServiceService>().Select(token);
 
-			return Tenant.GetService<ICryptographyService>().Encrypt(JsonConvert.SerializeObject(meta));
+			if (ms is null)
+				return;
+
+			var version = ms.Version;
+			var major = DateTime.UtcNow.ToString("yy");
+			var minor = DateTime.UtcNow.ToString("MM");
+			var build = DateTime.UtcNow.Day.ToString().PadLeft(2, '0');
+			var revision = "0";
+
+			if (!string.IsNullOrEmpty(version))
+			{
+				string currentRevision = version.Split('.')[^1];
+
+				if (!string.IsNullOrEmpty(currentRevision) && Types.TryConvert(currentRevision, out int rev))
+					revision = (++rev).ToString();
+			}
+
+			version = $"{major}.{minor}.{build}.{revision}";
+
+			Update(token, ms.Name, ms.ResourceGroup, ms.Template, version, ms.Commit);
 		}
 	}
 }

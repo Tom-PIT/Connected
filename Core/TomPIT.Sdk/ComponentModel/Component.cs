@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using TomPIT.Annotations;
 using TomPIT.Annotations.Design;
-using TomPIT.Development;
 
 namespace TomPIT.ComponentModel
 {
@@ -26,17 +25,7 @@ namespace TomPIT.ComponentModel
 		[Browsable(false)]
 		public string Category { get; set; }
 		[Browsable(false)]
-		public Guid RuntimeConfiguration { get; set; }
-		[Browsable(false)]
 		public DateTime Modified { get; set; }
-		[Browsable(false)]
-		public Guid LockUser { get; set; }
-		[Browsable(false)]
-		public DateTime LockDate { get; set; }
-		[Browsable(false)]
-		public LockVerb LockVerb { get; set; }
-		[Browsable(false)]
-		public LockStatus LockStatus { get; set; }
 		[Browsable(false)]
 		public string NameSpace { get; set; }
 		public override string ToString()

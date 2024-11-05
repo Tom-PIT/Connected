@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using TomPIT.Connectivity;
 using TomPIT.Diagnostics;
@@ -12,33 +14,68 @@ namespace TomPIT.Design
 
 		public Deployment(ITenant tenant) : base(tenant)
 		{
+			DeployingMicroServicesList = new();
 			Configuration = new DeploymentConfiguration();
 
 			Initialize();
 		}
 
 		public IDeploymentConfiguration Configuration { get; }
+		private List<Guid> DeployingMicroServicesList { get; }
 
-		public void Deploy(string remote, Guid repository, long branch, long commit, string authenticationToken)
+		public ImmutableArray<Guid> DeployingMicroServices => DeployingMicroServicesList.ToImmutableArray();
+
+		public void Deploy(string remote, Guid repository, long branch, long commit, long startCommit, string authenticationToken, DeploymentVerb verb = DeploymentVerb.Deploy, string? resourceGroup = null)
 		{
 			var url = $"{remote}/Connected.Repositories/Branches/Pull";
+			var args = new DeployArgs
+			{
+				ResetMicroService = startCommit == 0,
+				Verb = verb
+			};
 
-			Deploy(Tenant.Post<PullRequest>(url, new
+			var pullRequest = Tenant.Post<PullRequest>(url, new
 			{
 				repository,
 				branch,
 				commit,
+				startCommit,
 				Mode = "Content",
 				Reason = "Install",
-			}, new HttpRequestArgs().WithBearerCredentials(authenticationToken)), new DeployArgs
-			{
-				ResetMicroService = true
-			});
+			}, new HttpRequestArgs().WithBearerCredentials(authenticationToken));
+
+			args.ResourceGroup = resourceGroup;
+
+			Deploy(pullRequest, args);
 		}
 
 		public void Deploy(IPullRequest request, DeployArgs e)
 		{
-			new DeploymentSession(Tenant, request).Deploy(e);
+			if (request is null)
+				return;
+
+			e.Commit.Branch = request.Branch;
+			e.Commit.Commit = request.Commit;
+
+			try
+			{
+				lock (DeployingMicroServicesList)
+				{
+					if (!DeployingMicroServicesList.Contains(request.Token))
+						DeployingMicroServicesList.Add(request.Token);
+				}
+
+				Instance.SysProxy.SourceFiles.BeginUpdate();
+
+				new DeploymentSession(Tenant, request).Deploy(e);
+			}
+			finally
+			{
+				lock (DeployingMicroServicesList)
+					DeployingMicroServicesList.Remove(request.Token);
+
+				Instance.SysProxy.SourceFiles.EndUpdate();
+			}
 		}
 
 		private void Deploy(string fileName)
@@ -57,10 +94,12 @@ namespace TomPIT.Design
 
 			var args = new DeployArgs
 			{
-				ResetMicroService = true
+				ResetMicroService = true,
+				Verb = DeploymentVerb.Deploy,
 			};
 
-			args.Commit.Enabled = false;
+			args.Commit.Branch = request.Branch;
+			args.Commit.Commit = request.Commit;
 
 			Deploy(request, args);
 		}

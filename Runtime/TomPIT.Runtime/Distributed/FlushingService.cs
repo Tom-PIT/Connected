@@ -35,9 +35,6 @@ namespace TomPIT.Distributed
 						if (connection.GetService<ILoggingService>() is LoggingService l)
 							l.Flush();
 
-						if (connection.GetService<IMetricService>() is MetricService m)
-							m.Flush();
-
 						Instance.SysProxy.Analytics.Flush();
 
 						if (connection.GetService<ITraceService>() is TraceService t)

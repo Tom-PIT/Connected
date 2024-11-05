@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Microsoft.CodeAnalysis.Scripting;
+using System;
 using System.Collections.Generic;
-using Microsoft.CodeAnalysis.Scripting;
 
 namespace TomPIT.Compilation
 {
@@ -10,7 +10,7 @@ namespace TomPIT.Compilation
 		ScriptRunner<object> Script { get; }
 		List<IDiagnostic> Errors { get; }
 		Guid MicroService { get; }
-		Guid Id { get; }
+		Guid Token { get; }
 		Guid Component { get; }
 	}
 }

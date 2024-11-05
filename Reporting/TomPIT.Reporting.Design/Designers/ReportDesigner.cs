@@ -1,9 +1,14 @@
 ﻿using DevExpress.DataAccess.Json;
+
 using Newtonsoft.Json.Linq;
+
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+
 using TomPIT.Annotations.Design;
+using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Apis;
 using TomPIT.ComponentModel.Reports;
@@ -14,6 +19,7 @@ using TomPIT.Ide;
 using TomPIT.Ide.Designers;
 using TomPIT.Ide.Designers.ActionResults;
 using TomPIT.MicroServices.Reporting.Design.Dom;
+using TomPIT.Middleware.Interop;
 using TomPIT.Reflection;
 
 namespace TomPIT.MicroServices.Reporting.Design.Designers
@@ -24,6 +30,7 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 		private IReportConfiguration _report = null;
 		private List<ReportDataSource> _dataSources = null;
 		private List<JsonDataSource> _reportDataSources = null;
+
 		public ReportDesigner(IDomElement element) : base(element)
 		{
 		}
@@ -31,32 +38,10 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 		public override string View => "~/Views/Ide/Designers/Report.cshtml";
 		public override object ViewModel => this;
 
-		public IMicroService MicroService
-		{
-			get
-			{
-				if (_microService == null)
-					_microService = Environment.Context.Tenant.GetService<IMicroServiceService>().Select(Element.MicroService());
+		public IMicroService MicroService => _microService ??= Environment.Context.Tenant.GetService<IMicroServiceService>().Select(Element.MicroService());
 
-				return _microService;
-			}
-		}
-
-		public IReportConfiguration Report
-		{
-			get
-			{
-				if (_report == null)
-				{
-					var element = Element as ReportElement;
-
-					_report = element.Component as IReportConfiguration;
-				}
-
-				return _report;
-			}
-		}
-
+		public IReportConfiguration Report => _report ??= (Element as ReportElement)?.Component as IReportConfiguration;
+		
 		public string ReportUrl => $"{MicroService.Name}/{Report.ComponentName()}";
 
 		public List<ReportDataSource> DataSources
@@ -123,7 +108,6 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 
 			foreach (var api in apis)
 			{
-				//var manifest = Environment.Context.Tenant.GetService<IDiscoveryService>().Manifests.Select(api.Token) as ApiManifest;
 				var config = Environment.Context.Tenant.GetService<IComponentService>().SelectConfiguration(api.Token) as IApiConfiguration;
 
 				_dataSources.Add(new ReportDataSource
@@ -205,96 +189,66 @@ namespace TomPIT.MicroServices.Reporting.Design.Designers
 
 			result.Name = op.Name;
 
-			return null;
-			//var manifest = Environment.Context.Tenant.GetService<IDiscoveryService>().Manifests.Select(descriptor.Component.Token) as ApiManifest;
+			var operationType = Environment.Context.Tenant.GetService<ICompilerService>().ResolveType(descriptor.MicroService.Token, op, op.Name);
 
-			//if (manifest == null)
-			//	return null;
+			if (operationType is null)
+				return null;
 
-			//var opManifest = manifest.Operations.FirstOrDefault(f => string.Compare(f.Name, op.Name, true) == 0);
+			var returnType = ResolveOperationReturnType(operationType);
 
-			//if (opManifest == null)
-			//	return null;
+			if (returnType is null)
+				return null;
 
-			//using var typeResolver = Environment.Context.Tenant.GetService<IDiscoveryService>().Manifests.SelectTypeResolver(opManifest);
-			//var schemaType = typeResolver.Resolve(opManifest.ReturnType);
+			var schema = new JsonSchemaNode(ResolveSchemaName(returnType), true, JsonNodeType.Array)
+			{
+				DisplayName = ResolveSchemaName(returnType)
+			};
 
-			//if (schemaType == null)
-			//	return null;
+			result.Schema.AddChildren(schema);
 
-			//var schema = new JsonSchemaNode(ResolveSchemaName(schemaType), true, JsonNodeType.Array)
-			//{
-			//	DisplayName = ResolveSchemaName(schemaType)
-			//};
+			var fields = new List<JsonSchemaNode>();
+			var members = typeof(IEnumerable).IsAssignableFrom(returnType) ? returnType.GenericTypeArguments[0].GetProperties() : returnType.GetProperties();
 
-			//result.Schema.AddChildren(schema);
+			foreach (var property in members)
+			{
+				var type = property.PropertyType;
 
-			//var fields = new List<JsonSchemaNode>();
-			//var members = schemaType.IsArray ? schemaType.TypeArguments[0].Members : schemaType.Members;
+				fields.Add(new JsonSchemaNode(new JsonNode(property.Name, true, JsonNodeType.Property)
+				{
+					Type = ResolveType(type)
+				}));
+			}
 
-			//foreach (var property in members)
-			//{
-			//	var type = typeResolver.Resolve(property.Value.Name);
+			schema.AddChildren(fields.ToArray());
 
-			//	fields.Add(new JsonSchemaNode(new JsonNode(property.Key, true, JsonNodeType.Property)
-			//	{
-			//		Type = ResolveType(type)
-			//	}));
-			//}
-
-			//schema.AddChildren(fields.ToArray());
-
-			//return result;
+			return result;
 		}
 
-		//private static string ResolveSchemaName(IManifestTypeDescriptor descriptor)
-		//{
-		//	if (!descriptor.IsArray)
-		//		return descriptor.Name;
+		private static Type? ResolveOperationReturnType(Type operationType)
+		{
+			var operationInterface = operationType.GetInterface($"{nameof(IOperation)}`1");
 
-		//	return descriptor.TypeArguments[0].Name;
-		//}
+			if (operationInterface is null)
+				return null;
 
-		//private static Type ResolveType(IManifestTypeDescriptor descriptor)
-		//{
-		//	if (TypeExtensions.GetType(descriptor.Name) is Type resolved)
-		//		return resolved;
+			return operationInterface.GetGenericArguments()[0];
+		}
 
-		//	return typeof(string);
-		//}
+		private static string ResolveSchemaName(Type operationReturnType)
+		{
+			if (!typeof(IEnumerable).IsAssignableFrom(operationReturnType))
+				return operationReturnType.Name;
 
-		//private JsonSchemaNode CreateObjectNode(ApiManifest manifest, IManifestProperty property, IManifestType member)
-		//{
-		//	var objectNode = new JsonSchemaNode(new JsonNode(property.Name, true, JsonNodeType.Property)
-		//	{
+			return operationReturnType.GenericTypeArguments[0].Name;
+		}
 
-		//	});
+		private static Type ResolveType(Type descriptor)
+		{
+			if (TypeExtensions.GetType(descriptor.TypeName()) is Type resolved)
+				return resolved;
 
-		//	foreach (var memberProperty in member.Members)
-		//		objectNode.AddChildren(new DevExpress.DataAccess.Node<JsonNode>[] { CreatePropertyNode(manifest, memberProperty, member) });
-
-		//	return objectNode;
-		//}
-
-		//private JsonSchemaNode CreatePropertyNode(ApiManifest manifest, IManifestMember property, IManifestType member)
-		//{
-		//	var type = Type.GetType(property.Type, false);
-
-		//	if (type == null)
-		//	{
-		//		var manifestType = manifest.Types.FirstOrDefault(f => string.Compare(f.Name, property.Type, false) == 0);
-
-		//		if (manifestType != null)
-		//			return CreateObjectNode(manifest, property, manifestType);
-		//		else
-		//			type = TypeExtensions.FromFriendlyName(property.Type);
-		//	}
-
-		//	return new JsonSchemaNode(new JsonNode(property.Name, true, JsonNodeType.Property)
-		//	{
-		//		Type = type
-		//	});
-		//}
+			return typeof(string);
+		}		
 
 		private void CreateRoot(JsonDataSource ds)
 		{

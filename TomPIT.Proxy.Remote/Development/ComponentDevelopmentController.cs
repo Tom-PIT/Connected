@@ -17,12 +17,11 @@ namespace TomPIT.Proxy.Remote.Development
 			return Connection.Get<string>(u);
 		}
 
-		public void Delete(Guid component, Guid user, bool permanent)
+		public void Delete(Guid component, Guid user)
 		{
 			Connection.Post(Connection.CreateUrl(Controller, "Delete"), new
 			{
 				component,
-				permanent,
 				user
 			});
 		}

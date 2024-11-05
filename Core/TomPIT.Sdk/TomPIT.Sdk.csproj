@@ -1,34 +1,35 @@
 <Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<TargetFramework>net7.0</TargetFramework>
-		<RootNamespace>TomPIT</RootNamespace>
-		<Nullable>enable</Nullable>
-		<Authors>Tom PIT</Authors>
-		<Company>Tom PIT</Company>
-		<Product>Tom PIT.connected</Product>
-    <AssemblyVersion>3.1.706.1</AssemblyVersion>
-		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <FileVersion>3.1.706.1</FileVersion>
-    <Version>3.1.706.1</Version>
-	</PropertyGroup>
-	<ItemGroup>
-		<FrameworkReference Include="Microsoft.AspNetCore.App" />
-	</ItemGroup>
-	<ItemGroup>
-		<PackageReference Include="HtmlAgilityPack" Version="1.11.50" />
-		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.9" />
-		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="7.0.9" />
-		<PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="4.6.0" />
-		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.6.0" />
-		<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.6.0" />
-		<PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.32.0" />
-		<PackageReference Include="SkiaSharp" Version="2.88.3" />
-		<PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.3" />		
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-	</ItemGroup>
-	<ItemGroup>
-		<ProjectReference Include="..\..\TomPIT.ServiceProviders.HealthMonitoring\TomPIT.ServiceProviders.HealthMonitoring.csproj" />
-		<ProjectReference Include="..\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
-		<ProjectReference Include="..\TomPIT.Core\TomPIT.Core.csproj" />
-	</ItemGroup>
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <RootNamespace>TomPIT</RootNamespace>
+    <Nullable>enable</Nullable>
+    <Authors>Tom PIT</Authors>
+    <Company>Tom PIT</Company>
+    <Product>Tom PIT.connected</Product>
+    <AssemblyVersion>4.1.1011.1</AssemblyVersion>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <FileVersion>4.1.1011.1</FileVersion>
+    <Version>4.1.1011.1</Version>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'" />
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.54" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.14" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="7.0.14" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="4.8.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.8.0" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.0.3" />
+    <PackageReference Include="SkiaSharp" Version="2.88.8" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.8" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\TomPIT.ServiceProviders.HealthMonitoring\TomPIT.ServiceProviders.HealthMonitoring.csproj" />
+    <ProjectReference Include="..\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
+    <ProjectReference Include="..\TomPIT.Core\TomPIT.Core.csproj" />
+  </ItemGroup>
 </Project>

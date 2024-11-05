@@ -17,6 +17,5 @@ namespace TomPIT.ComponentModel
 
 		ImmutableList<IMicroService> Query();
 		ImmutableList<IMicroService> Query(Guid user);
-		string SelectMeta(Guid microService);
 	}
 }

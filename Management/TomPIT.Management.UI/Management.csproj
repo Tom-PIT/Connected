@@ -1,129 +1,129 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
-	<PropertyGroup Label="Globals">
-		<SccProjectName>SAK</SccProjectName>
-		<SccProvider>SAK</SccProvider>
-		<SccAuxPath>SAK</SccAuxPath>
-		<SccLocalPath>SAK</SccLocalPath>
-	</PropertyGroup>
-	<PropertyGroup>
-		<TargetFramework>net7.0</TargetFramework>
-		<AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-		<RootNamespace>TomPIT.Management</RootNamespace>
-		<AssemblyName>TomPIT.Connected.Management</AssemblyName>
-    <AssemblyVersion>3.1.706.1</AssemblyVersion>
-    <FileVersion>3.1.706.1</FileVersion>
-    <Version>3.1.706.1</Version>
-		<Authors>Tom PIT</Authors>
-		<Company>Tom PIT</Company>
-		<Product>Tom PIT.connected</Product>
-		<GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
-	</PropertyGroup>
-	<PropertyGroup>
-		<PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>
-		<OutputType>Library</OutputType>
-	</PropertyGroup>
-	<ItemGroup>
-		<Compile Remove="Views\Shell\**" />
-		<Content Remove="Views\Shell\**" />
-		<EmbeddedResource Remove="Views\Shell\**" />
-		<None Remove="Views\Shell\**" />
-	</ItemGroup>
-	<ItemGroup>
-		<Content Remove="compilerconfig.json" />
-	</ItemGroup>
-	<ItemGroup>
-		<None Include="compilerconfig.json" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\mixins\_alert.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\mixins\_background-variant.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\mixins\_badge.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\mixins\_border-radius.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\mixins\_box-shadow.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\mixins\_breakpoints.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\mixins\_buttons.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\mixins\_caret.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\mixins\_clearfix.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\mixins\_deprecate.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\mixins\_float.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\mixins\_forms.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\mixins\_gradients.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\mixins\_grid-framework.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\mixins\_grid.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\mixins\_hover.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\mixins\_image.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\mixins\_list-group.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\mixins\_lists.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\mixins\_nav-divider.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\mixins\_pagination.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\mixins\_reset-text.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\mixins\_resize.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\mixins\_screen-reader.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\mixins\_size.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\mixins\_table-row.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\mixins\_text-emphasis.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\mixins\_text-hide.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\mixins\_text-truncate.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\mixins\_transition.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\mixins\_visibility.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\utilities\_align.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\utilities\_background.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\utilities\_borders.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\utilities\_clearfix.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\utilities\_display.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\utilities\_embed.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\utilities\_flex.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\utilities\_float.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\utilities\_overflow.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\utilities\_position.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\utilities\_screenreaders.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\utilities\_shadows.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\utilities\_sizing.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\utilities\_spacing.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\utilities\_stretched-link.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\utilities\_text.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\utilities\_visibility.scss" />
-		<None Include="wwwroot\Assets\Styles\bootstrap\vendor\_rfs.scss" />
-	</ItemGroup>
-	<ItemGroup>
-		<PackageReference Include="BuildBundlerMinifierPlus" Version="5.3.0" />
-		<PackageReference Include="Microsoft.CodeAnalysis.Features" Version="4.6.0" />
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-		<PackageReference Include="System.Configuration.ConfigurationManager" Version="7.0.0" />
-		<PackageReference Include="SkiaSharp" Version="2.88.3" />
-		<PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.3" />		
-		<PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="7.0.9" />
-	</ItemGroup>
-	<ItemGroup>
-		<Content Update="Views\Ide\Designers\Scheduler.cshtml">
-			<Pack>$(IncludeRazorContentInPack)</Pack>
-		</Content>
-		<Content Update="Views\Ide\Designers\PermissionDescriptors.cshtml">
-			<Pack>$(IncludeRazorContentInPack)</Pack>
-		</Content>
-		<Content Update="Views\Ide\Designers\Permissions.cshtml">
-			<Pack>$(IncludeRazorContentInPack)</Pack>
-		</Content>
-		<Content Update="Views\_ViewImports.cshtml">
-			<Pack>$(IncludeRazorContentInPack)</Pack>
-		</Content>
-	</ItemGroup>
-	<ItemGroup>
-		<Folder Include="wwwroot\Assets\Libraries\DevExtreme\Latest\" />
-	</ItemGroup>
-	<ItemGroup>
-		<EmbeddedResource Include="wwwroot/Assets/**/*.*" />
-	</ItemGroup>
-	<ItemGroup>
-		<ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
-		<ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
-		<ProjectReference Include="..\..\Core\TomPIT.Sdk\TomPIT.Sdk.csproj" />
-		<ProjectReference Include="..\..\Development\TomPIT.Design\TomPIT.Design.csproj" />
-		<ProjectReference Include="..\..\Development\TomPIT.Development\TomPIT.Development.csproj" />
-		<ProjectReference Include="..\..\Development\TomPIT.Ide.UI\TomPIT.Ide.UI.csproj" />
-		<ProjectReference Include="..\..\Development\TomPIT.Ide\TomPIT.Ide.csproj" />
-		<ProjectReference Include="..\..\Runtime\TomPIT.Extensions\TomPIT.Extensions.csproj" />
-		<ProjectReference Include="..\..\Runtime\TomPIT.Runtime\TomPIT.Runtime.csproj" />
-		<ProjectReference Include="..\..\Runtime\TomPIT.UI\TomPIT.UI.csproj" />
-		<ProjectReference Include="..\..\TomPIT.Startup\TomPIT.Startup.csproj" />
-		<ProjectReference Include="..\TomPIT.Management\TomPIT.Management.csproj" />
-	</ItemGroup>
+  <PropertyGroup Label="Globals">
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    <RootNamespace>TomPIT.Management</RootNamespace>
+    <AssemblyName>TomPIT.Connected.Management</AssemblyName>
+    <AssemblyVersion>4.1.1011.1</AssemblyVersion>
+    <FileVersion>4.1.1011.1</FileVersion>
+    <Version>4.1.1011.1</Version>
+    <Authors>Tom PIT</Authors>
+    <Company>Tom PIT</Company>
+    <Product>Tom PIT.connected</Product>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Views\Shell\**" />
+    <Content Remove="Views\Shell\**" />
+    <EmbeddedResource Remove="Views\Shell\**" />
+    <None Remove="Views\Shell\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Remove="compilerconfig.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="compilerconfig.json" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_alert.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_background-variant.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_badge.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_border-radius.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_box-shadow.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_breakpoints.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_buttons.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_caret.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_clearfix.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_deprecate.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_float.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_forms.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_gradients.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_grid-framework.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_grid.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_hover.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_image.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_list-group.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_lists.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_nav-divider.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_pagination.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_reset-text.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_resize.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_screen-reader.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_size.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_table-row.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_text-emphasis.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_text-hide.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_text-truncate.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_transition.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\mixins\_visibility.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_align.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_background.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_borders.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_clearfix.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_display.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_embed.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_flex.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_float.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_overflow.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_position.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_screenreaders.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_shadows.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_sizing.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_spacing.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_stretched-link.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_text.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\utilities\_visibility.scss" />
+    <None Include="wwwroot\Assets\Styles\bootstrap\vendor\_rfs.scss" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="BuildBundlerMinifierPlus" Version="5.3.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Features" Version="4.8.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="7.0.0" />
+    <PackageReference Include="SkiaSharp" Version="2.88.8" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.8" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="7.0.14" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="Views\Ide\Designers\Scheduler.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Ide\Designers\PermissionDescriptors.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\Ide\Designers\Permissions.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\_ViewImports.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="wwwroot\Assets\Libraries\DevExtreme\Latest\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="wwwroot/Assets/**/*.*" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
+    <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
+    <ProjectReference Include="..\..\Core\TomPIT.Sdk\TomPIT.Sdk.csproj" />
+    <ProjectReference Include="..\..\Development\TomPIT.Design\TomPIT.Design.csproj" />
+    <ProjectReference Include="..\..\Development\TomPIT.Development\TomPIT.Development.csproj" />
+    <ProjectReference Include="..\..\Development\TomPIT.Ide.UI\TomPIT.Ide.UI.csproj" />
+    <ProjectReference Include="..\..\Development\TomPIT.Ide\TomPIT.Ide.csproj" />
+    <ProjectReference Include="..\..\Runtime\TomPIT.Extensions\TomPIT.Extensions.csproj" />
+    <ProjectReference Include="..\..\Runtime\TomPIT.Runtime\TomPIT.Runtime.csproj" />
+    <ProjectReference Include="..\..\Runtime\TomPIT.UI\TomPIT.UI.csproj" />
+    <ProjectReference Include="..\..\TomPIT.Startup\TomPIT.Startup.csproj" />
+    <ProjectReference Include="..\TomPIT.Management\TomPIT.Management.csproj" />
+  </ItemGroup>
 </Project>

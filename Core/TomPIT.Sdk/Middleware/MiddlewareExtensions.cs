@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Reflection;
+
 using TomPIT.Annotations;
 using TomPIT.Connectivity;
 using TomPIT.Exceptions;
@@ -12,6 +12,13 @@ namespace TomPIT.Middleware
 {
 	public static class MiddlewareExtensions
 	{
+		public static void Commit(this IMiddlewareContext ctx, IMiddlewareOperation sender)
+		{
+			if (ctx is not MiddlewareContext mctx)
+				return;
+
+			mctx.Transactions.Commit(sender);
+		}
 		public static ServerUrl CreateUrl(this ITenant tenant, string controller, string action)
 		{
 			return ServerUrl.Create(tenant.Url, controller, action);
@@ -120,23 +127,5 @@ namespace TomPIT.Middleware
 
 			context.Services.Diagnostic.Warning(exception.Source, exception.ToString(), category);
 		}
-
-		public static List<Type> ResolveImplementedMiddleware(Type type)
-		{
-			var result = new List<Type>();
-			var interfaces = type.GetInterfaces();
-
-			foreach (var i in interfaces)
-			{
-				if (typeof(IMiddleware).FullName is not string fullName)
-					continue;
-
-				if (i.GetInterface(fullName) is not null)
-					result.Add(i);
-			}
-
-			return result;
-		}
-
 	}
 }

@@ -8,10 +8,9 @@ namespace TomPIT.Proxy.Remote
 	internal class ComponentController : IComponentController
 	{
 		private const string Controller = "Component";
-		public ImmutableList<IComponent> Query(bool includeDeleted = false)
+		public ImmutableList<IComponent> Query()
 		{
-			var u = Connection.CreateUrl(Controller, "Query")
-				.AddParameter("includeDeleted", includeDeleted);
+			var u = Connection.CreateUrl(Controller, "Query");
 
 			return Connection.Get<List<Component>>(u).ToImmutableList<IComponent>();
 		}
@@ -121,6 +120,14 @@ namespace TomPIT.Proxy.Remote
 				.AddParameter("component", component);
 
 			return Connection.Get<Component>(u);
+		}
+
+		public void Refresh(Guid component)
+		{
+			var u = Connection.CreateUrl("Component", "Refresh")
+				.AddParameter("component", component);
+
+			Connection.Post(u);
 		}
 	}
 }

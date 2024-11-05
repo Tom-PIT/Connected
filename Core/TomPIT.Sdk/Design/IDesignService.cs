@@ -1,22 +1,13 @@
-﻿using System;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 
-namespace TomPIT.Design
+namespace TomPIT.Design;
+
+public interface IDesignService
 {
-	public interface IDesignService
-	{
-		IDeployment Deployment { get; }
+	IDeployment Deployment { get; }
+	IComponentModel Components { get; }
+	IMicroServiceDesign MicroServices { get; }
 
-		//IVersionControl VersionControl { get; }
-		IComponentModel Components { get; }
-		[Obsolete]
-		IDesignSearch Search { get; }
-		[Obsolete]
-		ITextDiff TextDiff { get; }
-		IMicroServiceDesign MicroServices { get; }
-
-		void Initialize();
-
-		ImmutableList<string> QueryDesigners();
-	}
+	void Initialize();
+	ImmutableList<string> QueryDesigners();
 }

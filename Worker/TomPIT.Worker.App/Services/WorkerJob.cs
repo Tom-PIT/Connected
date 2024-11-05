@@ -96,36 +96,19 @@ namespace TomPIT.Worker.Services
 
 			Invoker i = null;
 			using var ctx = new MicroServiceContext(Configuration.MicroService());
-			var metricId = ctx.Services.Diagnostic.StartMetric(Configuration.Metrics, null);
 
-			try
+			if (Configuration is IHostedWorkerConfiguration hc)
+				i = new Hosted(hc, workerState);
+			else
+				throw new NotSupportedException();
+
+			i.Invoke();
+
+			if (state == Guid.Empty)
 			{
-				if (Configuration is IHostedWorkerConfiguration hc)
-					i = new Hosted(hc, workerState);
-				else
-					throw new NotSupportedException();
-
-				i.Invoke();
-
-				if (state == Guid.Empty)
+				if (!string.IsNullOrWhiteSpace(i.State))
 				{
-					if (!string.IsNullOrWhiteSpace(i.State))
-					{
-						var id = MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Upload(new Blob
-						{
-							ContentType = "application/json",
-							FileName = Worker.ToString(),
-							MicroService = Configuration.MicroService(),
-							PrimaryKey = Worker.ToString(),
-							Type = BlobTypes.WorkerState
-						}, Encoding.UTF8.GetBytes(i.State), StoragePolicy.Singleton);
-
-						Proxy.AttachState(Worker, id);
-					}
-				}
-				else
-				{
-					MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Upload(new Blob
+					var id = MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Upload(new Blob
 					{
 						ContentType = "application/json",
 						FileName = Worker.ToString(),
@@ -133,15 +116,20 @@ namespace TomPIT.Worker.Services
 						PrimaryKey = Worker.ToString(),
 						Type = BlobTypes.WorkerState
 					}, Encoding.UTF8.GetBytes(i.State), StoragePolicy.Singleton);
+
+					Proxy.AttachState(Worker, id);
 				}
-
-				ctx.Services.Diagnostic.StopMetric(metricId, Diagnostics.SessionResult.Success, null);
 			}
-			catch
+			else
 			{
-				ctx.Services.Diagnostic.StopMetric(metricId, Diagnostics.SessionResult.Fail, null);
-
-				throw;
+				MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Upload(new Blob
+				{
+					ContentType = "application/json",
+					FileName = Worker.ToString(),
+					MicroService = Configuration.MicroService(),
+					PrimaryKey = Worker.ToString(),
+					Type = BlobTypes.WorkerState
+				}, Encoding.UTF8.GetBytes(i.State), StoragePolicy.Singleton);
 			}
 
 			return Configuration.MicroService();

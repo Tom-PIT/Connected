@@ -14,211 +14,219 @@ using TomPIT.Storage;
 
 namespace TomPIT.App.Resources
 {
-    internal class ResourceService : ClientRepository<CompiledBundle, string>, IResourceService
-    {
-        private const string FromPreprocessorPattern = "\"(.*?)\"";
-        private const string FromPreprocessorPatternSingle = "\'(.*?)\'";
-        public ResourceService(ITenant tenant) : base(tenant, "bundle")
-        {
-            tenant.GetService<IComponentService>().ConfigurationChanged += OnConfigurationChanged;
-            tenant.GetService<IComponentService>().ConfigurationAdded += OnConfigurationAdded;
-            tenant.GetService<IComponentService>().ConfigurationRemoved += OnConfigurationRemoved;
+	internal class ResourceService : ClientRepository<CompiledBundle, string>, IResourceService
+	{
+		private const string FromPreprocessorPattern = "\"(.*?)\"";
+		private const string FromPreprocessorPatternSingle = "\'(.*?)\'";
+		public ResourceService(ITenant tenant) : base(tenant, "bundle")
+		{
+			if (tenant.GetService<IRuntimeService>().IsHotSwappingSupported)
+			{
+				tenant.GetService<IComponentService>().ConfigurationChanged += OnConfigurationChanged;
+				tenant.GetService<IComponentService>().ConfigurationAdded += OnConfigurationAdded;
+				tenant.GetService<IComponentService>().ConfigurationRemoved += OnConfigurationRemoved;
 
-            tenant.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
-        }
+				tenant.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
+			}
+		}
 
-        private void OnMicroServiceInstalled(object sender, MicroServiceEventArgs e)
-        {
-            if (!Tenant.IsMicroServiceSupported(e.MicroService))
-                return;
+		private void OnMicroServiceInstalled(object sender, MicroServiceEventArgs e)
+		{
+			if (!Tenant.IsMicroServiceSupported(e.MicroService))
+				return;
 
-            foreach (var i in All())
-            {
-                if (i.MicroService == e.MicroService)
-                    Remove(GenerateKey(i.MicroService, i.Name.ToLowerInvariant()));
-            }
-        }
+			foreach (var i in All())
+			{
+				if (i.MicroService == e.MicroService)
+					Remove(GenerateKey(i.MicroService, i.Name.ToLowerInvariant()));
+			}
+		}
 
-        private void OnConfigurationRemoved(ITenant sender, ConfigurationEventArgs e)
-        {
-            Invalidate(e);
-        }
+		private void OnConfigurationRemoved(ITenant sender, ConfigurationEventArgs e)
+		{
+			Invalidate(e);
+		}
 
-        private void OnConfigurationAdded(ITenant sender, ConfigurationEventArgs e)
-        {
-            Invalidate(e);
-        }
+		private void OnConfigurationAdded(ITenant sender, ConfigurationEventArgs e)
+		{
+			Invalidate(e);
+		}
 
-        private void OnConfigurationChanged(ITenant sender, ConfigurationEventArgs e)
-        {
-            Invalidate(e);
-        }
+		private void OnConfigurationChanged(ITenant sender, ConfigurationEventArgs e)
+		{
+			Invalidate(e);
+		}
 
-        private void Invalidate(ConfigurationEventArgs e)
-        {
-            if (string.Compare(e.Category, ComponentCategories.ScriptBundle, true) != 0)
-                return;
+		private void Invalidate(ConfigurationEventArgs e)
+		{
+			if (!Tenant.GetService<IRuntimeService>().IsHotSwappingSupported || !Tenant.GetService<IRuntimeService>().IsMicroServiceSupported(e.MicroService))
+				return;
 
-            var c = Tenant.GetService<IComponentService>().SelectComponent(e.Component);
+			if (string.Compare(e.Category, ComponentCategories.ScriptBundle, true) != 0)
+				return;
 
-            if (c is null || e.Component != c.Token)
-                return;
+			var c = Tenant.GetService<IComponentService>().SelectComponent(e.Component);
 
-            var keys = Keys();
+			if (c is null || e.Component != c.Token)
+				return;
 
-            if (keys == null)
-                return;
+			var keys = Keys();
 
-            foreach (var key in keys)
-            {
-                var tokens = key.Split('.', 3);
+			if (keys == null)
+				return;
 
-                if (new Guid(tokens[0]) == e.MicroService && string.Compare(tokens[1], c.Name.ToLowerInvariant(), true) == 0)
-                    Remove(key);
-            }
-        }
+			foreach (var key in keys)
+			{
+				var tokens = key.Split('.', 3);
 
-        public string Bundle(string microService, string name)
-        {
-            var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
+				if (new Guid(tokens[0]) == e.MicroService && string.Compare(tokens[1], c.Name.ToLowerInvariant(), true) == 0)
+					Remove(key);
+			}
+		}
 
-            if (ms == null)
-                throw new RuntimeException(GetType().ShortName(), string.Format("{0} ({1})", SR.ErrMicroServiceNotFound, microService));
+		public string Bundle(string microService, string name)
+		{
+			var ms = Tenant.GetService<IMicroServiceService>().Select(microService);
 
-            using var ctx = new MicroServiceContext(ms.Token);
-            var key = GenerateKey(ms.Token, name.ToLowerInvariant(), ctx.Services.Routing.RootUrl);
-            var r = Get(key);
+			if (ms is null || !Tenant.GetService<IRuntimeService>().IsMicroServiceSupported(ms.Token))
+				throw new RuntimeException(GetType().ShortName(), string.Format("{0} ({1})", SR.ErrMicroServiceNotFound, microService));
 
-            if (r != null)
-                return r.Content;
+			using var ctx = new MicroServiceContext(ms.Token);
+			var key = GenerateKey(ms.Token, name.ToLowerInvariant(), ctx.Services.Routing.RootUrl);
+			var r = Get(key);
 
-            var svc = Tenant.GetService<IComponentService>();
+			if (r != null)
+				return r.Content;
 
-            var c = svc.SelectComponent(ms.Token, ComponentCategories.ScriptBundle, name);
+			var svc = Tenant.GetService<IComponentService>();
 
-            if (c == null)
-                throw new RuntimeException(string.Format("{0} ({1})", SR.ErrBundleNotFound, name));
+			var c = svc.SelectComponent(ms.Token, ComponentCategories.ScriptBundle, name);
 
-            if (svc.SelectConfiguration(c.Token) is not IScriptBundleConfiguration config)
-                return null;
+			if (c == null)
+				throw new RuntimeException(string.Format("{0} ({1})", SR.ErrBundleNotFound, name));
 
-            var sb = new StringBuilder();
+			if (svc.SelectConfiguration(c.Token) is not IScriptBundleConfiguration config)
+				return null;
 
-            foreach (var i in config.Scripts)
-                sb.Append(GetSource(i));
+			var sb = new StringBuilder();
 
-            r = new CompiledBundle
-            {
-                Content = config.Minify && ms.Status != MicroServiceStatus.Development
-                ? Minify(sb.ToString())
-                : sb.ToString(),
+			foreach (var i in config.Scripts)
+				sb.Append(GetSource(i));
 
-                Name = name,
-                MicroService = ms.Token,
-                Url = ctx.Services.Routing.RootUrl
-            };
+			var stage = Tenant.GetService<IRuntimeService>().Stage;
 
-            Set(key, r);
+			r = new CompiledBundle
+			{
+				Content = config.Minify && (stage.HasFlag(EnvironmentStage.Production) || stage.HasFlag(EnvironmentStage.Staging))
+				 ? Minify(sb.ToString())
+				 : sb.ToString(),
 
-            return r.Content;
-        }
+				Name = name,
+				MicroService = ms.Token,
+				Url = ctx.Services.Routing.RootUrl
+			};
 
-        private string GetSource(IScriptSource source)
-        {
-            if (source is IScriptFileSystemSource)
-                return Preprocessor(GetFileSystemSource(source as IScriptFileSystemSource));
-            else if (source is IScriptCodeSource)
-                return Preprocessor(GetCodeSource(source as IScriptCodeSource));
-            else if (source is IScriptUploadSource)
-                return Preprocessor(GetUploadSource(source as IScriptUploadSource));
-            else
-                throw new NotSupportedException();
-        }
+			Set(key, r);
 
-        private string Preprocessor(string source)
-        {
-            if (string.IsNullOrWhiteSpace(source))
-                return source;
+			return r.Content;
+		}
 
-            var result = new StringBuilder();
-            using var reader = new StringReader(source);
+		private string GetSource(IScriptSource source)
+		{
+			if (source is IScriptFileSystemSource)
+				return Preprocessor(GetFileSystemSource(source as IScriptFileSystemSource));
+			else if (source is IScriptCodeSource)
+				return Preprocessor(GetCodeSource(source as IScriptCodeSource));
+			else if (source is IScriptUploadSource)
+				return Preprocessor(GetUploadSource(source as IScriptUploadSource));
+			else
+				throw new NotSupportedException();
+		}
 
-            while (reader.Peek() != -1)
-            {
-                var line = reader.ReadLine();
+		private string Preprocessor(string source)
+		{
+			if (string.IsNullOrWhiteSpace(source))
+				return source;
 
-                if (line.Trim().StartsWith("import", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (line.Contains('"'))
-                        line = Regex.Replace(line, FromPreprocessorPattern, new MatchEvaluator(ProcessPath));
-                    else
-                        line = Regex.Replace(line, FromPreprocessorPatternSingle, new MatchEvaluator(ProcessPath));
-                }
+			var result = new StringBuilder();
+			using var reader = new StringReader(source);
 
-                result.AppendLine(line);
-            }
+			while (reader.Peek() != -1)
+			{
+				var line = reader.ReadLine();
 
-            return result.ToString();
-        }
+				if (line.Trim().StartsWith("import", StringComparison.OrdinalIgnoreCase))
+				{
+					if (line.Contains('"'))
+						line = Regex.Replace(line, FromPreprocessorPattern, new MatchEvaluator(ProcessPath));
+					else
+						line = Regex.Replace(line, FromPreprocessorPatternSingle, new MatchEvaluator(ProcessPath));
+				}
 
-        private string ProcessPath(Match match)
-        {
-            if (!match.Value.StartsWith("\"@:") && !match.Value.StartsWith("\'@:"))
-                return match.Value;
+				result.AppendLine(line);
+			}
 
-            var path = match.Value[3..^1];
-            var tokens = path.Split('/');
+			return result.ToString();
+		}
 
-            using var ctx = new MiddlewareContext();
-            //var ms = ctx.Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
-            //var component = ctx.Tenant.GetService<IComponentService>().SelectComponent(ms.Token, ComponentCategories.ScriptBundle, tokens[1]);
+		private string ProcessPath(Match match)
+		{
+			if (!match.Value.StartsWith("\"@:") && !match.Value.StartsWith("\'@:"))
+				return match.Value;
 
-            //return $"\"{ctx.Services.Routing.RootUrl}/sys/bundles/{path}?{component.Modified.Ticks}\"";
-            return $"\"{ctx.Services.Routing.RootUrl}/sys/bundles/{path}\"";
-        }
+			var path = match.Value[3..^1];
+			var tokens = path.Split('/');
 
-        private string GetUploadSource(IScriptUploadSource d)
-        {
-            if (d.Blob == default)
-                return string.Empty;
+			using var ctx = new MiddlewareContext();
+			//var ms = ctx.Tenant.GetService<IMicroServiceService>().Select(tokens[0]);
+			//var component = ctx.Tenant.GetService<IComponentService>().SelectComponent(ms.Token, ComponentCategories.ScriptBundle, tokens[1]);
 
-            var content = Tenant.GetService<IStorageService>().Download(d.Blob);
+			//return $"\"{ctx.Services.Routing.RootUrl}/sys/bundles/{path}?{component.Modified.Ticks}\"";
+			return $"\"{ctx.Services.Routing.RootUrl}/sys/bundles/{path}\"";
+		}
 
-            if ((content?.Content?.Length ?? 0) == 0)
-                return string.Empty;
+		private string GetUploadSource(IScriptUploadSource d)
+		{
+			if (d.Blob == default)
+				return string.Empty;
 
-            return Encoding.UTF8.GetString(content.Content);
-        }
+			var content = Tenant.GetService<IStorageService>().Download(d.Blob);
 
-        private string GetCodeSource(IScriptCodeSource d)
-        {
-            return Tenant.GetService<IComponentService>().SelectText(d.Configuration().MicroService(), d);
-        }
+			if ((content?.Content?.Length ?? 0) == 0)
+				return string.Empty;
 
-        private string GetFileSystemSource(IScriptFileSystemSource d)
-        {
-            if (d.VirtualPath == string.Empty)
-                return string.Empty;
+			return Encoding.UTF8.GetString(content.Content);
+		}
 
-            var p = d.VirtualPath.StartsWith("~")
-                ? d.VirtualPath.Substring(1)
-                : d.VirtualPath;
+		private string GetCodeSource(IScriptCodeSource d)
+		{
+			return Tenant.GetService<IComponentService>().SelectText(d.Configuration().MicroService(), d);
+		}
 
-            if (!p.StartsWith("/"))
-                p = string.Format("/{0}", p);
+		private string GetFileSystemSource(IScriptFileSystemSource d)
+		{
+			if (d.VirtualPath == string.Empty)
+				return string.Empty;
 
-            var path = string.Format("{0}{1}", Shell.GetService<IRuntimeService>().WebRoot, p.Replace('/', '\\'));
+			var p = d.VirtualPath.StartsWith("~")
+				 ? d.VirtualPath.Substring(1)
+				 : d.VirtualPath;
 
-            if (!File.Exists(path))
-                return string.Empty;
+			if (!p.StartsWith("/"))
+				p = string.Format("/{0}", p);
 
-            return File.ReadAllText(path);
-        }
+			var path = string.Format("{0}{1}", Shell.GetService<IRuntimeService>().WebRoot, p.Replace('/', '\\'));
 
-        private string Minify(string source)
-        {
-            return source;
-            //	return new BundleMinifier().Minify(source);
-        }
-    }
+			if (!File.Exists(path))
+				return string.Empty;
+
+			return File.ReadAllText(path);
+		}
+
+		private string Minify(string source)
+		{
+			return source;
+			//	return new BundleMinifier().Minify(source);
+		}
+	}
 }

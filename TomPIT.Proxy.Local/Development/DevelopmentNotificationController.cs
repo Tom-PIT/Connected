@@ -1,5 +1,6 @@
 ﻿using System;
 using TomPIT.Proxy.Development;
+using TomPIT.Sys.Model;
 using TomPIT.Sys.Notifications;
 
 namespace TomPIT.Proxy.Local.Development
@@ -13,6 +14,11 @@ namespace TomPIT.Proxy.Local.Development
 
 		public void ConfigurationChanged(Guid microService, Guid configuration, string category)
 		{
+			var component = DataModel.Components.Select(configuration);
+
+			if (component is not null)
+				DataModel.Components.UpdateModified(microService, category, component.Name);
+
 			CachingNotifications.ConfigurationChanged(microService, configuration, category);
 		}
 
@@ -26,9 +32,9 @@ namespace TomPIT.Proxy.Local.Development
 			CachingNotifications.MicroServiceInstalled(microService, success);
 		}
 
-		public void ScriptChanged(Guid microService, Guid component, Guid element)
+		public void SourceTextChanged(Guid microService, Guid component, Guid token, int type)
 		{
-			CachingNotifications.ScriptChanged(microService, component, element);
+			CachingNotifications.SourceTextChanged(microService, component, token, type);
 		}
 	}
 }

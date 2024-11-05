@@ -8,11 +8,11 @@ using System.Text;
 using TomPIT.Caching;
 using TomPIT.Connectivity;
 using TomPIT.Design.Serialization;
-using TomPIT.Development;
 using TomPIT.Diagnostics;
 using TomPIT.Environment;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
+using TomPIT.Proxy;
 using TomPIT.Reflection;
 using TomPIT.Runtime;
 using TomPIT.Storage;
@@ -34,12 +34,14 @@ namespace TomPIT.ComponentModel
 
 		public ComponentService(ITenant tenant) : base(tenant, "component")
 		{
+			TextCache = new();
 			Tenant.GetService<IMicroServiceService>().MicroServiceInstalled += OnMicroServiceInstalled;
 			Tenant.GetService<IMicroServiceService>().MicroServiceRemoved += OnMicroServiceRemoved;
 			Folders = new FolderCache(Tenant);
 		}
 
 		private FolderCache Folders { get; }
+		private ConcurrentDictionary<string, SourceTextCacheEntry> TextCache { get; }
 
 		protected override void OnInitialized()
 		{
@@ -145,16 +147,10 @@ namespace TomPIT.ComponentModel
 		{
 			var r = new List<IConfiguration>();
 			var ids = components.Select(f => f.Token).Distinct().ToList();
-			var contents = Tenant.GetService<IStorageService>().Download(ids);
 
-			foreach (var content in contents)
+			foreach (var id in ids)
 			{
-				var component = components.FirstOrDefault(f => f.Token == content.Blob);
-
-				if (component == null)
-					continue;
-
-				var config = SelectConfiguration(component, content, false);
+				var config = SelectConfiguration(id);
 
 				r.Add(config);
 			};
@@ -243,37 +239,37 @@ namespace TomPIT.ComponentModel
 				}
 			}
 
-			return QueryConfigurations(r.Where(f => f.LockVerb != LockVerb.Delete).ToImmutableList());
+			return QueryConfigurations(r.ToImmutableList());
 		}
 
 		public ImmutableList<IConfiguration> QueryConfigurations(params string[] categories)
 		{
 			var r = QueryComponents(categories);
 
-			return QueryConfigurations(r.Where(f => f.LockVerb != LockVerb.Delete).ToImmutableList());
+			return QueryConfigurations(r.ToImmutableList());
 		}
 
 		public IConfiguration SelectConfiguration(Guid microService, string category, string name)
 		{
 			var cmp = SelectComponent(microService, category, name);
 
-			if (cmp == null)
+			if (cmp is null)
 				return null;
 
-			return SelectConfiguration(cmp, null, true);
+			return SelectConfiguration(cmp, true);
 		}
 
 		public IConfiguration SelectConfiguration(Guid component)
 		{
 			var cmp = SelectComponent(component);
 
-			if (cmp == null)
+			if (cmp is null)
 				return null;
 
-			return SelectConfiguration(cmp, null, true);
+			return SelectConfiguration(cmp, true);
 		}
 
-		private IConfiguration SelectConfiguration(IComponent component, IBlobContent blob, bool throwException)
+		private IConfiguration SelectConfiguration(IComponent component, bool throwException)
 		{
 			if (component is null)
 				throw new RuntimeException(SR.ErrComponentNotFound);
@@ -286,7 +282,7 @@ namespace TomPIT.ComponentModel
 			ConfigurationProcessor.Start(component.Token,
 				 () =>
 				 {
-					 result = LoadConfiguration(component, blob, throwException);
+					 result = LoadConfiguration(component, throwException);
 				 },
 				 () =>
 				 {
@@ -297,11 +293,11 @@ namespace TomPIT.ComponentModel
 			return result;
 		}
 
-		private IConfiguration LoadConfiguration(IComponent component, IBlobContent blob, bool throwException)
+		private IConfiguration LoadConfiguration(IComponent component, bool throwException)
 		{
-			var content = blob ?? Tenant.GetService<IStorageService>().Download(component.Token);
+			var text = GetText(component.MicroService, component.Token, BlobTypes.Configuration);
 
-			if (content is null)
+			if (text is null)
 				return null;
 
 			var type = TypeExtensions.GetType(component.Type);
@@ -309,12 +305,12 @@ namespace TomPIT.ComponentModel
 			if (type is null)
 				return throwException ? throw new RuntimeException($"{SR.ErrCannotCreateComponentInstance} ({component.Type})") : null;
 
-			var t = Reflection.TypeExtensions.GetType(component.Type);
+			var t = TypeExtensions.GetType(component.Type);
 			IConfiguration r = null;
 
 			try
 			{
-				r = Tenant.GetService<ISerializationService>().Deserialize(content.Content, t) as IConfiguration;
+				r = Tenant.GetService<ISerializationService>().Deserialize(Encoding.UTF8.GetBytes(text.Text ?? string.Empty), t) as IConfiguration;
 			}
 			catch (Exception ex)
 			{
@@ -332,8 +328,6 @@ namespace TomPIT.ComponentModel
 					Instance = r,
 					State = Tenant.GetService<ISerializationService>().Serialize(r)
 				});
-
-				Tenant.GetService<IStorageService>().Release(component.Token);
 			}
 
 			return r;
@@ -344,17 +338,13 @@ namespace TomPIT.ComponentModel
 			if (text.TextBlob == Guid.Empty)
 				return null;
 
-			var s = Tenant.GetService<IMicroServiceService>().Select(microService);
+			_ = Tenant.GetService<IMicroServiceService>().Select(microService) ?? throw new RuntimeException(SR.ErrMicroServiceNotFound);
+			var r = GetText(microService, text.TextBlob, BlobTypes.SourceText);
 
-			if (s == null)
-				throw new RuntimeException(SR.ErrMicroServiceNotFound);
-
-			var r = Tenant.GetService<IStorageService>().Download(text.TextBlob);
-
-			if (r == null)
+			if (r is null)
 				return null;
 
-			return Encoding.UTF8.GetString(r.Content);
+			return r.Text;
 		}
 
 		public void NotifyChanged(object sender, ConfigurationEventArgs e)
@@ -366,6 +356,8 @@ namespace TomPIT.ComponentModel
 
 			ConfigurationCache.Remove(e.Component, out _);
 			ConfigurationChanged?.Invoke(Tenant, e);
+
+			NotifySourceTextChanged(this, new SourceTextChangedEventArgs(e.MicroService, e.Component, e.Component, BlobTypes.Configuration));
 		}
 
 		public void NotifyAdded(object sender, ConfigurationEventArgs e)
@@ -375,7 +367,11 @@ namespace TomPIT.ComponentModel
 
 		public void NotifyRemoved(object sender, ConfigurationEventArgs e)
 		{
+			var existing = SelectConfiguration(e.Component);
+
 			ConfigurationRemoved?.Invoke(Tenant, e);
+
+			NotifySourceTextChanged(this, new SourceTextChangedEventArgs(e.MicroService, e.Component, e.Component, BlobTypes.Configuration));
 		}
 
 		public IFolder SelectFolder(Guid folder)
@@ -414,6 +410,46 @@ namespace TomPIT.ComponentModel
 				return Instance.SysProxy.Components.QueryByCategories(categories);
 			else
 				return Instance.SysProxy.Components.Query();
+		}
+
+		public string SelectText(Guid microService, Guid token, int type)
+		{
+			var result = GetText(microService, token, type);
+
+			if (result is null)
+				return null;
+
+			return result.Text;
+		}
+
+		public ISourceFileInfo SelectTextInfo(Guid microService, Guid token, int type)
+		{
+			return Instance.SysProxy.SourceFiles.Select(token, type);
+		}
+
+		public void NotifySourceTextChanged(object sender, SourceTextChangedEventArgs e)
+		{
+			TextCache.Remove($"{e.Token}.{e.Type}", out _);
+		}
+
+		private SourceTextCacheEntry GetText(Guid microService, Guid token, int type)
+		{
+			if (TextCache.TryGetValue($"{token}.{type}", out SourceTextCacheEntry? existing) && existing is not null)
+				return existing;
+
+			var source = Instance.SysProxy.SourceFiles.Download(microService, token, type);
+			var text = source is null ? null : Encoding.UTF8.GetString(source);
+
+			var result = new SourceTextCacheEntry { Text = text, Token = token, MicroService = microService, Type = type };
+
+			TextCache.TryAdd($"{token}.{type}", result);
+
+			return result;
+		}
+
+		public IComponent? SelectComponent(Guid microService, Guid folder, string name)
+		{
+			return Get(f => f.MicroService == microService && f.Folder == folder && string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase));
 		}
 	}
 }

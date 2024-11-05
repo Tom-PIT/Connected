@@ -5,6 +5,7 @@ using TomPIT.Controllers;
 namespace TomPIT.BigData.Controllers
 {
 	[AllowAnonymous]
+	[Route("sys/bigdata/pingcontroller")]
 	public class PingController : ServerController
 	{
 		[HttpGet]

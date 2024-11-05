@@ -23,7 +23,7 @@ namespace TomPIT.BigData.Transactions
 			{
 				Tenant.GetService<ILoggingService>().Dump($"StorageJob, {Block} block null.");
 				Tenant.GetService<ITransactionService>().Complete(item.PopReceipt, new Guid(item.Message));
-				
+
 				return;
 			}
 
@@ -33,7 +33,7 @@ namespace TomPIT.BigData.Transactions
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
 			Tenant.GetService<ILoggingService>().Dump($"StorageJob, {Block} block exception: {ex.Message}.");
-			Tenant.LogError(nameof(StorageJob), ex.Message, LogCategories.BigData);
+			Tenant.LogError(nameof(StorageJob), ex.ToString(), LogCategories.BigData);
 		}
 	}
 }

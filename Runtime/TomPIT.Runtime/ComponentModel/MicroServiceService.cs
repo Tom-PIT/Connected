@@ -11,11 +11,8 @@ namespace TomPIT.ComponentModel
 		public event MicroServiceChangedHandler MicroServiceInstalled;
 		public event MicroServiceChangedHandler MicroServiceRemoved;
 
-		private MicroServiceMetaCache _meta = null;
-
 		public MicroServiceService(ITenant tenant) : base(tenant, "microservice")
 		{
-			_meta = new MicroServiceMetaCache(Tenant);
 		}
 
 		protected override void OnInitializing()
@@ -115,12 +112,5 @@ namespace TomPIT.ComponentModel
 
 			MicroServiceRemoved?.Invoke(sender, e);
 		}
-
-		public string SelectMeta(Guid microService)
-		{
-			return Meta.Select(microService);
-		}
-
-		public MicroServiceMetaCache Meta => _meta;
 	}
 }

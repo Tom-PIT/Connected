@@ -1,100 +1,98 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
-	<PropertyGroup Label="Globals">
-		<SccProjectName>SAK</SccProjectName>
-		<SccProvider>SAK</SccProvider>
-		<SccAuxPath>SAK</SccAuxPath>
-		<SccLocalPath>SAK</SccLocalPath>
-	</PropertyGroup>
-	<PropertyGroup>
-		<TargetFramework>net7.0</TargetFramework>
-		<AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-		<AssemblyName>TomPIT.Connected.App</AssemblyName>
-		<RootNamespace>TomPIT.App</RootNamespace>
-		<CopyRefAssembliesToPublishDirectory>true</CopyRefAssembliesToPublishDirectory>
-    <AssemblyVersion>3.1.706.1</AssemblyVersion>
-    <FileVersion>3.1.706.1</FileVersion>
-    <Version>3.1.706.1</Version>
-		<Authors>Tom PIT</Authors>
-		<Company>Tom PIT</Company>
-		<Product>Tom PIT.connected</Product>
-		<OutputType>Library</OutputType>
-		<GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
-	</PropertyGroup>
-	<ItemGroup>
-		<Compile Remove="UI\RouteParameter.cs" />
-	</ItemGroup>
-	<ItemGroup>
-		<Content Remove="compilerconfig.json" />
-		<Content Remove="wwwroot\Assets\fonts.min.js" />
-	</ItemGroup>
-	<ItemGroup>
-		<Content Include="..\..\Management\TomPIT.Management.UI\wwwroot\Assets\Styles\tompit.css" Link="wwwroot\Assets\Styles\tompit.css" />
-		<Content Include="..\..\Management\TomPIT.Management.UI\wwwroot\Assets\Styles\tompit.min.css" Link="wwwroot\Assets\Styles\tompit.min.css" />
-	</ItemGroup>
-	<ItemGroup>
-		<EmbeddedResource Include="wwwroot/Assets/**/*.*" />
-	</ItemGroup>
-	<ItemGroup>
-		<None Include="compilerconfig.json" />
-		<None Include="wwwroot\Assets\Libraries\Cldr\0.5.0\cldr\event.js" />
-		<None Include="wwwroot\Assets\Libraries\Cldr\0.5.0\cldr\supplemental.js" />
-		<None Include="wwwroot\Assets\Libraries\Cldr\0.5.0\cldr\unresolved.js" />
-		<None Include="wwwroot\Assets\Libraries\DevExtreme\Latest\fonts\Roboto-300.woff2" />
-		<None Include="wwwroot\Assets\Libraries\DevExtreme\Latest\fonts\Roboto-400.woff2" />
-		<None Include="wwwroot\Assets\Libraries\DevExtreme\Latest\fonts\Roboto-500.woff2" />
-		<None Include="wwwroot\Assets\Libraries\DevExtreme\Latest\fonts\Roboto-700.woff2" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<PackageReference Include="BuildBundlerMinifierPlus" Version="5.3.0" />
-		<PackageReference Include="lz4net" Version="1.0.15.93" />
-		<PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="6.0.20" />
-		<PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" Version="7.0.9" />
-		<PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.6.0" />
-		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.6.0" />
-		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="4.6.0" />
-		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.6.0" />
-		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.6.0" />
-		<PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="4.6.0" />
-		<PackageReference Include="Microsoft.CodeAnalysis.Scripting.Common" Version="4.6.0" />
-		<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.6.0" />
-		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.9" />
-		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="7.0.9" />
-		<PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="7.0.9" />
-		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="7.0.8" />
-		<PackageReference Include="dotless.Core" Version="1.6.7" />
-		<PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="7.0.9" />
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-		<PackageReference Include="System.CodeDom" Version="7.0.0" />
-		<PackageReference Include="System.Configuration.ConfigurationManager" Version="7.0.0" />
-		<PackageReference Include="SkiaSharp" Version="2.88.3" />
-		<PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.3" />
-		<PackageReference Include="System.Security.Cryptography.Pkcs" Version="7.0.3" />
-		<PackageReference Include="System.ServiceModel.Primitives" Version="6.0.0" />
-	</ItemGroup>
-	<ItemGroup>
-		<Folder Include="wwwroot\Assets\Libraries\Cldr\0.5.0\cldr\segments\" />
-		<Folder Include="wwwroot\Assets\Libraries\Cldr\0.5.1\cldr\" />
-		<Folder Include="wwwroot\Assets\Libraries\Globalize\1.4.2\globalize\" />
-	</ItemGroup>
-	<ItemGroup>
-		<ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
-		<ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
-		<ProjectReference Include="..\..\Core\TomPIT.Sdk\TomPIT.Sdk.csproj" />
-		<ProjectReference Include="..\..\Development\TomPIT.Ide\TomPIT.Ide.csproj" />
-		<ProjectReference Include="..\..\Runtime\TomPIT.Extensions\TomPIT.Extensions.csproj" />
-		<ProjectReference Include="..\..\Runtime\TomPIT.Runtime\TomPIT.Runtime.csproj" />
-		<ProjectReference Include="..\..\Runtime\TomPIT.UI\TomPIT.UI.csproj" />
-	</ItemGroup>
-	<ItemGroup>
-		<Content Update="Views\UIInjectionView.cshtml">
-			<Pack>$(IncludeRazorContentInPack)</Pack>
-		</Content>
-		<Content Update="Views\_ViewImports.cshtml">
-			<Pack>$(IncludeRazorContentInPack)</Pack>
-		</Content>
-	</ItemGroup>
-	<!-- <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+  <PropertyGroup Label="Globals">
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    <AssemblyName>TomPIT.Connected.App</AssemblyName>
+    <RootNamespace>TomPIT.App</RootNamespace>
+    <CopyRefAssembliesToPublishDirectory>true</CopyRefAssembliesToPublishDirectory>
+    <AssemblyVersion>4.1.1011.1</AssemblyVersion>
+    <FileVersion>4.1.1011.1</FileVersion>
+    <Version>4.1.1011.1</Version>
+    <Authors>Tom PIT</Authors>
+    <Company>Tom PIT</Company>
+    <Product>Tom PIT.connected</Product>
+    <OutputType>Library</OutputType>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="UI\RouteParameter.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Remove="compilerconfig.json" />
+    <Content Remove="wwwroot\Assets\fonts.min.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\..\Management\TomPIT.Management.UI\wwwroot\Assets\Styles\tompit.css" Link="wwwroot\Assets\Styles\tompit.css" />
+    <Content Include="..\..\Management\TomPIT.Management.UI\wwwroot\Assets\Styles\tompit.min.css" Link="wwwroot\Assets\Styles\tompit.min.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="wwwroot/Assets/**/*.*" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="compilerconfig.json" />
+    <None Include="wwwroot\Assets\Libraries\Cldr\0.5.0\cldr\event.js" />
+    <None Include="wwwroot\Assets\Libraries\Cldr\0.5.0\cldr\supplemental.js" />
+    <None Include="wwwroot\Assets\Libraries\Cldr\0.5.0\cldr\unresolved.js" />
+    <None Include="wwwroot\Assets\Libraries\DevExtreme\Latest\fonts\Roboto-300.woff2" />
+    <None Include="wwwroot\Assets\Libraries\DevExtreme\Latest\fonts\Roboto-400.woff2" />
+    <None Include="wwwroot\Assets\Libraries\DevExtreme\Latest\fonts\Roboto-500.woff2" />
+    <None Include="wwwroot\Assets\Libraries\DevExtreme\Latest\fonts\Roboto-700.woff2" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="BuildBundlerMinifierPlus" Version="5.3.0" />
+    <PackageReference Include="lz4net" Version="1.0.15.93" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="6.0.25" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" Version="7.0.14" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.8.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="4.8.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.8.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="4.8.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Scripting.Common" Version="4.8.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.8.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.14" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="7.0.14" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="7.0.14" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="7.0.0" />
+    <PackageReference Include="dotless.Core" Version="1.6.7" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="7.0.14" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="System.CodeDom" Version="7.0.0" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="7.0.0" />
+    <PackageReference Include="SkiaSharp" Version="2.88.8" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.8" />
+    <PackageReference Include="System.ServiceModel.Primitives" Version="6.2.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="wwwroot\Assets\Libraries\Cldr\0.5.0\cldr\segments\" />
+    <Folder Include="wwwroot\Assets\Libraries\Cldr\0.5.1\cldr\" />
+    <Folder Include="wwwroot\Assets\Libraries\Globalize\1.4.2\globalize\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
+    <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
+    <ProjectReference Include="..\..\Core\TomPIT.Sdk\TomPIT.Sdk.csproj" />
+    <ProjectReference Include="..\..\Development\TomPIT.Ide\TomPIT.Ide.csproj" />
+    <ProjectReference Include="..\..\Runtime\TomPIT.Extensions\TomPIT.Extensions.csproj" />
+    <ProjectReference Include="..\..\Runtime\TomPIT.Runtime\TomPIT.Runtime.csproj" />
+    <ProjectReference Include="..\..\Runtime\TomPIT.UI\TomPIT.UI.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="Views\UIInjectionView.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\_ViewImports.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+  </ItemGroup>
+  <!-- <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
 		<Exec Command="IF EXIST &quot;$(SolutionDir)\.vs\config\applicationhost.config&quot; (pushd $(SolutionDir)\.vs\config\ &amp; copy /b applicationhost.config +,, &amp; popd)" />
 	</Target> -->
 </Project>

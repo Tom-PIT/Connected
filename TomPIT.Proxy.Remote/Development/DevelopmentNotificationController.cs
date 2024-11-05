@@ -45,13 +45,14 @@ namespace TomPIT.Proxy.Remote.Development
 			});
 		}
 
-		public void ScriptChanged(Guid microService, Guid component, Guid element)
+		public void SourceTextChanged(Guid microService, Guid configuration, Guid token, int type)
 		{
-			Connection.Post(Connection.CreateUrl(Controller, "ScriptChanged"), new
+			Connection.Post(Connection.CreateUrl(Controller, "SourceTextChanged"), new
 			{
 				microService,
-				container = component,
-				sourceCode = element
+				configuration,
+				token,
+				type
 			});
 		}
 	}

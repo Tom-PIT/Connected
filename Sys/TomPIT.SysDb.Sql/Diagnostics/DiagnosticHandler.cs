@@ -5,7 +5,6 @@ namespace TomPIT.SysDb.Sql.Diagnostics
 	internal class DiagnosticHandler : IDiagnosticHandler
 	{
 		private ILoggingHandler _logging = null;
-		private IMetricHandler _metric = null;
 
 		public ILoggingHandler Logging
 		{
@@ -15,17 +14,6 @@ namespace TomPIT.SysDb.Sql.Diagnostics
 					_logging = new LoggingHandler();
 
 				return _logging;
-			}
-		}
-
-		public IMetricHandler Metrics
-		{
-			get
-			{
-				if (_metric == null)
-					_metric = new MetricsHandler();
-
-				return _metric;
 			}
 		}
 	}

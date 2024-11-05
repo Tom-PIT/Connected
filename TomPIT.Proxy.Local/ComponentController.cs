@@ -8,19 +8,19 @@ namespace TomPIT.Proxy.Local
 {
 	internal class ComponentController : IComponentController
 	{
-		public ImmutableList<IComponent> Query(bool includeDeleted = false)
+		public ImmutableList<IComponent> Query()
 		{
-			return DataModel.Components.Query(includeDeleted);
+			return DataModel.Components.Query();
 		}
 
 		public ImmutableList<IComponent> Query(Guid microService)
 		{
-			return DataModel.Components.Query(microService, false);
+			return DataModel.Components.Query(microService);
 		}
 
 		public ImmutableList<IComponent> QueryAll(Guid microService)
 		{
-			return DataModel.Components.Query(microService, true);
+			return DataModel.Components.Query(microService);
 		}
 
 		public ImmutableList<IComponent> QueryByCategories(params string[] categories)
@@ -50,7 +50,7 @@ namespace TomPIT.Proxy.Local
 
 		public ImmutableList<IComponent> QueryForMicroServices(List<Guid> microServices)
 		{
-			return DataModel.Components.Query(microServices.ToArray(), false);
+			return DataModel.Components.Query(microServices.ToArray());
 		}
 
 		public IComponent Select(Guid microService, string category, string name)
@@ -66,6 +66,11 @@ namespace TomPIT.Proxy.Local
 		public IComponent SelectByToken(Guid component)
 		{
 			return DataModel.Components.Select(component);
+		}
+
+		public void Refresh(Guid token)
+		{
+			//DataModel.Components.RefreshComponent(token);
 		}
 	}
 }

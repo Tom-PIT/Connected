@@ -62,6 +62,11 @@ namespace TomPIT.Sys.Model.Blobs
 			return Select(DataModel.Blobs.Select(blob));
 		}
 
+		public void Refresh(Guid resourceGroup, Guid token)
+		{
+			Refresh(GenerateKey(resourceGroup, token));
+		}
+
 		private IBlobContent Select(IBlob blob)
 		{
 			if (blob == null)

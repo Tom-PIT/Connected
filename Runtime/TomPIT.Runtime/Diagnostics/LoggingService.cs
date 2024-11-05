@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿using Microsoft.Extensions.Configuration;
+
+using System.Text.Json;
 using TomPIT.Connectivity;
 
 namespace TomPIT.Diagnostics
@@ -33,13 +35,7 @@ namespace TomPIT.Diagnostics
 
 		private void Initialize()
 		{
-			if (!Shell.Configuration.RootElement.TryGetProperty("diagnostics", out JsonElement element))
-				return;
-
-			if (!element.TryGetProperty("dumpEnabled", out JsonElement dumpEnabled))
-				return;
-
-			DumpEnabled = dumpEnabled.GetBoolean();
+			DumpEnabled = Shell.Configuration.GetSection("diagnostics")?.GetValue<bool>("dumpEnabled") ?? false;
 		}
 	}
 }

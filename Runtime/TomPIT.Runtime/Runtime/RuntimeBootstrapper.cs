@@ -9,7 +9,6 @@ using TomPIT.Configuration;
 using TomPIT.Connectivity;
 using TomPIT.Data;
 using TomPIT.Data.DataProviders;
-using TomPIT.Data.Storage;
 using TomPIT.Design;
 using TomPIT.Design.Serialization;
 using TomPIT.Design.Validation;
@@ -21,7 +20,6 @@ using TomPIT.Globalization;
 using TomPIT.IoC;
 using TomPIT.IoT;
 using TomPIT.Messaging;
-using TomPIT.Middleware;
 using TomPIT.Navigation;
 using TomPIT.Reflection;
 using TomPIT.Search;
@@ -44,11 +42,6 @@ namespace TomPIT.Runtime
 		}
 
 		public static void Run()
-		{
-			RegisterServices();
-		}
-
-		private static void RegisterServices()
 		{
 			Shell.RegisterService(typeof(IRuntimeService), typeof(RuntimeService));
 			Shell.RegisterService(typeof(IConnectivityService), typeof(ConnectivityService));
@@ -77,9 +70,24 @@ namespace TomPIT.Runtime
 		private static void OnTenantInitialize(object sender, TenantArgs e)
 		{
 			e.Tenant.RegisterService(typeof(ISerializationService), typeof(SerializationService));
-			e.Tenant.RegisterService(typeof(ICompilerService), typeof(CompilerService));
-			e.Tenant.RegisterService(typeof(INuGetService), typeof(NuGetService));
+			e.Tenant.RegisterService(typeof(IComponentService), typeof(ComponentService));
+			e.Tenant.RegisterService(typeof(IStorageService), typeof(StorageService));
 			e.Tenant.RegisterService(typeof(IMicroServiceService), typeof(MicroServiceService));
+
+			if (Shell.LegacyServices)
+			{
+				e.Tenant.RegisterService(typeof(ICompilerService), typeof(CompilerService));
+				e.Tenant.RegisterService(typeof(IIoCService), typeof(IoCService));
+				e.Tenant.RegisterService(typeof(INavigationService), typeof(NavigationService));
+				e.Tenant.RegisterService(typeof(IUIDependencyInjectionService), typeof(UIDependencyInjectionService));
+				e.Tenant.RegisterService(typeof(IDependencyInjectionService), typeof(DependencyInjectionService));
+				e.Tenant.RegisterService(typeof(IModelService), typeof(ModelService));
+				e.Tenant.RegisterService(typeof(ICdnService), typeof(CdnService));
+				e.Tenant.RegisterService(typeof(IWorkerService), typeof(WorkerService));
+				e.Tenant.RegisterService(typeof(IMicroServiceRuntimeService), new MicroServiceRuntimeService(e.Tenant));
+			}
+
+			e.Tenant.RegisterService(typeof(INuGetService), typeof(NuGetService));
 			e.Tenant.RegisterService(typeof(ISettingService), typeof(SettingService));
 			e.Tenant.RegisterService(typeof(INamingService), typeof(NamingService));
 			e.Tenant.RegisterService(typeof(ILoggingService), typeof(LoggingService));
@@ -87,16 +95,13 @@ namespace TomPIT.Runtime
 			e.Tenant.RegisterService(typeof(ILanguageService), typeof(LanguageService));
 			e.Tenant.RegisterService(typeof(IInstanceEndpointService), typeof(InstanceEndpointService));
 			e.Tenant.RegisterService(typeof(IAuthorizationService), typeof(AuthorizationService));
-			e.Tenant.RegisterService(typeof(IComponentService), typeof(ComponentService));
 			e.Tenant.RegisterService(typeof(IUserService), typeof(UserService));
 			e.Tenant.RegisterService(typeof(IRoleService), typeof(RoleService));
-			e.Tenant.RegisterService(typeof(IStorageService), typeof(StorageService));
 			e.Tenant.RegisterService(typeof(IDataProviderService), typeof(DataProviderService));
 			e.Tenant.RegisterService(typeof(IEventService), typeof(EventService));
 			e.Tenant.RegisterService(typeof(IAuditService), typeof(AuditService));
 			e.Tenant.RegisterService(typeof(IDiscoveryService), typeof(DiscoveryService));
 			e.Tenant.RegisterService(typeof(ICryptographyService), typeof(CryptographyService));
-			e.Tenant.RegisterService(typeof(IMetricService), typeof(MetricService));
 			e.Tenant.RegisterService(typeof(IValidationService), typeof(ValidationService));
 			e.Tenant.RegisterService(typeof(IUserDataService), typeof(UserDataService));
 			e.Tenant.RegisterService(typeof(IMailService), typeof(MailService));
@@ -108,39 +113,36 @@ namespace TomPIT.Runtime
 			e.Tenant.RegisterService(typeof(IGraphicsService), typeof(GraphicsService));
 			e.Tenant.RegisterService(typeof(ISearchService), typeof(SearchService));
 			e.Tenant.RegisterService(typeof(ILocalizationService), typeof(LocalizationService));
-			e.Tenant.RegisterService(typeof(INavigationService), typeof(NavigationService));
-			e.Tenant.RegisterService(typeof(IIoCService), typeof(IoCService));
 			e.Tenant.RegisterService(typeof(IPrintingService), typeof(PrintingService));
-			e.Tenant.RegisterService(typeof(IUIDependencyInjectionService), typeof(UIDependencyInjectionService));
-			e.Tenant.RegisterService(typeof(IDependencyInjectionService), typeof(DependencyInjectionService));
 			e.Tenant.RegisterService(typeof(IAnalyticsService), typeof(AnalyticsService));
-			e.Tenant.RegisterService(typeof(IModelService), typeof(ModelService));
 			e.Tenant.RegisterService(typeof(IDesignService), typeof(DesignService));
-			e.Tenant.RegisterService(typeof(ICdnService), typeof(CdnService));
 			e.Tenant.RegisterService(typeof(ILockingService), typeof(LockingService));
 			e.Tenant.RegisterService(typeof(IClientService), typeof(ClientService));
 			e.Tenant.RegisterService(typeof(IDocumentService), typeof(DocumentService));
 			e.Tenant.RegisterService(typeof(IFileSystemService), typeof(FileSystemService));
 			e.Tenant.RegisterService(typeof(IMicroServiceTemplateService), typeof(MicroServiceTemplateService));
-			e.Tenant.RegisterService(typeof(IWorkerService), typeof(WorkerService));
-			e.Tenant.RegisterService(typeof(IMicroServiceRuntimeService), new MicroServiceRuntimeService(e.Tenant));
-			//e.Tenant.RegisterService(typeof(IMiddlewareService), new MiddlewareService(e.Tenant));
-			//e.Tenant.RegisterService(typeof(IStorageSynchronizationService), new StorageSynchronizationService());
+			e.Tenant.RegisterService(typeof(IDebugService), typeof(DebugService));
+			e.Tenant.RegisterService(typeof(IViewCompilerService), typeof(ViewCompilerService));
 
-			if (Instance.Features.HasFlag(InstanceFeatures.IoT))
+			AsyncUtils.RunSync(() => MicroServiceCompiler.Compile());
+
+			if (!string.IsNullOrEmpty(e.Tenant.Url))
 			{
-				var iotClient = new IoTClient(e.Tenant, e.Tenant.AuthenticationToken);
+				if (Instance.Features.HasFlag(InstanceFeatures.IoT))
+				{
+					var iotClient = new IoTClient(e.Tenant, e.Tenant.AuthenticationToken);
 
-				e.Tenant.Items.TryAdd("iotClient", iotClient);
+					e.Tenant.Items.TryAdd("iotClient", iotClient);
 
-				iotClient.Connect();
+					iotClient.Connect();
+				}
+
+				var dataCache = new DataCachingClient(e.Tenant, e.Tenant.AuthenticationToken);
+
+				e.Tenant.Items.TryAdd("dataCache", dataCache);
+
+				dataCache.Connect();
 			}
-
-			var dataCache = new DataCachingClient(e.Tenant, e.Tenant.AuthenticationToken);
-
-			e.Tenant.Items.TryAdd("dataCache", dataCache);
-
-			dataCache.Connect();
 		}
 	}
 }

@@ -13,5 +13,7 @@
 
 		void NotifyFolderChanged(object sender, FolderEventArgs e);
 		void NotifyFolderRemoved(object sender, FolderEventArgs e);
+
+		void NotifySourceTextChanged(object sender, SourceTextChangedEventArgs e);
 	}
 }

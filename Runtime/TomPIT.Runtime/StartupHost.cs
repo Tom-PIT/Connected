@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -20,7 +21,6 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
-using System.Text.Json;
 
 using TomPIT.Configuration;
 using TomPIT.Connectivity;
@@ -52,12 +52,17 @@ internal class StartupHost : IStartupHostProxy
 	public event EventHandler<List<Assembly>> ConfigureEmbeddedStaticResources;
 
 	public event EventHandler<IMvcBuilder> MvcConfigured;
+
 	public void ConfigureServices(IServiceCollection services)
 	{
 		RuntimeBootstrapper.Run();
 		Boot();
 		Shell.GetService<IConnectivityService>().TenantInitialized += OnTenantInitialized;
 		ConfigureTenant();
+
+		foreach (var startup in MicroServices.Startups)
+			startup.ConfigureServices(services);
+
 		ConfigureLocalization(services);
 		ConfigureAuthentication(services);
 		ConfigureMvc(services);
@@ -79,13 +84,27 @@ internal class StartupHost : IStartupHostProxy
 
 	public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 	{
-		RuntimeService._host = app;
+		ConfigureStaticFiles(app, env);
 
-		app.UseAuthentication();
 		app.UseMiddleware<AuthenticationCookieMiddleware>();
 		app.UseRequestLocalization(app.ApplicationServices.GetService<IOptions<RequestLocalizationOptions>>()?.Value);
 		app.UseResponseCompression();
+		
+		app.UseRouting();
 
+		if (Shell.LegacyServices)
+		{
+			app.UseAjaxExceptionMiddleware();
+			app.UseStatusCodePagesWithReExecute("/sys/status/{0}");
+		}
+		app.UseAuthentication();
+		app.UseAuthorization();
+
+		foreach (var startup in MicroServices.Startups)
+			startup.Configure(app, env);
+
+		RuntimeService._host = app;
+		
 		var lifetime = app.ApplicationServices.GetService<IHostApplicationLifetime>();
 
 		if (lifetime is not null)
@@ -94,21 +113,13 @@ internal class StartupHost : IStartupHostProxy
 			Instance.Stopped = lifetime.ApplicationStopped;
 		}
 
-		ConfigureStaticFiles(app, env);
-
-		app.UseStatusCodePagesWithReExecute("/sys/status/{0}");
 
 		Configuring?.Invoke(null, new(app, env));
-
-		app.UseRouting();
-
-		app.UseAuthorization();
 
 		if (Types.TryConvert(Tenant.GetService<ISettingService>().Select("Cors Enabled", null, null, null)?.Value, out bool corsEnabled) && corsEnabled)
 			app.UseCors("TomPITPolicy");
 
 		app.UseRequestLocalizationCookies();
-		app.UseAjaxExceptionMiddleware();
 
 		Shell.GetService<IRuntimeService>().Initialize(env);
 
@@ -141,9 +152,6 @@ internal class StartupHost : IStartupHostProxy
 	{
 		Booting?.Invoke(null, EventArgs.Empty);
 
-		if (Shell.Configuration.RootElement.TryGetProperty("features", out JsonElement element))
-			Instance.Features = Enum.Parse<InstanceFeatures>(element.GetString());
-
 		if (Instance.Features.HasFlag(InstanceFeatures.Sys))
 			Instance.SysProxy = new LocalProxy();
 		else
@@ -154,23 +162,21 @@ internal class StartupHost : IStartupHostProxy
 
 	private void ConfigureTenant()
 	{
-		if (!Shell.Configuration.RootElement.TryGetProperty("sys", out JsonElement element) && !Instance.Features.HasFlag(InstanceFeatures.Sys))
+		if (Shell.Configuration.GetSection("sys") is null && !Instance.Features.HasFlag(InstanceFeatures.Sys))
 			throw new ConfigurationErrorsException("'sys' configuration element expected.");
 
-		var name = string.Empty;
-		var url = string.Empty;
-		var token = string.Empty;
+		var bindings = new ConfigurationBindings();
 
-		if (element.TryGetProperty("name", out JsonElement nameElement))
-			name = nameElement.GetString();
+		Shell.Configuration.Bind("sys", bindings);
 
-		if (element.TryGetProperty("url", out JsonElement urlElement))
-			url = urlElement.GetString();
+		Shell.GetService<IConnectivityService>().InsertTenant(bindings.Name, bindings.Url, bindings.Token);
+	}
 
-		if (element.TryGetProperty("token", out JsonElement tokenElement))
-			token = tokenElement.GetString();
-
-		Shell.GetService<IConnectivityService>().InsertTenant(name, url, token);
+	private class ConfigurationBindings
+	{
+		public string? Name { get; set; }
+		public string? Url { get; set; }
+		public string? Token { get; set; }
 	}
 
 	private void OnTenantInitialized(object sender, TenantArgs e)
@@ -225,7 +231,8 @@ internal class StartupHost : IStartupHostProxy
 		{
 			o.EnableEndpointRouting = false;
 
-			ConfiguringMvc(null, o);
+			if (ConfiguringMvc is not null)
+				ConfiguringMvc(null, o);
 		});
 
 		builder.AddNewtonsoftJson();
@@ -304,6 +311,8 @@ internal class StartupHost : IStartupHostProxy
 	{
 		services.AddSignalR(o =>
 		{
+			o.EnableDetailedErrors = true;
+			o.DisableImplicitFromServicesParameters = false;
 			ConfiguringSignalR?.Invoke(null, o);
 		}).AddNewtonsoftJsonProtocol();
 	}

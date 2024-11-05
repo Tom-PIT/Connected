@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using TomPIT.Cdn;
 using TomPIT.ComponentModel;
-using TomPIT.Diagnostics;
 using TomPIT.Environment;
 using TomPIT.Exceptions;
 using TomPIT.Runtime;
@@ -40,7 +39,7 @@ namespace TomPIT.Middleware.Services
 				: Context.Tenant.GetService<IInstanceEndpointService>().Url(InstanceFeatures.Application, InstanceVerbs.Post);
 
 			if (string.IsNullOrWhiteSpace(url))
-				throw new RuntimeException(SR.ErrNoAppServer).WithMetrics(Context);
+				throw new RuntimeException(SR.ErrNoAppServer);
 
 			url = $"{url}/sys/mail-template/{descriptor.Component.Token}";
 

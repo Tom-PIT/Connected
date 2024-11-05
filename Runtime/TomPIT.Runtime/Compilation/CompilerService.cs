@@ -1,21 +1,14 @@
 ﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using TomPIT.Annotations.Design;
 using TomPIT.Caching;
-using TomPIT.Compilation.Analyzers;
-using TomPIT.Compilation.Views;
 using TomPIT.ComponentModel;
-using TomPIT.ComponentModel.Cdn;
-using TomPIT.ComponentModel.Reports;
 using TomPIT.ComponentModel.Scripting;
-using TomPIT.ComponentModel.UI;
 using TomPIT.Connectivity;
 using TomPIT.Exceptions;
 using TomPIT.Middleware;
@@ -23,7 +16,6 @@ using TomPIT.Reflection;
 using TomPIT.Runtime;
 using TomPIT.Serialization;
 using TomPIT.Storage;
-using TomPIT.UI;
 
 namespace TomPIT.Compilation
 {
@@ -35,9 +27,6 @@ namespace TomPIT.Compilation
 
 		private static readonly Lazy<ConcurrentDictionary<Guid, List<Guid>>> _references = new Lazy<ConcurrentDictionary<Guid, List<Guid>>>();
 		private static SingletonProcessor<Guid> _scriptProcessor = new SingletonProcessor<Guid>();
-		//private static List<DiagnosticAnalyzer> _analyzers = null;
-		private static object _sync = new object();
-		private NuGetPackages _nuGet;
 
 		public CompilerService(ITenant tenant) : base(tenant, "script")
 		{
@@ -46,6 +35,12 @@ namespace TomPIT.Compilation
 			Scripts = new ScriptCache(tenant);
 		}
 
+		private static ConcurrentDictionary<Guid, List<Guid>> References { get { return _references.Value; } }
+		private static SingletonProcessor<Guid> ScriptProcessor => _scriptProcessor;
+		internal ScriptCache Scripts { get; }
+
+		private bool ReadOnly => !Tenant.GetService<IRuntimeService>().IsHotSwappingSupported;
+
 		private void OnMicroServiceInstalled(object sender, MicroServiceEventArgs e)
 		{
 			var scripts = All();
@@ -53,11 +48,9 @@ namespace TomPIT.Compilation
 			foreach (var i in scripts)
 			{
 				if (i.MicroService == e.MicroService)
-					RemoveScript(i.Id);
+					RemoveScript(i.Token);
 			}
 		}
-
-		public NuGetPackages Nuget => _nuGet ??= new NuGetPackages(Tenant);
 
 		private IScriptDescriptor GetCachedScript(Guid sourceCodeId)
 		{
@@ -66,89 +59,28 @@ namespace TomPIT.Compilation
 
 		public IScriptDescriptor GetScript(CompilerScriptArgs e)
 		{
-			if (GetCachedScript(e.SourceCode.Id) is IScriptDescriptor existing)
+			if (Instance.IsShellMode || e.SourceCode is null || e.SourceCode.TextBlob == Guid.Empty)
+				return null;
+
+			if (!Tenant.GetService<IRuntimeService>().IsMicroServiceSupported(e.MicroService))
+				return null;
+
+			if (GetCachedScript(e.SourceCode.TextBlob) is IScriptDescriptor existing)
 				return existing;
-
-			/*
-	 * on staging and production environments we ensure only one script compilation
-	 * of the same type can occur at a time. on development environment we allow 
-	 * many side by side compilations because analyzers can analyze script that
-	 * are compiling and that kind of scenario would cause deadlock in singleton mode.
-	 */
-
-			if (Tenant.GetService<IRuntimeService>().Stage == EnvironmentStage.Development || e.IncludeAnalyzers)
-				return CreateScript(e);
 
 			IScriptDescriptor script = null;
 
-			ScriptProcessor.Start(e.SourceCode.Id,
+			ScriptProcessor.Start(e.SourceCode.TextBlob,
 				  () =>
 				  {
 					  script = CreateScript(e);
 				  },
 				  () =>
 				  {
-					  script = GetCachedScript(e.SourceCode.Id);
+					  script = GetCachedScript(e.SourceCode.TextBlob);
 				  });
 
 			return script;
-		}
-
-		private Exception UnwrapException<T>(AggregateException ex, T e)
-		{
-			var sb = new StringBuilder();
-			var src = string.Empty;
-			var severity = ExceptionSeverity.Critical;
-			var stackTrace = new StringBuilder();
-
-			if (ex.InnerException is RuntimeException)
-				src = ((RuntimeException)ex.InnerException).Source;
-
-			if (string.IsNullOrWhiteSpace(src) && e != null)
-			{
-				var att = e.GetType().FindAttribute<ExceptionSourcePropertyAttribute>();
-
-				if (att != null && !string.IsNullOrWhiteSpace(att.PropertyName))
-				{
-					var type = e.GetType();
-
-					while (type != null)
-					{
-						var pi = type.GetProperty(att.PropertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
-
-						if (pi != null)
-						{
-							src = Types.Convert<string>(pi.GetValue(e));
-							break;
-						}
-
-						type = type.BaseType;
-					}
-				}
-			}
-
-			foreach (var i in ex.InnerExceptions)
-			{
-				sb.AppendLine(i.Message);
-
-				if (string.IsNullOrWhiteSpace(src))
-				{
-					src = i.Source;
-
-					if (i is RuntimeException)
-						severity = ((RuntimeException)i).Severity;
-				}
-
-				stackTrace.Append($"{i.StackTrace}{System.Environment.NewLine}");
-			}
-
-			var r = new RuntimeException(src, sb.ToString(), stackTrace.ToString())
-			{
-				Severity = severity,
-			};
-			//Log.Error(this, r, EventId.CompileError);
-
-			return r;
 		}
 
 		private IScriptDescriptor CreateScript(CompilerScriptArgs e)
@@ -157,7 +89,7 @@ namespace TomPIT.Compilation
 
 			var result = new ScriptDescriptor
 			{
-				Id = e.SourceCode.Id,
+				Token = e.SourceCode.TextBlob,
 				MicroService = e.MicroService,
 				Component = e.SourceCode.Configuration().Component
 			};
@@ -171,25 +103,31 @@ namespace TomPIT.Compilation
 
 		public Microsoft.CodeAnalysis.Compilation GetCompilation(IText sourceCode)
 		{
+			if (Instance.IsShellMode)
+				return null;
+
+			if (!Tenant.GetService<IRuntimeService>().IsMicroServiceSupported(sourceCode.Configuration().MicroService()))
+				return null;
+
 			var microService = sourceCode.Configuration().MicroService();
 
 			using var script = new CompilerScript(Tenant, microService, sourceCode);
 
 			var result = new ScriptDescriptor
 			{
-				Id = sourceCode.Id,
+				Token = sourceCode.TextBlob,
 				MicroService = microService,
 				Component = sourceCode.Configuration().Component
 			};
 
 			script.Create();
 
-			return Compile(result, script, false, new CompilerScriptArgs(microService, sourceCode, false));
+			return Compile(result, script, false, new CompilerScriptArgs(microService, sourceCode));
 		}
 
 		private Microsoft.CodeAnalysis.Compilation Compile(IScriptDescriptor script, CompilerScript compiler, bool cache, CompilerScriptArgs e)
 		{
-			if (compiler.Script == null)
+			if (compiler.Script is null)
 				return null;
 
 			Microsoft.CodeAnalysis.Compilation result;
@@ -197,23 +135,11 @@ namespace TomPIT.Compilation
 			var stage = Tenant.GetService<IRuntimeService>().Stage;
 			var scriptDescriptor = script as ScriptDescriptor;
 
-			if (stage == EnvironmentStage.Production || !e.IncludeAnalyzers)
-			{
-				result = compiler.Script.GetCompilation();
+			result = compiler.Script.GetCompilation();
 
-				var diagnostics = result.GetDiagnostics();
+			var diagnostics = result.GetDiagnostics();
 
-				scriptDescriptor.Errors = ProcessDiagnostics(script, compiler, diagnostics, stage);
-			}
-			else
-			{
-				//if state queue and development no analyzers
-				var c = compiler.Script.GetCompilation().WithAnalyzers(GetAnalyzers(CompilerLanguage.CSharp, script.MicroService, script.Component, script.Id));
-
-				result = c.Compilation;
-
-				scriptDescriptor.Errors = ProcessDiagnostics(script, compiler, c.GetAllDiagnosticsAsync().Result, stage);
-			}
+			scriptDescriptor.Errors = ProcessDiagnostics(script, compiler, diagnostics, stage);
 
 			if (IsValid(script, compiler))
 			{
@@ -221,11 +147,11 @@ namespace TomPIT.Compilation
 				scriptDescriptor.Assembly = result.AssemblyName;
 			}
 
-			if (compiler.ScriptReferences != null && compiler.ScriptReferences.Count > 0)
-				References.AddOrUpdate(compiler.SourceCode.Id, compiler.ScriptReferences, (key, oldValue) => oldValue = compiler.ScriptReferences);
+			if (compiler.ScriptReferences is not null && compiler.ScriptReferences.Any())
+				References.AddOrUpdate(compiler.SourceCode.TextBlob, compiler.ScriptReferences, (key, oldValue) => oldValue = compiler.ScriptReferences);
 
 			if (cache)
-				Set(script.Id, script, TimeSpan.Zero);
+				Set(script.Token, script, TimeSpan.Zero);
 
 			GC.Collect();
 
@@ -234,10 +160,10 @@ namespace TomPIT.Compilation
 
 		private static bool IsValid(IScriptDescriptor descriptor, CompilerScript script)
 		{
-			return script.Script != null && !descriptor.Errors.Where(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error).Any();
+			return script.Script is not null && !descriptor.Errors.Where(f => f.Severity == DiagnosticSeverity.Error).Any();
 		}
 
-		private List<IDiagnostic> ProcessDiagnostics(IScriptDescriptor script, CompilerScript compiler, ImmutableArray<Microsoft.CodeAnalysis.Diagnostic> errors, EnvironmentStage stage)
+		private static List<IDiagnostic> ProcessDiagnostics(IScriptDescriptor script, CompilerScript compiler, ImmutableArray<Microsoft.CodeAnalysis.Diagnostic> errors, EnvironmentStage stage)
 		{
 			var diagnostics = new List<IDiagnostic>();
 
@@ -271,7 +197,7 @@ namespace TomPIT.Compilation
 					{
 						var component = compiler.Tenant.GetService<IComponentService>().SelectComponent(script.Component);
 
-						if (component != null)
+						if (component is not null)
 							filePath = $"{ms.Name}/{component.Name}/{filePath}";
 					}
 				}
@@ -286,14 +212,17 @@ namespace TomPIT.Compilation
 
 		public void Invalidate(IMicroServiceContext context, Guid microService, Guid component, IText sourceCode)
 		{
+			if (ReadOnly)
+				return;
+
 			var id = sourceCode.ScriptId();
 
-			Instance.SysProxy.Development.Notifications.ScriptChanged(microService, component, id);
-			RemoveScript(sourceCode.Id);
+			Instance.SysProxy.Development.Notifications.SourceTextChanged(microService, component, sourceCode.TextBlob, BlobTypes.SourceText);
+			RemoveScript(sourceCode.TextBlob);
 
 			try
 			{
-				Invalidated?.Invoke(this, sourceCode.Id);
+				Invalidated?.Invoke(this, sourceCode.TextBlob);
 			}
 			catch { }
 
@@ -304,14 +233,17 @@ namespace TomPIT.Compilation
 		{
 			var asm = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(f => string.Equals(f.ShortName(), fileName, StringComparison.OrdinalIgnoreCase));
 
-			if (asm != null)
-			{
+			if (asm is not null)
 				return asm;
-			}
 
 			try
 			{
-				var name = AssemblyName.GetAssemblyName(string.Format(@"{0}\{1}.dll", AppDomain.CurrentDomain.BaseDirectory, fileName));
+				var assemblyPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"{fileName}.dll");
+
+				if (!File.Exists(assemblyPath))
+					return null;
+
+				var name = AssemblyName.GetAssemblyName(assemblyPath);
 
 				asm = Assembly.Load(name);
 			}
@@ -320,17 +252,20 @@ namespace TomPIT.Compilation
 			return asm;
 		}
 
-		public void NotifyChanged(object sender, ScriptChangedEventArgs e)
+		public void NotifyChanged(object sender, SourceTextChangedEventArgs e)
 		{
-			RemoveScript(e.SourceCode);
+			if (ReadOnly)
+				return;
+
+			RemoveScript(e.Token);
 
 			try
 			{
-				Invalidated?.Invoke(this, e.SourceCode);
+				Invalidated?.Invoke(this, e.Token);
 			}
 			catch { }
 
-			InvalidateReferences(e.Container, e.SourceCode);
+			InvalidateReferences(e.Configuration, e.Token);
 		}
 
 		private void InvalidateReferences(Guid container, Guid script)
@@ -352,198 +287,21 @@ namespace TomPIT.Compilation
 			}
 		}
 
-		public string CompileView(ITenant tenant, IText sourceCode)
-		{
-			var config = sourceCode.Configuration() as IConfiguration;
-			var cmp = tenant.GetService<IComponentService>().SelectComponent(config.Component);
-
-			if (cmp == null)
-				return null;
-
-			var rendererAtt = config.GetType().FindAttribute<ViewRendererAttribute>();
-			var content = string.Empty;
-
-			if (rendererAtt != null)
-			{
-				var renderer = (rendererAtt.Type ?? Reflection.TypeExtensions.GetType(rendererAtt.TypeName)).CreateInstance<IViewRenderer>();
-
-				content = renderer.CreateContent(tenant, cmp);
-			}
-			else if (sourceCode.TextBlob != Guid.Empty)
-			{
-				var r = Tenant.GetService<IStorageService>().Download(sourceCode.TextBlob);
-
-				if (r == null)
-					return null;
-
-				content = Encoding.UTF8.GetString(r.Content);
-			}
-
-			ProcessorBase processor = null;
-
-			if (config is IMasterViewConfiguration master)
-				processor = new MasterProcessor(master, content);
-			else if (config is IViewConfiguration view)
-				processor = new ViewProcessor(view, content);
-			else if (config is IPartialViewConfiguration partial)
-				processor = new PartialProcessor(partial, content);
-			else if (config is IMailTemplateConfiguration mail)
-				processor = new MailTemplateProcessor(mail, content);
-			else if (config is IReportConfiguration report)
-				processor = new ReportProcessor(report);
-
-			if (processor == null)
-				return null;
-
-			processor.Compile(tenant, cmp, config as IConfiguration);
-
-			return processor.Result;
-		}
-
 		public Type ResolveType(Guid microService, IText sourceCode, string typeName)
 		{
 			return ResolveType(microService, sourceCode, typeName, true);
 		}
 		public Type ResolveType(Guid microService, IText sourceCode, string typeName, bool throwException)
 		{
-			var script = GetScript(new CompilerScriptArgs(microService, sourceCode, false));
-
-			if (script == null)
-			{
-				if (throwException)
-					throw new RuntimeException($"{SR.ErrTypeNotFound} ({typeName})");
-				else
-					return null;
-			}
-
-			if (script != null && script.Assembly == null && script.Errors != null && script.Errors.Count(f => f.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error) > 0)
-			{
-				if (throwException)
-					throw new CompilerException(Tenant, script, sourceCode);
-				else
-					return null;
-			}
-
-			var result = ResolveTypeName(script.Assembly, sourceCode, typeName, throwException);
-
-			if (result is null)
-			{
-				if (throwException)
-					throw new RuntimeException($"{SR.ErrTypeNotFound} ({typeName})");
-				else
-					return null;
-			}
-
-			return result;
+			return ScriptTypeResolver.ResolveType(this, microService, sourceCode, typeName, throwException);
 		}
 
-		private Type ResolveTypeName(string assembly, IText sourceCode, string typeName, bool throwException)
-		{
-			var ns = ResolveNamespace(sourceCode);
-			var asm = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(f => string.Compare(f.ShortName(), assembly, true) == 0);
-
-			if (asm is null)
-				return null;
-
-			if (ns is not null)
-				typeName = $"{ns.Namespace}.{typeName}";
-
-			if (!typeName.Contains("."))
-				return asm.GetTypes().FirstOrDefault(f => string.Compare(f.Name, typeName, true) == 0);
-
-			var tokens = typeName.Split('.');
-			var fullTypeName = new StringBuilder();
-
-			fullTypeName.Append("Submission#0");
-
-			foreach (var token in tokens)
-				fullTypeName.Append($"+{token}");
-
-			var results = asm.GetTypes().Where(f => string.Compare(f.FullName, fullTypeName.ToString(), true) == 0);
-
-			if (results.Count() > 1)
-			{
-				var ms = Tenant.GetService<IMicroServiceService>().Select(sourceCode.Configuration().MicroService());
-
-				if(throwException)
-				throw new RuntimeException($"{SR.ErrTypeMultipleMatch} ({ms.Name}/{sourceCode.Configuration().ComponentName()}/{typeName})");
-
-				return null;
-			}
-			else if (results.Count() == 0)
-			{
-				if(throwException)
-				throw new RuntimeException($"{SR.ErrTypeNotFound} ({typeName})");
-
-				return null;
-			}
-
-			return results.First();
-		}
-
-		private INamespaceElement ResolveNamespace(IText sourceCode)
-		{
-			if (sourceCode is INamespaceElement nse && !string.IsNullOrWhiteSpace(nse.Namespace))
-				return nse;
-
-			IElement current = sourceCode;
-
-			while (current is not null)
-			{
-				current = current.Parent?.Closest<INamespaceElement>();
-
-				if (current is null)
-					break;
-
-				if (!string.IsNullOrWhiteSpace(((INamespaceElement)current).Namespace))
-					return current as INamespaceElement;
-			}
-
-			return null;
-		}
 		public IScriptContext CreateScriptContext(IText sourceCode)
 		{
 			return new ScriptContext(Tenant, sourceCode);
 		}
 
-		public List<string> QuerySubClasses(IScriptConfiguration script)
-		{
-			var result = new List<string>();
-
-			var scriptType = ResolveType(script.MicroService(), script, script.ComponentName());
-
-			if (scriptType == null)
-				return null;
-
-			foreach (var item in Scripts.Items)
-			{
-				var ms = item.MicroService();
-				var name = item.ComponentName();
-
-				var type = ResolveType(ms, item, name, false);
-
-				if (type == null)
-					continue;
-
-				type = type.BaseType;
-
-				while (type != null)
-				{
-					if (ScriptTypeComparer.Compare(scriptType, type))
-					{
-						var microService = Tenant.GetService<IMicroServiceService>().Select(ms);
-
-						if (microService == null)
-							continue;
-
-						result.Add($"{microService.Name}/{name}");
-						break;
-					}
-				}
-			}
-
-			return result;
-		}
+		public List<string> QuerySubClasses(IScriptConfiguration script) => ScriptTypeResolver.QuerySubClasses(this, script);
 
 		public T CreateInstance<T>(IMicroServiceContext context, IText sourceCode) where T : class
 		{
@@ -703,50 +461,8 @@ namespace TomPIT.Compilation
 
 			return ResolveComponent(instance.GetType());
 		}
-		public IComponent ResolveComponent(Type type)
-		{
-			if (type == null)
-				return null;
+		public IComponent ResolveComponent(Type type) => ScriptTypeResolver.ResolveComponent(type);
 
-			var typeInfo = CompilerExtensions.ResolveScriptInfoType(type.Assembly);
-
-			if (typeInfo == null)
-				return null;
-
-			var sourceTypes = (List<SourceTypeDescriptor>)typeInfo.GetProperty("SourceTypes").GetValue(null);
-
-			var componentMatch = sourceTypes.FirstOrDefault(typeDescriptor => TypeMatches(typeDescriptor, type));
-
-			if (componentMatch is not null)
-			{
-				var cmp = Tenant.GetService<IComponentService>().SelectComponent(componentMatch.Component);
-
-				if (cmp is not null)
-					return cmp;
-			}
-
-			var component = (Guid)typeInfo.GetProperty("Component").GetValue(null);
-
-			return Tenant.GetService<IComponentService>().SelectComponent(component);
-		}
-
-		private bool TypeMatches(SourceTypeDescriptor typeDescriptor, Type type)
-		{
-			return NameMatches(typeDescriptor.TypeName, type.Name) && NamespaceMatches(type.DeclaringType.FullName, typeDescriptor.ContainingType);
-		}
-
-		private bool NameMatches(string name1, string name2)
-		{
-			return string.Compare(name1, name2) == 0;
-		}
-
-		private bool NamespaceMatches(string namespace1, string namespace2)
-		{
-			var elements1 = namespace1.Split('.', '+').SkipWhile(e => e.StartsWith("Submission#0") || string.IsNullOrEmpty(e));
-			var elements2 = namespace2.Split('.', '+').SkipWhile(e => e.StartsWith("Submission#0") || string.IsNullOrEmpty(e));
-
-			return elements1.SequenceEqual(elements2);
-		}
 
 		public IMicroService ResolveMicroService(object instance)
 		{
@@ -756,20 +472,7 @@ namespace TomPIT.Compilation
 			return ResolveMicroService(instance.GetType());
 		}
 
-		public IMicroService ResolveMicroService(Type type)
-		{
-			if (type == null)
-				return null;
-
-			var typeInfo = type.Assembly.DefinedTypes.FirstOrDefault(f => string.Compare(f.Name, ScriptInfoClassName, false) == 0);
-
-			if (typeInfo == null)
-				return null;
-
-			var ms = (Guid)typeInfo.GetProperty("MicroService").GetValue(null);
-
-			return Tenant.GetService<IMicroServiceService>().Select(ms);
-		}
+		public IMicroService ResolveMicroService(Type type) => ScriptTypeResolver.ResolveMicroService(type);
 
 		public string ResolveReference(Guid microService, string path)
 		{
@@ -787,46 +490,15 @@ namespace TomPIT.Compilation
 			return Tenant.GetService<IDiscoveryService>().Configuration.Find(path);
 		}
 
-		private static ConcurrentDictionary<Guid, List<Guid>> References { get { return _references.Value; } }
-		private static SingletonProcessor<Guid> ScriptProcessor => _scriptProcessor;
-		private ScriptCache Scripts { get; }
-
-		public ImmutableArray<DiagnosticAnalyzer> GetAnalyzers(CompilerLanguage language, Guid microService, Guid component, Guid script)
-		{
-			switch (language)
-			{
-				case CompilerLanguage.CSharp:
-					return CreateCsAnalyzers(Tenant, microService, component, script);
-				case CompilerLanguage.Razor:
-					return CreateRazorAnalyzers(Tenant, microService, component, script);
-				default:
-					throw new NotSupportedException();
-			}
-		}
-		private static ImmutableArray<DiagnosticAnalyzer> CreateCsAnalyzers(ITenant tenant, Guid microService, Guid component, Guid script)
-		{
-			return new List<DiagnosticAnalyzer>
-					 {
-							new ClassComplianceCodeAnalyer(tenant, microService, component, script),
-							new NamespacingAnalyzer(tenant, microService, component, script),
-							new AttributeAnalyzer(tenant, microService, component, script),
-							new ScriptReferenceAnalyzer(tenant, microService, component, script),
-							new Analyzers.ComponentSpecific.DistributedOperationAnalyzer(tenant, microService, component, script)
-					 }.ToImmutableArray();
-		}
-
-		private static ImmutableArray<DiagnosticAnalyzer> CreateRazorAnalyzers(ITenant tenant, Guid microService, Guid component, Guid script)
-		{
-			return new List<DiagnosticAnalyzer>
-					 {
-							new AttributeAnalyzer(tenant, microService, component, script)
-					 }.ToImmutableArray();
-		}
-
 		private void RemoveScript(Guid id)
 		{
 			Remove(id);
 			ScriptContext.RemoveContext(id);
+		}
+
+		public string Rewrite(string sourceText)
+		{
+			return NamespaceRewriter.Rewrite(sourceText);
 		}
 	}
 }

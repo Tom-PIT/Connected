@@ -1296,4 +1296,7 @@
   <data name="ErrBigDataTimezoneNotFound" xml:space="preserve">
     <value>Big data timezone not found</value>
   </data>
+  <data name="ErrMsReadOnly" xml:space="preserve">
+    <value>Microservice is in read only mode and does not allow any changes to be mase.</value>
+  </data>
 </root>

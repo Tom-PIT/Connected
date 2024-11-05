@@ -43,8 +43,8 @@ namespace TomPIT.BigData.Controllers
             _successfullyInitialized = true;
         }
 
-        private IPartitionConfiguration Configuration { get; }
-        private HttpContext Context { get; }
+        private IPartitionConfiguration Configuration { get; set; }
+        private HttpContext Context { get; set; }
         private JArray Body { get; set; }
 
         public void ProcessRequest()
@@ -54,5 +54,14 @@ namespace TomPIT.BigData.Controllers
 
             MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Prepare(Configuration, Body);
         }
-    }
+
+		protected override void Dispose(bool disposing)
+		{
+			base.Dispose(disposing);
+
+         Body = null;
+         Context = null;
+         Configuration = null;
+		}
+	}
 }

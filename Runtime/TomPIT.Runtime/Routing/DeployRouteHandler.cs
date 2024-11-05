@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+
+using System;
 using System.Net;
 
 using TomPIT.Design;
@@ -12,27 +14,9 @@ namespace TomPIT.Routing
 		//TODO Override from configuration
 		private const string Remote = "https://sys-connected.tompit.com/rest";
 
-		private string _baseUrl = null;
+		private string? _baseUrl = null;
 
-		private string BaseUrl
-		{
-			get
-			{
-				if (_baseUrl is not null)
-					return _baseUrl;
-
-				var config = Shell.Configuration;
-
-				if (config.RootElement.TryGetProperty("DeployRouteBaseUrl", out var baseUrlNode))
-					_baseUrl = baseUrlNode.GetString();
-
-				//Reset if value makes no sense
-				if (string.IsNullOrWhiteSpace(_baseUrl))
-					_baseUrl = Remote;
-
-				return _baseUrl;
-			}
-		}
+		private string BaseUrl => _baseUrl ??= Shell.Configuration.GetSection("deployment").GetValue("remoteUrl", Remote) ?? Remote;
 
 		protected override void OnProcessRequest()
 		{
@@ -50,8 +34,11 @@ namespace TomPIT.Routing
 			var key = body.Required<string>("authenticationKey");
 			var branch = body.Optional("branch", 0L);
 			var commit = body.Optional("commit", 0L);
+         var verb = body.Optional("verb", DeploymentVerb.Deploy);
+         var startCommit = body.Optional("startCommit", 0L);
+			var resourceGroup = body.Optional<string?>("resourceGroup", null);
 
-			ctx.GetService<IDesignService>().Deployment.Deploy(BaseUrl, repository, branch, commit, key);
+         ctx.GetService<IDesignService>().Deployment.Deploy(BaseUrl, repository, branch, commit, startCommit, key, verb, resourceGroup);
 		}
 	}
 }
