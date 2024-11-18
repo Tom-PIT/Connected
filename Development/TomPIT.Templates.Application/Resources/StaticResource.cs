@@ -18,6 +18,8 @@ namespace TomPIT.MicroServices.Resources
 		[Browsable(false)]
 		public string FileName { get; set; }
 
+		public string? Url { get; set; }
+
 		public List<Guid> QueryResources()
 		{
 			return new List<Guid> { Blob };
