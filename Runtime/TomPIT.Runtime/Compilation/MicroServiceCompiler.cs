@@ -45,11 +45,17 @@ internal static class MicroServiceCompiler
 			return;
 		}
 
+		var microServices = new CompilationSet();
+
 		if (Tenant.GetService<IRuntimeService>().Stage == EnvironmentStage.Development)
 		{
 			if (!ShouldRecompile())
 			{
 				Console.WriteLine($"Compilation in development occurs only if explicitly requested by creating Recompile.txt file in '{Shell.MicroServicesFolder}' folder. No such file exists. Compilation skipped.");
+
+				while (microServices.TryDequeue(out IMicroService? microService) && microService is not null)
+					Load(microService);
+
 				return;
 			}
 
@@ -57,10 +63,9 @@ internal static class MicroServiceCompiler
 			Clean(null);
 		}
 
-		var microServices = new CompilationSet();
 
 		while (microServices.TryDequeue(out IMicroService? microService) && microService is not null)
-			await Compile(microService, microServices.ShouldCompile(microService));
+			await Compile(microService, !microServices.ShouldCompile(microService));
 
 		ReferencePaths.CopyRuntimes();
 
@@ -83,7 +88,7 @@ internal static class MicroServiceCompiler
 			return;
 		}
 
-		if (!skip)
+		if (skip)
 		{
 			Console.Write($"Up to date.{System.Environment.NewLine}");
 
@@ -450,7 +455,7 @@ internal static class MicroServiceCompiler
 		var folder = Path.Combine(Shell.MicroServicesFolder, BackupFolder);
 
 		if (Directory.Exists(folder))
-			Directory.Delete(folder);
+			Directory.Delete(folder, true);
 
 		Directory.CreateDirectory(folder);
 
@@ -488,7 +493,7 @@ internal static class MicroServiceCompiler
 
 		foreach (var child in children)
 		{
-			if (string.Equals(child.FullName, destination, StringComparison.Ordinal))
+			if (string.Equals(child.FullName, Path.GetFullPath(destination), StringComparison.Ordinal))
 				continue;
 
 			var destinationDir = Path.Combine(destination, child.Name);
@@ -508,7 +513,7 @@ internal static class MicroServiceCompiler
 	{
 		foreach (var file in directory.GetFiles())
 		{
-			if (string.Equals(file.FullName, RecompileFile(), StringComparison.Ordinal))
+			if (string.Equals(file.FullName, Path.GetFullPath(RecompileFile()), StringComparison.Ordinal))
 				continue;
 
 			var targetFilePath = Path.Combine(Path.Combine(destination, file.Name));
