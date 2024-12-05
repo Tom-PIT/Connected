@@ -22,6 +22,21 @@ namespace TomPIT.Security
 			return Instance.SysProxy.Users.Query().ToList();
 		}
 
+		public IUser Select(int id)
+		{
+			var result = Get(f => f.Id == id);
+
+			if (result is not null)
+				return result;
+
+			result = Instance.SysProxy.Users.Select(id.ToString());
+
+			if (result is not null)
+				Set(result.Token, result);
+
+			return result;
+		}
+
 		public IUser Select(string qualifier)
 		{
 			if (string.IsNullOrWhiteSpace(qualifier))

@@ -14,6 +14,7 @@ namespace TomPIT.Security
 
 		List<IUser> Query();
 		IUser Select(string qualifier);
+		IUser Select(int id);
 
 		IUser SelectByAuthenticationToken(Guid token);
 		IUser SelectBySecurityCode(string securityCode);

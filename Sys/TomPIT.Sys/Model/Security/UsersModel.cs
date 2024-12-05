@@ -173,6 +173,9 @@ namespace TomPIT.Sys.Model.Security
 			if (r != null)
 				return r;
 
+			if (int.TryParse(identifier, out int id))
+				return Get(f => f.Id == id);
+
 			return null;
 		}
 
