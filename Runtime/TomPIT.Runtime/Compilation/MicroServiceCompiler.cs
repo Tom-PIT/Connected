@@ -131,7 +131,10 @@ internal static class MicroServiceCompiler
 
 		try
 		{
+			Console.ForegroundColor = ConsoleColor.Green;
 			Console.Write($"Compiled.{System.Environment.NewLine}");
+			Console.ResetColor();
+
 			Load(microService, compilation);
 		}
 		catch (Exception ex)
