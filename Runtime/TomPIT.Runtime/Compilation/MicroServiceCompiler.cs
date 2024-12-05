@@ -10,6 +10,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 using TomPIT.ComponentModel;
@@ -47,32 +48,48 @@ internal static class MicroServiceCompiler
 
 		var microServices = new CompilationSet();
 
-		if (Tenant.GetService<IRuntimeService>().Stage == EnvironmentStage.Development)
+		try
 		{
-			if (!ShouldRecompile())
+			if (Tenant.GetService<IRuntimeService>().Stage == EnvironmentStage.Development)
 			{
-				Console.WriteLine($"Compilation in development occurs only if explicitly requested by creating Recompile.txt file in '{Shell.MicroServicesFolder}' folder. No such file exists. Compilation skipped.");
+				if (!ShouldRecompile())
+				{
+					Console.WriteLine($"Compilation in development occurs only if explicitly requested by creating Recompile.txt file in '{Shell.MicroServicesFolder}' folder. No such file exists. Compilation skipped.");
 
-				while (microServices.TryDequeue(out IMicroService? microService) && microService is not null)
-					Load(microService);
+					while (microServices.TryDequeue(out IMicroService? microService) && microService is not null)
+						Load(microService);
 
-				return;
+					return;
+				}
+
+				await Backup();
+				Clean(null);
 			}
 
-			Backup();
-			Clean(null);
+			while (microServices.TryDequeue(out IMicroService? microService) && microService is not null)
+				await Compile(microService, !microServices.ShouldCompile(microService));
+
+			ReferencePaths.CopyRuntimes();
+
+			if (Tenant.GetService<IRuntimeService>().Stage == EnvironmentStage.Development)
+			{
+				if (File.Exists(RecompileFile()))
+					File.Delete(RecompileFile());
+			}
 		}
-
-
-		while (microServices.TryDequeue(out IMicroService? microService) && microService is not null)
-			await Compile(microService, !microServices.ShouldCompile(microService));
-
-		ReferencePaths.CopyRuntimes();
-
-		if (Tenant.GetService<IRuntimeService>().Stage == EnvironmentStage.Development)
+		catch
 		{
-			if (File.Exists(RecompileFile()))
-				File.Delete(RecompileFile());
+			using var stream = new FileStream(RecompileFile(), FileMode.Create);
+			using var writer = new Utf8JsonWriter(stream);
+
+			writer.WriteStartObject();
+			writer.WritePropertyName("performBackup");
+			writer.WriteBooleanValue(false);
+			writer.WriteEndObject();
+
+			await writer.FlushAsync();
+
+			throw;
 		}
 	}
 
@@ -448,8 +465,21 @@ internal static class MicroServiceCompiler
 		return File.Exists(Path.Combine(Shell.MicroServicesFolder, RecompileFileName));
 	}
 
-	private static void Backup()
+	private static async Task Backup()
 	{
+		var json = await File.ReadAllTextAsync(RecompileFile());
+
+		if (!string.IsNullOrWhiteSpace(json))
+		{
+			var document = JsonDocument.Parse(json);
+
+			if (document.RootElement.TryGetProperty("performBackup", out JsonElement pb))
+			{
+				if (!pb.GetBoolean())
+					return;
+			}
+		}
+
 		Console.WriteLine("Performing backup...");
 
 		var folder = Path.Combine(Shell.MicroServicesFolder, BackupFolder);
@@ -471,15 +501,22 @@ internal static class MicroServiceCompiler
 			foreach (var file in Directory.GetFiles(Shell.MicroServicesFolder, "*.dll", SearchOption.TopDirectoryOnly))
 				File.Delete(file);
 
+			foreach (var file in Directory.GetFiles(Shell.MicroServicesFolder, "*.pdb", SearchOption.TopDirectoryOnly))
+				File.Delete(file);
+
 			return;
 		}
 
 		foreach (var ms in set)
 		{
 			var outputPath = Path.Combine(Shell.MicroServicesFolder, ParseAssemblyName(ms));
+			var pdbPath = Path.Combine(Shell.MicroServicesFolder, ParsePdbName(ms));
 
 			if (File.Exists(outputPath))
 				File.Delete(outputPath);
+
+			if (File.Exists(pdbPath))
+				File.Delete(pdbPath);
 		}
 	}
 

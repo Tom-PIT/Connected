@@ -4,26 +4,28 @@ using TomPIT.Connectivity;
 
 namespace TomPIT.Security
 {
-    public delegate void UserChangedHandler(ITenant tenant, UserEventArgs e);
+	public delegate void UserChangedHandler(ITenant tenant, UserEventArgs e);
+	public delegate void ResolveUserHandler(ITenant tenant, ResolveUserEventArgs e);
 
-    public interface IUserService
-    {
-        event UserChangedHandler UserChanged;
+	public interface IUserService
+	{
+		event UserChangedHandler UserChanged;
+		event ResolveUserHandler Resolve;
 
-        List<IUser> Query();
-        IUser Select(string qualifier);
+		List<IUser> Query();
+		IUser Select(string qualifier);
 
-        IUser SelectByAuthenticationToken(Guid token);
-        IUser SelectBySecurityCode(string securityCode);
+		IUser SelectByAuthenticationToken(Guid token);
+		IUser SelectBySecurityCode(string securityCode);
 
-        void Logout(int user);
-        void ChangePassword(Guid user, string existingPassword, string password);
-        void ChangeAvatar(Guid user, byte[] contentBytes, string contentType, string fileName);
+		void Logout(int user);
+		void ChangePassword(Guid user, string existingPassword, string password);
+		void ChangeAvatar(Guid user, byte[] contentBytes, string contentType, string fileName);
 
-        public Guid Insert(string loginName, string email, UserStatus status, string firstName, string lastName, string description, string pin, Guid language,
-            string timezone, bool notificationsEnabled, string mobile, string phone, string password, string securityCode);
+		public Guid Insert(string loginName, string email, UserStatus status, string firstName, string lastName, string description, string pin, Guid language,
+			 string timezone, bool notificationsEnabled, string mobile, string phone, string password, string securityCode);
 
-        public void Update(Guid token, string loginName, string email, UserStatus status, string firstName, string lastName, string description, string pin, Guid language,
-            string timezone, bool notificationsEnabled, string mobile, string phone, string securityCode);
-    }
+		public void Update(Guid token, string loginName, string email, UserStatus status, string firstName, string lastName, string description, string pin, Guid language,
+			 string timezone, bool notificationsEnabled, string mobile, string phone, string securityCode);
+	}
 }
