@@ -2,8 +2,8 @@
   "instanceName": "Default Instance",
   "features": "Application, Sys, Development",
   "platform": "OnPrem",
-  "microServicesFolder": "/microServices",
-  "stage": "QualityAssurance",
+  "microServicesFolder": "/microServicesD",
+  "stage": "Development",
   "optimization": "Debug",
   "resourceGroups": [
     "Default"

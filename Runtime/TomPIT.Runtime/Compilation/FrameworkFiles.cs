@@ -88,6 +88,7 @@ public static class FrameworkFiles
 			"System.IO.MemoryMappedFiles.dll",
 			"System.IO.Pipes.AccessControl.dll",
 			"System.IO.Pipes.dll",
+			"System.IO.Pipelines.dll",
 			"System.IO.UnmanagedMemoryStream.dll",
 			"System.Linq.dll",
 			"System.Linq.Expressions.dll",
@@ -154,7 +155,7 @@ public static class FrameworkFiles
 			"System.Security.Cryptography.Algorithms.dll",
 			"System.Security.Cryptography.Cng.dll",
 			"System.Security.Cryptography.Csp.dll",
-         "System.Security.Cryptography.dll",
+			"System.Security.Cryptography.dll",
 			"System.Security.Cryptography.Encoding.dll",
 			"System.Security.Cryptography.OpenSsl.dll",
 			"System.Security.Cryptography.Primitives.dll",
@@ -339,10 +340,9 @@ public static class FrameworkFiles
 			"Microsoft.JSInterop.dll",
 			"Microsoft.Net.Http.Headers.dll",
 			"System.Diagnostics.EventLog.dll",
-			"System.IO.Pipelines.dll",
-         "System.Security.Cryptography.Pkcs.dll",
-         "System.Security.Cryptography.Xml.dll",
-         "System.Threading.RateLimiting.dll"
+			"System.Security.Cryptography.Pkcs.dll",
+			"System.Security.Cryptography.Xml.dll",
+			"System.Threading.RateLimiting.dll"
 		};
 
 	}

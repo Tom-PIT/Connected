@@ -57,7 +57,12 @@ internal static class MicroServiceCompiler
 					Console.WriteLine($"Compilation in development occurs only if explicitly requested by creating Recompile.txt file in '{Shell.MicroServicesFolder}' folder. No such file exists. Compilation skipped.");
 
 					while (microServices.TryDequeue(out IMicroService? microService) && microService is not null)
+					{
+						if (!microServices.IsSupported(microService))
+							continue;
+
 						Load(microService);
+					}
 
 					return;
 				}
@@ -67,7 +72,7 @@ internal static class MicroServiceCompiler
 			}
 
 			while (microServices.TryDequeue(out IMicroService? microService) && microService is not null)
-				await Compile(microService, !microServices.ShouldCompile(microService));
+				await Compile(microService, !microServices.ShouldCompile(microService), microServices.IsSupported(microService));
 
 			ReferencePaths.CopyRuntimes();
 
@@ -93,15 +98,13 @@ internal static class MicroServiceCompiler
 		}
 	}
 
-	private static async Task Compile(IMicroService microService, bool skip)
+	private static async Task Compile(IMicroService microService, bool skip, bool isSupported)
 	{
 		Console.Write($"Compiling {microService.Name}...");
 
-		var rt = Tenant.GetService<IRuntimeService>();
-
-		if (!rt.IsMicroServiceSupported(microService.Token))
+		if (!isSupported)
 		{
-			Console.Write($"Not supported on {rt.Stage}.{System.Environment.NewLine}");
+			Console.Write($"Not supported on {Shell.GetService<IRuntimeService>().Stage}.{System.Environment.NewLine}");
 			return;
 		}
 

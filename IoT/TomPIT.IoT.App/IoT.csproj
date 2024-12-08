@@ -6,7 +6,7 @@
     <SccLocalPath>SAK</SccLocalPath>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <AssemblyName>TomPIT.Connected.IoT</AssemblyName>
     <RootNamespace>TomPIT.IoT</RootNamespace>
     <AssemblyVersion>4.1.1125.2</AssemblyVersion>

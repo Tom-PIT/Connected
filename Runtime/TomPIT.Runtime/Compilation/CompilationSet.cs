@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using TomPIT.ComponentModel;
 using TomPIT.Reflection;
+using TomPIT.Runtime;
 
 namespace TomPIT.Compilation;
 internal class CompilationSet : Queue<IMicroService>
@@ -10,10 +11,12 @@ internal class CompilationSet : Queue<IMicroService>
 	public CompilationSet()
 	{
 		CompilationFlags = new();
+		SupportedFlags = new();
 		Initialize();
 	}
 
 	private Dictionary<Guid, bool> CompilationFlags { get; }
+	private Dictionary<Guid, bool> SupportedFlags { get; }
 
 	public bool ShouldCompile(IMicroService service)
 	{
@@ -22,6 +25,14 @@ internal class CompilationSet : Queue<IMicroService>
 
 		return false;
 	}
+	public bool IsSupported(IMicroService service)
+	{
+		if (SupportedFlags.TryGetValue(service.Token, out bool result))
+			return result;
+
+		return false;
+	}
+
 	private void Initialize()
 	{
 		var microServices = Tenant.GetService<IMicroServiceService>().Query();
@@ -39,7 +50,11 @@ internal class CompilationSet : Queue<IMicroService>
 
 		if (!Contains(microService))
 		{
-			var shouldRecompile = ShouldRecompile(microService);
+			var isSupported = Tenant.GetService<IRuntimeService>().IsMicroServiceSupported(microService.Token);
+
+			SupportedFlags.Add(microService.Token, isSupported);
+
+			var shouldRecompile = isSupported ? ShouldRecompile(microService) : false;
 
 			Enqueue(microService);
 

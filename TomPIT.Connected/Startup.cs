@@ -8,7 +8,7 @@ using TomPIT.Cdn;
 using TomPIT.Development;
 using TomPIT.Environment;
 using TomPIT.IoT;
-using TomPIT.Management;
+//using TomPIT.Management;
 using TomPIT.Rest;
 using TomPIT.Runtime;
 using TomPIT.Search;
@@ -36,8 +36,8 @@ internal class Startup
 		if (Instance.Features.HasFlag(InstanceFeatures.Cdn))
 			startups.Add(new CdnStartup());
 
-		if (Instance.Features.HasFlag(InstanceFeatures.Management))
-			startups.Add(new ManagementStartup());
+		//if (Instance.Features.HasFlag(InstanceFeatures.Management))
+		//	startups.Add(new ManagementStartup());
 
 		if (Instance.Features.HasFlag(InstanceFeatures.Rest))
 			startups.Add(new RestStartup());

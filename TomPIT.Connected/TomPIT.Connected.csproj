@@ -1,46 +1,46 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
-  <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <AssemblyVersion>4.1.1125.2</AssemblyVersion>
-    <FileVersion>4.1.1125.2</FileVersion>
-    <Version>4.1.1125.2</Version>
-    <UserSecretsId>c813067a-68a7-478d-9a86-b7d0c008a8dc</UserSecretsId>
-  </PropertyGroup>
-  <ItemGroup>
-    <Content Remove="Properties\launchSettings.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <_WebToolingArtifacts Remove="Properties\launchSettings.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Properties\launchSettings.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.8.0" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="7.0.14" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\App\TomPIT.App.UI\App.csproj" />
-    <ProjectReference Include="..\BigData\BigData\BigData.csproj" />
-    <ProjectReference Include="..\Cdn\Cdn\Cdn.csproj" />
-    <ProjectReference Include="..\Development\TomPIT.Development.UI\Development.csproj" />
-    <ProjectReference Include="..\IoT\TomPIT.IoT.App\IoT.csproj" />
-    <ProjectReference Include="..\Management\TomPIT.Management.UI\Management.csproj" />
-    <ProjectReference Include="..\Rest\TomPIT.Rest.Api\Rest.csproj" />
-    <ProjectReference Include="..\Search\Search\Search.csproj" />
-    <ProjectReference Include="..\Sys\TomPIT.Sys\Sys.csproj" />
-    <ProjectReference Include="..\TomPIT.Proxy.Local\TomPIT.Proxy.Local.csproj" />
-    <ProjectReference Include="..\TomPIT.ServiceProviders.HealthMonitoring\TomPIT.ServiceProviders.HealthMonitoring.csproj" />
-    <ProjectReference Include="..\Worker\TomPIT.Worker.App\Worker.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Update="sys.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<AssemblyVersion>4.1.1125.2</AssemblyVersion>
+		<FileVersion>4.1.1125.2</FileVersion>
+		<Version>4.1.1125.2</Version>
+		<UserSecretsId>c813067a-68a7-478d-9a86-b7d0c008a8dc</UserSecretsId>
+	</PropertyGroup>
+	<ItemGroup>
+		<Content Remove="Properties\launchSettings.json" />
+	</ItemGroup>
+	<ItemGroup>
+		<_WebToolingArtifacts Remove="Properties\launchSettings.json" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="Properties\launchSettings.json">
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+			<CopyToPublishDirectory>Never</CopyToPublishDirectory>
+		</None>
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.8.0" />
+		<PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="7.0.14" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\App\TomPIT.App.UI\App.csproj" />
+		<ProjectReference Include="..\BigData\BigData\BigData.csproj" />
+		<ProjectReference Include="..\Cdn\Cdn\Cdn.csproj" />
+		<ProjectReference Include="..\Development\TomPIT.Development.UI\Development.csproj" />
+		<ProjectReference Include="..\IoT\TomPIT.IoT.App\IoT.csproj" />
+		<!--<ProjectReference Include="..\Management\TomPIT.Management.UI\Management.csproj" />-->
+		<ProjectReference Include="..\Rest\TomPIT.Rest.Api\Rest.csproj" />
+		<ProjectReference Include="..\Search\Search\Search.csproj" />
+		<ProjectReference Include="..\Sys\TomPIT.Sys\Sys.csproj" />
+		<ProjectReference Include="..\TomPIT.Proxy.Local\TomPIT.Proxy.Local.csproj" />
+		<ProjectReference Include="..\TomPIT.ServiceProviders.HealthMonitoring\TomPIT.ServiceProviders.HealthMonitoring.csproj" />
+		<ProjectReference Include="..\Worker\TomPIT.Worker.App\Worker.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<Content Update="sys.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
 </Project>

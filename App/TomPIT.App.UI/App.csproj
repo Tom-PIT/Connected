@@ -6,7 +6,7 @@
     <SccLocalPath>SAK</SccLocalPath>
   </PropertyGroup>
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <AssemblyName>TomPIT.Connected.App</AssemblyName>
     <RootNamespace>TomPIT.App</RootNamespace>
@@ -24,7 +24,7 @@
     <Compile Remove="UI\RouteParameter.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Remove="compilerconfig.json" />
+    <Content Remove="compilerconfig1.json" />
     <Content Remove="wwwroot\Assets\fonts.min.js" />
   </ItemGroup>
   <ItemGroup>
@@ -35,7 +35,7 @@
     <EmbeddedResource Include="wwwroot/Assets/**/*.*" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="compilerconfig.json" />
+    <None Include="compilerconfig1.json" />
     <None Include="wwwroot\Assets\Libraries\Cldr\0.5.0\cldr\event.js" />
     <None Include="wwwroot\Assets\Libraries\Cldr\0.5.0\cldr\supplemental.js" />
     <None Include="wwwroot\Assets\Libraries\Cldr\0.5.0\cldr\unresolved.js" />
