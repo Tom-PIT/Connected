@@ -11,7 +11,6 @@ namespace TomPIT.Security
 	internal class UserService : ClientRepository<IUser, Guid>, IUserService, IUserNotification
 	{
 		public event UserChangedHandler UserChanged;
-		public event ResolveUserHandler Resolve;
 		public UserService(ITenant tenant) : base(tenant, "user")
 		{
 
@@ -58,12 +57,6 @@ namespace TomPIT.Security
 
 			if (r is not null)
 				Set(r.Token, r);
-
-			var args = new ResolveUserEventArgs(qualifier);
-			Resolve?.Invoke(Tenant, args);
-
-			if (args.User is not null)
-				Set(args.User.Token, args.User);
 
 			return r;
 		}

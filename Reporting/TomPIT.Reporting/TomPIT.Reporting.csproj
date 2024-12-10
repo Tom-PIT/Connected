@@ -27,12 +27,12 @@
   <ItemGroup>
     <PackageReference Include="BuildBundlerMinifierPlus" Version="5.3.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="7.0.14" />
-    <PackageReference Include="System.CodeDom" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="9.0.0" />
+    <PackageReference Include="System.CodeDom" Version="9.0.0" />
     <PackageReference Include="DevExpress.Pdf.SkiaRenderer" Version="23.1.6" />
     <PackageReference Include="DevExpress.AspNetCore.Reporting" Version="23.1.6" />
-    <PackageReference Include="SkiaSharp" Version="2.88.8" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.8" />
+    <PackageReference Include="SkiaSharp" Version="3.116.1" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="3.116.1" />
     <PackageReference Include="DevExpress.Drawing.Skia" Version="23.1.6" />
   </ItemGroup>
   <ItemGroup>

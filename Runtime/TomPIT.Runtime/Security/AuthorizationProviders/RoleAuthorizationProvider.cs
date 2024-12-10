@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using TomPIT.Connectivity;
 using TomPIT.Diagnostics;
 using TomPIT.Middleware;
@@ -14,7 +13,7 @@ namespace TomPIT.Security.AuthorizationProviders
 	{
 		public string Id => "Roles";
 
-		public async Task<AuthorizationProviderResult> Authorize(IMiddlewareContext context, IPermission permission, AuthorizationArgs e, Dictionary<string, object> state)
+		public AuthorizationProviderResult Authorize(IMiddlewareContext context, IPermission permission, AuthorizationArgs e, Dictionary<string, object> state)
 		{
 			var roles = state["roles"] as List<Guid>;
 
@@ -33,10 +32,10 @@ namespace TomPIT.Security.AuthorizationProviders
 				}
 			}
 
-			return await Task.FromResult(AuthorizationProviderResult.NotHandled);
+			return AuthorizationProviderResult.NotHandled;
 		}
 
-		public async Task<AuthorizationProviderResult> PreAuthorize(IMiddlewareContext context, AuthorizationArgs e, Dictionary<string, object> state)
+		public AuthorizationProviderResult PreAuthorize(IMiddlewareContext context, AuthorizationArgs e, Dictionary<string, object> state)
 		{
 			var roles = ResolveImplicitRoles(context, e);
 
@@ -58,10 +57,10 @@ namespace TomPIT.Security.AuthorizationProviders
 			if (roles.Contains(SecurityUtils.FullControlRole))
 				return AuthorizationProviderResult.Success;
 
-			return await Task.FromResult(AuthorizationProviderResult.NotHandled);
+			return AuthorizationProviderResult.NotHandled;
 		}
 
-		public async Task<List<IPermissionSchemaDescriptor>> QueryDescriptors(IMiddlewareContext context)
+		public List<IPermissionSchemaDescriptor> QueryDescriptors(IMiddlewareContext context)
 		{
 			var roles = context.Tenant.GetService<IRoleService>().Query();
 			var r = new List<IPermissionSchemaDescriptor>();
@@ -75,7 +74,7 @@ namespace TomPIT.Security.AuthorizationProviders
 				});
 			}
 
-			return await Task.FromResult(r);
+			return r;
 		}
 
 		private List<Guid> ResolveImplicitRoles(IMiddlewareContext context, AuthorizationArgs e)

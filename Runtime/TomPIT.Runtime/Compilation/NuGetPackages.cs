@@ -25,7 +25,7 @@ namespace TomPIT.Compilation
 {
 	internal class NuGetPackages : IDisposable
 	{
-		private const string FrameworkVersion = "net7.0";
+		private const string FrameworkVersion = "net9.0";
 		private const string RepositoryUrl = "https://api.nuget.org/v3/index.json";
 
 		private static readonly List<string> UnmanagedExtensions = new() { ".dll", ".libdy", ".so", "" };

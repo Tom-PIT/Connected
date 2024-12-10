@@ -31,7 +31,7 @@ namespace TomPIT.Middleware.Services
 
 		public bool Authorize(object claim, object primaryKey, string permissionDescriptor, Guid user)
 		{
-			return AsyncUtils.RunSync(() => Context.Tenant.GetService<IAuthorizationService>().AuthorizeAsync(Context, new AuthorizationArgs(user, claim.ToString(), primaryKey.ToString(), permissionDescriptor))).Success;
+			return Context.Tenant.GetService<IAuthorizationService>().Authorize(Context, new AuthorizationArgs(user, claim.ToString(), primaryKey.ToString(), permissionDescriptor)).Success;
 		}
 
 		public void Deny(object claim, object primaryKey, string permissionDescriptor)

@@ -73,6 +73,11 @@ namespace TomPIT.Runtime
 			e.Tenant.RegisterService(typeof(IComponentService), typeof(ComponentService));
 			e.Tenant.RegisterService(typeof(IStorageService), typeof(StorageService));
 			e.Tenant.RegisterService(typeof(IMicroServiceService), typeof(MicroServiceService));
+			e.Tenant.RegisterService(typeof(IResourceGroupService), typeof(ResourceGroupService));
+
+			e.Tenant.RegisterService(typeof(INuGetService), typeof(NuGetService));
+
+			MicroServiceCompiler.Compile().Wait();
 
 			if (Shell.LegacyServices)
 			{
@@ -87,15 +92,13 @@ namespace TomPIT.Runtime
 				e.Tenant.RegisterService(typeof(IMicroServiceRuntimeService), new MicroServiceRuntimeService(e.Tenant));
 			}
 
-			e.Tenant.RegisterService(typeof(INuGetService), typeof(NuGetService));
 			e.Tenant.RegisterService(typeof(ISettingService), typeof(SettingService));
 			e.Tenant.RegisterService(typeof(INamingService), typeof(NamingService));
 			e.Tenant.RegisterService(typeof(ILoggingService), typeof(LoggingService));
-			e.Tenant.RegisterService(typeof(IResourceGroupService), typeof(ResourceGroupService));
 			e.Tenant.RegisterService(typeof(ILanguageService), typeof(LanguageService));
 			e.Tenant.RegisterService(typeof(IInstanceEndpointService), typeof(InstanceEndpointService));
 			e.Tenant.RegisterService(typeof(IAuthorizationService), typeof(AuthorizationService));
-			e.Tenant.RegisterService(typeof(IUserService), typeof(UserService));
+			//e.Tenant.RegisterService(typeof(IUserService), typeof(UserService));
 			e.Tenant.RegisterService(typeof(IRoleService), typeof(RoleService));
 			e.Tenant.RegisterService(typeof(IDataProviderService), typeof(DataProviderService));
 			e.Tenant.RegisterService(typeof(IEventService), typeof(EventService));
@@ -123,8 +126,6 @@ namespace TomPIT.Runtime
 			e.Tenant.RegisterService(typeof(IMicroServiceTemplateService), typeof(MicroServiceTemplateService));
 			e.Tenant.RegisterService(typeof(IDebugService), typeof(DebugService));
 			e.Tenant.RegisterService(typeof(IViewCompilerService), typeof(ViewCompilerService));
-
-			AsyncUtils.RunSync(() => MicroServiceCompiler.Compile());
 
 			if (!string.IsNullOrEmpty(e.Tenant.Url))
 			{

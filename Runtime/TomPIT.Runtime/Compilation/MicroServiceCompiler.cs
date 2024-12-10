@@ -12,10 +12,8 @@ using System.Runtime.Loader;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
-using TomPIT.Reflection;
 using TomPIT.Runtime;
 
 namespace TomPIT.Compilation;
@@ -46,23 +44,22 @@ internal static class MicroServiceCompiler
 			return;
 		}
 
-		var microServices = new CompilationSet();
+		var stage = Tenant.GetService<IRuntimeService>().Stage;
+		var shouldRecompile = stage == EnvironmentStage.Development && ShouldRecompile();
+		var mode = shouldRecompile ? CompilationMode.CompileAlways : CompilationMode.CompileIfNewer;
 
 		try
 		{
-			if (Tenant.GetService<IRuntimeService>().Stage == EnvironmentStage.Development)
+			if (stage == EnvironmentStage.Development)
 			{
-				if (!ShouldRecompile())
+				if (!shouldRecompile)
 				{
 					Console.WriteLine($"Compilation in development occurs only if explicitly requested by creating Recompile.txt file in '{Shell.MicroServicesFolder}' folder. No such file exists. Compilation skipped.");
 
-					while (microServices.TryDequeue(out IMicroService? microService) && microService is not null)
-					{
-						if (!microServices.IsSupported(microService))
-							continue;
+					var files = new DirectoryInfo(Shell.MicroServicesFolder).GetFiles("*.dll");
 
-						Load(microService);
-					}
+					foreach (var file in files)
+						Load(file.FullName);
 
 					return;
 				}
@@ -71,8 +68,13 @@ internal static class MicroServiceCompiler
 				Clean(null);
 			}
 
-			while (microServices.TryDequeue(out IMicroService? microService) && microService is not null)
-				await Compile(microService, !microServices.ShouldCompile(microService), microServices.IsSupported(microService));
+			var microServices = new CompilationSet(mode);
+
+			while (microServices.TryDequeueBootstrapper(out CompilationDescriptor? descriptor) && descriptor is not null)
+				await Compile(descriptor);
+
+			while (microServices.TryDequeue(out CompilationDescriptor? descriptor) && descriptor is not null)
+				await Compile(descriptor);
 
 			ReferencePaths.CopyRuntimes();
 
@@ -98,25 +100,25 @@ internal static class MicroServiceCompiler
 		}
 	}
 
-	private static async Task Compile(IMicroService microService, bool skip, bool isSupported)
+	private static async Task Compile(CompilationDescriptor descriptor)
 	{
-		Console.Write($"Compiling {microService.Name}...");
+		Console.Write($"Compiling {descriptor.MicroService.Name}...");
 
-		if (!isSupported)
+		if (!descriptor.IsSupported)
 		{
 			Console.Write($"Not supported on {Shell.GetService<IRuntimeService>().Stage}.{System.Environment.NewLine}");
 			return;
 		}
 
-		if (skip)
+		if (!descriptor.ShouldRecompile)
 		{
 			Console.Write($"Up to date.{System.Environment.NewLine}");
 
-			Load(microService);
+			Load(descriptor.MicroService);
 			return;
 		}
 
-		var trees = await LoadSyntaxTrees(microService);
+		var trees = await LoadSyntaxTrees(descriptor.MicroService);
 
 		if (trees is null || !trees.Any())
 		{
@@ -124,13 +126,13 @@ internal static class MicroServiceCompiler
 			return;
 		}
 
-		CreateBuiltInTrees(microService, trees);
+		CreateBuiltInTrees(descriptor.MicroService, trees);
 
-		var references = CreateReferences(microService);
+		var references = CreateReferences(descriptor.MicroService);
 
-		var compilation = CSharpCompilation.Create(ParseAssemblyName(microService), trees, references, Options);
+		var compilation = CSharpCompilation.Create(ParseAssemblyName(descriptor.MicroService), trees, references, Options);
 
-		Validate(microService, compilation);
+		Validate(descriptor.MicroService, compilation);
 
 		try
 		{
@@ -138,7 +140,7 @@ internal static class MicroServiceCompiler
 			Console.Write($"Compiled.{System.Environment.NewLine}");
 			Console.ResetColor();
 
-			Load(microService, compilation);
+			Load(descriptor.MicroService, compilation);
 		}
 		catch (Exception ex)
 		{
@@ -154,9 +156,19 @@ internal static class MicroServiceCompiler
 		if (string.IsNullOrWhiteSpace(path))
 			return null;
 
-		var name = AssemblyName.GetAssemblyName(Path.GetFullPath(path));
+		return Load(path);
+	}
 
-		return AssemblyLoadContext.Default.LoadFromAssemblyName(name);
+	private static Assembly? Load(string fileName)
+	{
+		var name = AssemblyName.GetAssemblyName(Path.GetFullPath(fileName));
+
+		var assembly = AssemblyLoadContext.Default.LoadFromAssemblyName(name);
+
+		if (assembly is not null)
+			MicroServices.Register(assembly);
+
+		return assembly;
 	}
 
 	private static void Load(IMicroService microService, CSharpCompilation compilation)
@@ -219,7 +231,7 @@ internal static class MicroServiceCompiler
 
 	private static List<MetadataReference> CreateReferences(IMicroService microService)
 	{
-		var references = Tenant.GetService<IDiscoveryService>().MicroServices.References.Select(microService.Token);
+		var references = CompilationSet.SelectReferenceConfiguration(microService.Token);
 		var result = new List<MetadataReference>();
 		var existing = new List<string>();
 
@@ -510,10 +522,13 @@ internal static class MicroServiceCompiler
 			foreach (var file in Directory.GetFiles(Shell.MicroServicesFolder, "*.pdb", SearchOption.TopDirectoryOnly))
 				File.Delete(file);
 
+			foreach (var file in Directory.GetFiles(Shell.MicroServicesFolder, "*.json", SearchOption.TopDirectoryOnly))
+				File.Delete(file);
+
 			return;
 		}
 
-		foreach (var ms in set)
+		foreach (var ms in set.Query())
 		{
 			var outputPath = Path.Combine(Shell.MicroServicesFolder, ParseAssemblyName(ms));
 			var pdbPath = Path.Combine(Shell.MicroServicesFolder, ParsePdbName(ms));

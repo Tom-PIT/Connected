@@ -25,7 +25,7 @@ namespace TomPIT.Middleware
 			return Marshall.Convert<R>(result);
 		}
 
-		public R Invoke<R, A>([CIP(CIP.ApiOperationProvider)][AA(AA.ApiOperationAnalyzer)] string api, [CIP(CIP.ApiOperationParameterProvider)]A e)
+		public R Invoke<R, A>([CIP(CIP.ApiOperationProvider)][AA(AA.ApiOperationAnalyzer)] string api, [CIP(CIP.ApiOperationParameterProvider)] A e)
 		{
 			var descriptor = ComponentDescriptor.Api(Context, api);
 			var invoker = new ApiInvoker(Context);
@@ -34,7 +34,7 @@ namespace TomPIT.Middleware
 			return Marshall.Convert<R>(result);
 		}
 
-		public dynamic Invoke<A>([CIP(CIP.ApiOperationProvider)][AA(AA.ApiOperationAnalyzer)] string api, [CIP(CIP.ApiOperationParameterProvider)]A e)
+		public dynamic Invoke<A>([CIP(CIP.ApiOperationProvider)][AA(AA.ApiOperationAnalyzer)] string api, [CIP(CIP.ApiOperationParameterProvider)] A e)
 		{
 			var descriptor = ComponentDescriptor.Api(Context, api);
 			var invoker = new ApiInvoker(Context);
@@ -44,7 +44,10 @@ namespace TomPIT.Middleware
 
 		public dynamic Invoke([CIP(CIP.ApiOperationProvider)][AA(AA.ApiOperationAnalyzer)] string api)
 		{
-			return Invoke<dynamic>(api);
+			var descriptor = ComponentDescriptor.Api(Context, api);
+			var invoker = new ApiInvoker(Context);
+
+			return invoker.Invoke(this as IApiExecutionScope, descriptor, EventArgs.Empty);
 		}
 
 		public R Setting<R>(string middleware, string property)

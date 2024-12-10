@@ -168,15 +168,7 @@ namespace TomPIT.Sys.Model.Security
 					return r;
 			}
 
-			r = SelectByLoginName(identifier);
-
-			if (r != null)
-				return r;
-
-			if (int.TryParse(identifier, out int id))
-				return Get(f => f.Id == id);
-
-			return null;
+			return SelectByLoginName(identifier);
 		}
 
 		public Guid Insert(string loginName, string email, UserStatus status, string firstName, string lastName, string description,

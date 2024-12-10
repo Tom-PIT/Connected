@@ -5,16 +5,13 @@ using TomPIT.Connectivity;
 namespace TomPIT.Security
 {
 	public delegate void UserChangedHandler(ITenant tenant, UserEventArgs e);
-	public delegate void ResolveUserHandler(ITenant tenant, ResolveUserEventArgs e);
 
 	public interface IUserService
 	{
 		event UserChangedHandler UserChanged;
-		event ResolveUserHandler Resolve;
 
 		List<IUser> Query();
 		IUser Select(string qualifier);
-		IUser Select(int id);
 
 		IUser SelectByAuthenticationToken(Guid token);
 		IUser SelectBySecurityCode(string securityCode);

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
@@ -11,60 +10,46 @@ using TomPIT.Runtime;
 namespace TomPIT;
 public static class MicroServices
 {
-	private static List<Assembly> _microServices;
+	private static List<Assembly> _assemblies;
 	private static List<IStartup> _startups;
-
-	public static ImmutableArray<Assembly> Assemblies
+	static MicroServices()
 	{
-		get
-		{
-			if (_microServices is null)
-			{
-				_microServices = new();
-
-				var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-
-				foreach (var assembly in assemblies)
-				{
-					if (assembly.GetCustomAttribute<MicroServiceAttribute>() is not null)
-						_microServices.Add(assembly);
-				}
-			}
-
-			return _microServices.ToImmutableArray();
-		}
+		_startups = [];
+		_assemblies = [];
 	}
 
 	public static ImmutableArray<IStartup> Startups
 	{
 		get
 		{
-			if (_startups is null)
+			return !_startups.Any() ? default : ([.. _startups]);
+		}
+	}
+	public static ImmutableArray<Assembly> Assemblies => [.. _assemblies];
+
+	internal static void Register(Assembly assembly)
+	{
+		var attribute = assembly.GetCustomAttribute<MicroServiceAttribute>();
+
+		if (attribute is null)
+			return;
+
+		_assemblies.Add(assembly);
+
+		foreach (var type in assembly.GetTypes())
+		{
+			if (type.IsAssignableTo(typeof(IStartup)))
 			{
-				_startups = new();
+				if (type.IsAbstract)
+					continue;
 
-				foreach (var assembly in Assemblies)
-				{
-					foreach (var type in assembly.GetTypes())
-					{
-						if (type.IsAssignableTo(typeof(IStartup)))
-						{
-							if (type.IsAbstract)
-								continue;
+				var instance = type.CreateInstance<IStartup>();
 
-							var instance = type.CreateInstance<IStartup>();
+				if (instance is not null)
+					_startups.Add(instance);
 
-							if (instance is not null)
-								_startups.Add(instance);
-						}
-					}
-				}
-
-				if (_startups.Any())
-					_startups.SortByPriority();
+				_startups.SortByPriority();
 			}
-
-			return _startups.ToImmutableArray();
 		}
 	}
 }

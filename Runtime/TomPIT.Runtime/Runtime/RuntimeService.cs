@@ -78,7 +78,8 @@ namespace TomPIT.Runtime
 
 			var info = JsonSerializer.Deserialize<MicroServiceInfo>(sourceText, new JsonSerializerOptions
 			{
-				PropertyNameCaseInsensitive = true
+				PropertyNameCaseInsensitive = true,
+				AllowTrailingCommas = true
 			});
 
 			if (info is null)

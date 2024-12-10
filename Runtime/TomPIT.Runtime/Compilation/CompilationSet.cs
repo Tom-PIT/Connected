@@ -1,38 +1,46 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using TomPIT.ComponentModel;
-using TomPIT.Reflection;
 using TomPIT.Runtime;
 
 namespace TomPIT.Compilation;
-internal class CompilationSet : Queue<IMicroService>
+
+internal enum CompilationMode
 {
-	public CompilationSet()
+	CompileIfNewer = 1,
+	CompileAlways = 2
+}
+internal class CompilationSet : Queue<CompilationDescriptor>
+{
+	public CompilationSet(CompilationMode mode)
 	{
-		CompilationFlags = new();
-		SupportedFlags = new();
+		Mode = mode;
+
+		Bootstrappers = [];
 		Initialize();
 	}
 
-	private Dictionary<Guid, bool> CompilationFlags { get; }
-	private Dictionary<Guid, bool> SupportedFlags { get; }
+	private CompilationMode Mode { get; }
+	private Queue<CompilationDescriptor> Bootstrappers { get; }
 
-	public bool ShouldCompile(IMicroService service)
+	public List<IMicroService> Query()
 	{
-		if (CompilationFlags.TryGetValue(service.Token, out bool result))
-			return result;
+		var result = new List<IMicroService>();
 
-		return false;
+		foreach (var boot in Bootstrappers)
+			result.Add(boot.MicroService);
+
+		foreach (var ms in this)
+			result.Add(ms.MicroService);
+
+		return result;
 	}
-	public bool IsSupported(IMicroService service)
+	public bool TryDequeueBootstrapper(out CompilationDescriptor? result)
 	{
-		if (SupportedFlags.TryGetValue(service.Token, out bool result))
-			return result;
-
-		return false;
+		return Bootstrappers.TryDequeue(out result);
 	}
-
 	private void Initialize()
 	{
 		var microServices = Tenant.GetService<IMicroServiceService>().Query();
@@ -43,23 +51,48 @@ internal class CompilationSet : Queue<IMicroService>
 
 	private void Initialize(IMicroService microService)
 	{
-		var references = Tenant.GetService<IDiscoveryService>().MicroServices.References.References(microService.Token, false);
+		IServiceReferencesConfiguration? configuration = SelectReferenceConfiguration(microService.Token);
 
-		foreach (var reference in references)
-			Initialize(reference);
-
-		if (!Contains(microService))
+		if (configuration is not null)
 		{
-			var isSupported = Tenant.GetService<IRuntimeService>().IsMicroServiceSupported(microService.Token);
+			foreach (var m in configuration.MicroServices)
+			{
+				if (string.IsNullOrWhiteSpace(m.MicroService))
+					continue;
 
-			SupportedFlags.Add(microService.Token, isSupported);
+				var ms = Tenant.GetService<IMicroServiceService>().Select(m.MicroService) ?? throw new NullReferenceException($"Referenced microservice is not registered ('{m.Id}')");
 
-			var shouldRecompile = isSupported ? ShouldRecompile(microService) : false;
-
-			Enqueue(microService);
-
-			CompilationFlags.Add(microService.Token, shouldRecompile);
+				Initialize(ms);
+			}
 		}
+
+		if (this.FirstOrDefault(f => f.MicroService.Token == microService.Token) is not null ||
+			Bootstrappers.FirstOrDefault(f => f.MicroService.Token == microService.Token) is not null)
+			return;
+
+		var isSupported = Tenant.GetService<IRuntimeService>().IsMicroServiceSupported(microService.Token);
+		var shouldRecompile = isSupported && ShouldRecompile(microService);
+		var descriptor = new CompilationDescriptor
+		{
+			MicroService = microService,
+			ShouldRecompile = shouldRecompile,
+			IsSupported = isSupported
+		};
+
+		if (configuration is not null && !configuration.Packages.Any() && !configuration.MicroServices.Any())
+			Bootstrappers.Enqueue(descriptor);
+		else
+			Enqueue(descriptor);
+	}
+
+	internal static IServiceReferencesConfiguration? SelectReferenceConfiguration(Guid microService)
+	{
+		var referenceComponent = Tenant.GetService<IComponentService>().SelectComponent(microService, ComponentCategories.Reference, ComponentCategories.ReferenceComponentName);
+
+		if (referenceComponent is null)
+			return null;
+
+		return Tenant.GetService<IComponentService>().SelectConfiguration(referenceComponent.Token) as IServiceReferencesConfiguration;
 	}
 
 	private bool ShouldRecompile(IMicroService microService)
@@ -67,6 +100,9 @@ internal class CompilationSet : Queue<IMicroService>
 #if NORECOMPILE
 		return false;
 #endif
+
+		if (Mode == CompilationMode.CompileAlways)
+			return true;
 
 		if (string.IsNullOrEmpty(microService.Version))
 			return true;
@@ -88,11 +124,19 @@ internal class CompilationSet : Queue<IMicroService>
 			if (version != msVersion)
 				return true;
 
-			var references = Tenant.GetService<IDiscoveryService>().MicroServices.References.References(microService.Token, false);
+			var references = SelectReferenceConfiguration(microService.Token);
 
-			foreach (var reference in references)
+			if (references is null)
+				return true;
+
+			foreach (var reference in references.MicroServices)
 			{
-				if (CompilationFlags.TryGetValue(reference.Token, out bool shouldRecompileReference) && shouldRecompileReference)
+				if (string.IsNullOrWhiteSpace(reference.MicroService))
+					continue;
+
+				var ms = Bootstrappers.FirstOrDefault(f => string.Equals(f.MicroService.Name, reference.MicroService, StringComparison.OrdinalIgnoreCase));
+
+				if (ms is not null && ms.ShouldRecompile)
 					return true;
 			}
 		}
