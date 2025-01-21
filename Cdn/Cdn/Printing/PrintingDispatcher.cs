@@ -5,7 +5,7 @@ namespace TomPIT.Cdn.Printing
 {
 	internal class PrintingDispatcher : Dispatcher<IPrintQueueMessage>
 	{
-		public PrintingDispatcher(string resourceGroup) : base(16)
+		public PrintingDispatcher(string resourceGroup) : base(2)
 		{
 			ResourceGroup = resourceGroup;
 		}

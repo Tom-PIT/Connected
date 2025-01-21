@@ -5,7 +5,7 @@ namespace TomPIT.Cdn.Mail
 {
 	internal class MailDispatcher : Dispatcher<IMailMessage>
 	{
-		public MailDispatcher(string resourceGroup) : base(128)
+		public MailDispatcher(string resourceGroup) : base(1)
 		{
 			ResourceGroup = resourceGroup;
 		}
