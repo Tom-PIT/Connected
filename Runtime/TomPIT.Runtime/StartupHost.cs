@@ -89,22 +89,22 @@ internal class StartupHost : IStartupHostProxy
 		app.UseMiddleware<AuthenticationCookieMiddleware>();
 		app.UseRequestLocalization(app.ApplicationServices.GetService<IOptions<RequestLocalizationOptions>>()?.Value);
 		app.UseResponseCompression();
-
+		
 		app.UseRouting();
-
-		foreach (var startup in MicroServices.Startups)
-			startup.Configure(app, env);
 
 		if (Shell.LegacyServices)
 		{
 			app.UseAjaxExceptionMiddleware();
 			app.UseStatusCodePagesWithReExecute("/sys/status/{0}");
-			app.UseAuthentication();
-			app.UseAuthorization();
 		}
+		app.UseAuthentication();
+		app.UseAuthorization();
+
+		foreach (var startup in MicroServices.Startups)
+			startup.Configure(app, env);
 
 		RuntimeService._host = app;
-
+		
 		var lifetime = app.ApplicationServices.GetService<IHostApplicationLifetime>();
 
 		if (lifetime is not null)

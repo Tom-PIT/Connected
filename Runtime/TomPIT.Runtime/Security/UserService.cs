@@ -8,162 +8,140 @@ using TomPIT.Storage;
 
 namespace TomPIT.Security
 {
-	internal class UserService : ClientRepository<IUser, Guid>, IUserService, IUserNotification
-	{
-		public event UserChangedHandler UserChanged;
-		public event ResolveUserHandler Resolve;
-		public UserService(ITenant tenant) : base(tenant, "user")
-		{
+    internal class UserService : ClientRepository<IUser, Guid>, IUserService, IUserNotification
+    {
+        public event UserChangedHandler UserChanged;
+        public UserService(ITenant tenant) : base(tenant, "user")
+        {
 
-		}
+        }
 
-		public List<IUser> Query()
-		{
-			return Instance.SysProxy.Users.Query().ToList();
-		}
+        public List<IUser> Query()
+        {
+            return Instance.SysProxy.Users.Query().ToList();
+        }
 
-		public IUser Select(int id)
-		{
-			var result = Get(f => f.Id == id);
+        public IUser Select(string qualifier)
+        {
+            if (string.IsNullOrWhiteSpace(qualifier))
+                return null;
 
-			if (result is not null)
-				return result;
+            IUser r = null;
 
-			result = Instance.SysProxy.Users.Select(id.ToString());
+            if (Guid.TryParse(qualifier, out var g))
+                r = Get(g);
+            else if (qualifier.Contains("@"))
+                r = Get(f => string.Equals(f.Email, qualifier, StringComparison.OrdinalIgnoreCase));
+            else
+                r = Get(f => string.Equals(f.LoginName, qualifier, StringComparison.OrdinalIgnoreCase));
 
-			if (result is not null)
-				Set(result.Token, result);
+            if (r is not null)
+                return r;
 
-			return result;
-		}
+            r = Instance.SysProxy.Users.Select(qualifier);
 
-		public IUser Select(string qualifier)
-		{
-			if (string.IsNullOrWhiteSpace(qualifier))
-				return null;
+            if (r is not null)
+                Set(r.Token, r);
 
-			IUser r = null;
+            return r;
+        }
 
-			if (Guid.TryParse(qualifier, out var g))
-				r = Get(g);
-			else if (qualifier.Contains("@"))
-				r = Get(f => string.Equals(f.Email, qualifier, StringComparison.OrdinalIgnoreCase));
-			else
-				r = Get(f => string.Equals(f.LoginName, qualifier, StringComparison.OrdinalIgnoreCase));
+        public IUser SelectByAuthenticationToken(Guid token)
+        {
+            var r = Get(f => f.AuthenticationToken == token);
 
-			if (r is not null)
-				return r;
+            if (r is not null)
+                return r;
 
-			r = Instance.SysProxy.Users.Select(qualifier);
+            r = Instance.SysProxy.Users.SelectByAuthenticationToken(token);
 
-			if (r is not null)
-				Set(r.Token, r);
+            if (r is not null)
+                Set(r.Token, r);
 
-			var args = new ResolveUserEventArgs(qualifier);
-			Resolve?.Invoke(Tenant, args);
+            return r;
+        }
 
-			if (args.User is not null)
-				Set(args.User.Token, args.User);
+        public IUser SelectBySecurityCode(string securityCode)
+        {
+            if (string.IsNullOrWhiteSpace(securityCode))
+                return null;
 
-			return r;
-		}
+            var r = Get(f => string.Equals(f.SecurityCode, securityCode, StringComparison.OrdinalIgnoreCase));
 
-		public IUser SelectByAuthenticationToken(Guid token)
-		{
-			var r = Get(f => f.AuthenticationToken == token);
+            if (r is not null)
+                return r;
 
-			if (r is not null)
-				return r;
+            r = Instance.SysProxy.Users.SelectBySecurityCode(securityCode);
 
-			r = Instance.SysProxy.Users.SelectByAuthenticationToken(token);
+            if (r is not null)
+                Set(r.Token, r);
 
-			if (r is not null)
-				Set(r.Token, r);
+            return r;
+        }
 
-			return r;
-		}
+        public void ChangePassword(Guid user, string existingPassword, string password)
+        {
+            Instance.SysProxy.Management.Users.ChangePassword(user, existingPassword, password);
+        }
 
-		public IUser SelectBySecurityCode(string securityCode)
-		{
-			if (string.IsNullOrWhiteSpace(securityCode))
-				return null;
+        public void Logout(int user)
+        {
+            throw new NotImplementedException();
+        }
 
-			var r = Get(f => string.Equals(f.SecurityCode, securityCode, StringComparison.OrdinalIgnoreCase));
+        public void NotifyChanged(object sender, UserEventArgs e)
+        {
+            Remove(e.User);
 
-			if (r is not null)
-				return r;
+            UserChanged?.Invoke(Tenant, e);
+        }
 
-			r = Instance.SysProxy.Users.SelectBySecurityCode(securityCode);
+        public void ChangeAvatar(Guid user, byte[] contentBytes, string contentType, string fileName)
+        {
+            var usr = Select(user.ToString());
+            var avatarId = Guid.Empty;
 
-			if (r is not null)
-				Set(r.Token, r);
+            if (usr is null)
+                throw new TomPITException(SR.ErrUserNotFound);
 
-			return r;
-		}
+            if (contentBytes is null)
+            {
+                if (usr.Avatar == Guid.Empty)
+                    return;
 
-		public void ChangePassword(Guid user, string existingPassword, string password)
-		{
-			Instance.SysProxy.Management.Users.ChangePassword(user, existingPassword, password);
-		}
+                Tenant.GetService<IStorageService>().Delete(usr.Avatar);
+            }
+            else
+            {
+                var b = new Blob
+                {
+                    ContentType = contentType,
+                    FileName = fileName,
+                    PrimaryKey = user.ToString(),
+                    ResourceGroup = Guid.Empty,
+                    Size = contentBytes is null ? 0 : contentBytes.Length,
+                    Type = BlobTypes.Avatar
+                };
 
-		public void Logout(int user)
-		{
-			throw new NotImplementedException();
-		}
+                avatarId = Tenant.GetService<IStorageService>().Upload(b, contentBytes, StoragePolicy.Singleton);
 
-		public void NotifyChanged(object sender, UserEventArgs e)
-		{
-			Remove(e.User);
+                if (avatarId == usr.Avatar)
+                    return;
+            }
 
-			UserChanged?.Invoke(Tenant, e);
-		}
+            Instance.SysProxy.Management.Users.ChangeAvatar(user, avatarId);
 
-		public void ChangeAvatar(Guid user, byte[] contentBytes, string contentType, string fileName)
-		{
-			var usr = Select(user.ToString());
-			var avatarId = Guid.Empty;
+            NotifyChanged(this, new UserEventArgs(user));
+        }
 
-			if (usr is null)
-				throw new TomPITException(SR.ErrUserNotFound);
+        public Guid Insert(string loginName, string email, UserStatus status, string firstName, string lastName, string description, string pin, Guid language, string timezone, bool notificationsEnabled, string mobile, string phone, string password, string securityCode)
+        {
+            return Instance.SysProxy.Management.Users.Insert(loginName, email, status, firstName, lastName, description, pin, language, timezone, notificationsEnabled, mobile, phone, DateTime.MinValue, securityCode);
+        }
 
-			if (contentBytes is null)
-			{
-				if (usr.Avatar == Guid.Empty)
-					return;
-
-				Tenant.GetService<IStorageService>().Delete(usr.Avatar);
-			}
-			else
-			{
-				var b = new Blob
-				{
-					ContentType = contentType,
-					FileName = fileName,
-					PrimaryKey = user.ToString(),
-					ResourceGroup = Guid.Empty,
-					Size = contentBytes is null ? 0 : contentBytes.Length,
-					Type = BlobTypes.Avatar
-				};
-
-				avatarId = Tenant.GetService<IStorageService>().Upload(b, contentBytes, StoragePolicy.Singleton);
-
-				if (avatarId == usr.Avatar)
-					return;
-			}
-
-			Instance.SysProxy.Management.Users.ChangeAvatar(user, avatarId);
-
-			NotifyChanged(this, new UserEventArgs(user));
-		}
-
-		public Guid Insert(string loginName, string email, UserStatus status, string firstName, string lastName, string description, string pin, Guid language, string timezone, bool notificationsEnabled, string mobile, string phone, string password, string securityCode)
-		{
-			return Instance.SysProxy.Management.Users.Insert(loginName, email, status, firstName, lastName, description, pin, language, timezone, notificationsEnabled, mobile, phone, DateTime.MinValue, securityCode);
-		}
-
-		public void Update(Guid token, string loginName, string email, UserStatus status, string firstName, string lastName, string description, string pin, Guid language, string timezone, bool notificationsEnabled, string mobile, string phone, string securityCode)
-		{
-			Instance.SysProxy.Management.Users.Update(token, loginName, email, status, firstName, lastName, description, pin, language, timezone, notificationsEnabled, mobile, phone, DateTime.MinValue, securityCode);
-		}
-	}
+        public void Update(Guid token, string loginName, string email, UserStatus status, string firstName, string lastName, string description, string pin, Guid language, string timezone, bool notificationsEnabled, string mobile, string phone, string securityCode)
+        {
+            Instance.SysProxy.Management.Users.Update(token, loginName, email, status, firstName, lastName, description, pin, language, timezone, notificationsEnabled, mobile, phone, DateTime.MinValue, securityCode);
+        }
+    }
 }

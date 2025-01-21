@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Routing;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Security.Principal;
 using System.Text;
 using System.Threading;
+
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
+
+using Newtonsoft.Json.Linq;
+
 using TomPIT.Connectivity;
 using TomPIT.Exceptions;
 using TomPIT.Models;
@@ -61,8 +64,6 @@ namespace TomPIT.Middleware
 				{
 					if (Identity is Identity id)
 						_user = id.User;
-					else if (Identity.Name is not null)
-						_user = Tenant.GetService<IUserService>().Select(Identity.Name);
 				}
 
 				return _user;
