@@ -67,21 +67,6 @@ namespace TomPIT.ComponentModel
 		}
 
 		#region ComponentDictionary
-		private readonly Lazy<IEqualityComparer<IComponent>> ComponentComparer = new(new ComponentTokenComparer());
-
-		private class ComponentTokenComparer : IEqualityComparer<IComponent>
-		{
-			public bool Equals(IComponent? x, IComponent? y)
-			{
-				return x?.Token == y?.Token;
-			}
-
-			public int GetHashCode([DisallowNull] IComponent obj)
-			{
-				return obj.Token.GetHashCode();
-			}
-		}
-
 		private void SetComponentDictionary(IComponent component)
 		{
 			foreach (var selectableProperty in new[] { nameof(IComponent.Category), nameof(IComponent.Name), nameof(IComponent.Folder) })
@@ -99,7 +84,7 @@ namespace TomPIT.ComponentModel
 			return ComponentCombinedKeyCache.GetValueOrDefault(combinedKey);
 		}
 
-		private void RemoveFromComponentDictionary(IComponent component) 
+		private void RemoveFromComponentDictionary(IComponent component)
 		{
 			foreach (var selectableProperty in new[] { nameof(IComponent.Category), nameof(IComponent.Name), nameof(IComponent.Folder) })
 			{
