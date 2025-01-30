@@ -1,7 +1,11 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.TagHelpers;
+using Microsoft.SqlServer.Management.Assessment;
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 
@@ -22,6 +26,8 @@ namespace TomPIT.ComponentModel
 	internal class ComponentService : SynchronizedClientRepository<IComponent, Guid>, IComponentService, IComponentNotification
 	{
 		private readonly Lazy<ConcurrentDictionary<Guid, ConfigurationSerializationState>> _configurationCache = new Lazy<ConcurrentDictionary<Guid, ConfigurationSerializationState>>();
+		private readonly Lazy<ConcurrentDictionary<string, IComponent>> _componentCombinedKeyCache = new Lazy<ConcurrentDictionary<string, IComponent>>();
+
 		private Lazy<SingletonProcessor<Guid>> _configurationProcessor = new Lazy<SingletonProcessor<Guid>>();
 		public event ComponentChangedHandler ComponentChanged;
 		public event ComponentChangedHandler ComponentAdded;
@@ -54,8 +60,72 @@ namespace TomPIT.ComponentModel
 			var components = Instance.SysProxy.Components.QueryByResourceGroups(sb.ToString(), null);
 
 			foreach (var component in components)
+			{
 				Set(component.Token, component, TimeSpan.Zero);
+				SetComponentDictionary(component);
+			}
 		}
+
+		#region ComponentDictionary
+		private readonly Lazy<IEqualityComparer<IComponent>> ComponentComparer = new(new ComponentTokenComparer());
+
+		private class ComponentTokenComparer : IEqualityComparer<IComponent>
+		{
+			public bool Equals(IComponent? x, IComponent? y)
+			{
+				return x?.Token == y?.Token;
+			}
+
+			public int GetHashCode([DisallowNull] IComponent obj)
+			{
+				return obj.Token.GetHashCode();
+			}
+		}
+
+		private void SetComponentDictionary(IComponent component)
+		{
+			foreach (var selectableProperty in new[] { nameof(IComponent.Category), nameof(IComponent.Name), nameof(IComponent.Folder) })
+			{
+				var combinedKey = GetCombinedKey(component, selectableProperty);
+
+				ComponentCombinedKeyCache.AddOrUpdate(combinedKey, component, (key, previous) => component);
+			}
+		}
+
+		private IComponent? SelectFromComponentDictionary(Guid microService, string name, string property, string propertyValue)
+		{
+			var combinedKey = GetCombinedKey(microService, name, property, propertyValue);
+
+			return ComponentCombinedKeyCache.GetValueOrDefault(combinedKey);
+		}
+
+		private void RemoveFromComponentDictionary(IComponent component) 
+		{
+			foreach (var selectableProperty in new[] { nameof(IComponent.Category), nameof(IComponent.Name), nameof(IComponent.Folder) })
+			{
+				var combinedKey = GetCombinedKey(component, selectableProperty);
+
+				ComponentCombinedKeyCache.Remove(combinedKey, out _);
+			}
+		}
+
+		private string GetCombinedKey(IComponent component, string property)
+		{
+			if (string.IsNullOrWhiteSpace(property))
+				property = string.Empty;
+
+			var propertyValue = string.Empty;
+
+			var propertyInfo = typeof(IComponent).GetProperty(property);
+			if (propertyInfo is not null)
+			{
+				propertyValue = Types.Convert<string>(propertyInfo.GetValue(component));
+			}
+
+			return GetCombinedKey(component.MicroService, component.Name, property, propertyValue);
+		}
+		private string GetCombinedKey(Guid microService, string componentName, string property, string propertyValue) => $"{microService}_{componentName}_{property}_{propertyValue}".ToLower();
+		#endregion
 
 		protected override void OnInvalidate(Guid id)
 		{
@@ -64,6 +134,7 @@ namespace TomPIT.ComponentModel
 			if (component is not null)
 			{
 				Set(component.Token, component, TimeSpan.Zero);
+				SetComponentDictionary(component);
 				ConfigurationCache.TryRemove(component.Token, out var _);
 			}
 		}
@@ -77,6 +148,7 @@ namespace TomPIT.ComponentModel
 				if (i.MicroService == e.MicroService)
 				{
 					Remove(i.Token);
+					RemoveFromComponentDictionary(i);
 				}
 			}
 		}
@@ -103,16 +175,12 @@ namespace TomPIT.ComponentModel
 
 		public IComponent SelectComponent(Guid microService, string category, string name)
 		{
-			return Get(f => f.MicroService == microService
-				 && string.Compare(f.Category, category, true) == 0
-				 && string.Compare(f.Name, name, true) == 0);
+			return SelectFromComponentDictionary(microService, name, nameof(IComponent.Category), category);
 		}
 
 		public IComponent SelectComponentByNameSpace(Guid microService, string nameSpace, string name)
 		{
-			return Get(f => f.MicroService == microService
-				 && string.Compare(f.NameSpace, nameSpace, true) == 0
-				 && string.Compare(f.Name, name, true) == 0);
+			return SelectFromComponentDictionary(microService, name, nameof(IComponent.NameSpace), nameSpace);
 		}
 
 		public IComponent SelectComponent(Guid component)
@@ -401,6 +469,8 @@ namespace TomPIT.ComponentModel
 			FolderChanged?.Invoke(sender, e);
 		}
 
+		private ConcurrentDictionary<string, IComponent> ComponentCombinedKeyCache => _componentCombinedKeyCache.Value;
+
 		private ConcurrentDictionary<Guid, ConfigurationSerializationState> ConfigurationCache => _configurationCache.Value;
 		private SingletonProcessor<Guid> ConfigurationProcessor => _configurationProcessor.Value;
 
@@ -449,6 +519,7 @@ namespace TomPIT.ComponentModel
 
 		public IComponent? SelectComponent(Guid microService, Guid folder, string name)
 		{
+			return SelectFromComponentDictionary(microService, name, nameof(IComponent.Folder), folder.ToString());
 			return Get(f => f.MicroService == microService && f.Folder == folder && string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase));
 		}
 	}
