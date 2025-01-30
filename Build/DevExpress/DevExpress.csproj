@@ -2,9 +2,9 @@
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <AssemblyVersion>5.1.121.5</AssemblyVersion>
-    <FileVersion>5.1.121.5</FileVersion>
-    <Version>5.1.121.5</Version>
+    <AssemblyVersion>5.1.130.1</AssemblyVersion>
+    <FileVersion>5.1.130.1</FileVersion>
+    <Version>5.1.130.1</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="DevExpress.Pdf.SkiaRenderer" Version="23.1.6" />
