@@ -69,7 +69,7 @@ namespace TomPIT.ComponentModel
 		#region ComponentDictionary
 		private void SetComponentDictionary(IComponent component)
 		{
-			foreach (var selectableProperty in new[] { nameof(IComponent.Category), nameof(IComponent.Name), nameof(IComponent.Folder) })
+			foreach (var selectableProperty in new[] { nameof(IComponent.Category), nameof(IComponent.Name), nameof(IComponent.Folder), nameof(IComponent.NameSpace) })
 			{
 				var combinedKey = GetCombinedKey(component, selectableProperty);
 
