@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
 using TomPIT.Configuration;
 using TomPIT.Diagnostics;
 using TomPIT.Distributed;
@@ -66,23 +67,20 @@ namespace TomPIT.Cdn.Mail
 			Endpoint = tenant.GetService<ISettingService>().GetValue<string>("SmtpEndpoint", null, null, null);
 
 			if (string.IsNullOrWhiteSpace(Endpoint))
-			{
 				tenant.LogWarning(SR.NoSmtpEndpoint);
-				return;
-			}
 
 			HostName = tenant.GetService<ISettingService>().GetValue<string>("SmtpHostName", null, null, null);
 
 			if (string.IsNullOrWhiteSpace(HostName))
-			{
 				tenant.LogWarning(SR.NoSmtpHostName);
-				return;
-			}
 
 			Greeting = tenant.GetService<ISettingService>().GetValue<string>("SmtpGreeting", null, null, null);
 
 			if (string.IsNullOrWhiteSpace(Greeting))
 				Greeting = HostName;
+
+			if (string.IsNullOrWhiteSpace(Endpoint))
+				return;
 
 			_listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
