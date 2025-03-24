@@ -40,9 +40,11 @@ namespace TomPIT.Proxy.Remote.Management
         {
             return Connection.Post<Guid>(Connection.CreateUrl(Controller, "Insert"), new
             {
-                email,
                 loginName,
+                email,
+                status,
                 firstName,
+                lastName,
                 description,
                 pin,
                 language,
