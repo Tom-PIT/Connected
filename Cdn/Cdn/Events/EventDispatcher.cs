@@ -6,7 +6,7 @@ namespace TomPIT.Cdn.Events
 {
     internal class EventDispatcher : Dispatcher<IEventQueueMessage>
     {
-        public EventDispatcher(string resourceGroup) : base(256)
+        public EventDispatcher(string resourceGroup) : base(4)
         {
             ResourceGroup = resourceGroup;
         }

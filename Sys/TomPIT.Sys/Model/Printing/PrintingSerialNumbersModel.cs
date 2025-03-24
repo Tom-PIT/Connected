@@ -52,18 +52,11 @@ namespace TomPIT.Sys.Model.Printing
 
 			if (existing == null)
 			{
-				try
-				{
-					Shell.GetService<IDatabaseService>().Proxy.Printing.InsertSerialNumber(category, 0);
-				}
-				catch
-				{
-					return Ensure(category);
-				}
+				Shell.GetService<IDatabaseService>().Proxy.Printing.InsertSerialNumber(category, 0);
 
 				Refresh(category);
 
-				return Ensure(category);
+				existing = Get(category.ToLowerInvariant());
 			}
 
 			return existing;

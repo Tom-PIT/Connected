@@ -4,14 +4,21 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Text;
+
 using DevExpress.DataAccess.Json;
 using DevExpress.XtraReports.UI;
+
+using HtmlAgilityPack;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Schema;
+
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Reports;
 using TomPIT.Connectivity;
 using TomPIT.Middleware;
+using TomPIT.Middleware.Interop;
 using TomPIT.Reflection;
 using TomPIT.Security;
 using TomPIT.Serialization;
@@ -20,7 +27,7 @@ namespace TomPIT.MicroServices.Reporting.Storage
 {
 	internal class ReportCreateSession
 	{
-		public Guid Component{ get; set; }
+		public Guid Component { get; set; }
 		public object Arguments { get; set; }
 		public string User { get; set; }
 
@@ -36,7 +43,7 @@ namespace TomPIT.MicroServices.Reporting.Storage
 
 		private void ResolveUser()
 		{
-			if(!string.IsNullOrWhiteSpace(User))
+			if (!string.IsNullOrWhiteSpace(User))
 			{
 				if (MiddlewareDescriptor.Current.Tenant.GetService<IUserService>().Select(User) == null)
 					User = null;
@@ -143,16 +150,76 @@ namespace TomPIT.MicroServices.Reporting.Storage
 				};
 
 				serializedDs = $"{{\"{dataMember}\":{JsonConvert.SerializeObject(list)}}}";
+
+				dataSource.JsonSource = new CustomJsonSource(serializedDs);
+				dataSource.Schema = null;
+
 			}
 			else
-				serializedDs = $"{{\"{dataMember}\":{JsonConvert.SerializeObject(ds)}}}";
+			{
+				var enumerableDs = ds as IEnumerable;
 
-			dataSource.Schema = null;
-			dataSource.JsonSource = new CustomJsonSource(serializedDs);
+				if (enumerableDs.IsEmpty())
+				{
+					dataSource.Schema = CreateArraySchema(ds.GetType());
+				}
+				else
+				{
+					serializedDs = $"{{\"{dataMember}\":{JsonConvert.SerializeObject(ds)}}}";
+					dataSource.JsonSource = new CustomJsonSource(serializedDs);
+					dataSource.Schema = null;
+				}
+			}
 
 			dataSource.Fill();
 
 			return dataSource;
+		}
+
+		private JsonSchemaNode CreateArraySchema(Type type)
+		{
+			var root = new JsonSchemaNode
+			{
+				NodeType = JsonNodeType.Object
+			};
+
+			var schema = new JsonSchemaNode(ResolveSchemaName(type), true, JsonNodeType.Array)
+			{
+				DisplayName = ResolveSchemaName(type)
+			};
+			
+			root.AddChildren(schema);
+
+			var fields = new List<JsonSchemaNode>();
+			var members = typeof(IEnumerable).IsAssignableFrom(type) ? type.GenericTypeArguments[0].GetProperties() : type.GetProperties();
+			foreach (var property in members)
+			{
+				var propertyType = property.PropertyType;
+				fields.Add(new JsonSchemaNode(new JsonNode(property.Name, true, JsonNodeType.Property)
+				{
+					Type = ResolveType(propertyType)
+				}));
+			}
+
+			schema.AddChildren(fields.ToArray());
+
+			return root;
+		}
+
+		private static string ResolveSchemaName(Type operationReturnType)
+		{
+			if (!typeof(IEnumerable).IsAssignableFrom(operationReturnType))
+				return operationReturnType.Name;
+
+			return operationReturnType.GenericTypeArguments[0].Name;
+		}
+
+		private static Type ResolveType(Type descriptor)
+		{
+			if (TypeExtensions.GetType(descriptor.TypeName()) is Type resolved)
+				return resolved;
+
+			return typeof(string);
 		}
 
 		private XtraReport CreateReport(IReportConfiguration config, object arguments, string user)
@@ -161,7 +228,7 @@ namespace TomPIT.MicroServices.Reporting.Storage
 
 			XtraReport r = new XtraReport();
 			var url = $"{ms.Name}/{config.ComponentName()}";
-					
+
 			if (arguments != null)
 				url += $"?{Convert.ToBase64String(Encoding.UTF8.GetBytes(Serializer.Serialize(arguments)))}";
 
@@ -181,98 +248,98 @@ namespace TomPIT.MicroServices.Reporting.Storage
 
 			foreach (var parameter in r.Parameters)
 				parameter.Visible = false;
-			
+
 			r.Name = url;
 			r.SourceUrl = url;
 
 			var subreports = r.AllControls<XRSubreport>();
-			
+
 			foreach (var subreport in subreports)
 			{
-				subreport.BeforePrint += (s, e) => OnBindSubreportDataSources(s as XRSubreport);		
+				subreport.BeforePrint += (s, e) => OnBindSubreportDataSources(s as XRSubreport);
 			}
 			return r;
 		}
 
 		private void OnBindSubreportDataSources(XRSubreport subReport)
-        {
-            subReport.ApplyParameterBindings();
-            /*
-			 * this is workaround for the issue related to parameter bindings.
-			 * it seems devexpress doesn't know how to bind parameters from json data source
-			 * so we're gonna do it manually.
-			 */
-            var bindings = subReport.ParameterBindings;
-            var newBindings = new List<ParameterBinding>();
+		{
+			subReport.ApplyParameterBindings();
+			/*
+		 * this is workaround for the issue related to parameter bindings.
+		 * it seems devexpress doesn't know how to bind parameters from json data source
+		 * so we're gonna do it manually.
+		 */
+			var bindings = subReport.ParameterBindings;
+			var newBindings = new List<ParameterBinding>();
 
 			subReport.ReportSource.SourceUrl = subReport.ReportSourceUrl;
 			subReport.ReportSource.Name = subReport.ReportSourceUrl;
 
-            foreach (var binding in bindings)
-            {
-                ReportParameterTag tag = null;
+			foreach (var binding in bindings)
+			{
+				ReportParameterTag tag = null;
 
-                if (binding.Parameter != null && !(binding.Parameter.Tag is ReportParameterTag))
-                {
-                    newBindings.Add(binding);
-                    continue;
-                }
+				if (binding.Parameter != null && !(binding.Parameter.Tag is ReportParameterTag))
+				{
+					newBindings.Add(binding);
+					continue;
+				}
 
-                tag = binding.Parameter?.Tag as ReportParameterTag;
+				tag = binding.Parameter?.Tag as ReportParameterTag;
 
-                if (subReport.ReportSource.DataSource == null)
-                    continue;
+				if (subReport.ReportSource.DataSource == null)
+					continue;
 
-                if (tag == null)
-                {
-                    tag = new ReportParameterTag
-                    {
-                        DataSource = binding.DataSource as JsonDataSource,
-                        DataMember = binding.DataMember
-                    };
-                }
+				if (tag == null)
+				{
+					tag = new ReportParameterTag
+					{
+						DataSource = binding.DataSource as JsonDataSource,
+						DataMember = binding.DataMember
+					};
+				}
 
-                var entity = tag.DataMember.Split('.')[0];
-                var property = tag.DataMember.Split('.')[1];
-                var index = subReport.Report.CurrentRowIndex;
-                var en = tag.DataSource.GetEnumerator();
+				var entity = tag.DataMember.Split('.')[0];
+				var property = tag.DataMember.Split('.')[1];
+				var index = subReport.Report.CurrentRowIndex;
+				var en = tag.DataSource.GetEnumerator();
 
-                if (!en.MoveNext())
-                    continue;
+				if (!en.MoveNext())
+					continue;
 
-                var pi = en.Current.GetType().GetProperty(entity);
+				var pi = en.Current.GetType().GetProperty(entity);
 
-                if (pi == null)
-                    continue;
+				if (pi == null)
+					continue;
 
-                if (pi.GetValue(en.Current) is not IList list)
-                    continue;
+				if (pi.GetValue(en.Current) is not IList list)
+					continue;
 
-                if (list.Count - 1 < index)
-                    continue;
+				if (list.Count - 1 < index)
+					continue;
 
-                var item = list[index];
-                pi = item.GetType().GetProperty(property);
+				var item = list[index];
+				pi = item.GetType().GetProperty(property);
 
-                if (pi == null)
-                    continue;
+				if (pi == null)
+					continue;
 
-                newBindings.Add(new ParameterBinding(binding.ParameterName, new DevExpress.XtraReports.Parameters.Parameter
-                {
-                    Tag = tag,
-                    Name = binding.ParameterName,
-                    Type = pi.PropertyType,
-                    Value = pi.GetValue(item),
-                }));
-            }
+				newBindings.Add(new ParameterBinding(binding.ParameterName, new DevExpress.XtraReports.Parameters.Parameter
+				{
+					Tag = tag,
+					Name = binding.ParameterName,
+					Type = pi.PropertyType,
+					Value = pi.GetValue(item),
+				}));
+			}
 
-            subReport.ParameterBindings.Clear();
+			subReport.ParameterBindings.Clear();
 
-            foreach (var binding in newBindings)
-                subReport.ParameterBindings.Add(binding);
+			foreach (var binding in newBindings)
+				subReport.ParameterBindings.Add(binding);
 
-            BindDataSources(subReport.ReportSource, subReport.ReportSourceUrl, subReport.ParameterBindings);
+			BindDataSources(subReport.ReportSource, subReport.ReportSourceUrl, subReport.ParameterBindings);
 
-        }
+		}
 	}
 }

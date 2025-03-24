@@ -3,9 +3,15 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
     <Configurations>Debug;Release;Development</Configurations>
+<<<<<<< HEAD
     <AssemblyVersion>5.1.0324.2</AssemblyVersion>
     <FileVersion>5.1.0324.2</FileVersion>
     <Version>5.1.0324.2</Version>
+=======
+    <AssemblyVersion>5.1.207.1</AssemblyVersion>
+    <FileVersion>5.1.207.1</FileVersion>
+    <Version>5.1.207.1</Version>
+>>>>>>> bfb49a20f0443997d8647fb8463b138278cb0026
   </PropertyGroup>
   <PropertyGroup>
     <AppConfig>App.$(Configuration).config</AppConfig>

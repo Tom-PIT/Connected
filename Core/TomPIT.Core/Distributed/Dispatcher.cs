@@ -26,7 +26,7 @@ namespace TomPIT.Distributed
       private int WorkerSize { get; }
       public ConcurrentQueue<T> Queue { get; }
       public List<DispatcherJob<T>> Jobs { get; }
-      public int Available => Math.Max(0, WorkerSize * 4 - Queue.Count - QueuedDispatchers.Values.Sum(f => f.Count));
+      public int Available => Math.Max(0, WorkerSize - Queue.Count - QueuedDispatchers.Values.Sum(f => f.Count));
       public ConcurrentDictionary<string, QueuedDispatcher<T>> QueuedDispatchers { get; }
       public ProcessBehavior Behavior => ProcessBehavior.Parallel;
       public abstract DispatcherJob<T> CreateWorker(IDispatcher<T> owner, CancellationToken cancel);
