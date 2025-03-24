@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Runtime.Serialization.DataContracts;
 using System.Text;
 
 using DevExpress.DataAccess.Json;
@@ -161,7 +162,7 @@ namespace TomPIT.MicroServices.Reporting.Storage
 
 				if (enumerableDs.IsEmpty())
 				{
-					dataSource.Schema = CreateArraySchema(ds.GetType());
+					dataSource.Schema = CreateArraySchema(dataMember, ds.GetType());
 				}
 				else
 				{
@@ -176,16 +177,16 @@ namespace TomPIT.MicroServices.Reporting.Storage
 			return dataSource;
 		}
 
-		private JsonSchemaNode CreateArraySchema(Type type)
+		private JsonSchemaNode CreateArraySchema(string memberName, Type type)
 		{
 			var root = new JsonSchemaNode
 			{
 				NodeType = JsonNodeType.Object
 			};
 
-			var schema = new JsonSchemaNode(ResolveSchemaName(type), true, JsonNodeType.Array)
+			var schema = new JsonSchemaNode(memberName, true, JsonNodeType.Array)
 			{
-				DisplayName = ResolveSchemaName(type)
+				DisplayName = memberName
 			};
 			
 			root.AddChildren(schema);
@@ -204,14 +205,6 @@ namespace TomPIT.MicroServices.Reporting.Storage
 			schema.AddChildren(fields.ToArray());
 
 			return root;
-		}
-
-		private static string ResolveSchemaName(Type operationReturnType)
-		{
-			if (!typeof(IEnumerable).IsAssignableFrom(operationReturnType))
-				return operationReturnType.Name;
-
-			return operationReturnType.GenericTypeArguments[0].Name;
 		}
 
 		private static Type ResolveType(Type descriptor)
