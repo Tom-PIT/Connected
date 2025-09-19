@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
+using TomPIT.Compilation;
 using TomPIT.Connectivity;
 using TomPIT.Diagnostics;
 using TomPIT.Serialization;
@@ -68,6 +69,8 @@ namespace TomPIT.Design
 				Instance.SysProxy.SourceFiles.BeginUpdate();
 
 				new DeploymentSession(Tenant, request).Deploy(e);
+
+				Precompilation.Reset();
 			}
 			finally
 			{

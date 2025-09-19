@@ -40,6 +40,13 @@ namespace TomPIT.Runtime
 				await Task.CompletedTask;
 			});
 
+			routes.Map("sys/precompile", async (t) =>
+			{
+				new PrecompileRouteHandler().ProcessRequest(t);
+
+				await Task.CompletedTask;
+			});
+
 			routes.Map("sys/debug/{action}", async (t) =>
 			{
 				new DebugRouteHandler().ProcessRequest(t);

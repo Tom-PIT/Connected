@@ -14,6 +14,9 @@ internal static class ScriptTypeResolver
 {
 	public static Type? ResolveType(CompilerService service, Guid microService, IText sourceCode, string typeName, bool throwException)
 	{
+		if (TryResolvePrecompiledType(microService, sourceCode, typeName, throwException, out Type? type))
+			return type;
+
 		var script = service.GetScript(new CompilerScriptArgs(microService, sourceCode));
 
 		if (script is null)
@@ -226,5 +229,28 @@ internal static class ScriptTypeResolver
 		var ms = (Guid)typeInfo.GetProperty("MicroService").GetValue(null);
 
 		return Tenant.GetService<IMicroServiceService>().Select(ms);
+	}
+
+	private static bool TryResolvePrecompiledType(Guid microService, IText sourceCode, string typeName, bool throwException, out Type? type)
+	{
+		type = null;
+
+		var raw = Precompilation.Load(microService, sourceCode.TextBlob);
+
+		if (raw is null)
+			return false;
+
+		var assembly = AppDomain.CurrentDomain.Load(raw);
+		type = ResolveTypeName(assembly.GetName().Name, sourceCode, typeName, throwException);
+
+		if (type is null)
+		{
+			if (throwException)
+				throw new RuntimeException($"{SR.ErrTypeNotFound} ({typeName})");
+			else
+				return true;
+		}
+
+		return true;
 	}
 }

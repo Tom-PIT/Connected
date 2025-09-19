@@ -21,7 +21,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
-
+using TomPIT.Compilation;
 using TomPIT.Configuration;
 using TomPIT.Connectivity;
 using TomPIT.Design;
@@ -89,7 +89,7 @@ internal class StartupHost : IStartupHostProxy
 		app.UseMiddleware<AuthenticationCookieMiddleware>();
 		app.UseRequestLocalization(app.ApplicationServices.GetService<IOptions<RequestLocalizationOptions>>()?.Value);
 		app.UseResponseCompression();
-		
+
 		app.UseRouting();
 
 		if (Shell.LegacyServices)
@@ -104,7 +104,7 @@ internal class StartupHost : IStartupHostProxy
 			startup.Configure(app, env);
 
 		RuntimeService._host = app;
-		
+
 		var lifetime = app.ApplicationServices.GetService<IHostApplicationLifetime>();
 
 		if (lifetime is not null)
@@ -210,6 +210,8 @@ internal class StartupHost : IStartupHostProxy
 
 			Tenant.GetService<ILanguageService>().ApplySupportedCultures();
 		});
+
+		services.AddHostedService<PrecompilationFlush>();
 	}
 
 	private void ConfigureAuthentication(IServiceCollection services)

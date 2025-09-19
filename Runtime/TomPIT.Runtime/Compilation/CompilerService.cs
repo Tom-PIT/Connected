@@ -145,6 +145,8 @@ namespace TomPIT.Compilation
 			{
 				scriptDescriptor.Script = compiler.Script.CreateDelegate();
 				scriptDescriptor.Assembly = result.AssemblyName;
+
+				Precompilation.Save(script, result);
 			}
 
 			if (compiler.ScriptReferences is not null && compiler.ScriptReferences.Any())
