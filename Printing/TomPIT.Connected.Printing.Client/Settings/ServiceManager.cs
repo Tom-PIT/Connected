@@ -17,7 +17,7 @@ namespace TomPIT.Connected.Printing.Client
 
             try
             {
-                binPath = $"dotnet.exe { System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase.Replace("file:///", "")}";
+                binPath = $"{Assembly.GetExecutingAssembly().GetName().CodeBase.Replace("file:///", "").Replace(".dll", ".exe")}";
             }
             catch
             {

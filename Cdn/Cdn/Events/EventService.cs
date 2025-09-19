@@ -11,7 +11,7 @@ namespace TomPIT.Cdn.Events
     {
         public EventService()
         {
-            IntervalTimeout = TimeSpan.FromMilliseconds(490);
+            IntervalTimeout = TimeSpan.FromMilliseconds(50);
             ServiceInstance = this;
         }
 
@@ -39,7 +39,14 @@ namespace TomPIT.Cdn.Events
             var jobs = Instance.SysProxy.Management.Events.Dequeue(Dispatcher.Available);
 
             if (!jobs.Any())
+            {
+                IntervalTimeout = TimeSpan.FromMilliseconds(250);
                 return;
+            }
+            else
+            {
+                IntervalTimeout = TimeSpan.FromMilliseconds(50);
+            }
 
             foreach (var i in jobs)
             {

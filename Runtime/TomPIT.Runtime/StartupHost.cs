@@ -65,8 +65,8 @@ internal class StartupHost : IStartupHostProxy
 
 		ConfigureLocalization(services);
 		ConfigureAuthentication(services);
-		ConfigureMvc(services);
 		ConfigureCors(services);
+		ConfigureMvc(services);
 		ConfigureAuthorization(services);
 		ConfigureSignalR(services);
 		ConfigurePlugins(services);

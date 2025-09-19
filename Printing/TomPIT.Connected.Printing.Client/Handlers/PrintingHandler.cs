@@ -226,14 +226,15 @@ namespace TomPIT.Connected.Printing.Client.Handlers
 					((IServiceContainer)report).RemoveService(typeof(IReportProvider));
 					((IServiceContainer)report).RemoveService(typeof(IReportProviderAsync));
 
-					using var ms = new MemoryStream(Convert.FromBase64String(job.Content));				
-										
+					using var ms = new MemoryStream(Convert.FromBase64String(job.Content));
+
 					var content = new StreamReader(ms).ReadToEnd();
 
 					ms.Position = 0;
-					
-					((IServiceContainer)report).AddService(typeof(IReportProviderAsync), new ContentSubreportProvider(content));
-									
+
+					((IServiceContainer)report).AddService(typeof(IReportProviderAsync), new ContentSubreportProviderAsync(content));
+					((IServiceContainer)report).AddService(typeof(IReportProvider), new ContentSubreportProvider(content));
+
 					report.LoadLayoutFromXml(ms, true);
 
 					var localizeFunction = new LocalizeFunction(_localizationProvider, job.Identity);
@@ -252,9 +253,15 @@ namespace TomPIT.Connected.Printing.Client.Handlers
 						{
 							CustomFunctions.Register(localizeFunction);
 
-							await report.CreateDocumentAsync();
-
-							CustomFunctions.Unregister(localizeFunction.Name);
+							//await report.CreateDocumentAsync(); //Do not use, unstable, for some reason
+							try
+							{
+								report.CreateDocument();
+							}
+							finally
+							{
+								CustomFunctions.Unregister(localizeFunction.Name);
+							}
 						}
 						finally
 						{

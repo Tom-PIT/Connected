@@ -6,7 +6,7 @@ namespace TomPIT.Worker.Subscriptions
 {
 	internal class SubscriptionEventDispatcher : Dispatcher<IQueueMessage>
 	{
-		public SubscriptionEventDispatcher(string resourceGroup) : base(128)
+		public SubscriptionEventDispatcher(string resourceGroup) : base(4)
 		{
 			ResourceGroup = resourceGroup;
 		}
