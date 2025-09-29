@@ -1,4 +1,5 @@
 ﻿using System;
+using TomPIT.Cdn;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Distributed;
 using TomPIT.Connectivity;
@@ -19,6 +20,9 @@ namespace TomPIT.Messaging
 
 		public Guid Trigger<T>(IDistributedEvent ev, IMiddlewareCallback callback, T e)
 		{
+			if (CdnUtils.BindingDescriptor is not null && !CdnUtils.BindingDescriptor.IsBound(ev))
+				return Guid.Empty;
+
 			var ms = Guid.Empty;
 			var name = string.Empty;
 			var cb = string.Empty;

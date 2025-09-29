@@ -11,47 +11,49 @@ using TomPIT.Startup;
 
 namespace TomPIT.Cdn
 {
-    public class CdnStartup : IStartupClient
-    {
-        public void Initialize(IStartupHost host)
-        {
-            host.Booting += OnBooting;
-            host.ConfiguringServices += OnConfiguringServices;
-            host.ConfiguringRouting += OnConfiguringRouting;
-        }
+	public class CdnStartup : IStartupClient
+	{
+		public void Initialize(IStartupHost host)
+		{
+			CdnUtils.BindingDescriptor = new EventBindingDescriptor();
 
-        private void OnConfiguringRouting(object sender, Microsoft.AspNetCore.Routing.IEndpointRouteBuilder e)
-        {
-            CdnRouting.Register(e);
+			host.Booting += OnBooting;
+			host.ConfiguringServices += OnConfiguringServices;
+			host.ConfiguringRouting += OnConfiguringRouting;
+		}
 
-            e.MapHub<EventHub>("/events");
-            e.MapHub<PrintingHub>("/printing");
-            e.MapHub<ClientHub>("/clients");
-        }
+		private void OnConfiguringRouting(object sender, Microsoft.AspNetCore.Routing.IEndpointRouteBuilder e)
+		{
+			CdnRouting.Register(e);
 
-        private void OnConfiguringServices(object sender, IServiceCollection e)
-        {
-            e.AddSingleton<IHostedService, MailService>();
-            e.AddSingleton<IHostedService, SmtpConnectionCleanupService>();
-            e.AddSingleton<IHostedService, PrintingService>();
-            e.AddSingleton<IHostedService, SmtpService>();
-            e.AddSingleton<IHostedService, EventService>();
-            e.AddSingleton<IHostedService, EventReliableService>();
-            e.AddSingleton<IHostedService, EventCleanupService>();
-            e.AddSingleton<IHostedService, PrintingSpoolerService>();
-        }
+			e.MapHub<EventHub>("/events");
+			e.MapHub<PrintingHub>("/printing");
+			e.MapHub<ClientHub>("/clients");
+		}
 
-        private void OnBooting(object sender, System.EventArgs e)
-        {
-            Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
-        }
+		private void OnConfiguringServices(object sender, IServiceCollection e)
+		{
+			e.AddSingleton<IHostedService, MailService>();
+			e.AddSingleton<IHostedService, SmtpConnectionCleanupService>();
+			e.AddSingleton<IHostedService, PrintingService>();
+			e.AddSingleton<IHostedService, SmtpService>();
+			e.AddSingleton<IHostedService, EventService>();
+			e.AddSingleton<IHostedService, EventReliableService>();
+			e.AddSingleton<IHostedService, EventCleanupService>();
+			e.AddSingleton<IHostedService, PrintingSpoolerService>();
+		}
 
-        private void OnTenantInitialize(object sender, TenantArgs e)
-        {
-            e.Tenant.RegisterService(typeof(IEventHubService), typeof(EventHubService));
-            e.Tenant.RegisterService(typeof(IPrintingManagementService), typeof(PrintingManagementService));
-            e.Tenant.RegisterService(typeof(IPrintingSpoolerManagementService), typeof(PrintingSpoolerManagementService));
-            e.Tenant.RegisterService(typeof(IInboxService), typeof(InboxService));
-        }
-    }
+		private void OnBooting(object sender, System.EventArgs e)
+		{
+			Shell.GetService<IConnectivityService>().TenantInitialize += OnTenantInitialize;
+		}
+
+		private void OnTenantInitialize(object sender, TenantArgs e)
+		{
+			e.Tenant.RegisterService(typeof(IEventHubService), typeof(EventHubService));
+			e.Tenant.RegisterService(typeof(IPrintingManagementService), typeof(PrintingManagementService));
+			e.Tenant.RegisterService(typeof(IPrintingSpoolerManagementService), typeof(PrintingSpoolerManagementService));
+			e.Tenant.RegisterService(typeof(IInboxService), typeof(InboxService));
+		}
+	}
 }

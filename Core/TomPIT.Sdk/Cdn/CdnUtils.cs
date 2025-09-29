@@ -8,6 +8,8 @@ namespace TomPIT.Cdn
 {
 	public static class CdnUtils
 	{
+		public static IEventBindingDescriptor? BindingDescriptor { get; set; }
+
 		public static IRecipient CreateUserRecipient(IMiddlewareContext context, string identifier)
 		{
 			return CreateUserRecipient(context, identifier, null);
@@ -54,8 +56,8 @@ namespace TomPIT.Cdn
 			Guid language = default, string timezone = null, string resourceType = null, string resourcePrimaryKey = null, List<string> tags = null)
 		{
 			var service = context.Tenant.GetService<IAlienService>();
-			
-			if(service.Select(firstName, lastName, email, mobile, phone, resourceType, resourcePrimaryKey) is not IAlien alien)
+
+			if (service.Select(firstName, lastName, email, mobile, phone, resourceType, resourcePrimaryKey) is not IAlien alien)
 				alien = service.Select(service.Insert(firstName, lastName, email, mobile, phone, language, timezone, resourceType, resourcePrimaryKey));
 
 			return new Recipient
