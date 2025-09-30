@@ -47,6 +47,13 @@ namespace TomPIT.Runtime
 				await Task.CompletedTask;
 			});
 
+			routes.Map("sys/reset-compilation", async (t) =>
+			{
+				new ResetCompilationRouteHandler().ProcessRequest(t);
+
+				await Task.CompletedTask;
+			});
+
 			routes.Map("sys/debug/{action}", async (t) =>
 			{
 				new DebugRouteHandler().ProcessRequest(t);
