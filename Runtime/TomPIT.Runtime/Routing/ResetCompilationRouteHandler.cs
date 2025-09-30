@@ -6,6 +6,7 @@ using TomPIT.Middleware;
 using TomPIT.Security;
 
 namespace TomPIT.Routing;
+
 internal sealed class ResetCompilationRouteHandler : RouteHandlerBase
 {
 	protected override void OnProcessRequest()
@@ -18,8 +19,8 @@ internal sealed class ResetCompilationRouteHandler : RouteHandlerBase
 			return;
 		}
 
-		var result = Precompilation.Reset();
-		
+		Precompilation.Reset();
+
 		Context.Response.StatusCode = (int)HttpStatusCode.OK;
 		Context.Response.ContentType = "application/json";
 	}
