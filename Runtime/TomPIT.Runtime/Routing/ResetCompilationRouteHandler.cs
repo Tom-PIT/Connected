@@ -6,7 +6,7 @@ using TomPIT.Middleware;
 using TomPIT.Security;
 
 namespace TomPIT.Routing;
-internal sealed class PrecompileRouteHandler : RouteHandlerBase
+internal sealed class ResetCompilationRouteHandler : RouteHandlerBase
 {
 	protected override void OnProcessRequest()
 	{
