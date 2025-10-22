@@ -20,12 +20,12 @@ internal sealed class EventBindingDescriptor : IEventBindingDescriptor
 		var eventName = $"{ms.Name}/{e.Name}";
 		var handlers = EventHandlers.Query(eventName);
 
-		if (handlers.Count != 0)
+		if (handlers is not null && handlers.Count != 0)
 			return true;
 
 		var clients = EventClients.Query(eventName);
 
-		if (clients.Count != 0)
+		if (clients is not null && clients.Count != 0)
 			return true;
 
 		return false;

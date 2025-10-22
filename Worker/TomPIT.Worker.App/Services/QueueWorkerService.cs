@@ -10,73 +10,73 @@ using TomPIT.Serialization;
 
 namespace TomPIT.Worker.Services
 {
-    internal class QueueWorkerService : HostedService
-    {
-        private Lazy<List<QueueWorkerDispatcher>> _dispatchers = new Lazy<List<QueueWorkerDispatcher>>();
+	internal class QueueWorkerService : HostedService
+	{
+		private Lazy<List<QueueWorkerDispatcher>> _dispatchers = new Lazy<List<QueueWorkerDispatcher>>();
 
-        private readonly IQueueMonitoringService _queueMonitoringService;
+		private readonly IQueueMonitoringService _queueMonitoringService;
 
-        public static QueueWorkerService ServiceInstance { get; private set; }
+		public static QueueWorkerService ServiceInstance { get; private set; }
 
-        public QueueWorkerService()
-        {
-            IntervalTimeout = TimeSpan.FromMilliseconds(490);
-            _queueMonitoringService = Tenant.GetService<IQueueMonitoringService>();
-            ServiceInstance = this;
-        }
+		public QueueWorkerService()
+		{
+			IntervalTimeout = TimeSpan.FromMilliseconds(new DispatcherConfig().QueueDequeueInterval);
+			_queueMonitoringService = Tenant.GetService<IQueueMonitoringService>();
+			ServiceInstance = this;
+		}
 
-        protected override bool OnInitialize(CancellationToken cancel)
-        {
-            if (Instance.State == InstanceState.Initializing)
-                return false;
+		protected override bool OnInitialize(CancellationToken cancel)
+		{
+			if (Instance.State == InstanceState.Initializing)
+				return false;
 
-            Dispatchers.Add(new QueueWorkerDispatcher());
+			Dispatchers.Add(new QueueWorkerDispatcher());
 
-            return true;
-        }
-        protected override Task OnExecute(CancellationToken cancel)
-        {
-            Parallel.ForEach(Dispatchers, (f) =>
-            {
-                if (f.Available < 1)
-                    return;
+			return true;
+		}
+		protected override Task OnExecute(CancellationToken cancel)
+		{
+			Parallel.ForEach(Dispatchers, (f) =>
+			{
+				if (f.Available < 1)
+					return;
 
-                var jobs = Instance.SysProxy.Management.Queue.Dequeue(f.Available);
+				var jobs = Instance.SysProxy.Management.Queue.Dequeue(f.Available);
 
-                _queueMonitoringService?.SignalEnqueued(jobs?.Count ?? 0);
+				_queueMonitoringService?.SignalEnqueued(jobs?.Count ?? 0);
 
-                var batch = Guid.NewGuid();
+				var batch = Guid.NewGuid();
 
-                if (cancel.IsCancellationRequested)
-                    return;
+				if (cancel.IsCancellationRequested)
+					return;
 
-                if (jobs is null)
-                    return;
+				if (jobs is null)
+					return;
 
-                foreach (var i in jobs)
-                {
-                    if (cancel.IsCancellationRequested)
-                        return;
+				foreach (var i in jobs)
+				{
+					if (cancel.IsCancellationRequested)
+						return;
 
-                    MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"{typeof(QueueWorkerService).FullName.PadRight(64)}| Batch {batch} => Enqueue {Serializer.Serialize(i)}");
+					MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"{typeof(QueueWorkerService).FullName.PadRight(64)}| Batch {batch} => Enqueue {Serializer.Serialize(i)}");
 
-                    f.Enqueue(i);
-                }
-            });
+					f.Enqueue(i);
+				}
+			});
 
-            return Task.CompletedTask;
-        }
+			return Task.CompletedTask;
+		}
 
-        public List<QueueWorkerDispatcher> Dispatchers { get { return _dispatchers.Value; } }
+		public List<QueueWorkerDispatcher> Dispatchers { get { return _dispatchers.Value; } }
 
-        public override void Dispose()
-        {
-            foreach (var dispatcher in Dispatchers)
-                dispatcher.Dispose();
+		public override void Dispose()
+		{
+			foreach (var dispatcher in Dispatchers)
+				dispatcher.Dispose();
 
-            Dispatchers.Clear();
+			Dispatchers.Clear();
 
-            base.Dispose();
-        }
-    }
+			base.Dispose();
+		}
+	}
 }

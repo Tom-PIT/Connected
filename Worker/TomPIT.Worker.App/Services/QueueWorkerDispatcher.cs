@@ -6,8 +6,9 @@ namespace TomPIT.Worker.Services
 {
 	internal class QueueWorkerDispatcher : Dispatcher<IQueueMessage>
 	{
-		public QueueWorkerDispatcher() : base(4)
+		public QueueWorkerDispatcher() : base(new DispatcherConfig().QueueThreadCount)
 		{
+
 		}
 
 		public override DispatcherJob<IQueueMessage> CreateWorker(IDispatcher<IQueueMessage> owner, CancellationToken cancel)

@@ -1,10 +1,12 @@
-﻿using Microsoft.CodeAnalysis.Emit;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Emit;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Loader;
 using System.Text.Json;
 using System.Threading;
 using TomPIT.Annotations.Design;
@@ -33,10 +35,27 @@ internal static class Precompilation
 
 	private static bool IsPrecomiling { get; set; }
 	private static ConcurrentDictionary<string, string> Index { get; }
+	private static ConcurrentDictionary<string, Assembly> LoadIndex { get; } = new();
 	private static bool Changed { get; set; }
 	private static string Directory => Path.Combine(Shell.MicroServicesFolder, "Precompiled");
 	private static string IndexFileName => Path.Combine(Directory, "Index.txt");
 	private static bool Enabled => !Instance.IsShellMode && Tenant.GetService<IRuntimeService>().Stage == EnvironmentStage.Production;
+
+	public static void Save(Guid microService, Guid script, string? path)
+	{
+		if (!Enabled)
+			return;
+
+		var key = ParseKey(microService, script);
+
+		EnsureDirectory();
+
+		if (!Index.ContainsKey(key))
+			Index.TryAdd(key, path ?? string.Empty);
+
+		Changed = true;
+	}
+
 	public static void Save(IScriptDescriptor script, Microsoft.CodeAnalysis.Compilation compilation)
 	{
 		if (!Enabled)
@@ -48,17 +67,11 @@ internal static class Precompilation
 		ms.Seek(0, SeekOrigin.Begin);
 
 		var key = ParseKey(script.MicroService, script.Token);
-		var fileName = $"{key}.dll";
 		var path = ParseFilePath(key);
-
-		EnsureDirectory();
 
 		File.WriteAllBytes(path, ms.ToArray());
 
-		if (!Index.ContainsKey(key))
-			Index.TryAdd(key, fileName);
-
-		Changed = true;
+		Save(script.MicroService, script.Token, path);
 	}
 
 	public static List<PrecompilationDiagnostic> Precompile()
@@ -183,17 +196,36 @@ internal static class Precompilation
 		File.WriteAllText(IndexFileName, JsonSerializer.Serialize(Index));
 	}
 
-	public static byte[]? Load(Guid microService, Guid id)
+	public static bool TryLoad(Guid microService, Guid id, out Assembly? assembly)
 	{
+		assembly = null;
+
 		if (!Enabled)
-			return null;
+			return false;
 
 		var key = ParseKey(microService, id);
 
-		if (Index.ContainsKey(key))
-			return File.ReadAllBytes(ParseFilePath(key));
+		if (LoadIndex.TryGetValue(key, out Assembly? asm))
+		{
+			assembly = asm;
 
-		return null;
+			return true;
+		}
+
+		if (Index.TryGetValue(key, out string? path))
+		{
+			if (string.IsNullOrWhiteSpace(path))
+				return true;
+
+			using var ms = File.OpenRead(ParseFilePath(key));
+			assembly = AssemblyLoadContext.Default.LoadFromStream(ms);
+
+			LoadIndex.TryAdd(key, assembly);
+
+			return true;
+		}
+
+		return false;
 	}
 
 	private static string ParseKey(Guid microService, Guid id) => $"{microService}_{id}";

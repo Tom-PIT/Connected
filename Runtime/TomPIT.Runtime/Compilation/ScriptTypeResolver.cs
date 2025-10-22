@@ -19,8 +19,10 @@ internal static class ScriptTypeResolver
 
 		var script = service.GetScript(new CompilerScriptArgs(microService, sourceCode));
 
-		if (script is null)
+		if (script is null || script.Assembly is null)
 		{
+			Precompilation.Save(microService, sourceCode.TextBlob, null);
+
 			if (throwException)
 				throw new RuntimeException($"{SR.ErrTypeNotFound} ({typeName})");
 			else
@@ -48,12 +50,11 @@ internal static class ScriptTypeResolver
 		return result;
 	}
 
-	public static Type? ResolveTypeName(string assembly, IText sourceCode, string typeName, bool throwException)
+	public static Type? ResolveTypeName(Assembly? assembly, IText sourceCode, string typeName, bool throwException)
 	{
 		var ns = ResolveNamespace(sourceCode);
-		var asm = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(f => string.Compare(f.ShortName(), assembly, true) == 0);
 
-		if (asm is null)
+		if (assembly is null)
 			return null;
 
 		if (ns is not null)
@@ -64,7 +65,7 @@ internal static class ScriptTypeResolver
 			/*
             * We are looking for the type which is not nested since the namespace is not defined.
             */
-			var candidates = asm.GetTypes().Where(f => string.Equals(f.Name, typeName, StringComparison.OrdinalIgnoreCase));
+			var candidates = assembly.GetTypes().Where(f => string.Equals(f.Name, typeName, StringComparison.OrdinalIgnoreCase));
 
 			if (!candidates.Any())
 				return null;
@@ -89,7 +90,7 @@ internal static class ScriptTypeResolver
 		foreach (var token in tokens)
 			fullTypeName.Append($"+{token}");
 
-		var results = asm.GetTypes().Where(f => string.Equals(f.FullName, fullTypeName.ToString(), StringComparison.OrdinalIgnoreCase));
+		var results = assembly.GetTypes().Where(f => string.Equals(f.FullName, fullTypeName.ToString(), StringComparison.OrdinalIgnoreCase));
 
 		if (results.Count() > 1)
 		{
@@ -109,6 +110,15 @@ internal static class ScriptTypeResolver
 		}
 
 		return results.First();
+	}
+	public static Type? ResolveTypeName(string assembly, IText sourceCode, string typeName, bool throwException)
+	{
+		var asm = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(f => string.Compare(f.ShortName(), assembly, true) == 0);
+
+		if (asm is null)
+			return null;
+
+		return ResolveTypeName(asm, sourceCode, typeName, throwException);
 	}
 
 	private static INamespaceElement ResolveNamespace(IText sourceCode)
@@ -235,20 +245,20 @@ internal static class ScriptTypeResolver
 	{
 		type = null;
 
-		var raw = Precompilation.Load(microService, sourceCode.TextBlob);
-
-		if (raw is null)
+		if (!Precompilation.TryLoad(microService, sourceCode.TextBlob, out Assembly? assembly))
 			return false;
 
-		var assembly = AppDomain.CurrentDomain.Load(raw);
-		type = ResolveTypeName(assembly.GetName().Name, sourceCode, typeName, throwException);
-
-		if (type is null)
+		if (assembly is not null)
 		{
-			if (throwException)
-				throw new RuntimeException($"{SR.ErrTypeNotFound} ({typeName})");
-			else
-				return true;
+			type = ResolveTypeName(assembly, sourceCode, typeName, throwException);
+
+			if (type is null)
+			{
+				if (throwException)
+					throw new RuntimeException($"{SR.ErrTypeNotFound} ({typeName})");
+				else
+					return true;
+			}
 		}
 
 		return true;

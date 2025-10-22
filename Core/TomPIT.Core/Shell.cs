@@ -397,3 +397,12 @@ public static class Shell
 		Accessor = app.ApplicationServices.GetRequiredService<IHttpContextAccessor>();
 	}
 }
+
+public class DispatcherConfig
+{
+	private IConfiguration DispatcherConfiguration => Shell.Configuration.GetSection("Dispatchers");
+	public int QueueThreadCount => DispatcherConfiguration?.GetValue<int>("Queues:ThreadCount", 4) ?? 4;
+	public long QueueDequeueInterval => DispatcherConfiguration?.GetValue<long>("Queues:DequeueInterval", 490) ?? 490;
+	public int EventThreadCount => DispatcherConfiguration?.GetValue<int>("Events:ThreadCount", 4) ?? 4;
+	public long EventDequeueInterval => DispatcherConfiguration?.GetValue<long>("Events:DequeueInterval", 490) ?? 490;
+}
