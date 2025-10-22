@@ -53,12 +53,12 @@ namespace TomPIT.Middleware.Services
 			return false;
 		}
 
-		public string GetServer(InstanceFeatures features, InstanceVerbs verbs)
+		public string? GetServer(InstanceFeatures features, InstanceVerbs verbs)
 		{
 			var r = Context.Tenant.GetService<IInstanceEndpointService>().Url(features, verbs);
 
 			if (string.IsNullOrWhiteSpace(r))
-				throw new RuntimeException(string.Format("{0} ({1}, {2})", SR.ErrNoServer, features, verbs));
+				return null;
 
 			return r;
 		}

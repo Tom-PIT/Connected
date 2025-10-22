@@ -40,7 +40,11 @@ namespace TomPIT.Distributed
 		public T Current { get; set; }
 		public void Run()
 		{
-			Worker.RunWorkerAsync();
+			try
+			{
+				Worker.RunWorkerAsync();
+			}
+			catch { }
 		}
 
 		private void OnCompleted(object sender, RunWorkerCompletedEventArgs e)

@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Web;
 
 using TomPIT.Annotations;
@@ -40,13 +39,13 @@ namespace TomPIT.Middleware
 
 		private IMiddlewareComponent Instance { get; }
 
-		public async Task Validate()
+		public void Validate()
 		{
-			await ValidateRoot();
-			await Validate(Instance, true);
+			ValidateRoot();
+			Validate(Instance, true);
 		}
 
-		private async Task ValidateRoot()
+		private void ValidateRoot()
 		{
 			var sw = Stopwatch.StartNew();
 
@@ -73,7 +72,6 @@ namespace TomPIT.Middleware
 				//    Trace($"Validation exited due to valid antiforgery found after {sw.ElapsedMilliseconds}");
 				//    return;
 				//}
-				await Task.CompletedTask;
 			}
 			catch (Exception ex)
 			{
@@ -83,7 +81,7 @@ namespace TomPIT.Middleware
 			//throw new MiddlewareValidationException(Instance, SR.ValAntiForgery);
 		}
 
-		public async Task Validate(object instance, bool triggerValidating)
+		public void Validate(object instance, bool triggerValidating)
 		{
 			var results = new List<ValidationResult>();
 			var refs = new List<object>();
@@ -95,8 +93,6 @@ namespace TomPIT.Middleware
 
 			if (results.Any())
 				throw new MiddlewareValidationException(instance, results);
-
-			await Task.CompletedTask;
 		}
 
 		private void TriggerValidating(object sender, List<ValidationResult> results)

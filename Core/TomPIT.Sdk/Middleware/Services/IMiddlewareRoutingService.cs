@@ -11,7 +11,7 @@ namespace TomPIT.Middleware.Services
 {
 	public interface IMiddlewareRoutingService
 	{
-		string GetServer(InstanceFeatures features, InstanceVerbs verbs);
+		string? GetServer(InstanceFeatures features, InstanceVerbs verbs);
 		string ApplicationUrl(string route);
 		string RestUrl(string route);
 		string IoTUrl(string route);

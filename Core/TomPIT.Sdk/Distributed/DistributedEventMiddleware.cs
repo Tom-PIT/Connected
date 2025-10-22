@@ -21,7 +21,7 @@ namespace TomPIT.Distributed
 			{
 				Validate();
 				OnInvoke();
-				base.Invoked();
+				//	base.Invoked();
 			}
 			catch (System.ComponentModel.DataAnnotations.ValidationException)
 			{
@@ -55,7 +55,7 @@ namespace TomPIT.Distributed
 		{
 
 		}
-		
+
 		//public bool Invoking()
 		//{
 		//	Validate();

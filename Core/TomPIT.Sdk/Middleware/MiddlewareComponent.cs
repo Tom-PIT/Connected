@@ -44,12 +44,12 @@ namespace TomPIT.Middleware
 
 		public void Validate()
 		{
-			AsyncUtils.RunSync(() => Validator.Validate());
+			Validator.Validate();
 		}
 
 		protected void Validate(object instance)
 		{
-			AsyncUtils.RunSync(() => Validator.Validate(instance, false));
+			Validator.Validate(instance, false);
 		}
 
 		[SkipValidation]
