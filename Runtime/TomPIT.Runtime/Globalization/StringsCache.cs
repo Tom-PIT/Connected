@@ -89,19 +89,26 @@ namespace TomPIT.Globalization
 
 		private string GetFallbackString(IStringResource str, int lcid)
 		{
-			var culture = CultureInfo.GetCultureInfo(lcid);
+			try
+			{
+				var culture = CultureInfo.GetCultureInfo(lcid);
 
-			if (culture.LCID == CultureInfo.InvariantCulture.LCID || culture.Parent == null)
+				if (culture.LCID == CultureInfo.InvariantCulture.LCID || culture.Parent == null)
+					return str.DefaultValue;
+
+				var parent = culture.Parent;
+
+				var translation = str.Translations.FirstOrDefault(f => f.Lcid == parent.LCID);
+
+				if (translation != null)
+					return translation.Value;
+
+				return GetFallbackString(str, parent.LCID);
+			}
+			catch (CultureNotFoundException)
+			{
 				return str.DefaultValue;
-
-			var parent = culture.Parent;
-
-			var translation = str.Translations.FirstOrDefault(f => f.Lcid == parent.LCID);
-
-			if (translation != null)
-				return translation.Value;
-
-			return GetFallbackString(str, parent.LCID);
+			}
 		}
 	}
 }

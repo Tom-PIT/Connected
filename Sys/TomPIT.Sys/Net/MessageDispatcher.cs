@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using TomPIT.Distributed;
 using TomPIT.Sys.Model;
 using TomPIT.Sys.Notifications;
@@ -45,7 +45,7 @@ namespace TomPIT.Sys.Services
 			if (string.Compare(recipient.Topic, "cache", true) == 0)
 				return DeliverCache(recipient);
 			else
-				throw new NotImplementedException();
+				return false;
 		}
 
 		private bool DeliverCache(IRecipient recipient)

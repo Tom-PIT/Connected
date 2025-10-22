@@ -1,8 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Connections.Client;
+﻿using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Client;
-
+using System;
+using System.Threading.Tasks;
 using TomPIT.Messaging;
 
 namespace TomPIT.Connectivity
@@ -29,28 +28,28 @@ namespace TomPIT.Connectivity
 
 		protected override string Url => string.Format("{0}/{1}", Tenant.Url, HubName);
 
-		private void Heartbeat()
-		{
-			while (!Cancel.IsCancellationRequested)
-			{
-				try
-				{
-					if (Hub == null)
-						return;
+		//private void Heartbeat()
+		//{
+		//	while (!Cancel.IsCancellationRequested)
+		//	{
+		//		try
+		//		{
+		//			if (Hub == null)
+		//				return;
 
-					Hub.InvokeAsync("Heartbeat").Wait();
-				}
-				finally
-				{
-					Cancel.Token.WaitHandle.WaitOne(TimeSpan.FromSeconds(30));
-				}
-			}
-		}
+		//			Hub.InvokeAsync("Heartbeat").Wait();
+		//		}
+		//		finally
+		//		{
+		//			Cancel.Token.WaitHandle.WaitOne(TimeSpan.FromSeconds(30));
+		//		}
+		//	}
+		//}
 
-		protected override void OnConnected()
-		{
-			new Task(Heartbeat, Cancel.Token, TaskCreationOptions.LongRunning).Start();
-		}
+		//protected override void OnConnected()
+		//{
+		//	new Task(Heartbeat, Cancel.Token, TaskCreationOptions.LongRunning).Start();
+		//}
 
 		protected Task ConfirmAndHandle<T>(MessageEventArgs<T> args, Action<MessageEventArgs<T>> handler)
 		{
