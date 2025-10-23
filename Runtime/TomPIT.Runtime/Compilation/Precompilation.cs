@@ -179,7 +179,12 @@ internal static class Precompilation
 	public static void Reset()
 	{
 		if (System.IO.Directory.Exists(Directory))
-			System.IO.Directory.Delete(Directory, true);
+		{
+			var files = new DirectoryInfo(Directory).GetFiles();
+
+			foreach (var file in files)
+				File.Delete(file.FullName);
+		}
 
 		Index.Clear();
 
