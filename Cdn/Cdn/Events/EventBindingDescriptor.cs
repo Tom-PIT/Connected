@@ -17,7 +17,7 @@ internal sealed class EventBindingDescriptor : IEventBindingDescriptor
 		if (compiler.ResolveType(ms.Token, e, e.Name, false) is Type type)
 			return true;
 
-		var eventName = $"{ms.Name}/{e.Name}";
+		var eventName = $"{ms.Name}/{e.Configuration().ComponentName()}/{e.Name}".ToLowerInvariant();
 		var handlers = EventHandlers.Query(eventName);
 
 		if (handlers is not null && handlers.Count != 0)
