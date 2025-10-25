@@ -20,7 +20,7 @@ namespace TomPIT.Messaging
 
 		public Guid Trigger<T>(IDistributedEvent ev, IMiddlewareCallback callback, T e)
 		{
-			if (CdnUtils.BindingDescriptor is not null && !CdnUtils.BindingDescriptor.IsBound(ev))
+			if (ev is not null && CdnUtils.BindingDescriptor is not null && !CdnUtils.BindingDescriptor.IsBound(ev))
 				return Guid.Empty;
 
 			var ms = Guid.Empty;

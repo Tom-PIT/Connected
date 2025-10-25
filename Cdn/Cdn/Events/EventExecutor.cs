@@ -43,12 +43,28 @@ internal sealed class EventExecutor
 				return false;
 			}
 		}
+		else
+		{
+			/*
+			 * We need this because we want to be in charge of the transaction so the
+			 * root operation can control it.
+			 */
+			Middleware = new VirtualEventMiddleware(Context);
+			/*
+			 * Invoking here would guarantee that we can commit the transaction.
+			 */
+			Middleware.Invoke();
+		}
 
 		if (!string.IsNullOrWhiteSpace(Message.Callback))
 			Callback();
-
+		/*
+		 * Here the transaction gets committed.
+		 */
 		Middleware.Invoked();
-
+		/*
+		 * And broadcast the event to the clients. 
+		 */
 		Notify();
 
 		return true;

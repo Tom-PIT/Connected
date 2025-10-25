@@ -1,5 +1,5 @@
-﻿using System;
-using Microsoft.Data.SqlClient;
+﻿using Microsoft.Data.SqlClient;
+using System;
 
 namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 {
@@ -70,13 +70,13 @@ namespace TomPIT.DataProviders.Sql.Synchronization.Commands
 				Result.Columns.Add(new ObjectColumn
 				{
 					Collation = rdr.GetValue("Collation", string.Empty),
-					Computed = string.Compare(rdr.GetValue("Computed", string.Empty), "no", true) == 0 ? false : true,
+					Computed = string.Equals(rdr.GetValue("Computed", string.Empty), "no", StringComparison.CurrentCultureIgnoreCase) ? false : true,
 					FixedLenInSource = rdr.GetValue("FixedLenNullInSource", string.Empty),
 					Length = rdr.GetValue("Length", 0),
 					Name = rdr.GetValue("Column_name", string.Empty),
-					Nullable = string.Compare(rdr.GetValue("Nullable", string.Empty), "no", true) == 0 ? false : true,
-					Precision = Types.Convert<int>(rdr.GetValue("Prec", string.Empty).Trim()),
-					Scale = Types.Convert<int>(rdr.GetValue("Scale", string.Empty).Trim()),
+					Nullable = string.Equals(rdr.GetValue("Nullable", string.Empty), "no", StringComparison.CurrentCultureIgnoreCase) ? false : true,
+					Precision = Types.Convert<int>(rdr.GetValue("Prec", "0").Trim()),
+					Scale = Types.Convert<int>(rdr.GetValue("Scale", "0").Trim()),
 					TrimTrailingBlanks = rdr.GetValue("TrimTrailingBlanks", string.Empty),
 					Type = rdr.GetValue("Type", string.Empty)
 				});
