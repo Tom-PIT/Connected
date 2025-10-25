@@ -4,6 +4,7 @@ using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Distributed;
 using TomPIT.Connectivity;
 using TomPIT.Middleware;
+using TomPIT.Reflection;
 using TomPIT.Serialization;
 
 namespace TomPIT.Messaging
@@ -13,6 +14,7 @@ namespace TomPIT.Messaging
 		public EventService(ITenant tenant) : base(tenant)
 		{
 		}
+
 		public Guid Trigger(IDistributedEvent ev, IMiddlewareCallback callback)
 		{
 			return Trigger<object>(ev, callback, null);
@@ -21,10 +23,19 @@ namespace TomPIT.Messaging
 		public Guid Trigger<T>(IDistributedEvent ev, IMiddlewareCallback callback, T e)
 		{
 			if (ev is not null && CdnUtils.BindingDescriptor is not null && !CdnUtils.BindingDescriptor.IsBound(ev))
-				return Guid.Empty;
+			{
+				if (e is IDistributedOperation de)
+				{
+					ReflectionExtensions.SetPropertyValue(de, nameof(IDistributedOperation.OperationTarget), DistributedOperationTarget.InProcess);
 
-			var ms = Guid.Empty;
-			var name = string.Empty;
+					de.Invoke();
+				}
+
+				return Guid.Empty;
+			}
+
+			Guid ms;
+			string name;
 			var cb = string.Empty;
 			var args = string.Empty;
 
