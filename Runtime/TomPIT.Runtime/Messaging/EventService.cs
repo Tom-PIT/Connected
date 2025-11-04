@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Linq;
 using TomPIT.Cdn;
+using TomPIT.Compilation;
 using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.Apis;
 using TomPIT.ComponentModel.Distributed;
 using TomPIT.Connectivity;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
+using TomPIT.Runtime;
 using TomPIT.Serialization;
 
 namespace TomPIT.Messaging
@@ -29,6 +33,23 @@ namespace TomPIT.Messaging
 					ReflectionExtensions.SetPropertyValue(de, nameof(IDistributedOperation.OperationTarget), DistributedOperationTarget.InProcess);
 
 					de.Invoke();
+				}
+				else if (callback is MiddlewareCallback mc)
+				{
+					var op = (Tenant.GetService<IComponentService>().SelectConfiguration(callback.Component) as IApiConfiguration)?.Operations.FirstOrDefault(f => f.Id == callback.Element);
+
+					if (op is not null)
+					{
+						var instance = Tenant.GetService<ICompilerService>().CreateInstance<IDistributedOperation>(op, Serializer.Serialize(e), op.Name);
+
+						if (instance is not null)
+						{
+							ReflectionExtensions.SetPropertyValue(instance, nameof(IDistributedOperation.OperationTarget), DistributedOperationTarget.InProcess);
+
+							instance.SetContext(mc.Context);
+							instance.Invoke();
+						}
+					}
 				}
 
 				return Guid.Empty;

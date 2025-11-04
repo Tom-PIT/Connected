@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.ExceptionServices;
+using TomPIT.Annotations;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.Exceptions;
@@ -64,7 +65,7 @@ namespace TomPIT.Middleware.Interop
 		private string CallbackPath { get; }
 		[JsonIgnore]
 		public DistributedOperationTarget OperationTarget { get; private set; } = DistributedOperationTarget.Distributed;
-		[JsonIgnore]
+		[JsonIgnore, SkipValidation]
 		public IMiddlewareCallback Callback
 		{
 			get
@@ -83,7 +84,7 @@ namespace TomPIT.Middleware.Interop
 					if (op == null)
 						throw new RuntimeException($"{SR.ErrServiceOperationNotFound} ({CallbackPath})");
 
-					_callback = new MiddlewareCallback(descriptor.MicroService.Token, descriptor.Component.Token, op.Id);
+					_callback = new MiddlewareCallback(Context, descriptor.MicroService.Token, descriptor.Component.Token, op.Id);
 				}
 
 				return _callback;
