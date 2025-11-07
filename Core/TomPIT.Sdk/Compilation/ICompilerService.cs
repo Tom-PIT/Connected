@@ -16,7 +16,7 @@ namespace TomPIT.Compilation
 	{
 		event EventHandler<Guid> Invalidated;
 		void Invalidate(IMicroServiceContext context, Guid microService, Guid component, IText sourceCode);
-		IScriptDescriptor GetScript(CompilerScriptArgs e);
+		IScriptDescriptor? GetScript(CompilerScriptArgs e);
 
 		IMicroService ResolveMicroService(Type type);
 		IMicroService ResolveMicroService(object instance);

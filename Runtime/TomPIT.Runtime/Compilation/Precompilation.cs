@@ -17,12 +17,14 @@ using TomPIT.Runtime;
 namespace TomPIT.Compilation;
 internal static class Precompilation
 {
+	private static readonly ConcurrentDictionary<string, Assembly> _loadBuffer = new();
 	static Precompilation()
 	{
 		Index = new();
 
 		if (Enabled)
 		{
+			AppDomain.CurrentDomain.AssemblyLoad += OnAssemblyLoad;
 			if (File.Exists(IndexFileName))
 			{
 				var file = JsonSerializer.Deserialize<ConcurrentDictionary<string, string>>(File.ReadAllText(IndexFileName));
@@ -31,6 +33,18 @@ internal static class Precompilation
 					Index = file;
 			}
 		}
+	}
+
+	private static void OnAssemblyLoad(object? sender, AssemblyLoadEventArgs args)
+	{
+		var fn = args.LoadedAssembly.FullName;
+
+		if (fn is null || !fn.Contains(',') || !fn.StartsWith("ℛ*"))
+			return;
+
+		var name = fn[0..fn.IndexOf(',')];
+
+		_loadBuffer.AddOrUpdate(name, args.LoadedAssembly, (key, value) => { return args.LoadedAssembly; });
 	}
 
 	private static bool IsPrecomiling { get; set; }
@@ -68,6 +82,12 @@ internal static class Precompilation
 
 		var key = ParseKey(script.MicroService, script.Token);
 		var path = ParseFilePath(key);
+
+		if (_loadBuffer.TryGetValue(compilation.Assembly.Name, out Assembly? asm) && asm is not null)
+		{
+			LoadIndex.AddOrUpdate(key, asm, (key, value) => { return asm; });
+			_loadBuffer.TryRemove(compilation.Assembly.Name, out _);
+		}
 
 		File.WriteAllBytes(path, ms.ToArray());
 

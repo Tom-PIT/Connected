@@ -57,7 +57,7 @@ namespace TomPIT.Compilation
 			return Get(sourceCodeId);
 		}
 
-		public IScriptDescriptor GetScript(CompilerScriptArgs e)
+		public IScriptDescriptor? GetScript(CompilerScriptArgs e)
 		{
 			if (Instance.IsShellMode || e.SourceCode is null || e.SourceCode.TextBlob == Guid.Empty)
 				return null;
@@ -68,7 +68,7 @@ namespace TomPIT.Compilation
 			if (GetCachedScript(e.SourceCode.TextBlob) is IScriptDescriptor existing)
 				return existing;
 
-			IScriptDescriptor script = null;
+			IScriptDescriptor? script = null;
 
 			ScriptProcessor.Start(e.SourceCode.TextBlob,
 				  () =>
@@ -81,24 +81,6 @@ namespace TomPIT.Compilation
 				  });
 
 			return script;
-		}
-
-		private IScriptDescriptor CreateScript(CompilerScriptArgs e)
-		{
-			using var script = new CompilerScript(Tenant, e.MicroService, e.SourceCode);
-
-			var result = new ScriptDescriptor
-			{
-				Token = e.SourceCode.TextBlob,
-				MicroService = e.MicroService,
-				Component = e.SourceCode.Configuration().Component
-			};
-
-			script.Create();
-
-			Compile(result, script, true, e);
-
-			return result;
 		}
 
 		public Microsoft.CodeAnalysis.Compilation GetCompilation(IText sourceCode)
@@ -123,6 +105,24 @@ namespace TomPIT.Compilation
 			script.Create();
 
 			return Compile(result, script, false, new CompilerScriptArgs(microService, sourceCode));
+		}
+
+		private IScriptDescriptor CreateScript(CompilerScriptArgs e)
+		{
+			using var script = new CompilerScript(Tenant, e.MicroService, e.SourceCode);
+
+			var result = new ScriptDescriptor
+			{
+				Token = e.SourceCode.TextBlob,
+				MicroService = e.MicroService,
+				Component = e.SourceCode.Configuration().Component
+			};
+
+			script.Create();
+
+			Compile(result, script, true, e);
+
+			return result;
 		}
 
 		private Microsoft.CodeAnalysis.Compilation Compile(IScriptDescriptor script, CompilerScript compiler, bool cache, CompilerScriptArgs e)

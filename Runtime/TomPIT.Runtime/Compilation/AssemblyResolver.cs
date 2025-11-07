@@ -5,7 +5,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-
+using System.Runtime.Loader;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
 using TomPIT.Connectivity;
@@ -238,8 +238,7 @@ namespace TomPIT.Compilation
 
 			try
 			{
-				var asm = AppDomain.CurrentDomain.Load(d);
-
+				var asm = AssemblyLoadContext.Default.LoadFromAssemblyName(new AssemblyName(d));
 				var r = MetadataReference.CreateFromFile(asm.Location);
 
 				MetaReferenceCache.TryAdd(d, r);
