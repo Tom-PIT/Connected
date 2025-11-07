@@ -34,6 +34,14 @@ namespace TomPIT.Middleware
 			return operation;
 		}
 
+		public static bool IsActive(this IMiddlewareContext context)
+		{
+			if (context is not MiddlewareContext ctx)
+				return false;
+
+			return ctx.Transactions.State == Data.Storage.MiddlewareTransactionState.Active;
+		}
+
 		internal static void SetContext(this IMiddlewareObject target, IMiddlewareContext context)
 		{
 			ReflectionExtensions.SetPropertyValue(target, nameof(target.Context), context);
