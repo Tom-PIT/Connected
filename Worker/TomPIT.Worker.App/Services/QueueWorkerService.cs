@@ -1,82 +1,70 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-
 using TomPIT.Diagnostics;
 using TomPIT.Distributed;
 using TomPIT.Middleware;
 using TomPIT.Serialization;
+using TomPIT.Sys.Model;
 
-namespace TomPIT.Worker.Services
+namespace TomPIT.Worker.Services;
+
+internal class QueueWorkerService : HostedService
 {
-	internal class QueueWorkerService : HostedService
+	private QueueWorkerDispatcher _dispatcher = new();
+
+	private readonly IQueueMonitoringService _queueMonitoringService;
+
+	public static QueueWorkerService ServiceInstance { get; private set; }
+
+	public QueueWorkerService()
 	{
-		private Lazy<List<QueueWorkerDispatcher>> _dispatchers = new Lazy<List<QueueWorkerDispatcher>>();
+		IntervalTimeout = TimeSpan.FromMilliseconds(new DispatcherConfig().QueueDequeueInterval);
+		_queueMonitoringService = Tenant.GetService<IQueueMonitoringService>();
+		ServiceInstance = this;
+	}
 
-		private readonly IQueueMonitoringService _queueMonitoringService;
+	protected override bool OnInitialize(CancellationToken cancel)
+	{
+		if (Instance.State == InstanceState.Initializing)
+			return false;
 
-		public static QueueWorkerService ServiceInstance { get; private set; }
+		return true;
+	}
+	protected override async Task OnExecute(CancellationToken cancel)
+	{
+		if (_dispatcher.Available < 1)
+			return;
 
-		public QueueWorkerService()
+		var jobs = DataModel.Workers.Dequeue(_dispatcher.Available);
+
+		_queueMonitoringService?.SignalEnqueued(jobs?.Count ?? 0);
+
+		var batch = Guid.NewGuid();
+
+		if (cancel.IsCancellationRequested)
+			return;
+
+		if (jobs is null)
+			return;
+
+		foreach (var i in jobs)
 		{
-			IntervalTimeout = TimeSpan.FromMilliseconds(new DispatcherConfig().QueueDequeueInterval);
-			_queueMonitoringService = Tenant.GetService<IQueueMonitoringService>();
-			ServiceInstance = this;
+			if (cancel.IsCancellationRequested)
+				return;
+
+			MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"{typeof(QueueWorkerService).FullName.PadRight(64)}| Batch {batch} => Enqueue {Serializer.Serialize(i)}");
+
+			_dispatcher.Enqueue(i);
 		}
 
-		protected override bool OnInitialize(CancellationToken cancel)
-		{
-			if (Instance.State == InstanceState.Initializing)
-				return false;
+		await Task.CompletedTask;
+	}
 
-			Dispatchers.Add(new QueueWorkerDispatcher());
+	public override void Dispose()
+	{
+		_dispatcher.Dispose();
 
-			return true;
-		}
-		protected override Task OnExecute(CancellationToken cancel)
-		{
-			Parallel.ForEach(Dispatchers, (f) =>
-			{
-				if (f.Available < 1)
-					return;
-
-				var jobs = Instance.SysProxy.Management.Queue.Dequeue(f.Available);
-
-				_queueMonitoringService?.SignalEnqueued(jobs?.Count ?? 0);
-
-				var batch = Guid.NewGuid();
-
-				if (cancel.IsCancellationRequested)
-					return;
-
-				if (jobs is null)
-					return;
-
-				foreach (var i in jobs)
-				{
-					if (cancel.IsCancellationRequested)
-						return;
-
-					MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"{typeof(QueueWorkerService).FullName.PadRight(64)}| Batch {batch} => Enqueue {Serializer.Serialize(i)}");
-
-					f.Enqueue(i);
-				}
-			});
-
-			return Task.CompletedTask;
-		}
-
-		public List<QueueWorkerDispatcher> Dispatchers { get { return _dispatchers.Value; } }
-
-		public override void Dispose()
-		{
-			foreach (var dispatcher in Dispatchers)
-				dispatcher.Dispose();
-
-			Dispatchers.Clear();
-
-			base.Dispose();
-		}
+		base.Dispose();
 	}
 }
