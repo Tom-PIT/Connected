@@ -24,7 +24,7 @@ namespace TomPIT.Connected.Printing.Client.Printing
 
         public override string ToString()
         {
-            return $"Job = {Token}, Mime Type = {Mime}, Content Length = {Content.Length * 3 / 4}, Printer = {Printer}";
+            return $"Job = {Token}, Mime Type = {Mime}, Content Length = {Content.Length * 3 / 4}, Printer = {Printer}, CopyCount = {CopyCount}";
         }
     }
 }

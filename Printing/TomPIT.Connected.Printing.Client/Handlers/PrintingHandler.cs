@@ -129,11 +129,13 @@ namespace TomPIT.Connected.Printing.Client.Handlers
 					{
 						if (await SelectJob(id) is SpoolerJob job)
 						{
-							Logging.Debug($"Issuing request for printing request {id}.");
-							await Print(job);
 							Logging.Debug($"Completing job for request {id}.");
 							await Complete(receipt);
 							Logging.Debug($"Job for request {id} completed.");
+
+							Logging.Debug($"Issuing request for printing request {id}.");
+							Logging.Debug($"Printing job with data: {job.ToString()}");
+							await Print(job);
 						}
 						else
 						{
