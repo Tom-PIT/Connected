@@ -56,7 +56,7 @@ namespace TomPIT.BigData.Transactions
 			if (count == 0)
 				return new List<IQueueMessage>();
 
-			return Instance.SysProxy.Management.BigData.DequeueTransactionBlocks(count, 600).ToList();
+			return Instance.SysProxy.Management.BigData.DequeueTransactionBlocks(count, 3600).ToList();
 		}
 
 		public void Ping(Guid popReceipt, TimeSpan delay)

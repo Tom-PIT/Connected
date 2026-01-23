@@ -77,42 +77,42 @@ namespace TomPIT.BigData.Transactions
 
 			var modifiedEntries = new ConcurrentBag<JObject>();
 
-			Parallel.ForEach(Data,
-				  (f) =>
-				  {
-					  var merger = new Merger(this, f.Key, f.Value);
+			foreach (var f in Data)
+			{
+				var merger = new Merger(this, f.Key, f.Value);
 
-					  merger.Merge();
+				merger.Merge();
 
-					  var items = CreateArray(f.Key, f.Value);
+				var items = CreateArray(f.Key, f.Value);
 
-					  if (merger.Locked)
-					  {
-						  lock (_sync)
-						  {
-							  if (LockedItems is null)
-								  LockedItems = new JArray();
+				if (merger.Locked)
+				{
+					lock (_sync)
+					{
+						if (LockedItems is null)
+							LockedItems = new JArray();
 
-							  if (items is not null)
-							  {
-								  foreach (JObject item in items)
-									  LockedItems.Add(item);
-							  }
-						  }
-					  }
-					  else
-					  {
-						  var middlewareType = Tenant.GetService<ICompilerService>().ResolveType(MicroService.Token, Configuration, Configuration.ComponentName());
-						  var argumentType = middlewareType.GetInterface(typeof(IPartitionMiddleware<>).FullName).GetGenericArguments()[0];
+						if (items is not null)
+						{
+							foreach (JObject item in items)
+								LockedItems.Add(item);
+						}
+					}
+				}
+				else
+				{
+					var middlewareType = Tenant.GetService<ICompilerService>().ResolveType(MicroService.Token, Configuration, Configuration.ComponentName());
+					var argumentType = middlewareType.GetInterface(typeof(IPartitionMiddleware<>).FullName).GetGenericArguments()[0];
 
-						  var payload = (IList)typeof(List<>).MakeGenericType(argumentType).CreateInstance();
+					var payload = (IList)typeof(List<>).MakeGenericType(argumentType).CreateInstance();
 
-						  if (items is not null)
-							  PopulatePayload(payload, items);
+					if (items is not null)
+						PopulatePayload(payload, items);
 
-						  OnInvoked(middlewareType, payload);
-					  }
-				  });
+					OnInvoked(middlewareType, payload);
+				}
+			}
+			;
 		}
 
 		private void PopulatePayload(IList items, JArray sourceItems)

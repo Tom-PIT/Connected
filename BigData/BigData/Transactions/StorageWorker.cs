@@ -92,7 +92,7 @@ namespace TomPIT.BigData.Transactions
 
 		private void DoWork(StorageWorkerItem item)
 		{
-			Tenant.GetService<ITransactionService>().Ping(item.Message.PopReceipt, TimeSpan.FromMinutes(6));
+			Tenant.GetService<ITransactionService>().Ping(item.Message.PopReceipt, TimeSpan.FromHours(1));
 
 			if (item.Message.NextVisible <= DateTime.UtcNow)
 			{
@@ -104,7 +104,7 @@ namespace TomPIT.BigData.Transactions
 			{
 				Dump(item, "timeout");
 
-				Tenant.GetService<ITransactionService>().Ping(item.Message.PopReceipt, TimeSpan.FromMinutes(6));
+				Tenant.GetService<ITransactionService>().Ping(item.Message.PopReceipt, TimeSpan.FromHours(1));
 
 				return Task.CompletedTask;
 			}, TimeSpan.FromMinutes(5), Cancel);
@@ -148,7 +148,7 @@ namespace TomPIT.BigData.Transactions
 					{
 						Dump(item, "no  rows to update");
 
-						Tenant.GetService<ITransactionService>().Ping(item.Message.PopReceipt, TimeSpan.FromSeconds(1));
+						Tenant.GetService<ITransactionService>().Ping(item.Message.PopReceipt, TimeSpan.FromSeconds(5));
 
 						return;
 					}
