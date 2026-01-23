@@ -19,6 +19,7 @@ namespace TomPIT.Sys.Services
 
 		public override async Task StopAsync(CancellationToken cancel)
 		{
+			Tenant.LogInfo($"Gracefully flushing {this.GetType().FullName}");
 			await OnExecute(CancellationToken.None);
 		}
 
