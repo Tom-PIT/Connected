@@ -7,6 +7,11 @@ namespace TomPIT.Sys.Services
 {
 	internal class QueuePersistence : PersistenceService
 	{
+		public QueuePersistence()
+		{
+			IntervalTimeout = TimeSpan.FromSeconds(60);
+		}
+
 		protected override async Task OnPersist(CancellationToken cancel)
 		{
 			await DataModel.Queue.Flush();
