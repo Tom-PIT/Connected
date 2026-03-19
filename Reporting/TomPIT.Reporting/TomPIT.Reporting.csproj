@@ -2,9 +2,9 @@
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-    <AssemblyVersion>5.1.123.2</AssemblyVersion>
-    <FileVersion>5.1.123.2</FileVersion>
-    <Version>5.1.123.2</Version>
+    <AssemblyVersion>6.1.123.2</AssemblyVersion>
+    <FileVersion>6.1.123.2</FileVersion>
+    <Version>6.1.123.2</Version>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
@@ -54,13 +54,15 @@
   </Target>
   <Target Name="PostBuildLnx" AfterTargets="PostBuildEvent" Condition="'$(OS)' != 'Windows_NT'">
     <!-- <Exec Command="mkdir -p &quot;/src/plugins/TomPIT.StorageProviders.Azure/&quot;" />
-    <Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/TomPIT.StorageProviders.Azure/&quot;" /> -->
+    <Exec Command="cp &quot;$(TargetPath)&quot;
+    &quot;/src/plugins/TomPIT.StorageProviders.Azure/&quot;" /> -->
     <Exec Command="mkdir -p &quot;/src/plugins/&quot;" />
     <Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/&quot;" />
   </Target>
   <Target Name="PostBuildWin" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT'">
     <!-- <Exec Command="mkdir -p &quot;/src/plugins/TomPIT.StorageProviders.Azure/&quot;" />
-    <Exec Command="cp &quot;$(TargetPath)&quot; &quot;/src/plugins/TomPIT.StorageProviders.Azure/&quot;" /> -->
+    <Exec Command="cp &quot;$(TargetPath)&quot;
+    &quot;/src/plugins/TomPIT.StorageProviders.Azure/&quot;" /> -->
     <Exec Command="if not exist &quot;c:/src/plugins/&quot; mkdir &quot;c:/src/plugins/&quot;" />
     <Exec Command="copy /y &quot;$(TargetPath)&quot; &quot;c:/src/plugins/&quot;" />
     <Exec Command="copy /y &quot;$(TargetDir)$(TargetName).pdb&quot; &quot;c:/src/plugins/&quot;" />

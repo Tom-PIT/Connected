@@ -4,9 +4,9 @@
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
     <AssemblyName>TomPIT.Connected.BigData</AssemblyName>
     <RootNamespace>TomPIT.BigData</RootNamespace>
-    <AssemblyVersion>5.1.123.2</AssemblyVersion>
-    <FileVersion>5.1.123.2</FileVersion>
-    <Version>5.1.123.2</Version>
+    <AssemblyVersion>6.1.123.2</AssemblyVersion>
+    <FileVersion>6.1.123.2</FileVersion>
+    <Version>6.1.123.2</Version>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
@@ -19,14 +19,16 @@
     <None Remove="Security\**" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="microsoft.aspnetcore.signalr.protocols.newtonsoftjson" Version="7.0.14" />
+    <PackageReference Include="microsoft.aspnetcore.signalr.protocols.newtonsoftjson"
+      Version="7.0.14" />
     <PackageReference Include="protobuf-net" Version="3.2.30" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\TomPIT.ComponentModel\TomPIT.ComponentModel.csproj" />
     <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
     <ProjectReference Include="..\..\Core\TomPIT.Sdk\TomPIT.Sdk.csproj" />
-    <ProjectReference Include="..\..\DataProviders\TomPIT.DataProviders.Sql\TomPIT.DataProviders.Sql.csproj" />
+    <ProjectReference
+      Include="..\..\DataProviders\TomPIT.DataProviders.Sql\TomPIT.DataProviders.Sql.csproj" />
     <ProjectReference Include="..\..\Runtime\TomPIT.Runtime\TomPIT.Runtime.csproj" />
     <ProjectReference Include="..\..\TomPIT.Startup\TomPIT.Startup.csproj" />
   </ItemGroup>
