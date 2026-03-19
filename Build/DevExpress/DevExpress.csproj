@@ -2,9 +2,9 @@
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <AssemblyVersion>6.1.123.2</AssemblyVersion>
-    <FileVersion>6.1.123.2</FileVersion>
-    <Version>6.1.123.2</Version>
+    <AssemblyVersion>6.1.319.1</AssemblyVersion>
+    <FileVersion>6.1.319.1</FileVersion>
+    <Version>6.1.319.1</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="DevExpress.Pdf.SkiaRenderer" Version="23.1.6" />
@@ -19,12 +19,10 @@
   </ItemGroup>
   <Target Name="CopyPackagesLnx" AfterTargets="PostBuildEvent" Condition="'$(OS)' != 'Windows_NT'">
     <Exec Command="mkdir -p &quot;/src/plugins/&quot;" />
-    <Copy SourceFiles="@(Items)" DestinationFolder="/src/plugins/%(RecursiveDir)"
-      SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(Items)" DestinationFolder="/src/plugins/%(RecursiveDir)" SkipUnchangedFiles="true" />
   </Target>
   <Target Name="CopyPackagesWin" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT'">
     <Exec Command="if not exist &quot;c:/src/plugins/&quot; mkdir &quot;c:/src/plugins/&quot;" />
-    <Copy SourceFiles="@(Items)" DestinationFolder="c:/src/plugins/%(RecursiveDir)"
-      SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(Items)" DestinationFolder="c:/src/plugins/%(RecursiveDir)" SkipUnchangedFiles="true" />
   </Target>
 </Project>
