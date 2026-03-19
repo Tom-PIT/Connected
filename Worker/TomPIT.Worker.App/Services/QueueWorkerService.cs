@@ -5,7 +5,9 @@ using TomPIT.Diagnostics;
 using TomPIT.Distributed;
 using TomPIT.Middleware;
 using TomPIT.Serialization;
+using TomPIT.Storage;
 using TomPIT.Sys.Model;
+using TomPIT.Sys.Model.Cdn;
 
 namespace TomPIT.Worker.Services;
 
@@ -36,7 +38,7 @@ internal class QueueWorkerService : HostedService
 		if (_dispatcher.Available < 1)
 			return;
 
-		var jobs = DataModel.Workers.Dequeue(_dispatcher.Available);
+		var jobs = DataModel.Queue.Dequeue(_dispatcher.Available, TimeSpan.FromMinutes(5), QueueScope.Content, QueueingModel.Queue);
 
 		_queueMonitoringService?.SignalEnqueued(jobs?.Count ?? 0);
 
