@@ -38,7 +38,7 @@ internal class QueueWorkerService : HostedService
 		if (_dispatcher.Available < 1)
 			return;
 
-		var jobs = DataModel.Queue.Dequeue(_dispatcher.Available, TimeSpan.FromMinutes(5), QueueScope.Content, QueueingModel.Queue);
+		var jobs = Instance.SysProxy.Management.Queue.Dequeue(_dispatcher.Available);
 
 		_queueMonitoringService?.SignalEnqueued(jobs?.Count ?? 0);
 
