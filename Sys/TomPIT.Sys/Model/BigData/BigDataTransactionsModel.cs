@@ -85,6 +85,11 @@ namespace TomPIT.Sys.Model.BigData
 
 			Refresh(token);
 
+			var entry = Get(token);
+
+			if (entry is null)
+				Tenant.LogWarning($"Transaction {token} was not found immediately after insertion.");
+
 			return token;
 		}
 
