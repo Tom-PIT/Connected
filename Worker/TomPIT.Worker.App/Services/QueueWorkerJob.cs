@@ -94,7 +94,7 @@ namespace TomPIT.Worker.Services
 
 			var m = JsonConvert.DeserializeObject(item.Message) as JObject;
 
-			Instance.SysProxy.Management.Queue.Ping(item.PopReceipt, TimeSpan.FromSeconds(10));
+			Instance.SysProxy.Management.Queue.Ping(item.PopReceipt, TimeSpan.FromSeconds(30));
 
 			MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"{typeof(QueueWorkerJob).FullName.PadRight(64)}| Error processing entry: {Serializer.Serialize(item)} => {ex}");
 
