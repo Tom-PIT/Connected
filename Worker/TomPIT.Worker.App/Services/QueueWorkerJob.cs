@@ -34,6 +34,16 @@ namespace TomPIT.Worker.Services
 			if (item.NextVisible <= DateTime.UtcNow)
 				return;
 
+			if (item.DequeueCount > 30)
+			{
+				MiddlewareDescriptor.Current.Tenant.LogError($"StaleQueue", $"Queue message {item.Id} has been dequeued more than 30 times (15 minutes). Deleting message to prevent infinite processing loop.", nameof(QueueWorkerJob));
+				MiddlewareDescriptor.Current.Tenant.LogError($"StaleQueue", Serializer.Serialize(item), nameof(QueueWorkerJob));
+
+				Instance.SysProxy.Management.Queue.Complete(item.PopReceipt);
+				_queueMonitoringService?.SignalProcessed();
+				return;
+			}
+
 			using var queue = new Queue(item);
 
 			_timeout = new TimeoutTask(() =>
