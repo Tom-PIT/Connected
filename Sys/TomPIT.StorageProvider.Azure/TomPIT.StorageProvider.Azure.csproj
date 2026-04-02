@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
-    <AssemblyVersion>6.1.401.1</AssemblyVersion>
-    <FileVersion>6.1.401.1</FileVersion>
-    <Version>6.1.401.1</Version>
+    <AssemblyVersion>6.1.402.1</AssemblyVersion>
+    <FileVersion>6.1.402.1</FileVersion>
+    <Version>6.1.402.1</Version>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
