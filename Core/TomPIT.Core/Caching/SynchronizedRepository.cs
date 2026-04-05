@@ -28,7 +28,25 @@ namespace TomPIT.Caching
             if (string.Compare(e.Key, Key, false) == 0)
             {
                 if (Initialized)
-                    OnInvalidate(Types.Convert<K>(e.Id, CultureInfo.InvariantCulture));
+                {
+                    var id = Types.Convert<K>(e.Id, CultureInfo.InvariantCulture);
+                    var existedBefore = Get(id) is not null;
+
+                    OnInvalidate(id);
+
+                    //Add resiliance against database transaction write lag
+                    if (!existedBefore && Get(id) is null)
+                    {
+                        for (var i = 1; i <= 3; i++)
+                        {
+                            Thread.Sleep(i * 100);
+                            OnInvalidate(id);
+
+                            if (Get(id) is not null)
+                                break;
+                        }
+                    }
+                }
 
                 Invalidate?.Invoke(e);
 
@@ -157,7 +175,7 @@ namespace TomPIT.Caching
             {
                 InitializeSignal?.WaitOne();
             }
-            catch (ObjectDisposedException) 
+            catch (ObjectDisposedException)
             {
                 /*
                  * Catch only the ObjectDisposedException, if waitForInitialization is called while the lock object is disposing and is not yet null. 
