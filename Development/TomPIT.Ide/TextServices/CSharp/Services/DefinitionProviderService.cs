@@ -14,7 +14,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services
 
 		public ILocation ProvideDefinition(IPosition position)
 		{
-			var args = new DefinitionProviderArgs(Editor, Editor.Document.GetSemanticModelAsync().Result, position);
+			var args = new DefinitionProviderArgs(Editor, AsyncUtils.RunSync(() => Editor.Document.GetSemanticModelAsync()), position);
 
 			foreach (var provider in Providers)
 			{

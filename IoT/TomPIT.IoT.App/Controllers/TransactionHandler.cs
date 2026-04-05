@@ -54,10 +54,10 @@ namespace TomPIT.IoT.Controllers
                 { "device", $"{MicroService.Name}/{Hub}/{Device}" }
             };
 
-            IoTServerHub.Invoke(payload, HubContext?.Clients).Wait();
+            AsyncUtils.RunSync(() => IoTServerHub.Invoke(payload, HubContext?.Clients));
 
             Shell.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
-            Shell.HttpContext.Response.CompleteAsync().Wait();
+            AsyncUtils.RunSync(() => Shell.HttpContext.Response.CompleteAsync());
         }
 
         private string Hub { get; }

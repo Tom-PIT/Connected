@@ -52,11 +52,14 @@ namespace TomPIT.Distributed
             var jobs = Jobs.Count;
             var items = Queue.Count;
 
-            if (jobs > items && jobs <= WorkerSize)
+            if (jobs >= items && jobs <= WorkerSize)
                return true;
-         }
 
-         CreateWorker();
+            if (jobs >= WorkerSize)
+               return true;
+
+            CreateWorker();
+         }
 
          return true;
       }
@@ -67,12 +70,9 @@ namespace TomPIT.Distributed
 
          worker.Completed += OnCompleted;
 
+         Jobs.Add(worker);
+
          worker.Run();
-         
-         lock (Jobs)
-         {
-            Jobs.Add(worker);
-         }
       }
 
       private void OnCompleted(object sender, EventArgs e)

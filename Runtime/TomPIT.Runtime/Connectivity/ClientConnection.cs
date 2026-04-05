@@ -56,7 +56,7 @@ namespace TomPIT.Connectivity
 			if (Hub == null)
 				return;
 
-			Task.FromResult(Hub.DisposeAsync()).GetAwaiter().GetResult();
+			AsyncUtils.RunSync(async () => await Hub.DisposeAsync());
 
 			Hub = null;
 		}

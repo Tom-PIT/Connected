@@ -30,8 +30,8 @@ namespace TomPIT.Connectivity
 			return MemoryCache.Default.Get("httpclient", key,
 				(f) =>
 				{
-					f.SlidingExpiration = true;
-					f.Duration = TimeSpan.FromMinutes(15);
+					f.SlidingExpiration = false;
+					f.Duration = TimeSpan.Zero;
 
 					var r = new HttpClient();
 
@@ -59,8 +59,8 @@ namespace TomPIT.Connectivity
 			return MemoryCache.Default.Get("httpclient", token,
 				(f) =>
 				{
-					f.SlidingExpiration = true;
-					f.Duration = TimeSpan.FromMinutes(15);
+					f.SlidingExpiration = false;
+					f.Duration = TimeSpan.Zero;
 
 					var r = new HttpClient();
 
@@ -83,8 +83,8 @@ namespace TomPIT.Connectivity
 			return MemoryCache.Default.Get("httpclient", authenticationToken.ToString(),
 				(f) =>
 				{
-					f.SlidingExpiration = true;
-					f.Duration = TimeSpan.FromMinutes(15);
+					f.SlidingExpiration = false;
+					f.Duration = TimeSpan.Zero;
 
 					var r = new HttpClient();
 

@@ -35,9 +35,9 @@ namespace TomPIT.Sys.Notifications
 				var sender = SysExtensions.RequestConnectionId("cache");
 
 				if (string.IsNullOrWhiteSpace(sender))
-					Cache.Clients.All.SendAsync(method, args).Wait();
+					AsyncUtils.RunSync(() => Cache.Clients.All.SendAsync(method, args));
 				else
-					Cache.Clients.AllExcept(sender).SendAsync(method, args).Wait();
+					AsyncUtils.RunSync(() => Cache.Clients.AllExcept(sender).SendAsync(method, args));
 			}
 		}
 

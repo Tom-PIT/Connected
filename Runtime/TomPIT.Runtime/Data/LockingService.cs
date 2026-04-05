@@ -20,7 +20,7 @@ namespace TomPIT.Data
 				if (result is not null)
 					return result;
 
-				Task.Delay(250).Wait();
+				Thread.Sleep(250);
 			}
 
 			throw new RuntimeException($"{SR.ErrLockFail} ({entity})");

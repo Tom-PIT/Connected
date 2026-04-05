@@ -58,7 +58,7 @@ namespace TomPIT
 			//Not using using so stream only gets disposed when request goes out of scope
 			var reader = new StreamReader(s, Encoding.UTF8);
 
-			var body = reader.ReadToEndAsync().Result;
+			var body = AsyncUtils.RunSync(() => reader.ReadToEndAsync());
 			
 			if (string.IsNullOrWhiteSpace(body))
 				return new JObject();
@@ -67,13 +67,16 @@ namespace TomPIT
 			{
 				var result = Serializer.Deserialize<JObject>(body);
 
+				if (result is null)
+					return new JObject();
+
 				SetRequestArguments(Shell.HttpContext, result);
 
 				return result;
 			}
 			catch
 			{
-				return null;
+				return new JObject();
 			}
 			finally
 			{
@@ -84,7 +87,7 @@ namespace TomPIT
 
 		public static T ToType<T>(this Stream s)
 		{
-			var body = new StreamReader(s, Encoding.UTF8).ReadToEndAsync().Result;
+			var body = AsyncUtils.RunSync(() => new StreamReader(s, Encoding.UTF8).ReadToEndAsync());
 
 			return Serializer.Deserialize<T>(body);
 		}

@@ -159,7 +159,7 @@ namespace TomPIT.Ide.TextServices.Razor
 
 		private SyntaxToken GetTokenAtMappedPosition(IPosition position)
 		{
-			var model = Document.GetSemanticModelAsync().Result;
+			var model = AsyncUtils.RunSync(() => Document.GetSemanticModelAsync());
 
 			foreach (var token in model.SyntaxTree.GetRoot().DescendantTokens())
 			{

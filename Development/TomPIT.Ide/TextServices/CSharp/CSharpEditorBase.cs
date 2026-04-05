@@ -255,7 +255,7 @@ namespace TomPIT.Ide.TextServices.CSharp
 
 					try
 					{
-						_model = Document.GetSemanticModelAsync().Result;
+						_model = AsyncUtils.RunSync(() => Document.GetSemanticModelAsync());
 					}
 					catch { }
 				}

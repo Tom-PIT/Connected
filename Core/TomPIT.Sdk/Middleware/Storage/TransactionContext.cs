@@ -58,7 +58,9 @@ internal class TransactionContext : ITransactionContext
 			}
 		}
 
-		Owner.GetService<IMultiContextOrchestrator>()?.Commit().Wait();
+		var commitTask = Owner.GetService<IMultiContextOrchestrator>()?.Commit();
+		if (commitTask is not null)
+			AsyncUtils.RunSync(() => commitTask);
 
 		State = MiddlewareTransactionState.Completed;
 	}
@@ -76,7 +78,9 @@ internal class TransactionContext : ITransactionContext
 			}
 		}
 
-		Owner.GetService<IMultiContextOrchestrator>()?.Rollback().Wait();
+		var rollbackTask = Owner.GetService<IMultiContextOrchestrator>()?.Rollback();
+		if (rollbackTask is not null)
+			AsyncUtils.RunSync(() => rollbackTask);
 
 		State = MiddlewareTransactionState.Completed;
 	}

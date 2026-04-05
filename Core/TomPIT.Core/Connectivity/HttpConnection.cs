@@ -53,7 +53,7 @@ namespace TomPIT.Connectivity
                     ? HttpClientPool.Get(AuthenticationToken, this as IInstanceMetadataProvider)
                     : HttpClientPool.Get(e.Credentials, this as IInstanceMetadataProvider);
 
-                var response = client.GetAsync(url).GetAwaiter().GetResult();
+                var response = AsyncUtils.RunSync(() => client.GetAsync(url));
 
                 return HandleResponse<T>(response, e);
             }
@@ -89,7 +89,7 @@ namespace TomPIT.Connectivity
                  ? HttpClientPool.Get(AuthenticationToken, this as IInstanceMetadataProvider)
                  : HttpClientPool.Get(e.Credentials, this as IInstanceMetadataProvider);
 
-            HandleResponse(client.PostAsync(url, CreateContent(content)).GetAwaiter().GetResult(), e);
+            HandleResponse(AsyncUtils.RunSync(() => client.PostAsync(url, CreateContent(content))), e);
         }
 
         public void Post(string url, HttpContent httpContent, HttpRequestArgs e = null)
@@ -98,7 +98,7 @@ namespace TomPIT.Connectivity
                 ? HttpClientPool.Get(AuthenticationToken, this as IInstanceMetadataProvider)
                 : HttpClientPool.Get(e.Credentials, this as IInstanceMetadataProvider);
 
-            HandleResponse(client.PostAsync(url, httpContent).GetAwaiter().GetResult(), e);
+            HandleResponse(AsyncUtils.RunSync(() => client.PostAsync(url, httpContent)), e);
         }
         public async Task PostAsync(string url, HttpContent httpContent, HttpRequestArgs e = null)
         {
@@ -116,7 +116,7 @@ namespace TomPIT.Connectivity
                 ? HttpClientPool.Get(AuthenticationToken, this as IInstanceMetadataProvider)
                 : HttpClientPool.Get(e.Credentials, this as IInstanceMetadataProvider);
 
-            return HandleResponse<T>(client.PostAsync(url, httpContent).GetAwaiter().GetResult(), e);
+            return HandleResponse<T>(AsyncUtils.RunSync(() => client.PostAsync(url, httpContent)), e);
         }
 
         private void HandleResponse(HttpResponseMessage response, HttpRequestArgs e)
@@ -130,7 +130,7 @@ namespace TomPIT.Connectivity
             if (!response.IsSuccessStatusCode)
                 HandleResponseException(response);
 
-            var content = response.Content.ReadAsStringAsync().Result;
+            var content = AsyncUtils.RunSync(() => response.Content.ReadAsStringAsync());
 
             if (IsNull(content))
                 return default(T);
@@ -172,7 +172,7 @@ namespace TomPIT.Connectivity
 
             try
             {
-                var rt = responseContent.ReadAsStringAsync().Result;
+                var rt = AsyncUtils.RunSync(() => responseContent.ReadAsStringAsync());
 
                 exceptionData = Serializer.Deserialize<JObject>(rt);
 

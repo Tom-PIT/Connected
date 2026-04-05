@@ -10,7 +10,7 @@ namespace TomPIT.Ide.TextServices.Razor.Services.CompletionProviders
 	{
 		protected override List<ICompletionItem> OnProvideItems()
 		{
-			var model = Editor.Document.GetSemanticModelAsync().Result;
+			var model = AsyncUtils.RunSync(() => Editor.Document.GetSemanticModelAsync());
 			var result = new List<ICompletionItem>();
 			var service = Microsoft.CodeAnalysis.Completion.CompletionService.GetService(Editor.Document);
 			var caret = Editor.GetMappedCaret(Arguments.Position);
@@ -29,7 +29,7 @@ namespace TomPIT.Ide.TextServices.Razor.Services.CompletionProviders
 			if (caret == -1)
 				return null;
 
-			var completions = service.GetCompletionsAsync(Editor.Document, caret).Result;
+			var completions = AsyncUtils.RunSync(() => service.GetCompletionsAsync(Editor.Document, caret));
 
 			if (completions == null)
 				return result;

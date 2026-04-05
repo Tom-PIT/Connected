@@ -14,7 +14,7 @@ namespace TomPIT.Ide.TextServices
 
 		public static TextSpan GetSpan(this Document document, IPosition position)
 		{
-			var text = document.GetTextAsync().Result;
+			var text = AsyncUtils.RunSync(() => document.GetTextAsync());
 
 			if (text.Lines.Count < position.LineNumber)
 				return default;
@@ -26,7 +26,7 @@ namespace TomPIT.Ide.TextServices
 
 		public static TextSpan GetSpan(this Document document, IRange range)
 		{
-			var text = document.GetTextAsync().Result;
+			var text = AsyncUtils.RunSync(() => document.GetTextAsync());
 
 			if (text.Lines.Count <= range.StartLineNumber || text.Lines.Count <= range.EndLineNumber)
 				return default;
@@ -63,7 +63,7 @@ namespace TomPIT.Ide.TextServices
 
 		public static TextLine GetLine(this Document document, int position)
 		{
-			var text = document.GetTextAsync().Result;
+			var text = AsyncUtils.RunSync(() => document.GetTextAsync());
 
 			foreach (var line in text.Lines)
 			{
@@ -90,7 +90,7 @@ namespace TomPIT.Ide.TextServices
 
 		public static int GetCaret(this Document document, IRange range)
 		{
-			var text = document.GetTextAsync().Result;
+			var text = AsyncUtils.RunSync(() => document.GetTextAsync());
 			var span = text.Lines[range.StartLineNumber].Span;
 
 			return span.Start + range.StartColumn;
@@ -98,7 +98,7 @@ namespace TomPIT.Ide.TextServices
 
 		public static int GetCaret(this Document document, LinePosition position)
 		{
-			var text = document.GetTextAsync().Result;
+			var text = AsyncUtils.RunSync(() => document.GetTextAsync());
 			var span = text.Lines[position.Line].Span;
 
 			return span.Start + position.Character;
@@ -106,7 +106,7 @@ namespace TomPIT.Ide.TextServices
 
 		public static int GetCaret(this Document document, IPosition position)
 		{
-			var text = document.GetTextAsync().Result;
+			var text = AsyncUtils.RunSync(() => document.GetTextAsync());
 			var span = text.Lines[position.LineNumber].Span;
 
 			return span.Start + position.Column;

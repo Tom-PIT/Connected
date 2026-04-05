@@ -40,8 +40,16 @@ namespace TomPIT.Distributed
 
          Queue.Enqueue(item);
 
-         if (!Worker.IsRunning)
-            Worker.Run();
+         try
+         {
+            if (!Worker.IsRunning)
+               Worker.Run();
+         }
+         catch (InvalidOperationException)
+         {
+            // Worker was re-started from OnCompleted between the check and Run().
+            // The item is already queued — the running worker will pick it up.
+         }
 
          return true;
       }
@@ -60,6 +68,10 @@ namespace TomPIT.Distributed
             }
 
             Completed?.Invoke(this, EventArgs.Empty);
+         }
+         catch (InvalidOperationException)
+         {
+            // Already re-started — safe to ignore
          }
          catch { }
       }

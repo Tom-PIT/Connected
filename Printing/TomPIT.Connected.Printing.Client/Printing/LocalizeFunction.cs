@@ -33,7 +33,7 @@ namespace TomPIT.Connected.Printing.Client.Printing
 			if (operands.Length < 3)
 				return null;
 
-			return _provider.GetLocalization(operands[0].ToString(), operands[1].ToString(), operands[2].ToString(), _identity).ConfigureAwait(true).GetAwaiter().GetResult();
+			return _provider.GetLocalization(operands[0].ToString(), operands[1].ToString(), operands[2].ToString(), _identity).ConfigureAwait(false).GetAwaiter().GetResult();
 		}
 
 		public bool IsValidOperandCount(int count)

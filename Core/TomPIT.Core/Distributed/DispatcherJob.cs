@@ -59,11 +59,9 @@ namespace TomPIT.Distributed
 
 		private void DoWork()
 		{
-			T item = default;
-
-			try
+			while (Owner.Dequeue(out T item))
 			{
-				while (Owner.Dequeue(out item))
+				try
 				{
 					Counter++;
 					Current = item;
@@ -74,15 +72,15 @@ namespace TomPIT.Distributed
 					LastRun = DateTime.UtcNow;
 					DoWork(item);
 				}
-			}
-			catch (Exception ex)
-			{
-				try
+				catch (Exception ex)
 				{
-					OnError(item, ex);
-				}
-				catch
-				{
+					try
+					{
+						OnError(item, ex);
+					}
+					catch
+					{
+					}
 				}
 			}
 		}

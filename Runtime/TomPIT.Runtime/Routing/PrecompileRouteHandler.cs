@@ -24,7 +24,7 @@ internal sealed class PrecompileRouteHandler : RouteHandlerBase
 		{
 			Context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 			Context.Response.ContentType = "application/json";
-			Context.Response.WriteAsJsonAsync(result).Wait();
+			AsyncUtils.RunSync(() => Context.Response.WriteAsJsonAsync(result));
 		}
 	}
 }

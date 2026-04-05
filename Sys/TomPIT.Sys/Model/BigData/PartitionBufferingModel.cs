@@ -88,7 +88,7 @@ namespace TomPIT.Sys.Model.BigData
 			 * We need to flush it immediatelly because 
 			 * data is waiting for the inserted parent record
 			 */
-			OnFlushing().Wait();
+			AsyncUtils.RunSync(() => OnFlushing());
 		}
 		public void Update(Guid partition, TimeSpan nextVisible)
 		{

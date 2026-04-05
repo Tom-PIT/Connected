@@ -19,7 +19,6 @@ namespace TomPIT.BigData.Configuration
 
 				handler.ProcessRequest();
 
-				GC.Collect();
 				return Task.CompletedTask;
 			});
 

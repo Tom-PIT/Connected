@@ -45,9 +45,9 @@ namespace TomPIT.App.Resources
 				var buffer = Encoding.UTF8.GetBytes(bundle);
 
 				Context.Response.ContentLength = buffer.Length;
-				Context.Response.Body.WriteAsync(buffer, 0, buffer.Length).Wait();
+				AsyncUtils.RunSync(() => Context.Response.Body.WriteAsync(buffer, 0, buffer.Length));
 
-				Context.Response.CompleteAsync().Wait();
+				AsyncUtils.RunSync(() => Context.Response.CompleteAsync());
 			}
 		}
 	}

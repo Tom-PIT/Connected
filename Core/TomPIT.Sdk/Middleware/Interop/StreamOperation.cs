@@ -127,9 +127,9 @@ namespace TomPIT.Middleware.Interop
 
 			HttpContext.Response.Headers.Append("Content-Disposition", cd.ToString());
 			HttpContext.Response.ContentLength = e.Content.Length;
-			HttpContext.Response.Body.WriteAsync(e.Content, 0, e.Content.Length).Wait();
+			AsyncUtils.RunSync(() => HttpContext.Response.Body.WriteAsync(e.Content, 0, e.Content.Length));
 
-			HttpContext.Response.CompleteAsync().Wait();
+			AsyncUtils.RunSync(() => HttpContext.Response.CompleteAsync());
 		}
 	}
 }

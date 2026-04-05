@@ -5,8 +5,9 @@ using System.Threading;
 
 namespace TomPIT.Caching
 {
-    public abstract class SynchronizedRepository<T, K> : CacheRepository<T, K> where T : class
+    public abstract class SynchronizedRepository<T, K> : CacheRepository<T, K>, IDisposable where T : class
     {
+        private bool _disposed = false;
         protected object SyncRoot = new object();
         public event CacheInvalidateHandler Invalidate;
 
@@ -165,6 +166,15 @@ namespace TomPIT.Caching
                 Initialize();
 
             return base.Where(predicate);
+        }
+
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                Container.Invalidate -= OnInvalidate;
+                _disposed = true;
+            }
         }
 
         private ManualResetEvent InitializeSignal { get; set; }

@@ -15,7 +15,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services
 
 		public List<IDocumentSymbol> ProvideDocumentSymbols()
 		{
-			var model = Editor.Document.GetSemanticModelAsync().Result;
+			var model = AsyncUtils.RunSync(() => Editor.Document.GetSemanticModelAsync());
 			var nodes = model.SyntaxTree.GetRoot().DescendantNodesAndSelf();
 			var result = new List<IDocumentSymbol>();
 

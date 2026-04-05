@@ -74,10 +74,10 @@ namespace TomPIT.Development.Routing
 
 				Context.Response.Headers.Add("Content-Disposition", string.Format("attachment;filename=\"{0}\"", fileName));
 				Context.Response.ContentLength = buffer.Length;
-				Context.Response.Body.WriteAsync(buffer, 0, buffer.Length).Wait();
+				AsyncUtils.RunSync(() => Context.Response.Body.WriteAsync(buffer, 0, buffer.Length));
 			}
 
-			Context.Response.CompleteAsync().Wait();
+			AsyncUtils.RunSync(() => Context.Response.CompleteAsync());
 		}
 
 		private string LoadSource(Guid microService, IText text)

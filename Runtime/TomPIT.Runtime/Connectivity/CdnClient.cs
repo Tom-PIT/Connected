@@ -20,12 +20,12 @@ namespace TomPIT.Connectivity
 
 		public void Subscribe(List<IEventHubSubscription> events)
 		{
-			Hub.InvokeAsync("Add", events).ConfigureAwait(false).GetAwaiter().GetResult();
+			AsyncUtils.RunSync(() => Hub.InvokeAsync("Add", events));
 		}
 
 		public void Unsubscribe(List<IEventHubSubscription> events)
 		{
-			Hub.InvokeAsync("Remove", events).ConfigureAwait(false).GetAwaiter().GetResult();
+			AsyncUtils.RunSync(() => Hub.InvokeAsync("Remove", events));
 		}
 	}
 }

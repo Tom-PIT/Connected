@@ -23,7 +23,7 @@ namespace TomPIT.Ide.TextServices.Razor.Services
 				return r;
 
 			var completion = CompletionService.GetService(Editor.Document);
-			var sm = Editor.Document.GetSemanticModelAsync().Result;
+			var sm = AsyncUtils.RunSync(() => Editor.Document.GetSemanticModelAsync());
 			var caret = Editor.GetMappedCaret(position);
 
 			if (caret == -1)

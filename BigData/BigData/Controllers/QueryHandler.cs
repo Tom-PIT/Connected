@@ -85,9 +85,9 @@ namespace TomPIT.BigData.Controllers
                 Shell.HttpContext.Response.ContentType = "application/json";
                 Shell.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
 
-                Shell.HttpContext.Response.Body.WriteAsync(buffer, 0, buffer.Length).Wait();
+                AsyncUtils.RunSync(() => Shell.HttpContext.Response.Body.WriteAsync(buffer, 0, buffer.Length));
 
-                Shell.HttpContext.Response.CompleteAsync().Wait();
+                AsyncUtils.RunSync(() => Shell.HttpContext.Response.CompleteAsync());
             }
         }
 

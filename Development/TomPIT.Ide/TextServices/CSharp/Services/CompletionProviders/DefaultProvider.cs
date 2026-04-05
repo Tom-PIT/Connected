@@ -12,7 +12,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders
 			var position = Editor.Document.GetCaret(Arguments.Position);
 			var result = new List<ICompletionItem>();
 			var service = Microsoft.CodeAnalysis.Completion.CompletionService.GetService(Editor.Document);
-			var completions = service.GetCompletionsAsync(Editor.Document, position, Trigger).Result;
+			var completions = AsyncUtils.RunSync(() => service.GetCompletionsAsync(Editor.Document, position, Trigger));
 
 			if (completions == null)
 				return result;

@@ -42,9 +42,9 @@ namespace TomPIT.Routing
 			if (content != null && content.Content != null && content.Content.Length > 0)
 			{
 				Context.Response.ContentLength = content.Content.Length;
-				Context.Response.Body.WriteAsync(content.Content, 0, content.Content.Length);
+				AsyncUtils.RunSync(() => Context.Response.Body.WriteAsync(content.Content, 0, content.Content.Length));
 
-				Context.Response.CompleteAsync().Wait();
+				AsyncUtils.RunSync(() => Context.Response.CompleteAsync());
 			}
 		}
 	}

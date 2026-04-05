@@ -40,7 +40,7 @@ namespace TomPIT.Ide.TextServices.CSharp.Services.CompletionProviders
 			if (resolveDescription && CompletionItem.SupportsDescription(result.Kind))
 			{
 				descriptionResolved = true;
-				var description = service.GetDescriptionAsync(Editor.Document, item).Result;
+				var description = AsyncUtils.RunSync(() => service.GetDescriptionAsync(Editor.Document, item));
 
 				if (description != null)
 					result.Detail = description.Text;

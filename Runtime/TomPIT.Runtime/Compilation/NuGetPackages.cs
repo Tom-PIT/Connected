@@ -94,18 +94,18 @@ namespace TomPIT.Compilation
 
 		public List<string> ResolveRuntimePaths(string id, string version)
 		{
-			var fs = GetPackageFileSet(id, version).Result;
+			var fs = AsyncUtils.RunSync(() => GetPackageFileSet(id, version));
 
 			return fs.RuntimePaths;
 		}
 
 		public ImmutableList<Assembly> Resolve(Guid blob, bool entryOnly)
 		{
-			return Resolve(GetPackageFileSet(blob).Result, entryOnly);
+			return Resolve(AsyncUtils.RunSync(() => GetPackageFileSet(blob)), entryOnly);
 		}
 		public ImmutableList<Assembly> Resolve(string id, string version, bool entryOnly)
 		{
-			return Resolve(GetPackageFileSet(id, version).Result, entryOnly);
+			return Resolve(AsyncUtils.RunSync(() => GetPackageFileSet(id, version)), entryOnly);
 		}
 
 		private ImmutableList<Assembly> Resolve(PackageDescriptor files, bool entryOnly)
