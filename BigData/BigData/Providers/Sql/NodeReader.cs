@@ -16,5 +16,7 @@ namespace TomPIT.BigData.Providers.Sql
 		{
 			get { return Node.ConnectionString; }
 		}
+
+		protected override int CommandTimeout => 300;
 	}
 }

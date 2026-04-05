@@ -13,6 +13,9 @@ namespace TomPIT.Data.Sql
 
 		protected override string ConnectionKey { get { return "sys"; } }
 
+		protected virtual int CommandTimeout => 30;
+
+
 		public Reader(string commandText)
 			: base(commandText)
 		{
@@ -190,6 +193,7 @@ namespace TomPIT.Data.Sql
 
 			command = Connection.CreateCommand();
 
+			command.CommandTimeout = CommandTimeout;
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
 			command.CommandText = CommandText;
 #pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
