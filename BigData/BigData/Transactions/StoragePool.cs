@@ -55,14 +55,22 @@ namespace TomPIT.BigData.Transactions
 
 		private static void EnsureWorker(StorageWorkerItem item)
 		{
-			if (!Workers.ContainsKey(item.Block.Partition))
+			var partition = item.Block.Partition;
+
+			if (Workers.ContainsKey(partition))
+				return;
+
+			var worker = new StorageWorker(partition, Cancel);
+			worker.Completed += OnWorkerCompleted;
+
+			if (Workers.TryAdd(partition, worker))
 			{
-				var worker = new StorageWorker(item.Block.Partition, Cancel);
-
-				worker.Completed += OnWorkerCompleted;
-				Workers.TryAdd(item.Block.Partition, worker);
-
 				worker.Run();
+			}
+			else
+			{
+				worker.Completed -= OnWorkerCompleted;
+				worker.Dispose();
 			}
 		}
 
@@ -75,8 +83,7 @@ namespace TomPIT.BigData.Transactions
 			{
 				Tenant.GetService<ILoggingService>().Dump($"StoragePool, {worker.Partition} partition worker completed.");
 
-				if (Workers.ContainsKey(worker.Partition))
-					Workers.TryRemove(worker.Partition, out StorageWorker _);
+				Workers.TryRemove(worker.Partition, out _);
 
 				worker.Dispose();
 				worker = null;

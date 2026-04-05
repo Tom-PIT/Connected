@@ -68,8 +68,6 @@ namespace TomPIT.BigData.Transactions
 						ctx.Services.Diagnostic.Error(nameof(BufferingJob), ex.ToString(), LogCategories.BigData);
 					}
 				}
-				
-				GC.Collect();
 			}
 
 			Complete(item.Partition, middleware.BufferTimeout, items == null || items.Count == 0 ? 0 : items.Max(f => f.Id));
