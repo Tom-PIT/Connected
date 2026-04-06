@@ -3,9 +3,9 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
     <Configurations>Debug;Release;Development</Configurations>
-    <AssemblyVersion>6.1.406.2</AssemblyVersion>
-    <FileVersion>6.1.406.2</FileVersion>
-    <Version>6.1.406.2</Version>
+    <AssemblyVersion>6.1.406.3</AssemblyVersion>
+    <FileVersion>6.1.406.3</FileVersion>
+    <Version>6.1.406.3</Version>
   </PropertyGroup>
   <PropertyGroup>
     <AppConfig>App.$(Configuration).config</AppConfig>
