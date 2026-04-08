@@ -79,7 +79,7 @@ namespace TomPIT.BigData.Providers.Sql
 		{
 			var text = Owner.CommandText.Replace("@file", $"t_{file.FileName.ToString().Replace("-", string.Empty)}");
 
-			return text;
+			return $"SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;\n{text}";
 		}
 	}
 }

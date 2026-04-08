@@ -38,9 +38,9 @@ namespace TomPIT.Caching
                     //Add resiliance against database transaction write lag
                     if (!existedBefore && Get(id) is null)
                     {
-                        for (var i = 1; i <= 3; i++)
+                        for (var i = 0; i < 10; i++)
                         {
-                            Thread.Sleep(i * 100);
+                            Thread.Sleep(1);
                             OnInvalidate(id);
 
                             if (Get(id) is not null)
