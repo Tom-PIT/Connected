@@ -7,9 +7,9 @@
   </PropertyGroup>
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
-    <AssemblyVersion>6.1.406.4</AssemblyVersion>
-    <FileVersion>6.1.406.4</FileVersion>
-    <Version>6.1.406.4</Version>
+    <AssemblyVersion>6.1.408.1</AssemblyVersion>
+    <FileVersion>6.1.408.1</FileVersion>
+    <Version>6.1.408.1</Version>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
