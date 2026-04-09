@@ -59,14 +59,14 @@ namespace TomPIT.BigData.Partitions
 
 		public Guid Lock(Guid file)
 		{
-			for (var i = 1; i < 10; i++)
+			for (var i = 1; i < 5; i++)
 			{
 				var result = Tenant.GetService<IPartitionService>().LockFile(file);
 
 				if (result != Guid.Empty)
 					return result;
 
-				Thread.Sleep(i * 50);
+				Thread.Sleep(i * 25);
 			}
 
 			return Guid.Empty;

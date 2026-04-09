@@ -123,7 +123,7 @@ namespace TomPIT.BigData.Providers.Sql
 		{
 			var result = new StringBuilder();
 
-			result.AppendLine($"MERGE t_{context.TableName()} AS t");
+			result.AppendLine($"MERGE t_{context.TableName()} WITH (ROWLOCK) AS t");
 			result.AppendLine("USING (SELECT * FROM OPENJSON(@rows) WITH (");
 			var hit = false;
 
@@ -285,7 +285,7 @@ namespace TomPIT.BigData.Providers.Sql
 
 		private FileStatistics GetFileStatistics(INode node, DataFileContext context)
 		{
-			var commandText = $"SELECT MIN({Merger.TimestampColumn}) AS min_timestamp, MAX({Merger.TimestampColumn}) AS max_timestamp, COUNT(*) AS count FROM [t_{context.TableName()}]";
+			var commandText = $"SELECT MIN({Merger.TimestampColumn}) AS min_timestamp, MAX({Merger.TimestampColumn}) AS max_timestamp, COUNT(*) AS count FROM [t_{context.TableName()}] WITH (NOLOCK)";
 
 			using var r = new NodeReader<FileStatistics>(node, commandText, CommandType.Text);
 
@@ -294,7 +294,7 @@ namespace TomPIT.BigData.Providers.Sql
 
 		private static void UpdateFieldStatistics(INode node, IPartitionFile file, PartitionSchemaField field)
 		{
-			var commandText = string.Format("SELECT MIN([{0}]) AS minv, MAX([{0}]) AS maxv FROM [t_{1}]", field.Name, file.TableName());
+			var commandText = string.Format("SELECT MIN([{0}]) AS minv, MAX([{0}]) AS maxv FROM [t_{1}] WITH (NOLOCK)", field.Name, file.TableName());
 
 			var startString = string.Empty;
 			var endString = string.Empty;

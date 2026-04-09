@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -17,6 +18,7 @@ namespace TomPIT.BigData.Transactions
 		public const string IdColumn = "_id";
 
 		private static readonly Lazy<PartitionFileManager> _fileManager = new Lazy<PartitionFileManager>();
+		private static readonly ConcurrentDictionary<Guid, object> _partitionLocks = new ConcurrentDictionary<Guid, object>();
 
 		public Merger(IUpdateProvider provider, string partitionKey, DataTable data)
 		{
@@ -30,6 +32,7 @@ namespace TomPIT.BigData.Transactions
 		private DataTable Data { get; }
 		public bool Locked { get; set; }
 		private static PartitionFileManager FileManager => _fileManager.Value;
+		private object PartitionLock => _partitionLocks.GetOrAdd(Provider.Block.Partition, _ => new object());
 
 		public void Merge()
 		{
@@ -59,7 +62,7 @@ namespace TomPIT.BigData.Transactions
 
 		private List<DataFileContext> CreateDataFileContext()
 		{
-			lock (FileManager)
+			lock (PartitionLock)
 			{
 				var r = new List<DataFileContext>();
 				var minValue = Data.Compute(string.Format("Min({0})", TimestampColumn), string.Empty);
@@ -202,7 +205,7 @@ namespace TomPIT.BigData.Transactions
 
 		private DataFileContext CreateDataFileContext(DateTime timestamp, DateTime min, DateTime max)
 		{
-			lock (FileManager)
+			lock (PartitionLock)
 			{
 				var files = Tenant.GetService<IPartitionService>().QueryFiles(Provider.Block.Partition, Provider.Block.Timezone, PartitionKey, min, max);
 				var target = files.FirstOrDefault(f => (f.Status == PartitionFileStatus.Open || f.StartTimestamp <= timestamp) && (f.EndTimestamp == DateTime.MinValue || f.EndTimestamp >= timestamp));
