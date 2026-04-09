@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 
 using Newtonsoft.Json.Linq;
-
+using NuGet.Packaging;
 using TomPIT.Annotations.BigData;
 using TomPIT.BigData.Partitions;
 using TomPIT.BigData.Persistence;
@@ -56,20 +56,15 @@ namespace TomPIT.BigData.Providers.Sql
       {
          Result = new JArray();
 
-         Parallel.ForEach(PrepareProcessors(),
-            (f) =>
-            {
-               var result = f.Execute();
+         foreach (var f in PrepareProcessors())
+         {
+            var result = f.Execute();
 
-               if (result != null)
-               {
-                  lock (Result)
-                  {
-                     foreach (var item in result)
-                        Result.Add(item);
-                  }
-               }
-            });
+            if (result != null)
+            {
+               Result.AddRange(result);
+            }
+         }
       }
 
       private List<QueryProcessor> PrepareProcessors()

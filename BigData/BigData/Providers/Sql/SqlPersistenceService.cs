@@ -123,8 +123,7 @@ namespace TomPIT.BigData.Providers.Sql
 		{
 			var result = new StringBuilder();
 
-			result.AppendLine($"MERGE t_{context.TableName()} WITH (ROWLOCK) AS t");
-			result.AppendLine("USING (SELECT * FROM OPENJSON(@rows) WITH (");
+			result.AppendLine("CREATE TABLE #src (");
 			var hit = false;
 
 			foreach (var field in provider.Schema.Fields)
@@ -136,7 +135,9 @@ namespace TomPIT.BigData.Providers.Sql
 				result.Append($"{field.Name} {ResolveFieldDataTypeString(field)}");
 			}
 
-			result.Append(")) AS s (");
+			result.AppendLine(");");
+
+			result.AppendLine("INSERT INTO #src SELECT * FROM OPENJSON(@rows) WITH (");
 			hit = false;
 
 			foreach (var field in provider.Schema.Fields)
@@ -145,10 +146,13 @@ namespace TomPIT.BigData.Providers.Sql
 					result.Append(", ");
 
 				hit = true;
-				result.Append($"{field.Name}");
+				result.Append($"{field.Name} {ResolveFieldDataTypeString(field)}");
 			}
 
-			result.AppendLine(")");
+			result.AppendLine(");");
+
+			result.AppendLine($"MERGE t_{context.TableName()} WITH (ROWLOCK) AS t");
+			result.AppendLine("USING #src AS s");
 			result.Append("ON (");
 			hit = false;
 
@@ -234,6 +238,8 @@ namespace TomPIT.BigData.Providers.Sql
 				result.AppendLine("\nOUTPUT $action, inserted.*;");
 			else
 				result.AppendLine("\nOUTPUT inserted.*;");
+
+			result.AppendLine("DROP TABLE #src;");
 
 			return result.ToString();
 		}
