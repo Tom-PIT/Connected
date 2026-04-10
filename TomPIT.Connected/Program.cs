@@ -24,6 +24,9 @@ namespace TomPIT.Connected
 			try
 			{
 				var builder = WebApplication.CreateBuilder(args);
+
+				builder.WebHost.ConfigureKestrel(o => o.AllowSynchronousIO = true);
+
 				var boot = new Startup();
 
 				boot.ConfigureServices(builder.Services);
