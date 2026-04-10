@@ -274,3 +274,6 @@ __pycache__/
 /TomPIT.Connected/sys.json
 /nuget.config
 /TomPIT.Connected/sys.json
+
+# Local AI cache files
+*.lscache
