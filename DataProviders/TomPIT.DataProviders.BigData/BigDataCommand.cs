@@ -3,6 +3,8 @@ using System;
 using System.Data;
 using System.Data.Common;
 using System.Threading;
+using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.BigData;
 using TomPIT.Diagnostics;
 using TomPIT.Environment;
 using TomPIT.Exceptions;
@@ -100,7 +102,7 @@ namespace TomPIT.DataProviders.BigData
 					{
 						interval = interval == 0 ? 1 : interval *= 3;
 
-						Thread.Sleep(interval*1000);
+						Thread.Sleep(interval * 1000);
 					}
 				}
 			}
@@ -112,11 +114,19 @@ namespace TomPIT.DataProviders.BigData
 				return;
 
 			var tokens = CommandText.Split('/');
-			var u = $"{Connection.DataSource}/data/{tokens[0]}/{tokens[1]}";
+			var config = ResolveConfiguration(tokens[0], tokens[1]);
 
-			MiddlewareDescriptor.Current.Tenant.Post(u, PostData);
+			((BigDataConnection)Connection).ResolveProxy().Write(config, PostData);
 
 			_postData = null;
+		}
+
+		private IPartitionConfiguration ResolveConfiguration(string microService, string partition)
+		{
+			var ms = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(microService);
+
+			return MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>()
+				.SelectConfiguration(ms.Token, ComponentCategories.BigDataPartition, partition) as IPartitionConfiguration;
 		}
 		public override object ExecuteScalar()
 		{

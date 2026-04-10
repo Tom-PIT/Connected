@@ -3,6 +3,7 @@ using System.Data;
 using System.Data.Common;
 using TomPIT.Environment;
 using TomPIT.Middleware;
+using TomPIT.Proxy;
 
 namespace TomPIT.DataProviders.BigData
 {
@@ -58,6 +59,22 @@ namespace TomPIT.DataProviders.BigData
 		}
 
 		internal BigDataTransaction Transaction { get; private set; }
+
+		internal IBigDataProxy ResolveProxy()
+		{
+			var proxy = MiddlewareDescriptor.Current.Tenant.GetService<IBigDataProxy>();
+
+			if (proxy != null)
+			{
+				var ownUrl = MiddlewareDescriptor.Current.Tenant.GetService<IInstanceEndpointService>()
+					?.Url(InstanceFeatures.BigData, InstanceVerbs.Post);
+
+				if (string.Equals(DataSource, ownUrl, StringComparison.OrdinalIgnoreCase))
+					return proxy;
+			}
+
+			return new RemoteBigDataProxy(DataSource);
+		}
 
 		protected override DbCommand CreateDbCommand()
 		{

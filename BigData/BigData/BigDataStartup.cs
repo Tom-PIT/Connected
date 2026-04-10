@@ -9,6 +9,7 @@ using TomPIT.BigData.Providers.Sql;
 using TomPIT.BigData.Transactions;
 using TomPIT.Connectivity;
 using TomPIT.Diagnostics.Tracing;
+using TomPIT.Proxy;
 using TomPIT.Startup;
 
 namespace TomPIT.BigData
@@ -52,6 +53,7 @@ namespace TomPIT.BigData
 
 		private void OnTenantInitialize(object sender, TenantArgs e)
 		{
+			e.Tenant.RegisterService(typeof(IBigDataProxy), typeof(BigDataProxyService));
 			e.Tenant.RegisterService(typeof(INodeService), typeof(NodeService));
 			e.Tenant.RegisterService(typeof(ITransactionService), typeof(TransactionService));
 			e.Tenant.RegisterService(typeof(IPartitionService), typeof(PartitionService));

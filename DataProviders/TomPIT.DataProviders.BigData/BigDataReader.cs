@@ -3,7 +3,8 @@ using System;
 using System.Collections;
 using System.Data.Common;
 using System.Linq;
-using TomPIT.Connectivity;
+using TomPIT.ComponentModel;
+using TomPIT.ComponentModel.BigData;
 using TomPIT.Diagnostics;
 using TomPIT.Environment;
 using TomPIT.Exceptions;
@@ -31,8 +32,6 @@ namespace TomPIT.DataProviders.BigData
 				throw new RuntimeException(nameof(BigDataCommand), SR.ErrCommandTextNull, LogCategories.BigData);
 
 			var tokens = Command.CommandText.Split('/');
-			var u = $"{Command.Connection.DataSource}/query/{tokens[0]}/{tokens[1]}";
-
 			var args = new JArray();
 
 			foreach (BigDataParameter parameter in Command.Parameters)
@@ -41,17 +40,22 @@ namespace TomPIT.DataProviders.BigData
 				{
 					{parameter.ParameterName, new JValue( parameter.Value )}
 				});
-			};
-
-			HttpRequestArgs credentialArgs = null;
-
-			if (MiddlewareDescriptor.Current?.Identity?.IsAuthenticated ?? false)
-			{
-				credentialArgs = new HttpRequestArgs().WithCurrentCredentials(MiddlewareDescriptor.Current.User.AuthenticationToken);
 			}
+			;
 
-			_data = MiddlewareDescriptor.Current.Tenant.Post<JArray>(u, args, credentialArgs);
+			var config = ResolveConfiguration(tokens[0], tokens[1]);
+
+			_data = ((BigDataConnection)Command.Connection).ResolveProxy().Query(config, args);
 		}
+
+		private IPartitionConfiguration ResolveConfiguration(string microService, string partition)
+		{
+			var ms = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(microService);
+
+			return MiddlewareDescriptor.Current.Tenant.GetService<IComponentService>()
+				.SelectConfiguration(ms.Token, ComponentCategories.BigDataPartition, partition) as IPartitionConfiguration;
+		}
+
 		private BigDataCommand Command { get; }
 		private JObject Current => ReadIndex == -1 || ReadIndex > _data.Count ? null : _data[ReadIndex] as JObject;
 		public override object this[int ordinal] => ((JValue)Current.Properties().ElementAt(ordinal).Value).Value;

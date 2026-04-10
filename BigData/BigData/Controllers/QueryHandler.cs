@@ -1,13 +1,12 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
 using System.Net;
 using System.Text;
-using TomPIT.BigData.Persistence;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.BigData;
 using TomPIT.Middleware;
+using TomPIT.Proxy;
 using TomPIT.Serialization;
 
 namespace TomPIT.BigData.Controllers
@@ -52,28 +51,8 @@ namespace TomPIT.BigData.Controllers
             if (!_successfullyInitialized)
                 return;
 
-            var parameters = new List<QueryParameter>();
-
-            foreach (JObject parameter in Body)
-            {
-                var property = parameter.First as JProperty;
-
-                var value = ((JValue)property.Value).Value;
-
-                try
-                {
-                    value = Serializer.Deserialize<JArray>(value);
-                }
-                catch { }
-
-                parameters.Add(new QueryParameter
-                {
-                    Name = property.Name,
-                    Value = value
-                });
-            }
-
-            var result = MiddlewareDescriptor.Current.Tenant.GetService<IPersistenceService>().Query(Configuration, parameters);
+            var result = MiddlewareDescriptor.Current.Tenant.GetService<IBigDataProxy>()
+                .Query(Configuration, Body);
 
             if (result != null)
             {

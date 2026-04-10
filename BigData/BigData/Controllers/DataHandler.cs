@@ -2,10 +2,10 @@
 using Microsoft.AspNetCore.Routing;
 using Newtonsoft.Json.Linq;
 using System.Net;
-using TomPIT.BigData.Transactions;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.BigData;
 using TomPIT.Middleware;
+using TomPIT.Proxy;
 
 namespace TomPIT.BigData.Controllers
 {
@@ -52,16 +52,17 @@ namespace TomPIT.BigData.Controllers
             if (!_successfullyInitialized)
                 return;
 
-            MiddlewareDescriptor.Current.Tenant.GetService<ITransactionService>().Prepare(Configuration, Body);
+            MiddlewareDescriptor.Current.Tenant.GetService<IBigDataProxy>()
+                .Write(Configuration, Body);
         }
 
-		protected override void Dispose(bool disposing)
-		{
-			base.Dispose(disposing);
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
 
-         Body = null;
-         Context = null;
-         Configuration = null;
-		}
-	}
+            Body = null;
+            Context = null;
+            Configuration = null;
+        }
+    }
 }
