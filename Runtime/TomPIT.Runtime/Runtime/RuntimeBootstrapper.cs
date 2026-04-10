@@ -13,6 +13,7 @@ using TomPIT.Design;
 using TomPIT.Design.Serialization;
 using TomPIT.Design.Validation;
 using TomPIT.Diagnostics;
+using TomPIT.Routing;
 using TomPIT.Distributed;
 using TomPIT.Environment;
 using TomPIT.Exceptions;
@@ -112,16 +113,19 @@ namespace TomPIT.Runtime
 			e.Tenant.RegisterService(typeof(IQueueService), typeof(QueueService));
 			e.Tenant.RegisterService(typeof(IGraphicsService), typeof(GraphicsService));
 			e.Tenant.RegisterService(typeof(ISearchService), typeof(SearchService));
+			e.Tenant.RegisterService(typeof(ISearchNodeProxy), typeof(RemoteSearchNodeProxy));
 			e.Tenant.RegisterService(typeof(ILocalizationService), typeof(LocalizationService));
 			e.Tenant.RegisterService(typeof(IPrintingService), typeof(PrintingService));
 			e.Tenant.RegisterService(typeof(IAnalyticsService), typeof(AnalyticsService));
 			e.Tenant.RegisterService(typeof(IDesignService), typeof(DesignService));
 			e.Tenant.RegisterService(typeof(ILockingService), typeof(LockingService));
 			e.Tenant.RegisterService(typeof(IClientService), typeof(ClientService));
+			e.Tenant.RegisterService(typeof(ICdnClientNotificationProxy), typeof(RemoteCdnClientProxy));
 			e.Tenant.RegisterService(typeof(IDocumentService), typeof(DocumentService));
 			e.Tenant.RegisterService(typeof(IFileSystemService), typeof(FileSystemService));
 			e.Tenant.RegisterService(typeof(IMicroServiceTemplateService), typeof(MicroServiceTemplateService));
 			e.Tenant.RegisterService(typeof(IDebugService), typeof(DebugService));
+			e.Tenant.RegisterService(typeof(IDesignNotificationProxy), typeof(DesignNotificationService));
 			e.Tenant.RegisterService(typeof(IViewCompilerService), typeof(ViewCompilerService));
 
 			AsyncUtils.RunSync(() => MicroServiceCompiler.Compile());

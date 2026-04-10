@@ -4,10 +4,11 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
-using TomPIT.Connectivity;
+using TomPIT.Design;
 using TomPIT.Middleware;
 
 namespace TomPIT.Runtime;
+
 internal class DebugService : IDebugService, IDisposable
 {
 	private static readonly ConfigurationBindings _binder = new();
@@ -47,6 +48,7 @@ internal class DebugService : IDebugService, IDisposable
 	private void OnFlush()
 	{
 		var token = Cancel.Token;
+		var proxy = new RemoteDesignNotificationProxy(MiddlewareDescriptor.Current.Tenant, Url, AuthenticationToken);
 
 		while (!token.IsCancellationRequested)
 		{
@@ -59,34 +61,16 @@ internal class DebugService : IDebugService, IDisposable
 						switch (descriptor.MessageType)
 						{
 							case DebugType.ConfigurationAdded:
-								MiddlewareDescriptor.Current.Tenant.Post(CreateUrl("ConfigurationAdded"), new
-								{
-									descriptor.Component
-								}, new HttpRequestArgs().WithBearerCredentials(AuthenticationToken));
-
+								proxy.ConfigurationAdded(descriptor.Component);
 								break;
 							case DebugType.ConfigurationChanged:
-								MiddlewareDescriptor.Current.Tenant.Post(CreateUrl("ConfigurationChanged"), new
-								{
-									descriptor.Component
-								}, new HttpRequestArgs().WithBearerCredentials(AuthenticationToken));
-
+								proxy.ConfigurationChanged(descriptor.Component);
 								break;
 							case DebugType.ConfigurationRemoved:
-								MiddlewareDescriptor.Current.Tenant.Post(CreateUrl("ConfigurationRemoved"), new
-								{
-									descriptor.Component
-								}, new HttpRequestArgs().WithBearerCredentials(AuthenticationToken));
+								proxy.ConfigurationRemoved(descriptor.Component);
 								break;
 							case DebugType.SourceTextChanged:
-								MiddlewareDescriptor.Current.Tenant.Post(CreateUrl("SourceTextChanged"), new
-								{
-									descriptor.MicroService,
-									descriptor.Component,
-									descriptor.Token,
-									descriptor.Type
-								}, new HttpRequestArgs().WithBearerCredentials(AuthenticationToken));
-
+								proxy.SourceTextChanged(descriptor.MicroService, descriptor.Component, descriptor.Token, descriptor.Type);
 								break;
 						}
 					}
@@ -148,11 +132,6 @@ internal class DebugService : IDebugService, IDisposable
 			Type = type,
 			MessageType = DebugType.SourceTextChanged
 		});
-	}
-
-	private string CreateUrl(string action)
-	{
-		return $"{Url}/sys/debug/{action}";
 	}
 
 	public void Dispose()

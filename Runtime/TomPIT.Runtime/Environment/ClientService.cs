@@ -1,7 +1,6 @@
 ﻿using TomPIT.Caching;
+using TomPIT.Cdn;
 using TomPIT.Connectivity;
-using TomPIT.Exceptions;
-using TomPIT.Security;
 
 namespace TomPIT.Environment
 {
@@ -26,24 +25,7 @@ namespace TomPIT.Environment
 
 		public void Notify(string token, string method, object arguments)
 		{
-			var cdn = Tenant.GetService<IInstanceEndpointService>().Select(InstanceFeatures.Cdn);
-
-			if (cdn == null)
-				throw new NotFoundException($"{SR.ErrInstanceEndpointNotFound} ({InstanceFeatures.Cdn})");
-
-			var url = $"{cdn.Url}/sys/clients/notify";
-			var provider = Tenant.GetService<IAuthorizationService>() as IAuthenticationTokenProvider;
-			var authToken = string.Empty;
-
-			if (provider != null)
-				authToken = provider.RequestToken(InstanceFeatures.Cdn);
-
-			Tenant.Post(url, new
-			{
-				token,
-				method,
-				arguments
-			}, new HttpRequestArgs().WithBearerCredentials(authToken));
+			Tenant.GetService<ICdnClientNotificationProxy>().Notify(token, method, arguments);
 		}
 
 		public void NotifyChanged(object sender, ClientEventArgs e)

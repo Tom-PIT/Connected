@@ -50,6 +50,7 @@ namespace TomPIT.Cdn
 
 		private void OnTenantInitialize(object sender, TenantArgs e)
 		{
+			e.Tenant.RegisterService(typeof(ICdnClientNotificationProxy), typeof(ClientNotificationProxyService));
 			e.Tenant.RegisterService(typeof(IEventHubService), typeof(EventHubService));
 			e.Tenant.RegisterService(typeof(IPrintingManagementService), typeof(PrintingManagementService));
 			e.Tenant.RegisterService(typeof(IPrintingSpoolerManagementService), typeof(PrintingSpoolerManagementService));

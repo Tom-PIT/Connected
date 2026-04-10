@@ -4,8 +4,6 @@ using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Search;
 using TomPIT.Connectivity;
-using TomPIT.Environment;
-using TomPIT.Exceptions;
 using TomPIT.Middleware;
 using TomPIT.Reflection;
 using TomPIT.Runtime;
@@ -34,15 +32,7 @@ namespace TomPIT.Search
 
 		public IClientSearchResults Search(ISearchOptions options)
 		{
-			var url = Tenant.GetService<IInstanceEndpointService>().Url(InstanceFeatures.Search, InstanceVerbs.Post);
-
-			if (string.IsNullOrWhiteSpace(url))
-				throw new RuntimeException($"{SR.ErrNoServer} ({InstanceFeatures.Search}, {InstanceVerbs.Post})");
-
-			var u = ServerUrl.Create(url, "Search", "Search");
-
-			var args = new HttpRequestArgs().WithCurrentCredentials(MiddlewareDescriptor.Current.User == null ? Guid.Empty : MiddlewareDescriptor.Current.User.AuthenticationToken);
-			var results = Tenant.Post<SearchResults>(u, options, args);
+			var results = (SearchResults)Tenant.GetService<ISearchNodeProxy>().Search(options);
 			var clientResults = new ClientSearchResults();
 			var handlers = new Dictionary<Guid, dynamic>();
 

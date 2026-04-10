@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TomPIT.Controllers;
-using TomPIT.Search.Catalogs;
+using TomPIT.Middleware;
+using TomPIT.Search;
 
 namespace TomPIT.Search.Controllers
 {
@@ -16,11 +13,8 @@ namespace TomPIT.Search.Controllers
 		public ISearchResults Search()
 		{
 			var body = FromBody<SearchOptions>();
-			var transaction = new SearchTransaction();
 
-			transaction.Search(body);
-
-			return transaction.Results;
+			return MiddlewareDescriptor.Current.Tenant.GetService<ISearchNodeProxy>().Search(body);
 		}
 	}
 }

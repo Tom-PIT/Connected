@@ -35,6 +35,7 @@ namespace TomPIT.Search
 
         private void OnTenantInitialize(object sender, TenantArgs e)
         {
+            e.Tenant.RegisterService(typeof(ISearchNodeProxy), typeof(SearchNodeProxyService));
             e.Tenant.RegisterService(typeof(IIndexingService), typeof(IndexingService));
         }
     }
