@@ -98,11 +98,9 @@ namespace TomPIT.MicroServices.Design
 
 		public override void RegisterRoutes(IEndpointRouteBuilder builder)
 		{
-			builder.Map("sys/designers/application/media/{microService}/{component}", (t) =>
+			builder.Map("sys/designers/application/media/{microService}/{component}", async (t) =>
 			{
-				new MediaHandler().ProcessRequest(t);
-
-				return Task.CompletedTask;
+				await new MediaHandler().ProcessRequestAsync(t);
 			});
 		}
 	}

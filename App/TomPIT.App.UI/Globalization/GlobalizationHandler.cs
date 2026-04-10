@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Routing;
 using TomPIT.Middleware;
 using TomPIT.Routing;
@@ -8,7 +9,7 @@ namespace TomPIT.App.Globalization
 {
 	internal class GlobalizationHandler : RouteHandlerBase
 	{
-		protected override void OnProcessRequest()
+		protected override async Task OnProcessRequestAsync()
 		{
 			var locale = Context.GetRouteValue("locale") as string;
 			var segments = (ClientGlobalizationSegment)Convert.ToInt64(Context.GetRouteValue("segments"));
@@ -26,9 +27,8 @@ namespace TomPIT.App.Globalization
 				var buffer = Encoding.UTF8.GetBytes(content);
 
 				Context.Response.ContentLength = buffer.Length;
-				AsyncUtils.RunSync(() => Context.Response.Body.WriteAsync(buffer, 0, buffer.Length));
-
-				AsyncUtils.RunSync(() => Context.Response.CompleteAsync());
+				await Context.Response.Body.WriteAsync(buffer, 0, buffer.Length);
+				await Context.Response.CompleteAsync();
 			}
 		}
 	}

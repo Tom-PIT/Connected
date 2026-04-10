@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Newtonsoft.Json.Linq;
 using System.Net;
@@ -46,7 +47,7 @@ namespace TomPIT.BigData.Controllers
             _successfullyInitialized = true;
         }
 
-        public void ProcessRequest()
+        public async Task ProcessRequestAsync()
         {
             if (!_successfullyInitialized)
                 return;
@@ -64,9 +65,8 @@ namespace TomPIT.BigData.Controllers
                 Shell.HttpContext.Response.ContentType = "application/json";
                 Shell.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
 
-                AsyncUtils.RunSync(() => Shell.HttpContext.Response.Body.WriteAsync(buffer, 0, buffer.Length));
-
-                AsyncUtils.RunSync(() => Shell.HttpContext.Response.CompleteAsync());
+                await Shell.HttpContext.Response.Body.WriteAsync(buffer, 0, buffer.Length);
+                await Shell.HttpContext.Response.CompleteAsync();
             }
         }
 

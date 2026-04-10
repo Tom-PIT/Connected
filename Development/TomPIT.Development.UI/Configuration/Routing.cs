@@ -27,11 +27,9 @@ namespace TomPIT.Development.Configuration
 			routes.MapControllerRoute("sys.selectuserstate", "sys/select-user-state", new { controller = "Ide", action = "SelectUserState" });
 			routes.MapControllerRoute("sys.updateuserstate", "sys/update-user-state", new { controller = "Ide", action = "UpdateUserState" });
 
-			routes.Map("sys/source-code/{microService}/{component}/{template}", (t) =>
+			routes.Map("sys/source-code/{microService}/{component}/{template}", async (t) =>
 			{
-				new SourceCode().ProcessRequest(t);
-
-				return Task.CompletedTask;
+				await new SourceCode().ProcessRequestAsync(t);
 			});
 
 			//routes.Map("sys/media/{id}/{version}", (t) =>

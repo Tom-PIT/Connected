@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Routing;
 using System;
 using System.Net;
+using System.Threading.Tasks;
 using TomPIT.Middleware;
 using TomPIT.Storage;
 
@@ -8,7 +9,7 @@ namespace TomPIT.Routing
 {
 	internal class AvatarRouteHandler : RouteHandlerBase
 	{
-		protected override void OnProcessRequest()
+		protected override async Task OnProcessRequestAsync()
 		{
 			/*
 			 * on multi tenant environments (development, management) SysContext
@@ -42,9 +43,8 @@ namespace TomPIT.Routing
 			if (content != null && content.Content != null && content.Content.Length > 0)
 			{
 				Context.Response.ContentLength = content.Content.Length;
-				AsyncUtils.RunSync(() => Context.Response.Body.WriteAsync(content.Content, 0, content.Content.Length));
-
-				AsyncUtils.RunSync(() => Context.Response.CompleteAsync());
+				await Context.Response.Body.WriteAsync(content.Content, 0, content.Content.Length);
+				await Context.Response.CompleteAsync();
 			}
 		}
 	}

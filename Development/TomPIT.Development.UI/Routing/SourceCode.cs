@@ -2,6 +2,7 @@
 using System;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using TomPIT.Annotations.Design;
 using TomPIT.Compilation;
 using TomPIT.ComponentModel;
@@ -14,7 +15,7 @@ namespace TomPIT.Development.Routing
 {
 	internal class SourceCode : RouteHandlerBase
 	{
-		protected override void OnProcessRequest()
+		protected override async Task OnProcessRequestAsync()
 		{
 			var microService = new Guid(Context.GetRouteValue("microService").ToString());
 
@@ -74,10 +75,10 @@ namespace TomPIT.Development.Routing
 
 				Context.Response.Headers.Add("Content-Disposition", string.Format("attachment;filename=\"{0}\"", fileName));
 				Context.Response.ContentLength = buffer.Length;
-				AsyncUtils.RunSync(() => Context.Response.Body.WriteAsync(buffer, 0, buffer.Length));
+				await Context.Response.Body.WriteAsync(buffer, 0, buffer.Length);
 			}
 
-			AsyncUtils.RunSync(() => Context.Response.CompleteAsync());
+			await Context.Response.CompleteAsync();
 		}
 
 		private string LoadSource(Guid microService, IText text)

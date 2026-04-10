@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
 using System.Globalization;
+using System.Threading.Tasks;
 using TomPIT.Connectivity;
 using TomPIT.Middleware;
 using TomPIT.Security;
@@ -16,9 +17,23 @@ namespace TomPIT.Routing
 			OnProcessRequest();
 		}
 
+		public async Task ProcessRequestAsync(HttpContext context)
+		{
+			Context = context;
+
+			await OnProcessRequestAsync();
+		}
+
 		protected virtual void OnProcessRequest()
 		{
 
+		}
+
+		protected virtual Task OnProcessRequestAsync()
+		{
+			OnProcessRequest();
+
+			return Task.CompletedTask;
 		}
 
 		protected HttpContext Context { get; private set; }

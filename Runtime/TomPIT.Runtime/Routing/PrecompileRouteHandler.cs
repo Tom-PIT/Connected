@@ -1,14 +1,16 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using TomPIT.Compilation;
 using TomPIT.Middleware;
 using TomPIT.Security;
 
 namespace TomPIT.Routing;
+
 internal sealed class PrecompileRouteHandler : RouteHandlerBase
 {
-	protected override void OnProcessRequest()
+	protected override async Task OnProcessRequestAsync()
 	{
 		var ctx = Tenant ?? MiddlewareDescriptor.Current.Tenant;
 
@@ -24,7 +26,7 @@ internal sealed class PrecompileRouteHandler : RouteHandlerBase
 		{
 			Context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 			Context.Response.ContentType = "application/json";
-			AsyncUtils.RunSync(() => Context.Response.WriteAsJsonAsync(result));
+			await Context.Response.WriteAsJsonAsync(result);
 		}
 	}
 }

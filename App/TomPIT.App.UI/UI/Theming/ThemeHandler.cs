@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Routing;
 using TomPIT.ComponentModel;
 using TomPIT.Middleware;
@@ -10,7 +11,7 @@ namespace TomPIT.App.UI.Theming
 {
 	internal class ThemeHandler : RouteHandlerBase
 	{
-		protected override void OnProcessRequest()
+		protected override async Task OnProcessRequestAsync()
 		{
 			var ms = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(Context.GetRouteValue("microService") as string);
 
@@ -43,9 +44,8 @@ namespace TomPIT.App.UI.Theming
 				var buffer = Encoding.UTF8.GetBytes(theme);
 
 				Context.Response.ContentLength = buffer.Length;
-				AsyncUtils.RunSync(() => Context.Response.Body.WriteAsync(buffer, 0, buffer.Length));
-
-				AsyncUtils.RunSync(() => Context.Response.CompleteAsync());
+				await Context.Response.Body.WriteAsync(buffer, 0, buffer.Length);
+				await Context.Response.CompleteAsync();
 			}
 		}
 	}

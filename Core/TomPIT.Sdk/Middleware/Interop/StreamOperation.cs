@@ -3,6 +3,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Net.Mime;
+using System.Threading.Tasks;
 using TomPIT.Exceptions;
 
 namespace TomPIT.Middleware.Interop
@@ -105,6 +106,11 @@ namespace TomPIT.Middleware.Interop
 
 		protected void Write(StreamOperationWriteArgs e)
 		{
+			WriteAsync(e).GetAwaiter().GetResult();
+		}
+
+		protected async Task WriteAsync(StreamOperationWriteArgs e)
+		{
 			if (HttpContext == null)
 				throw new RuntimeException(SR.ErrHttpContextNull);
 
@@ -127,9 +133,9 @@ namespace TomPIT.Middleware.Interop
 
 			HttpContext.Response.Headers.Append("Content-Disposition", cd.ToString());
 			HttpContext.Response.ContentLength = e.Content.Length;
-			AsyncUtils.RunSync(() => HttpContext.Response.Body.WriteAsync(e.Content, 0, e.Content.Length));
+			await HttpContext.Response.Body.WriteAsync(e.Content, 0, e.Content.Length);
 
-			AsyncUtils.RunSync(() => HttpContext.Response.CompleteAsync());
+			await HttpContext.Response.CompleteAsync();
 		}
 	}
 }

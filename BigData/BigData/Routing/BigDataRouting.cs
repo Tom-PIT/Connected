@@ -22,13 +22,11 @@ namespace TomPIT.BigData.Configuration
 				return Task.CompletedTask;
 			});
 
-			builder.Map("query/{microService}/{partition}", (t) =>
+			builder.Map("query/{microService}/{partition}", async (t) =>
 			{
 				using var handler = new QueryHandler(t);
 
-				handler.ProcessRequest();
-
-				return Task.CompletedTask;
+				await handler.ProcessRequestAsync();
 			});
 		}
 	}

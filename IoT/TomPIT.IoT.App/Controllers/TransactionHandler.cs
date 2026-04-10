@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.IoT;
 using TomPIT.IoT.Hubs;
@@ -45,7 +46,7 @@ namespace TomPIT.IoT.Controllers
             Body = Context.Request.Body.ToJObject();
         }
 
-        public void ProcessRequest()
+        public async Task ProcessRequestAsync()
         {
             var payload = new JObject
             {
@@ -54,10 +55,10 @@ namespace TomPIT.IoT.Controllers
                 { "device", $"{MicroService.Name}/{Hub}/{Device}" }
             };
 
-            AsyncUtils.RunSync(() => IoTServerHub.Invoke(payload, HubContext?.Clients));
+            await IoTServerHub.Invoke(payload, HubContext?.Clients);
 
             Shell.HttpContext.Response.StatusCode = StatusCodes.Status200OK;
-            AsyncUtils.RunSync(() => Shell.HttpContext.Response.CompleteAsync());
+            await Shell.HttpContext.Response.CompleteAsync();
         }
 
         private string Hub { get; }

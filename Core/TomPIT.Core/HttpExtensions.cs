@@ -58,8 +58,8 @@ namespace TomPIT
 			//Not using using so stream only gets disposed when request goes out of scope
 			var reader = new StreamReader(s, Encoding.UTF8);
 
-			var body = AsyncUtils.RunSync(() => reader.ReadToEndAsync());
-			
+			var body = reader.ReadToEnd();
+
 			if (string.IsNullOrWhiteSpace(body))
 				return new JObject();
 
@@ -87,7 +87,7 @@ namespace TomPIT
 
 		public static T ToType<T>(this Stream s)
 		{
-			var body = AsyncUtils.RunSync(() => new StreamReader(s, Encoding.UTF8).ReadToEndAsync());
+			var body = new StreamReader(s, Encoding.UTF8).ReadToEnd();
 
 			return Serializer.Deserialize<T>(body);
 		}

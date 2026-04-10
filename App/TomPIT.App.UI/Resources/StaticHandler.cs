@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Routing;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Resources;
@@ -11,7 +12,7 @@ namespace TomPIT.App.Resources
 {
 	internal class StaticHandler : RouteHandlerBase
 	{
-		protected override void OnProcessRequest()
+		protected override async Task OnProcessRequestAsync()
 		{
 			var msRoute = Context.GetRouteValue("microService") as string;
 			var ms = Tenant.GetService<IMicroServiceService>().Select(msRoute);
@@ -77,8 +78,8 @@ namespace TomPIT.App.Resources
 			}
 
 			Context.Response.ContentLength = content.Content.Length;
-			AsyncUtils.RunSync(() => Context.Response.Body.WriteAsync(content.Content, 0, content.Content.Length));
-			AsyncUtils.RunSync(() => Context.Response.CompleteAsync());
+			await Context.Response.Body.WriteAsync(content.Content, 0, content.Content.Length);
+			await Context.Response.CompleteAsync();
 		}
 	}
 }

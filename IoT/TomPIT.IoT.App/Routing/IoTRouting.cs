@@ -11,13 +11,11 @@ namespace TomPIT.IoT.Routing
         {
             routes.MapPingRoute();
 
-            routes.Map("transaction/{microService}/{hub}/{device}/{transaction}", (t) =>
-            {                
+            routes.Map("transaction/{microService}/{hub}/{device}/{transaction}", async (t) =>
+            {
                 using var handler = new TransactionHandler(t);
 
-                handler.ProcessRequest();
-
-                return Task.CompletedTask;
+                await handler.ProcessRequestAsync();
             });
         }
     }

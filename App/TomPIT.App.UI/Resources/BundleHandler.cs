@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Routing;
 using TomPIT.ComponentModel;
 using TomPIT.Routing;
@@ -8,7 +9,7 @@ namespace TomPIT.App.Resources
 {
 	internal class BundleHandler : RouteHandlerBase
 	{
-		protected override void OnProcessRequest()
+		protected override async Task OnProcessRequestAsync()
 		{
 			var msRoute = Context.GetRouteValue("microService") as string;
 			var bundleRoute = Context.GetRouteValue("bundle") as string;
@@ -45,9 +46,8 @@ namespace TomPIT.App.Resources
 				var buffer = Encoding.UTF8.GetBytes(bundle);
 
 				Context.Response.ContentLength = buffer.Length;
-				AsyncUtils.RunSync(() => Context.Response.Body.WriteAsync(buffer, 0, buffer.Length));
-
-				AsyncUtils.RunSync(() => Context.Response.CompleteAsync());
+				await Context.Response.Body.WriteAsync(buffer, 0, buffer.Length);
+				await Context.Response.CompleteAsync();
 			}
 		}
 	}

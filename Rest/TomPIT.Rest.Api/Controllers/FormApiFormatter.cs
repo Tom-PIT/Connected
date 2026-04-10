@@ -14,7 +14,7 @@ namespace TomPIT.Rest.Controllers
         public const string ContentType = "application/x-www-form-urlencoded";
         protected override JObject OnParseArguments()
         {
-            var body = AsyncUtils.RunSync(() => new StreamReader(Context.Request.Body, Encoding.UTF8).ReadToEndAsync());
+            var body = new StreamReader(Context.Request.Body, Encoding.UTF8).ReadToEnd();
             var qs = QueryHelpers.ParseNullableQuery(body);
             var result = new JObject();
 

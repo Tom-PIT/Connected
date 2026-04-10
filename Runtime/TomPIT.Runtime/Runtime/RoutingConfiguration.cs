@@ -28,9 +28,7 @@ namespace TomPIT.Runtime
 
 			routes.Map("sys/avatar/{token}/{version}", async (t) =>
 			{
-				new AvatarRouteHandler().ProcessRequest(t);
-
-				await Task.CompletedTask;
+				await new AvatarRouteHandler().ProcessRequestAsync(t);
 			});
 
 			routes.Map("sys/deploy", async (t) =>
@@ -42,9 +40,7 @@ namespace TomPIT.Runtime
 
 			routes.Map("sys/precompile", async (t) =>
 			{
-				new PrecompileRouteHandler().ProcessRequest(t);
-
-				await Task.CompletedTask;
+				await new PrecompileRouteHandler().ProcessRequestAsync(t);
 			});
 
 			routes.Map("sys/reset-compilation", async (t) =>

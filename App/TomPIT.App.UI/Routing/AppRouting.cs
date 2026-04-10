@@ -51,39 +51,29 @@ namespace TomPIT.App.Routing
 			routes.MapControllerRoute("sys.uiinjection", "sys/api/uiinjection", new { controller = "Api", action = "UIInjection" });
 			routes.MapControllerRoute("sys.tracing.endpoints", "sys/tracing/endpoints", new { controller = "Tracing", action = "Endpoints" });
 
-			routes.Map("sys/themes/{microService}/{theme}", (t) =>
+			routes.Map("sys/themes/{microService}/{theme}", async (t) =>
 			{
-				new ThemeHandler().ProcessRequest(t);
-
-				return Task.CompletedTask;
+				await new ThemeHandler().ProcessRequestAsync(t);
 			});
 
-			routes.Map("static/{microService}/{*path}", (t) =>
+			routes.Map("static/{microService}/{*path}", async (t) =>
 			{
-				new StaticHandler().ProcessRequest(t);
-
-				return Task.CompletedTask;
+				await new StaticHandler().ProcessRequestAsync(t);
 			});
 
-			routes.Map("sys/globalize/{locale}/{segments}", (t) =>
+			routes.Map("sys/globalize/{locale}/{segments}", async (t) =>
 			{
-				new GlobalizationHandler().ProcessRequest(t);
-
-				return Task.CompletedTask;
+				await new GlobalizationHandler().ProcessRequestAsync(t);
 			});
 
-			routes.Map("sys/bundles/{microService}/{bundle}", (t) =>
+			routes.Map("sys/bundles/{microService}/{bundle}", async (t) =>
 			{
-				new BundleHandler().ProcessRequest(t);
-
-				return Task.CompletedTask;
+				await new BundleHandler().ProcessRequestAsync(t);
 			});
 
-			routes.Map("sys/media/{id}/{version}", (t) =>
+			routes.Map("sys/media/{id}/{version}", async (t) =>
 			{
-				new MediaHandler().ProcessRequest(t);
-
-				return Task.CompletedTask;
+				await new MediaHandler().ProcessRequestAsync(t);
 			});
 
 			routes.Map("sys/mail-template/{token}", async (t) =>

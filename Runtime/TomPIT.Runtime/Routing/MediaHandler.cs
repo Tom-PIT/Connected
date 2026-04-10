@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Routing;
 using System;
 using System.Net;
+using System.Threading.Tasks;
 using TomPIT.Middleware;
 using TomPIT.Storage;
 
@@ -8,7 +9,7 @@ namespace TomPIT.Routing
 {
 	public class MediaHandler : RouteHandlerBase
 	{
-		protected override void OnProcessRequest()
+		protected override async Task OnProcessRequestAsync()
 		{
 			var blob = MiddlewareDescriptor.Current.Tenant.GetService<IStorageService>().Select(new Guid((Context.GetRouteValue("id") as string)));
 
@@ -31,9 +32,8 @@ namespace TomPIT.Routing
 			if (content != null)
 			{
 				Context.Response.ContentLength = content.Content.Length;
-				AsyncUtils.RunSync(() => Context.Response.Body.WriteAsync(content.Content, 0, content.Content.Length));
-
-				AsyncUtils.RunSync(() => Context.Response.CompleteAsync());
+				await Context.Response.Body.WriteAsync(content.Content, 0, content.Content.Length);
+				await Context.Response.CompleteAsync();
 			}
 		}
 	}
