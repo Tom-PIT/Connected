@@ -46,11 +46,10 @@ namespace TomPIT.BigData.Partitions
 
 		private bool IntersectsWith(DateTime startValue, DateTime endValue, DateTime start, DateTime end)
 		{
-			//TODO rethink optimization
-			return true;
-
+			// Open files have no committed EndTimestamp; their StartTimestamp is just
+			// a creation-time hint, not a sealed range boundary — always include them.
 			if (end == DateTime.MinValue)
-				end = DateTime.MaxValue;
+				return true;
 
 			if (endValue == DateTime.MinValue)
 				endValue = DateTime.MaxValue;
