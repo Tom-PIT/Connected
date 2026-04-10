@@ -113,14 +113,16 @@ namespace TomPIT.Runtime
 			e.Tenant.RegisterService(typeof(IQueueService), typeof(QueueService));
 			e.Tenant.RegisterService(typeof(IGraphicsService), typeof(GraphicsService));
 			e.Tenant.RegisterService(typeof(ISearchService), typeof(SearchService));
-			e.Tenant.RegisterService(typeof(ISearchNodeProxy), typeof(RemoteSearchNodeProxy));
+			if (!Instance.Features.HasFlag(InstanceFeatures.Search))
+				e.Tenant.RegisterService(typeof(ISearchNodeProxy), typeof(RemoteSearchNodeProxy));
 			e.Tenant.RegisterService(typeof(ILocalizationService), typeof(LocalizationService));
 			e.Tenant.RegisterService(typeof(IPrintingService), typeof(PrintingService));
 			e.Tenant.RegisterService(typeof(IAnalyticsService), typeof(AnalyticsService));
 			e.Tenant.RegisterService(typeof(IDesignService), typeof(DesignService));
 			e.Tenant.RegisterService(typeof(ILockingService), typeof(LockingService));
 			e.Tenant.RegisterService(typeof(IClientService), typeof(ClientService));
-			e.Tenant.RegisterService(typeof(ICdnClientNotificationProxy), typeof(RemoteCdnClientProxy));
+			if (!Instance.Features.HasFlag(InstanceFeatures.Cdn))
+				e.Tenant.RegisterService(typeof(ICdnClientNotificationProxy), typeof(RemoteCdnClientProxy));
 			e.Tenant.RegisterService(typeof(IDocumentService), typeof(DocumentService));
 			e.Tenant.RegisterService(typeof(IFileSystemService), typeof(FileSystemService));
 			e.Tenant.RegisterService(typeof(IMicroServiceTemplateService), typeof(MicroServiceTemplateService));
