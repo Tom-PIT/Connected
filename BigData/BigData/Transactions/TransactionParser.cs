@@ -14,10 +14,10 @@ using TomPIT.Serialization;
 
 namespace TomPIT.BigData.Transactions
 {
-	internal class TransactionParser: IDisposable
+	internal class TransactionParser : IDisposable
 	{
 		private List<List<object>> _blocks = null;
-		public const int FileSize = 1000000;
+		public const int FileSize = 300000;
 		private const int BlockSize = 10000;
 		private IMicroService _microService = null;
 

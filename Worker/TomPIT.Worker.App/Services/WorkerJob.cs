@@ -29,6 +29,8 @@ namespace TomPIT.Worker.Services
 			{
 				if (Configuration != null)
 					Proxy.Complete(Configuration.MicroService(), item.PopReceipt, Worker);
+				else if (item.DequeueCount > 30)
+					Proxy.Error(Guid.Empty, item.PopReceipt);
 
 				return;
 			}

@@ -51,6 +51,34 @@ namespace TomPIT.Sys.Model.Workers
          return Where(f => f.Status == WorkerStatus.Queued);
       }
 
+      public void ResetOrphaned()
+      {
+         var queued = QueryQueued();
+
+         foreach (var w in queued)
+         {
+            var period = w.Interval switch
+            {
+               WorkerInterval.Second => TimeSpan.FromSeconds(w.IntervalValue),
+               WorkerInterval.Minute => TimeSpan.FromMinutes(w.IntervalValue),
+               WorkerInterval.Hour => TimeSpan.FromHours(w.IntervalValue),
+               WorkerInterval.Day => TimeSpan.FromDays(w.IntervalValue),
+               WorkerInterval.Week => TimeSpan.FromDays(w.IntervalValue * 7),
+               WorkerInterval.Month => TimeSpan.FromDays(w.IntervalValue * 30),
+               WorkerInterval.Year => TimeSpan.FromDays(w.IntervalValue * 365),
+               _ => TimeSpan.FromMinutes(5)
+            };
+
+            var threshold = DateTime.UtcNow - TimeSpan.FromTicks((long)(period.Ticks * 1.5));
+
+            if (w.LastRun > threshold)
+               continue;
+
+            if (DataModel.Queue.QueryByBufferKey(w.Worker.ToString()).IsEmpty)
+               Reset(w.Worker);
+         }
+      }
+
       public void Reset(Guid worker)
       {
          var j = Get(worker);
@@ -172,7 +200,7 @@ namespace TomPIT.Sys.Model.Workers
             { "state", job.State }
          };
 
-         DataModel.Queue.Enqueue(Queue, JsonConvert.SerializeObject(message), null, TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
+         DataModel.Queue.Enqueue(Queue, JsonConvert.SerializeObject(message), job.Worker.ToString(), TimeSpan.FromDays(2), TimeSpan.Zero, QueueScope.System);
 
          Update(job.Worker, WorkerStatus.Queued, job.NextRun, job.Elapsed,
             job.FailCount, job.LastRun, job.LastComplete, job.RunCount);

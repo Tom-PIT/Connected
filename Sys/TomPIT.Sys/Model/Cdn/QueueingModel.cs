@@ -200,6 +200,11 @@ namespace TomPIT.Sys.Model.Cdn
          return Get(f => f.PopReceipt == popReceipt);
       }
 
+      public ImmutableList<IQueueMessage> QueryByBufferKey(string bufferKey)
+      {
+         return Where(f => string.Equals(f.BufferKey, bufferKey, StringComparison.OrdinalIgnoreCase)).ToImmutableList<IQueueMessage>();
+      }
+
       protected override async Task OnFlushing()
       {
          var messages = All();

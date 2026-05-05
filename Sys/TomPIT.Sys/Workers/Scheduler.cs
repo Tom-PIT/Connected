@@ -9,6 +9,8 @@ namespace TomPIT.Sys.Workers
 {
 	internal class Scheduler : HostedService
 	{
+		private DateTime _lastOrphanCheck = DateTime.MinValue;
+
 		public Scheduler()
 		{
 			IntervalTimeout = TimeSpan.FromSeconds(1);
@@ -28,6 +30,12 @@ namespace TomPIT.Sys.Workers
 		{
 			try
 			{
+				if (DateTime.UtcNow - _lastOrphanCheck >= TimeSpan.FromMinutes(10))
+				{
+					_lastOrphanCheck = DateTime.UtcNow;
+					DataModel.Workers.ResetOrphaned();
+				}
+
 				var ds = DataModel.Workers.QueryScheduled();
 
 				foreach (var i in ds)
