@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
 using System;
@@ -27,8 +28,14 @@ namespace TomPIT.Connected
 
 				builder.WebHost.ConfigureKestrel((context, options) =>
 				{
-					options.Configure(context.Configuration.GetSection("Kestrel"));
 					options.AllowSynchronousIO = true;
+
+					var limit = context.Configuration.GetValue<long?>(
+						"Kestrel:Limits:MaxRequestBodySize"
+					);
+
+					if (limit.HasValue)
+						options.Limits.MaxRequestBodySize = limit.Value;
 				});
 
 				var boot = new Startup();
