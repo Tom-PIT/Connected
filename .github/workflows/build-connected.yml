@@ -119,10 +119,18 @@ jobs:
           done
 
       # -----------------------------------------------------------------------
-      # 6. Stage build configuration files from .github/build/ into the repo
+      # 6. Stamp Update.json with the current version if not already present.
+      #    Keeps the app's reported version in sync with the image version.
+      #    If a real migration entry was added manually it is left untouched.
+      # -----------------------------------------------------------------------
+      - name: Stamp Update.json version
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: python3 .github/build/stamp_version.py
+
+      # -----------------------------------------------------------------------
+      # 7. Stage build configuration files from .github/build/ into the repo
       #    root where the Dockerfiles and docker-compose expect them.
-      #    nuget.config has a ${DEVEXPRESS_NUGET_URL} placeholder which is
-      #    substituted here so the key never lives in source control.
       # -----------------------------------------------------------------------
       - name: Stage build configuration files
         run: |
@@ -183,7 +191,8 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add $(find . -name "*.csproj" -not -path "./.git/*" | tr '\n' ' ')
+          git add $(find . -name "*.csproj" -not -path "./.git/*" | tr '\n' ' ') \
+                  .github/build/installer/Update.json
           if git diff --staged --quiet; then
             echo "No version changes to commit."
           else
