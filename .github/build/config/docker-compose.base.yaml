@@ -1,0 +1,21 @@
+version: '3'
+# BASE_REGISTRY is always ghcr.io/<owner> — base images are internal infrastructure.
+# Set via the build-base.yml workflow env: BASE_REGISTRY=ghcr.io/${{ github.repository_owner }}
+services:
+  base-release:
+    build:
+      context: .
+      dockerfile: dockerfile.base.release
+    image: "${BASE_REGISTRY}/tompit-base-release:stable"
+
+  base-debug:
+    build:
+      context: .
+      dockerfile: dockerfile.base.debug
+    image: "${BASE_REGISTRY}/tompit-base-debug:stable"
+
+  sdk:
+    build:
+      context: .
+      dockerfile: dockerfile.base.sdk
+    image: "${BASE_REGISTRY}/tompit-sdk:stable"

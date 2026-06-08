@@ -1,0 +1,189 @@
+# Build Connected app and publish Docker images.
+# Triggered manually via workflow_dispatch with a registry selector.
+#
+# Required repository secrets:
+#   GH_PAT             – GitHub PAT (repo write + private repo read) used for
+#                        checking out the DX packages repo and pushing the version bump
+#   DOCKERHUB_USERNAME – Docker Hub username / organisation (tompitdev)
+#   DOCKERHUB_TOKEN    – Docker Hub access token
+#
+# Required repository variable:
+#   DX_PACKAGES_REPO     – Name of the private GitHub repo containing DXPackageCache/,
+#                          e.g. Tom-PIT/dx-packages
+#
+# The Dockerfiles expect COPY ./DXPackageCache/ /dxpackages/ at the build context root.
+
+name: Build and Publish Connected
+
+on:
+  workflow_dispatch:
+    inputs:
+      registry:
+        description: "Target registry"
+        required: true
+        default: "ghcr"
+        type: choice
+        options:
+          - ghcr # GitHub Container Registry (private, for testing)
+          - dockerhub # Docker Hub (public release)
+
+permissions:
+  contents: write # push version bump commit
+  packages: write # push to ghcr.io
+
+env:
+  DOTNET_NOLOGO: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+
+jobs:
+  build:
+    name: Build and Push Docker Images
+    runs-on: ubuntu-latest
+
+    steps:
+      # -----------------------------------------------------------------------
+      # 1. Generate version: {last digit of year}.{half 1|2}.{M}{DD}.{run_number}
+      #    e.g. 2026-06-08, run 3 → 6.1.608.3
+      # -----------------------------------------------------------------------
+      - name: Generate version
+        id: version
+        run: |
+          YEAR_DIGIT=$(date +%Y | rev | cut -c1)
+          MONTH=$(date +%-m)
+          if [ "$MONTH" -le 6 ]; then HALF=1; else HALF=2; fi
+          MMDD=$(date +%-m%d)
+          VERSION="${YEAR_DIGIT}.${HALF}.${MMDD}.${{ github.run_number }}"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Generated version: ${VERSION}"
+
+      # -----------------------------------------------------------------------
+      # 2. Resolve image name prefix based on the chosen registry.
+      #    ghcr     → ghcr.io/<owner>/connected  (private)
+      #    dockerhub → tompitdev/connected        (public)
+      # -----------------------------------------------------------------------
+      - name: Resolve registry prefix
+        id: registry
+        run: |
+          if [ "${{ inputs.registry }}" = "ghcr" ]; then
+            echo "prefix=ghcr.io/${{ github.repository_owner }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "prefix=${{ secrets.DOCKERHUB_USERNAME }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      # -----------------------------------------------------------------------
+      # 3. Check out the Connected source repo (write token for version bump push)
+      # -----------------------------------------------------------------------
+      - name: Checkout Connected repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          token: ${{ secrets.GH_PAT }}
+
+      # -----------------------------------------------------------------------
+      # 3. Restore DX packages from cache (weekly key). Only checks out the
+      #    private repo on a cache miss, saving checkout time on repeat builds.
+      # -----------------------------------------------------------------------
+      - name: Get cache week key
+        id: week
+        run: echo "week=$(date +%Y-W%V)" >> "$GITHUB_OUTPUT"
+
+      - name: Restore DX packages cache
+        id: cache-dx
+        uses: actions/cache@v4
+        with:
+          path: DXPackageCache
+          key: dx-packages-${{ steps.week.outputs.week }}
+          restore-keys: dx-packages-
+
+      - name: Checkout DX packages
+        if: steps.cache-dx.outputs.cache-hit != 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.DX_PACKAGES_REPO }}
+          token: ${{ secrets.GH_PAT }}
+          path: DXPackageCache
+
+      # -----------------------------------------------------------------------
+      # 5. Stamp every .csproj in the repo with the generated version.
+      # -----------------------------------------------------------------------
+      - name: Update project versions
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          echo "Stamping all .csproj files with version ${VERSION}"
+          find . -name "*.csproj" -not -path "./.git/*" | while read -r csproj; do
+            sed -i "s|<Version>[^<]*</Version>|<Version>${VERSION}</Version>|g"                     "$csproj"
+            sed -i "s|<AssemblyVersion>[^<]*</AssemblyVersion>|<AssemblyVersion>${VERSION}</AssemblyVersion>|g" "$csproj"
+            sed -i "s|<FileVersion>[^<]*</FileVersion>|<FileVersion>${VERSION}</FileVersion>|g"     "$csproj"
+          done
+
+      # -----------------------------------------------------------------------
+      # 6. Stage build configuration files from .github/build/ into the repo
+      #    root where the Dockerfiles and docker-compose expect them.
+      #    nuget.config has a ${DEVEXPRESS_NUGET_URL} placeholder which is
+      #    substituted here so the key never lives in source control.
+      # -----------------------------------------------------------------------
+      - name: Stage build configuration files
+        run: |
+          cp .github/build/config/nuget.config nuget.config
+          cp .github/build/config/dockerfile.release        dockerfile.release
+          cp .github/build/config/dockerfile.debug          dockerfile.debug
+          cp .github/build/config/docker-compose.build.yaml docker-compose.build.yaml
+          cp -r .github/build/setup                         setup
+          mkdir -p installer/package
+          cp .github/build/installer/Create.sql  installer/package/Create.sql
+          cp .github/build/installer/Update.json installer/package/Update.json
+
+      # -----------------------------------------------------------------------
+      # 7. Docker build prerequisites — log in to the chosen registry only
+      #    Base images are always pulled from ghcr (authenticated via GITHUB_TOKEN).
+      # -----------------------------------------------------------------------
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Always log in to ghcr so the runner can pull the pre-built base images.
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Docker Hub
+        if: inputs.registry == 'dockerhub'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # -----------------------------------------------------------------------
+      # 8. Build and push both images (release + debug) via docker buildx bake.
+      #    - BASE_REGISTRY: where the pre-built base images live (always ghcr)
+      #    - IMAGE_PREFIX:  target registry for the output images
+      #    - type=gha cache persists Docker layers between workflow runs
+      # -----------------------------------------------------------------------
+      - name: Build and push Docker images
+        env:
+          version: ${{ steps.version.outputs.version }}
+          IMAGE_PREFIX: ${{ steps.registry.outputs.prefix }}
+          BASE_REGISTRY: ghcr.io/${{ github.repository_owner }}
+        run: |
+          docker buildx bake \
+            -f docker-compose.build.yaml \
+            --set "*.cache-from=type=gha" \
+            --set "*.cache-to=type=gha,mode=max" \
+            --push
+
+      # -----------------------------------------------------------------------
+      # 9. Commit the version-bumped .csproj files back to the source branch.
+      # -----------------------------------------------------------------------
+      - name: Commit updated project versions
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add $(find . -name "*.csproj" -not -path "./.git/*" | tr '\n' ' ')
+          if git diff --staged --quiet; then
+            echo "No version changes to commit."
+          else
+            git commit -m "Updated versions to ${{ steps.version.outputs.version }}"
+            git push origin ${{ github.ref_name }}
+          fi

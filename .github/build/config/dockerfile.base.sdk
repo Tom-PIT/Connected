@@ -1,0 +1,6 @@
+FROM mcr.microsoft.com/dotnet/sdk:7.0
+# Build-stage base shared by both release and debug Dockerfiles.
+# Rebuilt periodically via build-base.yml — not on every app build.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends npm \
+    && rm -rf /var/lib/apt/lists/*

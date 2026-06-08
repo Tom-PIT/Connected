@@ -1,0 +1,26 @@
+version: '3'
+# IMAGE_PREFIX:  ghcr.io/<owner> (testing) or tompitdev (docker hub release)
+# BASE_REGISTRY: ghcr.io/<owner> always — where the pre-built base images live
+services:
+  release:
+    build:
+      context: .
+      dockerfile: dockerfile.release
+      args:
+        BASE_REGISTRY: ${BASE_REGISTRY}
+      tags:
+        - ${IMAGE_PREFIX}/connected:${version}
+        - ${IMAGE_PREFIX}/platform:${version}
+        #- ${IMAGE_PREFIX}/connected:latest
+    image: "${IMAGE_PREFIX}/platform:latest"
+  debug:
+    build:
+      context: .
+      dockerfile: dockerfile.debug
+      args:
+        BASE_REGISTRY: ${BASE_REGISTRY}
+      tags:
+        - ${IMAGE_PREFIX}/connected:${version}-debug
+        - ${IMAGE_PREFIX}/platform:${version}-debug
+        - ${IMAGE_PREFIX}/platform:latest-debug
+    image: "${IMAGE_PREFIX}/connected:latest-debug"
