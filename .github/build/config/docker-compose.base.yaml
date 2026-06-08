@@ -6,16 +6,19 @@ services:
     build:
       context: .
       dockerfile: dockerfile.base.release
+      provenance: false
     image: "${BASE_REGISTRY}/tompit-base-release:stable"
 
   base-debug:
     build:
       context: .
       dockerfile: dockerfile.base.debug
+      provenance: false
     image: "${BASE_REGISTRY}/tompit-base-debug:stable"
 
   sdk:
     build:
       context: .
       dockerfile: dockerfile.base.sdk
+      provenance: false
     image: "${BASE_REGISTRY}/tompit-sdk:stable"

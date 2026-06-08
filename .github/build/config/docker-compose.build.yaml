@@ -6,6 +6,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile.release
+      provenance: false
       args:
         BASE_REGISTRY: ${BASE_REGISTRY}
       tags:
@@ -17,6 +18,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile.debug
+      provenance: false
       args:
         BASE_REGISTRY: ${BASE_REGISTRY}
       tags:
