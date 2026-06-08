@@ -64,11 +64,13 @@ jobs:
       - name: Resolve registry prefix
         id: registry
         run: |
+          OWNER="$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')"
           if [ "${{ inputs.registry }}" = "ghcr" ]; then
-            echo "prefix=ghcr.io/${{ github.repository_owner }}" >> "$GITHUB_OUTPUT"
+            echo "prefix=ghcr.io/${OWNER}" >> "$GITHUB_OUTPUT"
           else
             echo "prefix=${{ secrets.DOCKERHUB_USERNAME }}" >> "$GITHUB_OUTPUT"
           fi
+          echo "base_registry=ghcr.io/${OWNER}" >> "$GITHUB_OUTPUT"
 
       # -----------------------------------------------------------------------
       # 3. Check out the Connected source repo (write token for version bump push)
@@ -165,7 +167,7 @@ jobs:
         env:
           version: ${{ steps.version.outputs.version }}
           IMAGE_PREFIX: ${{ steps.registry.outputs.prefix }}
-          BASE_REGISTRY: ghcr.io/${{ github.repository_owner }}
+          BASE_REGISTRY: ${{ steps.registry.outputs.base_registry }}
         run: |
           docker buildx bake \
             -f docker-compose.build.yaml \

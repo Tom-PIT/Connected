@@ -46,10 +46,9 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push base images
-        env:
-          BASE_REGISTRY: ghcr.io/${{ github.repository_owner }}
         run: |
-          docker buildx bake \
+          BASE_REGISTRY="ghcr.io/$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')"
+          BASE_REGISTRY="$BASE_REGISTRY" docker buildx bake \
             -f docker-compose.base.yaml \
             --set "*.cache-from=type=gha" \
             --set "*.cache-to=type=gha,mode=max" \
