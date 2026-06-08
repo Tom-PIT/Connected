@@ -162,23 +162,16 @@ namespace TomPIT.Connected.Printing.Client.Handlers
 
 			_baseCdnUri = new Uri(Settings.CdnUrl);
 
-			try
-			{
-				if (_connection is null)
-					CreateConnection();
+			if (_connection is null)
+				CreateConnection();
 
-				Logging.Debug("Connection to server");
+			Logging.Debug("Connection to server");
 
-				await _connection.StartAsync();
+			await _connection.StartAsync();
 
-				Logging.Debug("Print spooler started");
+			Logging.Debug("Print spooler started");
 
-				await RegisterPrinters();
-			}
-			catch (Exception ex)
-			{
-				Logging.Exception(ex, LoggingLevel.Fatal);
-			}
+			await RegisterPrinters();
 		}
 
 		public async Task Stop()
@@ -405,7 +398,16 @@ namespace TomPIT.Connected.Printing.Client.Handlers
 
 		protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 		{
-			await Start();
+			try
+			{
+				await Start();
+			}
+			catch (Exception ex)
+			{
+				Logging.Exception(ex, LoggingLevel.Fatal);
+				Environment.Exit(1);
+				return;
+			}
 
 			var taskCompletionSource = new TaskCompletionSource<bool>();
 

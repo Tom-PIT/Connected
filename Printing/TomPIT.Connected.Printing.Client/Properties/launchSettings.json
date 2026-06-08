@@ -2,7 +2,7 @@
   "profiles": {
     "TomPIT.Connected.Printing.Client": {
       "commandName": "Project",
-      "commandLineArgs": "install -u .\\\\koma -p jxmp13524TP"
+      //"commandLineArgs": "install -u .\\\\koma -p jxmp13524TP"
     }
   }
 }

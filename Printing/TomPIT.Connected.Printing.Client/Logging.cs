@@ -22,7 +22,7 @@ namespace TomPIT.Connected.Printing.Client
         Warning,
         Info,
         Debug,
-        Trace, 
+        Trace,
         All
     }
 
@@ -91,6 +91,7 @@ namespace TomPIT.Connected.Printing.Client
             var source = $"{Path.GetFileName(sourceFilePath)}/{memberName} Line: {sourceLineNumber}";
 
             var sb = new StringBuilder();
+            sb.Append(DateTime.Now.ToString("HH:mm:ss.fff")).Append("|");
             sb.Append(" Source: ").AppendLine(source);
             sb.Append(" Error: ").AppendLine(ex.Message);
 

@@ -28,7 +28,7 @@ namespace TomPIT.Connected.Printing.Client
 				 async (RunOptions opts) =>
 				 {
 					 await CreateHostBuilder(args).Build().RunAsync();
-					 return 0;
+					 return Environment.ExitCode;
 				 },
 				 async (InstallOptions opts) =>
 				 {
