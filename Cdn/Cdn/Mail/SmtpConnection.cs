@@ -80,6 +80,7 @@ namespace TomPIT.Cdn.Mail
 
                 var server = string.Empty;
                 var localDomain = string.Empty;
+                var port = 0;
 
                 foreach (var middleware in ConfigurationCache.Handlers)
                 {
@@ -89,6 +90,7 @@ namespace TomPIT.Cdn.Mail
                     {
                         server = descriptor.Server;
                         localDomain = descriptor.LocalDomain;
+                        port = descriptor.Port;
 
                         break;
                     }
@@ -112,13 +114,27 @@ namespace TomPIT.Cdn.Mail
 
                 try
                 {
-                    _client.Connect(new Uri($"smtp://{server}"), token);
+                    if (port > 0)
+                    {
+                        _client.Connect(server, port, SecureSocketOptions.Auto, token);
+                    }
+                    else
+                    {
+                        _client.Connect(new Uri($"smtp://{server}"), token);
+                    }
                 }
                 catch (SslHandshakeException)
                 {
                     try
                     {
-                        _client.Connect(new Uri($"smtp://{SecondaryDomain}"), token);
+                        if (port > 0)
+                        {
+                            _client.Connect(SecondaryDomain, port, SecureSocketOptions.Auto, token);
+                        }
+                        else
+                        {
+                            _client.Connect(new Uri($"smtp://{SecondaryDomain}"), token);
+                        }
                     }
                     catch (SslHandshakeException)
                     {

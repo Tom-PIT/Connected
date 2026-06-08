@@ -5,5 +5,7 @@
 		public string Server { get; set; }
 
 		public string LocalDomain { get; set; }
+
+		public int Port { get; set; } = 0;
 	}
 }

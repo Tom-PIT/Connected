@@ -4,5 +4,6 @@
 	{
 		string Server { get; }
 		string LocalDomain { get; }
+		int Port { get; }
 	}
 }
