@@ -13,5 +13,9 @@ public static class McpServiceExtensions
 	{
 		builder.MapControllerRoute("mcp.info", "mcp", new { controller = "Mcp", action = "Info" });
 		builder.MapControllerRoute("mcp.handle", "mcp", new { controller = "Mcp", action = "Handle" });
+
+		builder.MapControllerRoute("ide.microservices", "sys/ide/microservices", new { controller = "IdeApi", action = "Microservices" });
+		builder.MapControllerRoute("ide.components", "sys/ide/components", new { controller = "IdeApi", action = "Components" });
+		builder.MapControllerRoute("ide.source", "sys/ide/source", new { controller = "IdeApi", action = "Source" });
 	}
 }
