@@ -9,7 +9,7 @@ namespace TomPIT.Mcp.Dispatch;
 
 internal static class McpDispatcher
 {
-	internal static object Handle(JsonRpcRequest request)
+	internal static object Handle(JsonRpcRequest request, string baseUrl = "")
 	{
 		return request.Method switch
 		{
@@ -17,7 +17,7 @@ internal static class McpDispatcher
 			"initialized" => new { },
 			"ping" => new { },
 			"tools/list" => HandleToolsList(),
-			"tools/call" => HandleToolCall(request),
+			"tools/call" => HandleToolCall(request, baseUrl),
 			"resources/list" => HandleResourcesList(),
 			"resources/read" => HandleResourceRead(request),
 			"prompts/list" => HandlePromptsList(),
@@ -49,11 +49,23 @@ internal static class McpDispatcher
 	{
 		return new McpToolsListResult
 		{
-			Tools = AllTools().ToList()
+			Tools = AllTools().Select(t => t.Name == "tool_help" ? t : new McpTool
+			{
+				Name = t.Name,
+				InputSchema = new McpInputSchema
+				{
+					Type = t.InputSchema.Type,
+					Required = t.InputSchema.Required,
+					Properties = t.InputSchema.Properties.ToDictionary(
+						p => p.Key,
+						p => new McpProperty { Type = p.Value.Type, Enum = p.Value.Enum }
+					)
+				}
+			}).ToList()
 		};
 	}
 
-	private static McpToolCallResult HandleToolCall(JsonRpcRequest request)
+	private static McpToolCallResult HandleToolCall(JsonRpcRequest request, string baseUrl)
 	{
 		var p = request.Params as JObject ?? (request.Params is not null ? JObject.FromObject(request.Params) : new JObject());
 		var toolName = p.Value<string>("name") ?? throw new McpInvalidParamsException("name is required for tools/call");
@@ -80,6 +92,7 @@ internal static class McpDispatcher
 				"folder_delete" => ConfigurationTools.DeleteFolder(arguments),
 				"component_clone" => ConfigurationTools.CloneComponent(arguments),
 				"component_search" => SearchTools.Search(arguments),
+				"tool_help" => HelpTools.GetUrls(baseUrl),
 				"api_invoke" => ApiTools.Invoke(arguments),
 				"component_element_create" => ElementTools.CreateElement(arguments),
 				"component_element_update" => ElementTools.UpdateElement(arguments),
@@ -335,8 +348,9 @@ internal static class McpDispatcher
 		};
 	}
 
-	private static IEnumerable<McpTool> AllTools()
+	internal static IEnumerable<McpTool> AllTools()
 	{
+		foreach (var t in HelpTools.Definitions()) yield return t;
 		foreach (var t in MicroServiceTools.Definitions()) yield return t;
 		foreach (var t in ComponentTools.Definitions()) yield return t;
 		foreach (var t in ConfigurationTools.Definitions()) yield return t;

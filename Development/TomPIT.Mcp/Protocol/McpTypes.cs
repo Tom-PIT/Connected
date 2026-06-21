@@ -62,8 +62,8 @@ public class McpTool
 	[JsonProperty("name")]
 	public string Name { get; set; } = string.Empty;
 
-	[JsonProperty("description")]
-	public string Description { get; set; } = string.Empty;
+	[JsonProperty("description", NullValueHandling = NullValueHandling.Ignore)]
+	public string? Description { get; set; }
 
 	[JsonProperty("inputSchema")]
 	public McpInputSchema InputSchema { get; set; } = new();
@@ -86,8 +86,8 @@ public class McpProperty
 	[JsonProperty("type")]
 	public string Type { get; set; } = "string";
 
-	[JsonProperty("description")]
-	public string Description { get; set; } = string.Empty;
+	[JsonProperty("description", NullValueHandling = NullValueHandling.Ignore)]
+	public string? Description { get; set; }
 
 	[JsonProperty("enum", NullValueHandling = NullValueHandling.Ignore)]
 	public List<string>? Enum { get; set; }

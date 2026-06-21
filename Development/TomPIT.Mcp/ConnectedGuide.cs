@@ -1,9 +1,27 @@
+using Microsoft.Extensions.Configuration;
+
 namespace TomPIT.Mcp;
 
 internal static class ConnectedGuide
 {
-	internal const string Content = """
+	private static string SourceFilesFolder
+		=> Shell.Configuration.GetRequiredSection("sourceFiles").GetValue<string>("folder") ?? "(unknown)";
+
+	internal static string Content => $"""
 # TomPIT Connected — AI Coding Guide
+
+## Session Setup (do this first)
+
+1. Call **`tool_help`** to get the URL for full tool descriptions and this guide.
+2. Ask the user for the **local mount path** of the source files folder.
+   The server stores source files under: `{SourceFilesFolder}`
+   That path is from inside the Docker container — ask:
+   > "What is the local path where `{SourceFilesFolder}` is mounted on your machine?"
+3. Store the answer. Whenever a tool returns a `filePath`, replace the `{SourceFilesFolder}`
+   prefix with the local path before reading the file.
+
+---
+
 
 ## Overview
 
@@ -225,7 +243,7 @@ api_invoke(microService: "slug", operation: "ComponentName.OperationName", paylo
 
 ## Key Rules for AI Code Generation
 
-1. **Never generate filesystem paths** — TomPIT scripts run in a database-backed environment. File paths only exist as `FileName` metadata.
+1. **File paths from tools are container paths** — translate using the local mount path obtained at session setup before reading them.
 2. **`#load` paths use the `url` slug**, not the component `token` or display `name`.
 3. **Cross-service `#load` requires a Reference** — check `microservice_references` before assuming a cross-service load is valid.
 4. **Api operation classes must match their file** — a file `GetOrder.csx` must contain a class that the runtime can instantiate. The class name does not need to match the file, but convention is to use the same name.

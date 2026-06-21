@@ -1,7 +1,6 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using TomPIT.ComponentModel;
@@ -54,6 +53,8 @@ internal static class SearchTools
 				if (string.IsNullOrEmpty(source))
 					continue;
 
+				var filePath = ComponentTools.SourceFilePath(component.MicroService, text);
+
 				var matches = useRegex
 					? FindRegexMatches(source, regex!)
 					: FindMatches(source, pattern);
@@ -67,6 +68,7 @@ internal static class SearchTools
 					component = component.Name,
 					category = component.Category,
 					elementName = Path.GetFileNameWithoutExtension(text.FileName),
+					filePath,
 					matches
 				});
 

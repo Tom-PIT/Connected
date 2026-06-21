@@ -1,11 +1,13 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using TomPIT.ComponentModel;
 using TomPIT.Design;
 using TomPIT.Mcp.Protocol;
 using TomPIT.Reflection;
+using TomPIT.Storage;
 
 namespace TomPIT.Mcp.Tools;
 
@@ -52,9 +54,6 @@ internal static class ComponentTools
 		var component = Tenant.GetService<IComponentService>().SelectComponent(componentToken)
 			?? throw new McpToolException($"Component not found: {componentToken}");
 
-		var ms = Tenant.GetService<IMicroServiceService>().Select(component.MicroService)
-			?? throw new McpToolException("MicroService not found");
-
 		var config = Tenant.GetService<IComponentService>().SelectConfiguration(componentToken)
 			?? throw new McpToolException("Configuration not found");
 
@@ -66,18 +65,22 @@ internal static class ComponentTools
 		if (!string.IsNullOrWhiteSpace(elementName))
 		{
 			var text = texts.FirstOrDefault(t =>
-				string.Equals(System.IO.Path.GetFileNameWithoutExtension(t.FileName), elementName, StringComparison.OrdinalIgnoreCase))
+				string.Equals(Path.GetFileNameWithoutExtension(t.FileName), elementName, StringComparison.OrdinalIgnoreCase))
 				?? throw new McpToolException($"Element '{elementName}' not found in component '{component.Name}'");
 
-			var source = Tenant.GetService<IComponentService>().SelectText(ms.Token, text);
-			return new { component = component.Name, category = component.Category, elementName, source };
+			return new
+			{
+				component = component.Name,
+				category = component.Category,
+				elementName,
+				filePath = SourceFilePath(component.MicroService, text)
+			};
 		}
 
 		var sources = texts.Select(t => new
 		{
-			elementName = System.IO.Path.GetFileNameWithoutExtension(t.FileName),
-			fileName = t.FileName,
-			source = Tenant.GetService<IComponentService>().SelectText(ms.Token, t)
+			elementName = Path.GetFileNameWithoutExtension(t.FileName),
+			filePath = SourceFilePath(component.MicroService, t)
 		}).ToList();
 
 		return new { component = component.Name, category = component.Category, sources };
@@ -159,7 +162,7 @@ internal static class ComponentTools
 			new McpTool
 			{
 				Name = "component_source_read",
-				Description = "Read the source code of a component. For components with multiple elements (e.g. API operations, model queries), all elements are returned unless 'elementName' is specified.",
+				Description = "Get the file path(s) of a component's source files on disk. For components with multiple elements (e.g. API operations, model queries), all element paths are returned unless 'elementName' is specified. Read the returned paths directly from the filesystem.",
 				InputSchema = new()
 				{
 					Type = "object",
@@ -188,6 +191,12 @@ internal static class ComponentTools
 				}
 			}
 		};
+	}
+
+	internal static string SourceFilePath(Guid microService, IText text)
+	{
+		var folder = Shell.Configuration.GetRequiredSection("sourceFiles").GetValue<string>("folder");
+		return Path.Combine(folder, microService.ToString(), $"{text.TextBlob}-{BlobTypes.SourceText}.txt");
 	}
 
 	private static IMicroService ResolveMicroService(string identifier)

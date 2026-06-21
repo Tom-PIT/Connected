@@ -4,10 +4,12 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TomPIT.Mcp.Dispatch;
 using TomPIT.Mcp.Protocol;
+using TomPIT.Mcp.Tools;
 
 namespace TomPIT.Mcp.Controllers;
 
@@ -60,7 +62,8 @@ public class McpController : Controller
 
 		try
 		{
-			var result = McpDispatcher.Handle(request);
+			var baseUrl = $"{Request.Scheme}://{Request.Host}";
+			var result = McpDispatcher.Handle(request, baseUrl);
 
 			return Json(new JsonRpcResponse
 			{
@@ -85,6 +88,31 @@ public class McpController : Controller
 		{
 			return StatusCode(200, ErrorResponse(request.Id, JsonRpcErrorCodes.InternalError, ex.Message));
 		}
+	}
+
+	[HttpGet("tool-descriptions")]
+	[AllowAnonymous]
+	public IActionResult ToolDescriptions()
+	{
+		var result = McpDispatcher.AllTools().ToDictionary(
+			t => t.Name,
+			t => (object)new
+			{
+				description = t.Description,
+				properties = t.InputSchema.Properties
+					.Where(p => p.Value.Description is not null)
+					.ToDictionary(p => p.Key, p => p.Value.Description)
+			}
+		);
+
+		return Json(result, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore, Formatting = Formatting.Indented });
+	}
+
+	[HttpGet("guide")]
+	[AllowAnonymous]
+	public IActionResult Guide()
+	{
+		return Content(ConnectedGuide.Content, "text/markdown", Encoding.UTF8);
 	}
 
 	private static bool IsNotification(string method) =>
