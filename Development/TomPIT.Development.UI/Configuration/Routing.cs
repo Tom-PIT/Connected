@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Routing;
 using System.Threading.Tasks;
 using TomPIT.Development.Routing;
+using TomPIT.Mcp;
 using TomPIT.Routing;
 
 namespace TomPIT.Development.Configuration
@@ -31,6 +32,8 @@ namespace TomPIT.Development.Configuration
 			{
 				await new SourceCode().ProcessRequestAsync(t);
 			});
+
+			routes.MapTomPITMcp();
 
 			//routes.Map("sys/media/{id}/{version}", (t) =>
 			//{

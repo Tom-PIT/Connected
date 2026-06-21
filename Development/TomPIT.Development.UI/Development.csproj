@@ -80,5 +80,6 @@
     <ProjectReference Include="..\TomPIT.Development\TomPIT.Development.csproj" />
     <ProjectReference Include="..\TomPIT.Ide.UI\TomPIT.Ide.UI.csproj" />
     <ProjectReference Include="..\TomPIT.Ide\TomPIT.Ide.csproj" />
+    <ProjectReference Include="..\TomPIT.Mcp\TomPIT.Mcp.csproj" />
   </ItemGroup>
 </Project>
