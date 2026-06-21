@@ -128,6 +128,56 @@ internal static class ConfigurationTools
 		return new { success = true, token = componentToken, name, folder };
 	}
 
+	internal static object RenameFolder(JObject args)
+	{
+		var folderToken = ParseToken(args, "folder");
+		var name = args.Value<string>("name") ?? throw new McpToolException("name is required");
+		var parentRaw = args.Value<string>("parent");
+
+		var folder = Tenant.GetService<IComponentService>().SelectFolder(folderToken)
+			?? throw new McpToolException($"Folder not found: {folderToken}");
+
+		var parent = parentRaw is not null && Guid.TryParse(parentRaw, out var pg) ? pg : folder.Parent;
+
+		Tenant.GetService<IDesignService>().Components.UpdateFolder(folder.MicroService, folderToken, name, parent);
+
+		return new { success = true, token = folderToken, name };
+	}
+
+	internal static object DeleteFolder(JObject args)
+	{
+		var folderToken = ParseToken(args, "folder");
+		var deleteComponents = args.Value<bool?>("deleteComponents") ?? false;
+
+		var folder = Tenant.GetService<IComponentService>().SelectFolder(folderToken)
+			?? throw new McpToolException($"Folder not found: {folderToken}");
+
+		Tenant.GetService<IDesignService>().Components.DeleteFolder(folder.MicroService, folderToken, deleteComponents);
+
+		return new { success = true, token = folderToken, name = folder.Name, deleteComponents };
+	}
+
+	internal static object CloneComponent(JObject args)
+	{
+		var componentToken = ParseToken(args, "componentToken");
+		var msIdentifier = args.Value<string>("microService");
+		var folderRaw = args.Value<string>("folder");
+
+		var component = Tenant.GetService<IComponentService>().SelectComponent(componentToken)
+			?? throw new McpToolException($"Component not found: {componentToken}");
+
+		var targetMs = msIdentifier is not null
+			? ResolveMicroService(msIdentifier).Token
+			: component.MicroService;
+
+		var targetFolder = folderRaw is not null && Guid.TryParse(folderRaw, out var fg) ? fg : component.Folder;
+
+		var newToken = Tenant.GetService<IDesignService>().Components.Clone(componentToken, targetMs, targetFolder);
+		var created = Tenant.GetService<IComponentService>().SelectComponent(newToken);
+
+		return new { success = true, token = newToken, name = created?.Name, category = component.Category };
+	}
+
 	internal static object CreateFolder(JObject args)
 	{
 		var msIdentifier = args.Value<string>("microService") ?? throw new McpToolException("microService is required");
@@ -222,6 +272,53 @@ internal static class ConfigurationTools
 						["folder"] = new() { Type = "string", Description = "Optional new folder GUID (omit to keep current folder)" }
 					},
 					Required = new List<string> { "componentToken", "name" }
+				}
+			},
+			new McpTool
+			{
+				Name = "folder_rename",
+				Description = "Rename a folder and/or move it to a different parent folder.",
+				InputSchema = new()
+				{
+					Type = "object",
+					Properties = new()
+					{
+						["folder"] = new() { Type = "string", Description = "Folder GUID token (from folder_list)" },
+						["name"] = new() { Type = "string", Description = "New folder name" },
+						["parent"] = new() { Type = "string", Description = "Optional new parent folder GUID (omit to keep current parent)" }
+					},
+					Required = new List<string> { "folder", "name" }
+				}
+			},
+			new McpTool
+			{
+				Name = "folder_delete",
+				Description = "Delete a folder. By default only deletes the folder if empty; set deleteComponents to true to also delete all components inside.",
+				InputSchema = new()
+				{
+					Type = "object",
+					Properties = new()
+					{
+						["folder"] = new() { Type = "string", Description = "Folder GUID token (from folder_list)" },
+						["deleteComponents"] = new() { Type = "boolean", Description = "If true, also delete all components inside the folder (default: false)" }
+					},
+					Required = new List<string> { "folder" }
+				}
+			},
+			new McpTool
+			{
+				Name = "component_clone",
+				Description = "Clone (duplicate) an existing component, optionally into a different microservice or folder. The clone gets an auto-generated name.",
+				InputSchema = new()
+				{
+					Type = "object",
+					Properties = new()
+					{
+						["componentToken"] = new() { Type = "string", Description = "GUID token of the component to clone" },
+						["microService"] = new() { Type = "string", Description = "Optional target microservice URL slug or name (default: same microservice)" },
+						["folder"] = new() { Type = "string", Description = "Optional target folder GUID (default: same folder as original)" }
+					},
+					Required = new List<string> { "componentToken" }
 				}
 			},
 			new McpTool

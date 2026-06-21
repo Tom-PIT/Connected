@@ -76,8 +76,13 @@ internal static class McpDispatcher
 				"component_delete" => ConfigurationTools.DeleteComponent(arguments),
 				"component_rename" => ConfigurationTools.RenameComponent(arguments),
 				"folder_create" => ConfigurationTools.CreateFolder(arguments),
+				"folder_rename" => ConfigurationTools.RenameFolder(arguments),
+				"folder_delete" => ConfigurationTools.DeleteFolder(arguments),
+				"component_clone" => ConfigurationTools.CloneComponent(arguments),
+				"component_search" => SearchTools.Search(arguments),
 				"api_invoke" => ApiTools.Invoke(arguments),
 				"component_element_create" => ElementTools.CreateElement(arguments),
+				"component_element_update" => ElementTools.UpdateElement(arguments),
 				"component_element_delete" => ElementTools.DeleteElement(arguments),
 				"component_config_write" => ElementTools.WriteConfig(arguments),
 				"component_dependencies" => DependencyTools.Analyze(arguments),
@@ -337,6 +342,7 @@ internal static class McpDispatcher
 		foreach (var t in ConfigurationTools.Definitions()) yield return t;
 		foreach (var t in ApiTools.Definitions()) yield return t;
 		foreach (var t in ElementTools.Definitions()) yield return t;
+		foreach (var t in SearchTools.Definitions()) yield return t;
 		foreach (var t in DependencyTools.Definitions()) yield return t;
 	}
 }

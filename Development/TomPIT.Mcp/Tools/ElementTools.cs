@@ -34,6 +34,10 @@ internal static class ElementTools
 		var instance = Activator.CreateInstance(elementType)
 			?? throw new McpToolException($"Failed to create instance of '{elementType.FullName}'");
 
+		// IText elements need a TextBlob GUID before saving so source writes have a valid target
+		if (instance is IText textEl)
+			textEl.TextBlob = Guid.NewGuid();
+
 		Tenant.GetService<INamingService>().Create(instance, (IEnumerable)collection);
 
 		var addMethod = collection.GetType().GetMethods().FirstOrDefault(m => m.Name == "Add" && m.GetParameters().Length == 1)
@@ -95,6 +99,62 @@ internal static class ElementTools
 		Tenant.GetService<IDesignService>().Components.Update(config);
 
 		return new { success = true, elementId, name, collectionProperty };
+	}
+
+	internal static object UpdateElement(JObject args)
+	{
+		var componentToken = ParseToken(args, "componentToken");
+		var collectionProperty = args.Value<string>("collectionProperty")
+			?? throw new McpToolException("collectionProperty is required");
+		var elementId = ParseToken(args, "elementId");
+		var propertyName = args.Value<string>("property")
+			?? throw new McpToolException("property is required");
+		var valueJson = args.Value<string>("value")
+			?? throw new McpToolException("value is required");
+
+		var config = Tenant.GetService<IComponentService>().SelectConfiguration(componentToken)
+			?? throw new McpToolException($"Configuration not found for component: {componentToken}");
+
+		var collProp = config.GetType().GetProperty(collectionProperty, BindingFlags.Public | BindingFlags.Instance)
+			?? throw new McpToolException($"Property '{collectionProperty}' not found on '{config.GetType().Name}'");
+
+		var collection = collProp.GetValue(config)
+			?? throw new McpToolException($"Collection '{collectionProperty}' is null");
+
+		object? target = null;
+		foreach (var item in (IEnumerable)collection)
+		{
+			if (item is IElement el && el.Id == elementId)
+			{
+				target = item;
+				break;
+			}
+		}
+
+		if (target is null)
+			throw new McpToolException($"Element '{elementId}' not found in '{collectionProperty}'");
+
+		var prop = target.GetType().GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance)
+			?? throw new McpToolException($"Property '{propertyName}' not found on element type '{target.GetType().Name}'");
+
+		if (!prop.CanWrite)
+			throw new McpToolException($"Property '{propertyName}' is read-only");
+
+		object? converted;
+		try
+		{
+			converted = JsonConvert.DeserializeObject(valueJson, prop.PropertyType);
+		}
+		catch (Exception ex)
+		{
+			throw new McpToolException($"Cannot convert value to {prop.PropertyType.Name}: {ex.Message}");
+		}
+
+		prop.SetValue(target, converted);
+
+		Tenant.GetService<IDesignService>().Components.Update(config);
+
+		return new { success = true, elementId, property = propertyName, value = valueJson, collectionProperty };
 	}
 
 	internal static object WriteConfig(JObject args)
@@ -203,6 +263,24 @@ internal static class ElementTools
 						["elementType"] = new() { Type = "string", Description = "Optional: concrete type name for the element. Only required when the collection is empty. Read component_config_read on a similar component to find the type (e.g. 'TomPIT.MicroServices.Apis.Operation, TomPIT.MicroServices')." }
 					},
 					Required = new List<string> { "componentToken", "collectionProperty" }
+				}
+			},
+			new McpTool
+			{
+				Name = "component_element_update",
+				Description = "Update a property on a specific element within a component's configuration collection. Use this to rename an API operation, change its Scope, or update any other element-level property. Use component_config_read to find element Ids and property names.",
+				InputSchema = new()
+				{
+					Type = "object",
+					Properties = new()
+					{
+						["componentToken"] = new() { Type = "string", Description = "The component GUID token" },
+						["collectionProperty"] = new() { Type = "string", Description = "Name of the collection property on the configuration (e.g. 'Operations', 'Queries')" },
+						["elementId"] = new() { Type = "string", Description = "GUID Id of the element to update (from component_config_read output)" },
+						["property"] = new() { Type = "string", Description = "Property name on the element (e.g. 'Name', 'Scope')" },
+						["value"] = new() { Type = "string", Description = "JSON-encoded value (e.g. '\"NewOperationName\"' for string, '2' for int/enum)" }
+					},
+					Required = new List<string> { "componentToken", "collectionProperty", "elementId", "property", "value" }
 				}
 			},
 			new McpTool
