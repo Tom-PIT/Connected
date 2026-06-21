@@ -21,6 +21,85 @@ internal static class DependencyTools
 	// Matches @using or @inject in Razor
 	private static readonly Regex RazorUsingRegex = new(@"@using\s+([\w\.]+)", RegexOptions.Compiled | RegexOptions.Multiline);
 
+	internal static object ResolveLoadPath(JObject args)
+	{
+		var path = args.Value<string>("path") ?? throw new McpToolException("path is required");
+		var currentMsIdentifier = args.Value<string>("currentMicroService");
+
+		var parts = path.Split('/');
+		string msName, componentName;
+		string? elementName = null;
+
+		if (parts.Length >= 2)
+		{
+			msName = parts[0];
+			componentName = System.IO.Path.GetFileNameWithoutExtension(parts[1]);
+			elementName = parts.Length > 2 ? System.IO.Path.GetFileNameWithoutExtension(parts[2]) : null;
+		}
+		else if (parts.Length == 1 && !string.IsNullOrWhiteSpace(currentMsIdentifier))
+		{
+			msName = currentMsIdentifier;
+			componentName = System.IO.Path.GetFileNameWithoutExtension(parts[0]);
+		}
+		else
+		{
+			throw new McpToolException("Path must be 'microservice/component' or 'microservice/component/element'. Provide 'currentMicroService' when the path has no microservice prefix.");
+		}
+
+		var ms = Tenant.GetService<IMicroServiceService>().Select(msName)
+			?? Tenant.GetService<IMicroServiceService>().SelectByUrl(msName)
+			?? throw new McpToolException($"MicroService '{msName}' not found");
+
+		var allComponents = Tenant.GetService<IComponentService>().QueryComponents(ms.Token);
+		var component = allComponents.FirstOrDefault(c =>
+			string.Equals(c.Name, componentName, StringComparison.OrdinalIgnoreCase))
+			?? throw new McpToolException($"Component '{componentName}' not found in microservice '{msName}'");
+
+		var config = Tenant.GetService<IComponentService>().SelectConfiguration(component.Token)
+			?? throw new McpToolException("Configuration not found");
+
+		var texts = Tenant.GetService<IDiscoveryService>().Configuration.Query<IText>(config);
+
+		if (!string.IsNullOrWhiteSpace(elementName))
+		{
+			var en = elementName;
+			var text = texts.FirstOrDefault(t =>
+				string.Equals(System.IO.Path.GetFileNameWithoutExtension(t.FileName), en, StringComparison.OrdinalIgnoreCase))
+				?? throw new McpToolException($"Element '{en}' not found in component '{componentName}'");
+
+			return new
+			{
+				path,
+				resolved = true,
+				componentToken = component.Token,
+				componentName = component.Name,
+				category = component.Category,
+				microService = ms.Url,
+				elementName = en,
+				fileName = text.FileName,
+				source = Tenant.GetService<IComponentService>().SelectText(ms.Token, text) ?? string.Empty
+			};
+		}
+
+		var sources = texts.Select(t => new
+		{
+			elementName = System.IO.Path.GetFileNameWithoutExtension(t.FileName),
+			fileName = t.FileName,
+			source = Tenant.GetService<IComponentService>().SelectText(ms.Token, t) ?? string.Empty
+		}).ToList();
+
+		return new
+		{
+			path,
+			resolved = true,
+			componentToken = component.Token,
+			componentName = component.Name,
+			category = component.Category,
+			microService = ms.Url,
+			sources
+		};
+	}
+
 	internal static object Analyze(JObject args)
 	{
 		var componentToken = ParseToken(args, "componentToken");
@@ -213,6 +292,21 @@ internal static class DependencyTools
 	{
 		return new List<McpTool>
 		{
+			new McpTool
+			{
+				Name = "script_load_resolve",
+				Description = "Resolve a C# #load path to the actual component source. Use this to follow dependencies when reading scripts. Path format: 'microServiceUrl/ComponentName' or 'microServiceUrl/ComponentName/ElementName'. If the path has no microservice prefix (e.g. just 'Helpers'), provide currentMicroService.",
+				InputSchema = new()
+				{
+					Type = "object",
+					Properties = new()
+					{
+						["path"] = new() { Type = "string", Description = "The #load path, e.g. 'appservice/Helpers' or 'appservice/OrderApi/GetOrder'" },
+						["currentMicroService"] = new() { Type = "string", Description = "Optional: the URL slug of the current microservice, used to resolve paths without an ms prefix" }
+					},
+					Required = new List<string> { "path" }
+				}
+			},
 			new McpTool
 			{
 				Name = "component_dependencies",

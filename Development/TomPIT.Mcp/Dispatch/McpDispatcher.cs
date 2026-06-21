@@ -65,6 +65,7 @@ internal static class McpDispatcher
 			{
 				"microservice_list" => MicroServiceTools.List(),
 				"microservice_get" => MicroServiceTools.Get(arguments),
+				"microservice_references" => MicroServiceTools.GetReferences(arguments),
 				"component_list" => ComponentTools.ListComponents(arguments),
 				"folder_list" => ComponentTools.ListFolders(arguments),
 				"component_source_read" => ComponentTools.ReadSource(arguments),
@@ -77,6 +78,7 @@ internal static class McpDispatcher
 				"folder_create" => ConfigurationTools.CreateFolder(arguments),
 				"api_invoke" => ApiTools.Invoke(arguments),
 				"component_dependencies" => DependencyTools.Analyze(arguments),
+				"script_load_resolve" => DependencyTools.ResolveLoadPath(arguments),
 				_ => throw new McpToolException($"Unknown tool: {toolName}")
 			};
 
@@ -113,6 +115,13 @@ internal static class McpDispatcher
 		{
 			new McpResource
 			{
+				Uri = "tompit://guide",
+				Name = "TomPIT Connected — Platform Guide",
+				Description = "Comprehensive guide to TomPIT Connected architecture, component model, #load resolution, dependencies, and effective tool use patterns",
+				MimeType = "text/markdown"
+			},
+			new McpResource
+			{
 				Uri = "tompit://microservices",
 				Name = "All Microservices",
 				Description = "Complete list of microservices on this instance",
@@ -141,7 +150,11 @@ internal static class McpDispatcher
 
 		string content;
 
-		if (uri == "tompit://microservices")
+		if (uri == "tompit://guide")
+		{
+			content = ConnectedGuide.Content;
+		}
+		else if (uri == "tompit://microservices")
 		{
 			var list = MicroServiceTools.List();
 			content = Newtonsoft.Json.JsonConvert.SerializeObject(list, Newtonsoft.Json.Formatting.Indented);

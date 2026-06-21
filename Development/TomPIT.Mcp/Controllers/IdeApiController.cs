@@ -123,7 +123,7 @@ public class IdeApiController : Controller
 	{
 		var json = JsonConvert.SerializeObject(value, new JsonSerializerSettings
 		{
-			NullValueHandling = NullValueHandling.Ignore,
+			NullValueHandling = NullValueHandling.Include,
 			Formatting = Formatting.None
 		});
 		return Content(json, "application/json", Encoding.UTF8);
