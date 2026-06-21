@@ -145,100 +145,103 @@ internal static class ConfigurationTools
 		return new { success = true, token = created?.Token, name, microService = ms.Url };
 	}
 
-	internal static IEnumerable<McpTool> Definitions() =>
-	[
-		new McpTool
+	internal static IEnumerable<McpTool> Definitions()
+	{
+		return new List<McpTool>
 		{
-			Name = "component_config_read",
-			Description = "Read the full configuration of a component as JSON. Includes type-specific properties such as API operations with scope, model connections, view layout, query operations, etc.",
-			InputSchema = new()
+			new McpTool
 			{
-				Type = "object",
-				Properties = new()
+				Name = "component_config_read",
+				Description = "Read the full configuration of a component as JSON. Includes type-specific properties such as API operations with scope, model connections, view layout, query operations, etc.",
+				InputSchema = new()
 				{
-					["componentToken"] = new() { Type = "string", Description = "The component GUID token" }
-				},
-				Required = ["componentToken"]
-			}
-		},
-		new McpTool
-		{
-			Name = "component_types_list",
-			Description = "List all component types that can be created within a microservice. Use this before component_create to find the correct category name.",
-			InputSchema = new()
+					Type = "object",
+					Properties = new()
+					{
+						["componentToken"] = new() { Type = "string", Description = "The component GUID token" }
+					},
+					Required = new List<string> { "componentToken" }
+				}
+			},
+			new McpTool
 			{
-				Type = "object",
-				Properties = new()
+				Name = "component_types_list",
+				Description = "List all component types that can be created within a microservice. Use this before component_create to find the correct category name.",
+				InputSchema = new()
 				{
-					["microService"] = new() { Type = "string", Description = "Microservice URL slug or name" }
-				},
-				Required = ["microService"]
-			}
-		},
-		new McpTool
-		{
-			Name = "component_create",
-			Description = "Create a new component in a microservice. Use component_types_list first to get valid category names.",
-			InputSchema = new()
+					Type = "object",
+					Properties = new()
+					{
+						["microService"] = new() { Type = "string", Description = "Microservice URL slug or name" }
+					},
+					Required = new List<string> { "microService" }
+				}
+			},
+			new McpTool
 			{
-				Type = "object",
-				Properties = new()
+				Name = "component_create",
+				Description = "Create a new component in a microservice. Use component_types_list first to get valid category names.",
+				InputSchema = new()
 				{
-					["microService"] = new() { Type = "string", Description = "Microservice URL slug or name" },
-					["category"] = new() { Type = "string", Description = "Component category from component_types_list (e.g. 'Api', 'View', 'Script')" },
-					["name"] = new() { Type = "string", Description = "Component name" },
-					["folder"] = new() { Type = "string", Description = "Optional folder GUID to place the component in" }
-				},
-				Required = ["microService", "category", "name"]
-			}
-		},
-		new McpTool
-		{
-			Name = "component_delete",
-			Description = "Permanently delete a component and all its source blobs. This action cannot be undone.",
-			InputSchema = new()
+					Type = "object",
+					Properties = new()
+					{
+						["microService"] = new() { Type = "string", Description = "Microservice URL slug or name" },
+						["category"] = new() { Type = "string", Description = "Component category from component_types_list (e.g. 'Api', 'View', 'Script')" },
+						["name"] = new() { Type = "string", Description = "Component name" },
+						["folder"] = new() { Type = "string", Description = "Optional folder GUID to place the component in" }
+					},
+					Required = new List<string> { "microService", "category", "name" }
+				}
+			},
+			new McpTool
 			{
-				Type = "object",
-				Properties = new()
+				Name = "component_delete",
+				Description = "Permanently delete a component and all its source blobs. This action cannot be undone.",
+				InputSchema = new()
 				{
-					["componentToken"] = new() { Type = "string", Description = "The component GUID token" }
-				},
-				Required = ["componentToken"]
-			}
-		},
-		new McpTool
-		{
-			Name = "component_rename",
-			Description = "Rename a component and/or move it to a different folder.",
-			InputSchema = new()
+					Type = "object",
+					Properties = new()
+					{
+						["componentToken"] = new() { Type = "string", Description = "The component GUID token" }
+					},
+					Required = new List<string> { "componentToken" }
+				}
+			},
+			new McpTool
 			{
-				Type = "object",
-				Properties = new()
+				Name = "component_rename",
+				Description = "Rename a component and/or move it to a different folder.",
+				InputSchema = new()
 				{
-					["componentToken"] = new() { Type = "string", Description = "The component GUID token" },
-					["name"] = new() { Type = "string", Description = "New component name" },
-					["folder"] = new() { Type = "string", Description = "Optional new folder GUID (omit to keep current folder)" }
-				},
-				Required = ["componentToken", "name"]
-			}
-		},
-		new McpTool
-		{
-			Name = "folder_create",
-			Description = "Create a folder inside a microservice to organize components.",
-			InputSchema = new()
+					Type = "object",
+					Properties = new()
+					{
+						["componentToken"] = new() { Type = "string", Description = "The component GUID token" },
+						["name"] = new() { Type = "string", Description = "New component name" },
+						["folder"] = new() { Type = "string", Description = "Optional new folder GUID (omit to keep current folder)" }
+					},
+					Required = new List<string> { "componentToken", "name" }
+				}
+			},
+			new McpTool
 			{
-				Type = "object",
-				Properties = new()
+				Name = "folder_create",
+				Description = "Create a folder inside a microservice to organize components.",
+				InputSchema = new()
 				{
-					["microService"] = new() { Type = "string", Description = "Microservice URL slug or name" },
-					["name"] = new() { Type = "string", Description = "Folder name" },
-					["parent"] = new() { Type = "string", Description = "Optional parent folder GUID (omit for root)" }
-				},
-				Required = ["microService", "name"]
+					Type = "object",
+					Properties = new()
+					{
+						["microService"] = new() { Type = "string", Description = "Microservice URL slug or name" },
+						["name"] = new() { Type = "string", Description = "Folder name" },
+						["parent"] = new() { Type = "string", Description = "Optional parent folder GUID (omit for root)" }
+					},
+					Required = new List<string> { "microService", "name" }
+				}
 			}
-		}
-	];
+		};
+	}
 
 	private static IMicroService ResolveMicroService(string identifier)
 	{

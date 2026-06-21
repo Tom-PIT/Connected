@@ -84,7 +84,7 @@ internal static class McpDispatcher
 
 			return new McpToolCallResult
 			{
-				Content = [new McpContent { Type = "text", Text = json }]
+				Content = new List<McpContent> { new McpContent { Type = "text", Text = json } }
 			};
 		}
 		catch (McpToolException ex)
@@ -92,7 +92,7 @@ internal static class McpDispatcher
 			return new McpToolCallResult
 			{
 				IsError = true,
-				Content = [new McpContent { Type = "text", Text = ex.Message }]
+				Content = new List<McpContent> { new McpContent { Type = "text", Text = ex.Message } }
 			};
 		}
 		catch (Exception ex)
@@ -100,7 +100,7 @@ internal static class McpDispatcher
 			return new McpToolCallResult
 			{
 				IsError = true,
-				Content = [new McpContent { Type = "text", Text = $"Error: {ex.Message}" }]
+				Content = new List<McpContent> { new McpContent { Type = "text", Text = $"Error: {ex.Message}" } }
 			};
 		}
 	}
@@ -160,7 +160,7 @@ internal static class McpDispatcher
 
 		return new McpResourceReadResult
 		{
-			Contents = [new McpResourceContent { Uri = uri, MimeType = "application/json", Text = content }]
+			Contents = new List<McpResourceContent> { new McpResourceContent { Uri = uri, MimeType = "application/json", Text = content } }
 		};
 	}
 
@@ -168,37 +168,37 @@ internal static class McpDispatcher
 	{
 		return new McpPromptsListResult
 		{
-			Prompts =
-			[
+			Prompts = new List<McpPrompt>
+			{
 				new McpPrompt
 				{
 					Name = "implement_api_operation",
 					Description = "Generate the implementation body for a TomPIT API operation given its context",
-					Arguments =
-					[
+					Arguments = new List<McpPromptArgument>
+					{
 						new McpPromptArgument { Name = "componentToken", Description = "Token of the API component", Required = true },
 						new McpPromptArgument { Name = "operationName", Description = "Name of the operation to implement", Required = true }
-					]
+					}
 				},
 				new McpPrompt
 				{
 					Name = "review_component",
 					Description = "Review a component's source code and suggest improvements",
-					Arguments =
-					[
+					Arguments = new List<McpPromptArgument>
+					{
 						new McpPromptArgument { Name = "componentToken", Description = "Token of the component to review", Required = true }
-					]
+					}
 				},
 				new McpPrompt
 				{
 					Name = "document_api",
 					Description = "Generate documentation for an API component and its operations",
-					Arguments =
-					[
+					Arguments = new List<McpPromptArgument>
+					{
 						new McpPromptArgument { Name = "componentToken", Description = "Token of the API component", Required = true }
-					]
+					}
 				}
-			]
+			}
 		};
 	}
 
@@ -236,8 +236,8 @@ internal static class McpDispatcher
 		return new McpPromptGetResult
 		{
 			Description = $"Implement the '{opName}' operation",
-			Messages =
-			[
+			Messages = new List<McpPromptMessage>
+			{
 				new McpPromptMessage
 				{
 					Role = "user",
@@ -247,7 +247,7 @@ internal static class McpDispatcher
 						Text = $"I need you to implement the '{opName}' API operation in TomPIT.connected.\n\nComponent configuration:\n```json\n{contextInfo}\n```\n\nThe implementation must be a C# script class that inherits from the appropriate base (e.g. Api<T> for operations with return value, or Api for void operations). Follow the existing patterns in the codebase."
 					}
 				}
-			]
+			}
 		};
 	}
 
@@ -277,8 +277,8 @@ internal static class McpDispatcher
 		return new McpPromptGetResult
 		{
 			Description = "Review component source code",
-			Messages =
-			[
+			Messages = new List<McpPromptMessage>
+			{
 				new McpPromptMessage
 				{
 					Role = "user",
@@ -288,7 +288,7 @@ internal static class McpDispatcher
 						Text = $"Please review the following TomPIT component and suggest improvements, identify potential bugs, and check for best practices:\n\n{string.Join("\n\n", sources)}"
 					}
 				}
-			]
+			}
 		};
 	}
 
@@ -299,8 +299,8 @@ internal static class McpDispatcher
 		return new McpPromptGetResult
 		{
 			Description = "Document API component",
-			Messages =
-			[
+			Messages = new List<McpPromptMessage>
+			{
 				new McpPromptMessage
 				{
 					Role = "user",
@@ -310,7 +310,7 @@ internal static class McpDispatcher
 						Text = $"Use component_source_read with componentToken '{tokenRaw}' to read the API source, then generate clear markdown documentation for each operation including: purpose, input parameters, return value, and example usage."
 					}
 				}
-			]
+			}
 		};
 	}
 

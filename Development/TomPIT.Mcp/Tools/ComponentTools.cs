@@ -123,69 +123,72 @@ internal static class ComponentTools
 		return new { success = true, component = component.Name, elementName = System.IO.Path.GetFileNameWithoutExtension(target.FileName) };
 	}
 
-	internal static IEnumerable<McpTool> Definitions() =>
-	[
-		new McpTool
+	internal static IEnumerable<McpTool> Definitions()
+	{
+		return new List<McpTool>
 		{
-			Name = "component_list",
-			Description = "List components in a microservice. Optionally filter by category (Api, View, Script, Model, MasterView, Partial, Queue, Subscription, etc.).",
-			InputSchema = new()
+			new McpTool
 			{
-				Type = "object",
-				Properties = new()
+				Name = "component_list",
+				Description = "List components in a microservice. Optionally filter by category (Api, View, Script, Model, MasterView, Partial, Queue, Subscription, etc.).",
+				InputSchema = new()
 				{
-					["microService"] = new() { Type = "string", Description = "Microservice URL slug or name" },
-					["category"] = new() { Type = "string", Description = "Optional category filter (e.g. 'Api', 'View', 'Script', 'Model')" }
-				},
-				Required = ["microService"]
-			}
-		},
-		new McpTool
-		{
-			Name = "folder_list",
-			Description = "Get the folder hierarchy for a microservice. Returns a nested tree structure.",
-			InputSchema = new()
+					Type = "object",
+					Properties = new()
+					{
+						["microService"] = new() { Type = "string", Description = "Microservice URL slug or name" },
+						["category"] = new() { Type = "string", Description = "Optional category filter (e.g. 'Api', 'View', 'Script', 'Model')" }
+					},
+					Required = new List<string> { "microService" }
+				}
+			},
+			new McpTool
 			{
-				Type = "object",
-				Properties = new()
+				Name = "folder_list",
+				Description = "Get the folder hierarchy for a microservice. Returns a nested tree structure.",
+				InputSchema = new()
 				{
-					["microService"] = new() { Type = "string", Description = "Microservice URL slug or name" }
-				},
-				Required = ["microService"]
-			}
-		},
-		new McpTool
-		{
-			Name = "component_source_read",
-			Description = "Read the source code of a component. For components with multiple elements (e.g. API operations, model queries), all elements are returned unless 'elementName' is specified.",
-			InputSchema = new()
+					Type = "object",
+					Properties = new()
+					{
+						["microService"] = new() { Type = "string", Description = "Microservice URL slug or name" }
+					},
+					Required = new List<string> { "microService" }
+				}
+			},
+			new McpTool
 			{
-				Type = "object",
-				Properties = new()
+				Name = "component_source_read",
+				Description = "Read the source code of a component. For components with multiple elements (e.g. API operations, model queries), all elements are returned unless 'elementName' is specified.",
+				InputSchema = new()
 				{
-					["componentToken"] = new() { Type = "string", Description = "The component GUID token" },
-					["elementName"] = new() { Type = "string", Description = "Optional: name of a specific element (e.g. API operation name, file name without extension)" }
-				},
-				Required = ["componentToken"]
-			}
-		},
-		new McpTool
-		{
-			Name = "component_source_write",
-			Description = "Write (update) the source code of a component or a specific element within it. Triggers recompilation automatically.",
-			InputSchema = new()
+					Type = "object",
+					Properties = new()
+					{
+						["componentToken"] = new() { Type = "string", Description = "The component GUID token" },
+						["elementName"] = new() { Type = "string", Description = "Optional: name of a specific element (e.g. API operation name, file name without extension)" }
+					},
+					Required = new List<string> { "componentToken" }
+				}
+			},
+			new McpTool
 			{
-				Type = "object",
-				Properties = new()
+				Name = "component_source_write",
+				Description = "Write (update) the source code of a component or a specific element within it. Triggers recompilation automatically.",
+				InputSchema = new()
 				{
-					["componentToken"] = new() { Type = "string", Description = "The component GUID token" },
-					["content"] = new() { Type = "string", Description = "The new source code content" },
-					["elementName"] = new() { Type = "string", Description = "Required when the component has multiple elements (e.g. API operation name)" }
-				},
-				Required = ["componentToken", "content"]
+					Type = "object",
+					Properties = new()
+					{
+						["componentToken"] = new() { Type = "string", Description = "The component GUID token" },
+						["content"] = new() { Type = "string", Description = "The new source code content" },
+						["elementName"] = new() { Type = "string", Description = "Required when the component has multiple elements (e.g. API operation name)" }
+					},
+					Required = new List<string> { "componentToken", "content" }
+				}
 			}
-		}
-	];
+		};
+	}
 
 	private static IMicroService ResolveMicroService(string identifier)
 	{

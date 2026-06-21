@@ -43,24 +43,27 @@ internal static class ApiTools
 		};
 	}
 
-	internal static IEnumerable<McpTool> Definitions() =>
-	[
-		new McpTool
+	internal static IEnumerable<McpTool> Definitions()
+	{
+		return new List<McpTool>
 		{
-			Name = "api_invoke",
-			Description = "Invoke a TomPIT API operation on the running instance. The API must have Public scope. Arguments are passed as a JSON object matching the operation's input properties.",
-			InputSchema = new()
+			new McpTool
 			{
-				Type = "object",
-				Properties = new()
+				Name = "api_invoke",
+				Description = "Invoke a TomPIT API operation on the running instance. The API must have Public scope. Arguments are passed as a JSON object matching the operation's input properties.",
+				InputSchema = new()
 				{
-					["microService"] = new() { Type = "string", Description = "Microservice URL slug or name" },
-					["api"] = new() { Type = "string", Description = "API component name" },
-					["operation"] = new() { Type = "string", Description = "Operation name within the API" },
-					["arguments"] = new() { Type = "string", Description = "Optional JSON object of arguments to pass to the operation" }
-				},
-				Required = ["microService", "api", "operation"]
+					Type = "object",
+					Properties = new()
+					{
+						["microService"] = new() { Type = "string", Description = "Microservice URL slug or name" },
+						["api"] = new() { Type = "string", Description = "API component name" },
+						["operation"] = new() { Type = "string", Description = "Operation name within the API" },
+						["arguments"] = new() { Type = "string", Description = "Optional JSON object of arguments to pass to the operation" }
+					},
+					Required = new List<string> { "microService", "api", "operation" }
+				}
 			}
-		}
-	];
+		};
+	}
 }

@@ -53,7 +53,7 @@ internal static class DependencyTools
 				".csx" or ".cs" => ExtractCSharpDependencies(source, ms, component),
 				".js" or ".ts" or ".mjs" => ExtractJsDependencies(source),
 				".cshtml" or ".html" => ExtractRazorDependencies(source),
-				_ => []
+				_ => new List<object>()
 			};
 
 			if (deps.Count > 0)
@@ -209,23 +209,26 @@ internal static class DependencyTools
 		return deps;
 	}
 
-	internal static IEnumerable<McpTool> Definitions() =>
-	[
-		new McpTool
+	internal static IEnumerable<McpTool> Definitions()
+	{
+		return new List<McpTool>
 		{
-			Name = "component_dependencies",
-			Description = "Analyze a component's dependencies. For C# scripts extracts #load directives and resolves them to components. For JS/TS extracts import statements. For Razor views extracts @using and JS imports. Also returns configuration-level dependencies tracked by the runtime.",
-			InputSchema = new()
+			new McpTool
 			{
-				Type = "object",
-				Properties = new()
+				Name = "component_dependencies",
+				Description = "Analyze a component's dependencies. For C# scripts extracts #load directives and resolves them to components. For JS/TS extracts import statements. For Razor views extracts @using and JS imports. Also returns configuration-level dependencies tracked by the runtime.",
+				InputSchema = new()
 				{
-					["componentToken"] = new() { Type = "string", Description = "The component GUID token" }
-				},
-				Required = ["componentToken"]
+					Type = "object",
+					Properties = new()
+					{
+						["componentToken"] = new() { Type = "string", Description = "The component GUID token" }
+					},
+					Required = new List<string> { "componentToken" }
+				}
 			}
-		}
-	];
+		};
+	}
 
 	private static Guid ParseToken(JObject args, string key)
 	{

@@ -46,27 +46,30 @@ internal static class MicroServiceTools
 		};
 	}
 
-	internal static IEnumerable<McpTool> Definitions() =>
-	[
-		new McpTool
+	internal static IEnumerable<McpTool> Definitions()
+	{
+		return new List<McpTool>
 		{
-			Name = "microservice_list",
-			Description = "List all microservices registered on this TomPIT instance. Returns token, name, url, version, commit, resourceGroup and template for each.",
-			InputSchema = new() { Type = "object", Properties = [] }
-		},
-		new McpTool
-		{
-			Name = "microservice_get",
-			Description = "Get details for a single microservice by its URL slug or name.",
-			InputSchema = new()
+			new McpTool
 			{
-				Type = "object",
-				Properties = new()
+				Name = "microservice_list",
+				Description = "List all microservices registered on this TomPIT instance. Returns token, name, url, version, commit, resourceGroup and template for each.",
+				InputSchema = new() { Type = "object", Properties = new Dictionary<string, McpProperty>() }
+			},
+			new McpTool
+			{
+				Name = "microservice_get",
+				Description = "Get details for a single microservice by its URL slug or name.",
+				InputSchema = new()
 				{
-					["microService"] = new() { Type = "string", Description = "The microservice URL slug or name (e.g. 'acme' or 'Acme Orders')" }
-				},
-				Required = ["microService"]
+					Type = "object",
+					Properties = new()
+					{
+						["microService"] = new() { Type = "string", Description = "The microservice URL slug or name (e.g. 'acme' or 'Acme Orders')" }
+					},
+					Required = new List<string> { "microService" }
+				}
 			}
-		}
-	];
+		};
+	}
 }
