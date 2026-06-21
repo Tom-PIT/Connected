@@ -77,6 +77,9 @@ internal static class McpDispatcher
 				"component_rename" => ConfigurationTools.RenameComponent(arguments),
 				"folder_create" => ConfigurationTools.CreateFolder(arguments),
 				"api_invoke" => ApiTools.Invoke(arguments),
+				"component_element_create" => ElementTools.CreateElement(arguments),
+				"component_element_delete" => ElementTools.DeleteElement(arguments),
+				"component_config_write" => ElementTools.WriteConfig(arguments),
 				"component_dependencies" => DependencyTools.Analyze(arguments),
 				"script_load_resolve" => DependencyTools.ResolveLoadPath(arguments),
 				_ => throw new McpToolException($"Unknown tool: {toolName}")
@@ -333,6 +336,7 @@ internal static class McpDispatcher
 		foreach (var t in ComponentTools.Definitions()) yield return t;
 		foreach (var t in ConfigurationTools.Definitions()) yield return t;
 		foreach (var t in ApiTools.Definitions()) yield return t;
+		foreach (var t in ElementTools.Definitions()) yield return t;
 		foreach (var t in DependencyTools.Definitions()) yield return t;
 	}
 }
