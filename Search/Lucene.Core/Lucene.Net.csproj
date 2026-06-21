@@ -6,10 +6,10 @@
     <Authors>Lucene.Net</Authors>
     <Company>Lucene.Net</Company>
     <Product>Lucene.Net</Product>
-    <AssemblyVersion>6.1.621.8</AssemblyVersion>
+    <AssemblyVersion>6.1.621.9</AssemblyVersion>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <FileVersion>6.1.621.8</FileVersion>
-    <Version>6.1.621.8</Version>
+    <FileVersion>6.1.621.9</FileVersion>
+    <Version>6.1.621.9</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugType>portable</DebugType>
