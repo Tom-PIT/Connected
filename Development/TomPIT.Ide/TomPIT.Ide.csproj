@@ -9,9 +9,9 @@
     <TargetFramework>net7.0</TargetFramework>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <RootNamespace>TomPIT.Ide</RootNamespace>
-    <AssemblyVersion>6.1.621.9</AssemblyVersion>
-    <FileVersion>6.1.621.9</FileVersion>
-    <Version>6.1.621.9</Version>
+    <AssemblyVersion>6.1.621.10</AssemblyVersion>
+    <FileVersion>6.1.621.10</FileVersion>
+    <Version>6.1.621.10</Version>
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
