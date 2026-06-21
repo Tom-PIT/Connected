@@ -236,7 +236,7 @@ component_source_write(componentToken: "guid", elementName: "GetOrder", content:
 
 ### Test / invoke an API
 ```
-api_invoke(microService: "slug", operation: "ComponentName.OperationName", payload: {{...}})
+api_invoke(microService: "slug", operation: "ComponentName.OperationName", payload: <json>)
 ```
 
 ---

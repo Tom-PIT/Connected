@@ -93,6 +93,9 @@ internal static class McpDispatcher
 				"component_clone" => ConfigurationTools.CloneComponent(arguments),
 				"component_search" => SearchTools.Search(arguments),
 				"tool_help" => HelpTools.GetUrls(baseUrl),
+				"string_table_set" => StringTableTools.SetString(arguments),
+				"string_table_delete" => StringTableTools.DeleteString(arguments),
+				"string_table_translate" => StringTableTools.SetTranslation(arguments),
 				"api_invoke" => ApiTools.Invoke(arguments),
 				"component_element_create" => ElementTools.CreateElement(arguments),
 				"component_element_update" => ElementTools.UpdateElement(arguments),
@@ -357,6 +360,7 @@ internal static class McpDispatcher
 		foreach (var t in ApiTools.Definitions()) yield return t;
 		foreach (var t in ElementTools.Definitions()) yield return t;
 		foreach (var t in SearchTools.Definitions()) yield return t;
+		foreach (var t in StringTableTools.Definitions()) yield return t;
 		foreach (var t in DependencyTools.Definitions()) yield return t;
 	}
 }
