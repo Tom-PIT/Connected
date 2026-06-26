@@ -163,7 +163,7 @@ internal static class ComponentTools
 			new McpTool
 			{
 				Name = "component_source_read",
-				Description = "Get the file path(s) of a component's source files on disk. For components with multiple elements (e.g. API operations, model queries), all element paths are returned unless 'elementName' is specified. Read the returned paths directly from the filesystem.",
+				Description = "Get the workspace-relative path(s) of a component's source files. For components with multiple elements (e.g. API operations, model queries), all element paths are returned unless 'elementName' is specified. Paths are relative to the workspace root — open them directly with Read/Edit.",
 				InputSchema = new()
 				{
 					Type = "object",
@@ -197,7 +197,8 @@ internal static class ComponentTools
 	internal static string SourceFilePath(Guid microService, IText text)
 	{
 		var folder = Shell.Configuration.GetRequiredSection("sourceFiles").GetValue<string>("folder");
-		return Path.Combine(folder, microService.ToString(), $"{text.TextBlob}-{BlobTypes.SourceText}.txt");
+		var path = Path.Combine(folder, microService.ToString(), $"{text.TextBlob}-{BlobTypes.SourceText}.txt");
+		return path.TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 	}
 
 	private static IMicroService ResolveMicroService(string identifier)
