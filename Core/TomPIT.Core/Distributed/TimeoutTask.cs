@@ -6,6 +6,8 @@ namespace TomPIT.Distributed
 {
 	public sealed class TimeoutTask : IDisposable
 	{
+		public event EventHandler<Exception> Failed;
+
 		private readonly Func<Task> _pingAction;
 		private Task _pingTask;
 		private readonly TimeSpan _pingInterval;
@@ -81,14 +83,35 @@ namespace TomPIT.Distributed
 						if (_pingTask is not null)
 						{
 							await Task.Delay(_pingInterval, CancelSource.Token).ConfigureAwait(false);
-							await _pingAction().ConfigureAwait(false);
+
+							try
+							{
+								await _pingAction().ConfigureAwait(false);
+							}
+							catch (Exception ex) when (ex is not OperationCanceledException)
+							{
+								/*
+								 * A failed ping must not stop the keepalive loop, otherwise the queue
+								 * entry silently becomes visible again while it is still being processed.
+								 */
+								try
+								{
+									Failed?.Invoke(this, ex);
+								}
+								catch
+								{
+									/*
+									 * A misbehaving subscriber must not stop the keepalive loop either.
+									 */
+								}
+							}
 						}
 					}
 				}
 				catch (TaskCanceledException)
 				{
 					/*
-					 * Do nothing, it is expected to fire when a timeout is cancelled. 
+					 * Do nothing, it is expected to fire when a timeout is cancelled.
 					 */
 				}
 				finally
@@ -109,14 +132,31 @@ namespace TomPIT.Distributed
 						if (_lifespanTask is not null)
 						{
 							await Task.Delay(_lifespan, CancelSource.Token).ConfigureAwait(false);
-							await _lifespanAction().ConfigureAwait(false);
+
+							try
+							{
+								await _lifespanAction().ConfigureAwait(false);
+							}
+							catch (Exception ex) when (ex is not OperationCanceledException)
+							{
+								try
+								{
+									Failed?.Invoke(this, ex);
+								}
+								catch
+								{
+									/*
+									 * A misbehaving subscriber must not stop the keepalive loop either.
+									 */
+								}
+							}
 						}
 					}
 				}
 				catch (TaskCanceledException)
 				{
 					/*
-					 * Do nothing, it is expected to fire when a timeout is cancelled. 
+					 * Do nothing, it is expected to fire when a timeout is cancelled.
 					 */
 				}
 				finally
