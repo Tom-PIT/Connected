@@ -51,7 +51,7 @@ namespace TomPIT.ComponentModel
 
 		protected override void OnInitialized()
 		{
-			var resourceGroups = Tenant.GetService<IResourceGroupService>().Query();
+			var resourceGroups = Tenant.GetService<IResourceGroupService>().QuerySupported();
 			var sb = new StringBuilder();
 
 			foreach (var rg in resourceGroups)

@@ -21,7 +21,7 @@ namespace TomPIT.ComponentModel
 			if (Tenant.GetService<IRuntimeService>().Environment == RuntimeEnvironment.MultiTenant)
 				ds = Instance.SysProxy.Folders.Query();
 			else
-				ds = Instance.SysProxy.Folders.Query(Tenant.GetService<IResourceGroupService>().Query().Select(f => f.Name).ToList());
+				ds = Instance.SysProxy.Folders.Query(Tenant.GetService<IResourceGroupService>().QuerySupported().Select(f => f.Name).ToList());
 
 			foreach (var i in ds)
 				Set(i.Token, i, TimeSpan.Zero);
