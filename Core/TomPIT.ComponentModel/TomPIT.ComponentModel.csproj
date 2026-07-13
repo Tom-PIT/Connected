@@ -15,10 +15,10 @@
     <Authors>Tom PIT</Authors>
     <Company>Tom PIT</Company>
     <Product>Tom PIT.connected</Product>
-    <AssemblyVersion>6.2.701.18</AssemblyVersion>
+    <AssemblyVersion>6.2.713.19</AssemblyVersion>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <FileVersion>6.2.701.18</FileVersion>
-    <Version>6.2.701.18</Version>
+    <FileVersion>6.2.713.19</FileVersion>
+    <Version>6.2.713.19</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugType>portable</DebugType>
