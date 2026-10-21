@@ -15,6 +15,7 @@ namespace TomPIT.BigData.Transactions
 		private bool _disposed = false;
 		private BackgroundWorker _worker = null;
 		private readonly Guid _id = Guid.NewGuid();
+		private readonly CancellationTokenRegistration _registration;
 
 		public event EventHandler Completed;
 		public StorageWorker(Guid partition, CancellationToken cancel)
@@ -22,9 +23,12 @@ namespace TomPIT.BigData.Transactions
 			Partition = partition;
 			Cancel = cancel;
 
-			cancel.Register(() =>
+			_registration = cancel.Register(() =>
 			{
-				Worker.CancelAsync();
+				var worker = _worker;
+
+				if (worker is not null && worker.IsBusy)
+					worker.CancelAsync();
 			});
 
 		}
@@ -188,6 +192,8 @@ namespace TomPIT.BigData.Transactions
 		{
 			if (_disposed)
 				return;
+
+			_registration.Dispose();
 
 			if (_worker != null)
 			{
