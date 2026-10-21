@@ -9,6 +9,12 @@ namespace TomPIT.Connectivity
 	internal static class HttpClientPool
 	{
 		private static readonly int DefaultTimeout = 300;
+		/*
+		 * Clients are keyed by credential token, so every distinct login or rotated JWT creates
+		 * one. Without an idle lifetime they would stay in the cache (and keep their sockets)
+		 * for the life of the process. Must stay longer than DefaultTimeout.
+		 */
+		private static readonly TimeSpan ClientIdleLifetime = TimeSpan.FromMinutes(20);
 
 		public static HttpClient Get(ICredentials credentials, IInstanceMetadataProvider instanceProvider)
 		{
@@ -30,8 +36,8 @@ namespace TomPIT.Connectivity
 			return MemoryCache.Default.Get("httpclient", key,
 				(f) =>
 				{
-					f.SlidingExpiration = false;
-					f.Duration = TimeSpan.Zero;
+					f.SlidingExpiration = true;
+					f.Duration = ClientIdleLifetime;
 
 					var r = new HttpClient();
 
@@ -59,8 +65,8 @@ namespace TomPIT.Connectivity
 			return MemoryCache.Default.Get("httpclient", token,
 				(f) =>
 				{
-					f.SlidingExpiration = false;
-					f.Duration = TimeSpan.Zero;
+					f.SlidingExpiration = true;
+					f.Duration = ClientIdleLifetime;
 
 					var r = new HttpClient();
 
@@ -83,8 +89,8 @@ namespace TomPIT.Connectivity
 			return MemoryCache.Default.Get("httpclient", authenticationToken.ToString(),
 				(f) =>
 				{
-					f.SlidingExpiration = false;
-					f.Duration = TimeSpan.Zero;
+					f.SlidingExpiration = true;
+					f.Duration = ClientIdleLifetime;
 
 					var r = new HttpClient();
 
