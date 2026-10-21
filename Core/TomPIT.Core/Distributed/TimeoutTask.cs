@@ -15,6 +15,7 @@ namespace TomPIT.Distributed
 		private readonly Func<Task> _lifespanAction;
 		private Task _lifespanTask;
 		private readonly TimeSpan _lifespan;
+		private CancellationTokenRegistration _registration;
 
 		public TimeoutTask(Func<Task> pingAction, TimeSpan pingInterval, Func<Task> lifespanAction, TimeSpan lifespan, CancellationToken cancel)
 			: this(pingAction, pingInterval, cancel)
@@ -29,9 +30,15 @@ namespace TomPIT.Distributed
 
 			CancelSource = new CancellationTokenSource();
 
-			cancel.Register(() =>
+			_registration = cancel.Register(() =>
 			{
-				CancelSource.Cancel();
+				try
+				{
+					CancelSource.Cancel();
+				}
+				catch (ObjectDisposedException)
+				{
+				}
 			});
 		}
 
@@ -169,19 +176,14 @@ namespace TomPIT.Distributed
 		public void Dispose()
 		{
 			Stop();
+			_registration.Dispose();
 			CancelSource.Dispose();
-
-			if (_pingTask is not null)
-			{
-				_pingTask.Dispose();
-				_pingTask = null;
-			}
-
-			if (_lifespanTask is not null)
-			{
-				_lifespanTask.Dispose();
-				_lifespanTask = null;
-			}
+			/*
+			 * The tasks are not disposed: Task.Dispose throws if a task has not completed yet, and they
+			 * finish on their own once the source has been cancelled by Stop.
+			 */
+			_pingTask = null;
+			_lifespanTask = null;
 		}
 	}
 }

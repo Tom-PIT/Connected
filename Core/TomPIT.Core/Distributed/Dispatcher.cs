@@ -118,11 +118,25 @@ namespace TomPIT.Distributed
             {
                try
                {
-                  Cancel.Cancel();
+                  try
+                  {
+                     Cancel.Cancel();
+                  }
+                  catch { }
+
                   Queue.Clear();
 
-                  foreach (var job in Jobs)
-                     job.Dispose();
+                  lock (Jobs)
+                  {
+                     foreach (var job in Jobs)
+                     {
+                        try
+                        {
+                           job.Dispose();
+                        }
+                        catch { }
+                     }
+                  }
 
                   Jobs.Clear();
 
@@ -130,9 +144,12 @@ namespace TomPIT.Distributed
                      dispatcher.Value.Dispose();
 
                   QueuedDispatchers.Clear();
-                  Cancel.Dispose();
                }
                catch { }
+               finally
+               {
+                  Cancel.Dispose();
+               }
             }
 
             _disposed = true;

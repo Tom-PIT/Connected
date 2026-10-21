@@ -9,6 +9,7 @@ namespace TomPIT.Distributed
 	{
 		private bool _disposed = false;
 		private BackgroundWorker _worker = null;
+		private readonly CancellationTokenRegistration _registration;
 
 		public event EventHandler Completed;
 		public DispatcherJob(IDispatcher<T> owner, CancellationToken cancel)
@@ -16,10 +17,12 @@ namespace TomPIT.Distributed
 			Owner = owner;
 			Cancel = cancel;
 
-			cancel.Register(() =>
+			_registration = cancel.Register(() =>
 			{
-				if (Worker.IsBusy)
-					Worker.CancelAsync();
+				var worker = _worker;
+
+				if (worker is not null && worker.IsBusy)
+					worker.CancelAsync();
 			});
 
 			_worker = new BackgroundWorker
@@ -97,6 +100,8 @@ namespace TomPIT.Distributed
 		{
 			if (_disposed)
 				return;
+
+			_registration.Dispose();
 
 			if (_worker is not null)
 			{
