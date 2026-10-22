@@ -10,58 +10,56 @@ namespace TomPIT.Distributed
 {
 	public abstract class RecurringHostedServiceMiddleware : MiddlewareOperation, IHostedServiceMiddleware
 	{
-		private CancellationTokenSource _cancel;
-		private CancellationTokenRegistration _stopping;
+		/*
+		 * The instance has its own source so its loop can be stopped when its configuration changes,
+		 * otherwise every change leaves the previous loop running alongside the new one. It exists from
+		 * construction, so a Stop that arrives before Start still takes effect.
+		 */
+		private readonly CancellationTokenSource _cancel = new();
 		private int _stopped;
 
 		protected TimeSpan InvokeInterval { get; set; } = TimeSpan.FromMinutes(1);
 
 		public async Task Start(CancellationToken cancellationToken)
 		{
+			if (Volatile.Read(ref _stopped) == 1)
+				return;
+
 			var lifetime = Tenant.GetService<IRuntimeService>().Host.ApplicationServices.GetRequiredService<IHostApplicationLifetime>();
 			/*
-			 * The instance gets its own token so its loop can be stopped when its configuration changes,
-			 * otherwise every change leaves the previous loop running alongside the new one.
+			 * Both registrations are on long-lived tokens, so they must be disposed once the loop ends,
+			 * otherwise those tokens keep this instance alive.
 			 */
-			_cancel = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-
-			_stopping = lifetime.ApplicationStopping.Register(async () =>
+			using var outer = cancellationToken.Register(CancelSafely);
+			using var stopping = lifetime.ApplicationStopping.Register(async () =>
 			{
 				await Stop(CancellationToken.None);
 			});
 
 			var token = _cancel.Token;
 
-			try
-			{
-				await OnStart(token);
+			if (token.IsCancellationRequested)
+				return;
 
-				do
+			await OnStart(token);
+
+			do
+			{
+				try
 				{
-					try
-					{
-						await OnInvoke(token);
-					}
-					catch (Exception ex)
-					{
-						Tenant.LogError(GetType().Name, ex.Message);
-					}
-
-					if (InvokeInterval == TimeSpan.Zero)
-						break;
-
-					await Task.Delay(InvokeInterval, token);
+					await OnInvoke(token);
 				}
-				while (!token.IsCancellationRequested);
+				catch (Exception ex)
+				{
+					Tenant.LogError(GetType().Name, ex.Message);
+				}
+
+				if (InvokeInterval == TimeSpan.Zero)
+					break;
+
+				await Task.Delay(InvokeInterval, token);
 			}
-			finally
-			{
-				/*
-				 * The linked source is registered on the container's token, so it must be disposed
-				 * once the loop ends, otherwise the container keeps this instance alive.
-				 */
-				_cancel.Dispose();
-			}
+			while (!token.IsCancellationRequested);
 		}
 
 		protected async virtual Task OnStart(CancellationToken cancellationToken)
@@ -74,17 +72,31 @@ namespace TomPIT.Distributed
 			if (Interlocked.Exchange(ref _stopped, 1) == 1)
 				return;
 
-			_stopping.Dispose();
-
+			CancelSafely();
+			/*
+			 * Stop is awaited from async void callers (configuration events, application stopping),
+			 * so an exception from the service's own OnStop would terminate the process.
+			 */
 			try
 			{
-				_cancel?.Cancel();
+				await OnStop(cancellationToken);
 			}
-			catch (ObjectDisposedException)
+			catch (Exception ex)
 			{
+				Tenant.LogError(GetType().Name, ex.Message);
 			}
+		}
 
-			await OnStop(cancellationToken);
+		private void CancelSafely()
+		{
+			try
+			{
+				_cancel.Cancel();
+			}
+			catch (Exception ex)
+			{
+				Tenant.LogError(GetType().Name, ex.Message);
+			}
 		}
 
 		protected async virtual Task OnStop(CancellationToken cancellationToken)

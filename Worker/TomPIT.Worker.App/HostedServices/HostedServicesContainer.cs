@@ -8,6 +8,7 @@ using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Distributed;
 using TomPIT.Connectivity;
+using TomPIT.Diagnostics;
 using TomPIT.Distributed;
 using TomPIT.Middleware;
 using TomPIT.Runtime;
@@ -69,32 +70,75 @@ namespace TomPIT.Worker.HostedServices
 
 		private async Task InvalidateService(Guid microService, Guid component)
 		{
-			if (Items.TryRemove(component, out IHostedServiceMiddleware existing))
-				await existing.Stop(CancellationToken.None);
+			/*
+			 * Invalidations of the same component are serialized, otherwise two concurrent ones (startup
+			 * plus a configuration event, or two quick saves) would both start an instance and one of them
+			 * would never be stopped.
+			 */
+			var sync = Locks.GetOrAdd(component, f => new SemaphoreSlim(1, 1));
 
-			if (Tenant.GetService<IComponentService>().SelectConfiguration(component) is not IHostedServiceConfiguration config)
-				return;
-
-			if (Tenant.GetService<IMicroServiceService>().Select(microService) is not IMicroService ms)
-				return;
-
-			if (Tenant.GetService<ICompilerService>().ResolveType(ms.Token, config, config.ComponentName(), false) is not Type type)
-				return;
-
-			using var ctx = new MicroServiceContext(ms);
+			await sync.WaitAsync();
 
 			try
 			{
-				if (Tenant.GetService<ICompilerService>().CreateInstance<IHostedServiceMiddleware>(ctx, type) is not IHostedServiceMiddleware middleware)
+				if (Items.TryRemove(component, out IHostedServiceMiddleware existing))
+					await existing.Stop(CancellationToken.None);
+
+				if (Tenant.GetService<IComponentService>().SelectConfiguration(component) is not IHostedServiceConfiguration config)
 					return;
 
-				Items[component] = middleware;
+				if (Tenant.GetService<IMicroServiceService>().Select(microService) is not IMicroService ms)
+					return;
 
+				if (Tenant.GetService<ICompilerService>().ResolveType(ms.Token, config, config.ComponentName(), false) is not Type type)
+					return;
+
+				var ctx = new MicroServiceContext(ms);
+
+				if (Tenant.GetService<ICompilerService>().CreateInstance<IHostedServiceMiddleware>(ctx, type) is not IHostedServiceMiddleware middleware)
+				{
+					ctx.Dispose();
+					return;
+				}
+
+				Items[component] = middleware;
+				/*
+				 * Start runs for the lifetime of the service (recurring services never return), so it must
+				 * not be awaited here, otherwise Initialize blocks on the first recurring service and the
+				 * services after it never start.
+				 */
+				_ = Task.Run(() => Run(middleware, ctx));
+			}
+			catch (Exception ex)
+			{
+				Tenant.LogError(nameof(HostedServicesContainer), ex.Message);
+			}
+			finally
+			{
+				sync.Release();
+			}
+		}
+
+		private async Task Run(IHostedServiceMiddleware middleware, MicroServiceContext ctx)
+		{
+			try
+			{
 				await middleware.Start(_tokenSource.Token);
 			}
-			catch { }
+			catch (OperationCanceledException)
+			{
+			}
+			catch (Exception ex)
+			{
+				Tenant.LogError(nameof(HostedServicesContainer), ex.Message);
+			}
+			finally
+			{
+				ctx.Dispose();
+			}
 		}
 
 		private ConcurrentDictionary<Guid, IHostedServiceMiddleware> Items => _items;
+		private ConcurrentDictionary<Guid, SemaphoreSlim> Locks { get; } = new();
 	}
 }

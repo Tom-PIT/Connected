@@ -10,46 +10,44 @@ namespace TomPIT.Distributed
 {
 	public abstract class HostedServiceMiddleware : MiddlewareOperation, IHostedServiceMiddleware
 	{
-		private CancellationTokenSource _cancel;
-		private CancellationTokenRegistration _stopping;
+		/*
+		 * The instance has its own source so it can be stopped when its configuration changes without
+		 * cancelling the other hosted services. It exists from construction, so a Stop that arrives
+		 * before Start still takes effect.
+		 */
+		private readonly CancellationTokenSource _cancel = new();
 		private int _stopped;
 
 		public async Task Start(CancellationToken cancellationToken)
 		{
+			if (Volatile.Read(ref _stopped) == 1)
+				return;
+
 			var lifetime = Tenant.GetService<IRuntimeService>().Host.ApplicationServices.GetRequiredService<IHostApplicationLifetime>();
 			/*
-			 * The instance gets its own token so it can be stopped when its configuration changes,
-			 * without cancelling the other hosted services.
+			 * Both registrations are on long-lived tokens, so they must be disposed once the service is
+			 * done, otherwise those tokens keep this instance alive.
 			 */
-			_cancel = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-
-			_stopping = lifetime.ApplicationStopping.Register(async () =>
+			using var outer = cancellationToken.Register(CancelSafely);
+			using var stopping = lifetime.ApplicationStopping.Register(async () =>
 			{
 				await Stop(CancellationToken.None);
 			});
 
 			var token = _cancel.Token;
 
+			if (token.IsCancellationRequested)
+				return;
+
+			await OnStart(token);
+
 			try
 			{
-				await OnStart(token);
-
-				try
-				{
-					await OnInvoke(token);
-				}
-				catch (Exception ex)
-				{
-					Tenant.LogError(GetType().Name, ex.Message);
-				}
+				await OnInvoke(token);
 			}
-			finally
+			catch (Exception ex)
 			{
-				/*
-				 * The linked source is registered on the container's token, so it must be disposed
-				 * once the service is done, otherwise the container keeps this instance alive.
-				 */
-				_cancel.Dispose();
+				Tenant.LogError(GetType().Name, ex.Message);
 			}
 		}
 
@@ -63,17 +61,31 @@ namespace TomPIT.Distributed
 			if (Interlocked.Exchange(ref _stopped, 1) == 1)
 				return;
 
-			_stopping.Dispose();
-
+			CancelSafely();
+			/*
+			 * Stop is awaited from async void callers (configuration events, application stopping),
+			 * so an exception from the service's own OnStop would terminate the process.
+			 */
 			try
 			{
-				_cancel?.Cancel();
+				await OnStop(cancellationToken);
 			}
-			catch (ObjectDisposedException)
+			catch (Exception ex)
 			{
+				Tenant.LogError(GetType().Name, ex.Message);
 			}
+		}
 
-			await OnStop(cancellationToken);
+		private void CancelSafely()
+		{
+			try
+			{
+				_cancel.Cancel();
+			}
+			catch (Exception ex)
+			{
+				Tenant.LogError(GetType().Name, ex.Message);
+			}
 		}
 
 		protected async virtual Task OnStop(CancellationToken cancellationToken)
