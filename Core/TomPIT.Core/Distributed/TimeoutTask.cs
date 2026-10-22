@@ -62,6 +62,12 @@ namespace TomPIT.Distributed
 
 		public void Stop()
 		{
+			/*
+			 * Most callers only stop the timeout and never dispose it, so the registration must be
+			 * released here, otherwise the outer token keeps this instance alive.
+			 */
+			_registration.Dispose();
+
 			if (CancelSource.IsCancellationRequested)
 				return;
 
