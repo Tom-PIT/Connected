@@ -47,7 +47,10 @@ namespace TomPIT.BigData.Transactions
 			{
 				if (_worker == null)
 				{
-					_worker = new BackgroundWorker();
+					_worker = new BackgroundWorker
+					{
+						WorkerSupportsCancellation = true
+					};
 					_worker.RunWorkerCompleted += OnCompleted;
 					_worker.DoWork += Dequeue;
 				}
