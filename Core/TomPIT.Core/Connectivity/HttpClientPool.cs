@@ -15,6 +15,16 @@ namespace TomPIT.Connectivity
 		 * for the life of the process. Must stay longer than DefaultTimeout.
 		 */
 		private static readonly TimeSpan ClientIdleLifetime = TimeSpan.FromMinutes(20);
+		/*
+		 * All clients share one handler and never dispose it, so disposing an evicted client (even
+		 * while a request on it is still in flight) cannot close the shared connections. Cookies are
+		 * off because the handler is shared between different credentials.
+		 */
+		private static readonly SocketsHttpHandler Handler = new()
+		{
+			PooledConnectionLifetime = TimeSpan.FromMinutes(15),
+			UseCookies = false
+		};
 
 		public static HttpClient Get(ICredentials credentials, IInstanceMetadataProvider instanceProvider)
 		{
@@ -39,7 +49,7 @@ namespace TomPIT.Connectivity
 					f.SlidingExpiration = true;
 					f.Duration = ClientIdleLifetime;
 
-					var r = new HttpClient();
+					var r = new HttpClient(Handler, false);
 
 					if (!string.IsNullOrWhiteSpace(token))
 						r.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", token);
@@ -68,7 +78,7 @@ namespace TomPIT.Connectivity
 					f.SlidingExpiration = true;
 					f.Duration = ClientIdleLifetime;
 
-					var r = new HttpClient();
+					var r = new HttpClient(Handler, false);
 
 					if (!string.IsNullOrWhiteSpace(jwToken))
 						r.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwToken);
@@ -92,7 +102,7 @@ namespace TomPIT.Connectivity
 					f.SlidingExpiration = true;
 					f.Duration = ClientIdleLifetime;
 
-					var r = new HttpClient();
+					var r = new HttpClient(Handler, false);
 
 					if (authenticationToken != Guid.Empty)
 						r.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("SSO", Convert.ToBase64String(Encoding.UTF8.GetBytes(authenticationToken.ToString())));
