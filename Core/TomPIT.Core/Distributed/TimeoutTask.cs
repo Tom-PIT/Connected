@@ -69,7 +69,10 @@ namespace TomPIT.Distributed
 			_registration.Dispose();
 
 			if (CancelSource.IsCancellationRequested)
+			{
+				IsRunning = false;
 				return;
+			}
 
 			try
 			{
