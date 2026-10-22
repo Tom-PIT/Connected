@@ -16,15 +16,28 @@ namespace TomPIT.Connectivity
 		 */
 		private static readonly TimeSpan ClientIdleLifetime = TimeSpan.FromMinutes(20);
 		/*
-		 * All clients share one handler and never dispose it, so disposing an evicted client (even
-		 * while a request on it is still in flight) cannot close the shared connections. Cookies are
-		 * off because the handler is shared between different credentials.
+		 * All clients share one handler and never dispose it, so connections are not multiplied per
+		 * credential and a dropped client holds no sockets. Cookies are off because the handler is
+		 * shared between different credentials.
 		 */
 		private static readonly SocketsHttpHandler Handler = new()
 		{
 			PooledConnectionLifetime = TimeSpan.FromMinutes(15),
 			UseCookies = false
 		};
+		/*
+		 * The cache disposes IDisposable entries on eviction, and disposing an HttpClient cancels its
+		 * in-flight requests. The wrapper keeps evicted clients undisposed; the GC reclaims them.
+		 */
+		private sealed class PooledClient
+		{
+			public PooledClient(HttpClient client)
+			{
+				Client = client;
+			}
+
+			public HttpClient Client { get; }
+		}
 
 		public static HttpClient Get(ICredentials credentials, IInstanceMetadataProvider instanceProvider)
 		{
@@ -61,8 +74,8 @@ namespace TomPIT.Connectivity
 
 					r.Timeout = TimeSpan.FromSeconds(DefaultTimeout);
 
-					return r;
-				});
+					return new PooledClient(r);
+				}).Client;
 		}
 
 		public static HttpClient Get(string jwToken, IInstanceMetadataProvider instanceProvider)
@@ -90,8 +103,8 @@ namespace TomPIT.Connectivity
 
 					r.Timeout = TimeSpan.FromSeconds(DefaultTimeout);
 
-					return r;
-				});
+					return new PooledClient(r);
+				}).Client;
 		}
 
 		public static HttpClient Get(Guid authenticationToken, IInstanceMetadataProvider instanceProvider)
@@ -114,8 +127,8 @@ namespace TomPIT.Connectivity
 
 					r.Timeout = TimeSpan.FromSeconds(DefaultTimeout);
 
-					return r;
-				});
+					return new PooledClient(r);
+				}).Client;
 		}
 	}
 }
