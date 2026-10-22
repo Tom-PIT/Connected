@@ -17,7 +17,7 @@ namespace TomPIT.Worker.HostedServices
 {
 	internal class HostedServicesContainer : TenantObject, IHostedServices
 	{
-		private ConcurrentDictionary<Guid, IHostedServiceMiddleware> _items = null;
+		private ConcurrentDictionary<Guid, HostedService> _items = null;
 		private bool _initialized = false;
 		private CancellationTokenSource _tokenSource = null;
 
@@ -40,7 +40,7 @@ namespace TomPIT.Worker.HostedServices
 				_tokenSource.Cancel();
 			});
 
-			_items = new ConcurrentDictionary<Guid, IHostedServiceMiddleware>();
+			_items = new ConcurrentDictionary<Guid, HostedService>();
 
 			Tenant.GetService<IComponentService>().ConfigurationAdded += async (sender, args) => { await OnConfigurationAdded(sender, args); };
 			Tenant.GetService<IComponentService>().ConfigurationChanged += async (sender, args) => { await OnConfigurationChanged(sender, args); };
@@ -81,8 +81,14 @@ namespace TomPIT.Worker.HostedServices
 
 			try
 			{
-				if (Items.TryRemove(component, out IHostedServiceMiddleware existing))
-					await existing.Stop(CancellationToken.None);
+				if (Items.TryRemove(component, out HostedService existing))
+				{
+					await existing.Middleware.Stop(CancellationToken.None);
+					/*
+					 * The context is disposed only after Stop, so the service's OnStop can still use it.
+					 */
+					existing.Context.Dispose();
+				}
 
 				if (Tenant.GetService<IComponentService>().SelectConfiguration(component) is not IHostedServiceConfiguration config)
 					return;
@@ -95,19 +101,27 @@ namespace TomPIT.Worker.HostedServices
 
 				var ctx = new MicroServiceContext(ms);
 
-				if (Tenant.GetService<ICompilerService>().CreateInstance<IHostedServiceMiddleware>(ctx, type) is not IHostedServiceMiddleware middleware)
+				try
+				{
+					if (Tenant.GetService<ICompilerService>().CreateInstance<IHostedServiceMiddleware>(ctx, type) is not IHostedServiceMiddleware middleware)
+					{
+						ctx.Dispose();
+						return;
+					}
+
+					Items[component] = new HostedService(middleware, ctx);
+					/*
+					 * Start runs for the lifetime of the service (recurring services never return), so it must
+					 * not be awaited here, otherwise Initialize blocks on the first recurring service and the
+					 * services after it never start.
+					 */
+					_ = Task.Run(() => Run(middleware));
+				}
+				catch
 				{
 					ctx.Dispose();
-					return;
+					throw;
 				}
-
-				Items[component] = middleware;
-				/*
-				 * Start runs for the lifetime of the service (recurring services never return), so it must
-				 * not be awaited here, otherwise Initialize blocks on the first recurring service and the
-				 * services after it never start.
-				 */
-				_ = Task.Run(() => Run(middleware, ctx));
 			}
 			catch (Exception ex)
 			{
@@ -119,7 +133,7 @@ namespace TomPIT.Worker.HostedServices
 			}
 		}
 
-		private async Task Run(IHostedServiceMiddleware middleware, MicroServiceContext ctx)
+		private async Task Run(IHostedServiceMiddleware middleware)
 		{
 			try
 			{
@@ -132,13 +146,21 @@ namespace TomPIT.Worker.HostedServices
 			{
 				Tenant.LogError(nameof(HostedServicesContainer), ex.Message);
 			}
-			finally
-			{
-				ctx.Dispose();
-			}
 		}
 
-		private ConcurrentDictionary<Guid, IHostedServiceMiddleware> Items => _items;
+		private sealed class HostedService
+		{
+			public HostedService(IHostedServiceMiddleware middleware, MicroServiceContext context)
+			{
+				Middleware = middleware;
+				Context = context;
+			}
+
+			public IHostedServiceMiddleware Middleware { get; }
+			public MicroServiceContext Context { get; }
+		}
+
+		private ConcurrentDictionary<Guid, HostedService> Items => _items;
 		private ConcurrentDictionary<Guid, SemaphoreSlim> Locks { get; } = new();
 	}
 }
