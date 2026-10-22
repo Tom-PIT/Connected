@@ -10,36 +10,58 @@ namespace TomPIT.Distributed
 {
 	public abstract class RecurringHostedServiceMiddleware : MiddlewareOperation, IHostedServiceMiddleware
 	{
+		private CancellationTokenSource _cancel;
+		private CancellationTokenRegistration _stopping;
+		private int _stopped;
+
 		protected TimeSpan InvokeInterval { get; set; } = TimeSpan.FromMinutes(1);
 
 		public async Task Start(CancellationToken cancellationToken)
 		{
 			var lifetime = Tenant.GetService<IRuntimeService>().Host.ApplicationServices.GetRequiredService<IHostApplicationLifetime>();
+			/*
+			 * The instance gets its own token so its loop can be stopped when its configuration changes,
+			 * otherwise every change leaves the previous loop running alongside the new one.
+			 */
+			_cancel = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
-			lifetime.ApplicationStopping.Register(async () =>
+			_stopping = lifetime.ApplicationStopping.Register(async () =>
 			{
 				await Stop(CancellationToken.None);
 			});
 
-			await OnStart(cancellationToken);
+			var token = _cancel.Token;
 
-			do
+			try
 			{
-				try
-				{
-					await OnInvoke(cancellationToken);
-				}
-				catch (Exception ex)
-				{
-					Tenant.LogError(GetType().Name, ex.Message);
-				}
+				await OnStart(token);
 
-				if (InvokeInterval == TimeSpan.Zero)
-					break;
+				do
+				{
+					try
+					{
+						await OnInvoke(token);
+					}
+					catch (Exception ex)
+					{
+						Tenant.LogError(GetType().Name, ex.Message);
+					}
 
-				await Task.Delay(InvokeInterval, cancellationToken);
+					if (InvokeInterval == TimeSpan.Zero)
+						break;
+
+					await Task.Delay(InvokeInterval, token);
+				}
+				while (!token.IsCancellationRequested);
 			}
-			while (!cancellationToken.IsCancellationRequested);
+			finally
+			{
+				/*
+				 * The linked source is registered on the container's token, so it must be disposed
+				 * once the loop ends, otherwise the container keeps this instance alive.
+				 */
+				_cancel.Dispose();
+			}
 		}
 
 		protected async virtual Task OnStart(CancellationToken cancellationToken)
@@ -49,7 +71,20 @@ namespace TomPIT.Distributed
 
 		public async Task Stop(CancellationToken cancellationToken)
 		{
-			await OnStart(cancellationToken);
+			if (Interlocked.Exchange(ref _stopped, 1) == 1)
+				return;
+
+			_stopping.Dispose();
+
+			try
+			{
+				_cancel?.Cancel();
+			}
+			catch (ObjectDisposedException)
+			{
+			}
+
+			await OnStop(cancellationToken);
 		}
 
 		protected async virtual Task OnStop(CancellationToken cancellationToken)

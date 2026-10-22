@@ -69,7 +69,7 @@ namespace TomPIT.Worker.HostedServices
 
 		private async Task InvalidateService(Guid microService, Guid component)
 		{
-			if (Items.TryGetValue(component, out IHostedServiceMiddleware existing))
+			if (Items.TryRemove(component, out IHostedServiceMiddleware existing))
 				await existing.Stop(CancellationToken.None);
 
 			if (Tenant.GetService<IComponentService>().SelectConfiguration(component) is not IHostedServiceConfiguration config)
@@ -88,7 +88,7 @@ namespace TomPIT.Worker.HostedServices
 				if (Tenant.GetService<ICompilerService>().CreateInstance<IHostedServiceMiddleware>(ctx, type) is not IHostedServiceMiddleware middleware)
 					return;
 
-				Items.TryAdd(component, middleware);
+				Items[component] = middleware;
 
 				await middleware.Start(_tokenSource.Token);
 			}
