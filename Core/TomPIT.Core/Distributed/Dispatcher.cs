@@ -106,8 +106,11 @@ namespace TomPIT.Distributed
          job.Dispose();
          job = null;
 
-         if (Jobs.Count == 0 && !Queue.IsEmpty)
-            CreateWorker();
+         lock (Jobs)
+         {
+            if (!Cancel.IsCancellationRequested && Jobs.Count == 0 && !Queue.IsEmpty)
+               CreateWorker();
+         }
       }
 
       protected virtual void Dispose(bool disposing)
@@ -118,11 +121,25 @@ namespace TomPIT.Distributed
             {
                try
                {
-                  Cancel.Cancel();
+                  try
+                  {
+                     Cancel.Cancel();
+                  }
+                  catch { }
+
                   Queue.Clear();
 
-                  foreach (var job in Jobs)
-                     job.Dispose();
+                  lock (Jobs)
+                  {
+                     foreach (var job in Jobs)
+                     {
+                        try
+                        {
+                           job.Dispose();
+                        }
+                        catch { }
+                     }
+                  }
 
                   Jobs.Clear();
 
@@ -130,9 +147,12 @@ namespace TomPIT.Distributed
                      dispatcher.Value.Dispose();
 
                   QueuedDispatchers.Clear();
-                  Cancel.Dispose();
                }
                catch { }
+               finally
+               {
+                  Cancel.Dispose();
+               }
             }
 
             _disposed = true;
@@ -180,10 +200,15 @@ namespace TomPIT.Distributed
             return;
          /*
 			 * There are no items yet in the queue so we can try to remove it and prepare it for
-			 * dispose.
+			 * dispose. Remove by instance, not by name: a dispatcher that was kept alive below is stored
+			 * under a generated key, and another dispatcher may already be using its original name.
 			 */
-         if (QueuedDispatchers.Remove(dispatcher.QueueName, out QueuedDispatcher<T> removed))
+         var entry = QueuedDispatchers.FirstOrDefault(f => f.Value == dispatcher);
+
+         if (entry.Key is not null && QueuedDispatchers.TryRemove(entry))
          {
+            var removed = entry.Value;
+
             /*
 				 * It's still possible that an item has been enqueued while the dispatcher has been
 				 * removing so it's crucial to check for this scenario.

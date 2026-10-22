@@ -84,6 +84,7 @@ namespace TomPIT.Worker.Services
 				finally
 				{
 					_timeout.Stop();
+					_timeout.Dispose();
 					_timeout = null;
 				}
 
