@@ -121,6 +121,22 @@ namespace TomPIT.DataProviders.BigData
 			_postData = null;
 		}
 
+		internal int RowCount => _postData?.Count ?? 0;
+		internal JArray Rows => PostData;
+		/*
+		 * Moves pending rows of the command into this command so they are written in the same batch.
+		 */
+		internal void Merge(BigDataCommand command)
+		{
+			if (command == this || command.RowCount == 0)
+				return;
+
+			foreach (var row in command._postData)
+				PostData.Add(row);
+
+			command._postData = null;
+		}
+
 		private IPartitionConfiguration ResolveConfiguration(string microService, string partition)
 		{
 			var ms = MiddlewareDescriptor.Current.Tenant.GetService<IMicroServiceService>().Select(microService);
