@@ -16,6 +16,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Core\TomPIT.Core\TomPIT.Core.csproj" />
+    <!-- The plugin's post-build copy targets /src/plugins which only exists in container builds. -->
+    <ProjectReference Include="..\..\DataProviders\TomPIT.DataProviders.BigData\TomPIT.DataProviders.BigData.csproj" AdditionalProperties="SkipPluginCopy=true" />
   </ItemGroup>
 
 </Project>

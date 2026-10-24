@@ -158,7 +158,8 @@ namespace TomPIT.Data.DataProviders
 		 * Performance: creating a command and its parameters costs a few microseconds and a small short lived
 		 * allocation, which is negligible compared to the database round trip. Server side plan caching does not
 		 * depend on reusing the client command object, and commands are not prepared, so nothing is lost by
-		 * creating them per call.
+		 * creating them per call. Providers which defer writes until commit (BigData) batch them on their
+		 * transaction instead of relying on command reuse.
 		 */
 		protected virtual IDbCommand ResolveCommand(IDataCommandDescriptor command, IDataConnection connection)
 		{
