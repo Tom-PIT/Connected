@@ -15,6 +15,29 @@ namespace TomPIT.Connectivity
 		 * for the life of the process. Must stay longer than DefaultTimeout.
 		 */
 		private static readonly TimeSpan ClientIdleLifetime = TimeSpan.FromMinutes(20);
+		/*
+		 * All clients share one handler and never dispose it, so connections are not multiplied per
+		 * credential and a dropped client holds no sockets. Cookies are off because the handler is
+		 * shared between different credentials.
+		 */
+		private static readonly SocketsHttpHandler Handler = new()
+		{
+			PooledConnectionLifetime = TimeSpan.FromMinutes(15),
+			UseCookies = false
+		};
+		/*
+		 * The cache disposes IDisposable entries on eviction, and disposing an HttpClient cancels its
+		 * in-flight requests. The wrapper keeps evicted clients undisposed; the GC reclaims them.
+		 */
+		private sealed class PooledClient
+		{
+			public PooledClient(HttpClient client)
+			{
+				Client = client;
+			}
+
+			public HttpClient Client { get; }
+		}
 
 		public static HttpClient Get(ICredentials credentials, IInstanceMetadataProvider instanceProvider)
 		{
@@ -39,7 +62,7 @@ namespace TomPIT.Connectivity
 					f.SlidingExpiration = true;
 					f.Duration = ClientIdleLifetime;
 
-					var r = new HttpClient();
+					var r = new HttpClient(Handler, false);
 
 					if (!string.IsNullOrWhiteSpace(token))
 						r.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", token);
@@ -51,8 +74,8 @@ namespace TomPIT.Connectivity
 
 					r.Timeout = TimeSpan.FromSeconds(DefaultTimeout);
 
-					return r;
-				});
+					return new PooledClient(r);
+				}).Client;
 		}
 
 		public static HttpClient Get(string jwToken, IInstanceMetadataProvider instanceProvider)
@@ -68,7 +91,7 @@ namespace TomPIT.Connectivity
 					f.SlidingExpiration = true;
 					f.Duration = ClientIdleLifetime;
 
-					var r = new HttpClient();
+					var r = new HttpClient(Handler, false);
 
 					if (!string.IsNullOrWhiteSpace(jwToken))
 						r.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwToken);
@@ -80,8 +103,8 @@ namespace TomPIT.Connectivity
 
 					r.Timeout = TimeSpan.FromSeconds(DefaultTimeout);
 
-					return r;
-				});
+					return new PooledClient(r);
+				}).Client;
 		}
 
 		public static HttpClient Get(Guid authenticationToken, IInstanceMetadataProvider instanceProvider)
@@ -92,7 +115,7 @@ namespace TomPIT.Connectivity
 					f.SlidingExpiration = true;
 					f.Duration = ClientIdleLifetime;
 
-					var r = new HttpClient();
+					var r = new HttpClient(Handler, false);
 
 					if (authenticationToken != Guid.Empty)
 						r.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("SSO", Convert.ToBase64String(Encoding.UTF8.GetBytes(authenticationToken.ToString())));
@@ -104,8 +127,8 @@ namespace TomPIT.Connectivity
 
 					r.Timeout = TimeSpan.FromSeconds(DefaultTimeout);
 
-					return r;
-				});
+					return new PooledClient(r);
+				}).Client;
 		}
 	}
 }

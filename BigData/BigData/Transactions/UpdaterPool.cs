@@ -42,8 +42,6 @@ namespace TomPIT.BigData.Transactions
 			if (!Locks.TryGetValue(partition, out UpdaterLock ul))
 				return;
 
-			Locks.TryRemove(partition, out _);
-
 			lock (ul)
 			{
 				ul.Release();

@@ -8,6 +8,7 @@ using TomPIT.Compilation;
 using TomPIT.ComponentModel;
 using TomPIT.ComponentModel.Distributed;
 using TomPIT.Connectivity;
+using TomPIT.Diagnostics;
 using TomPIT.Distributed;
 using TomPIT.Middleware;
 using TomPIT.Runtime;
@@ -16,7 +17,7 @@ namespace TomPIT.Worker.HostedServices
 {
 	internal class HostedServicesContainer : TenantObject, IHostedServices
 	{
-		private ConcurrentDictionary<Guid, IHostedServiceMiddleware> _items = null;
+		private ConcurrentDictionary<Guid, HostedService> _items = null;
 		private bool _initialized = false;
 		private CancellationTokenSource _tokenSource = null;
 
@@ -39,7 +40,7 @@ namespace TomPIT.Worker.HostedServices
 				_tokenSource.Cancel();
 			});
 
-			_items = new ConcurrentDictionary<Guid, IHostedServiceMiddleware>();
+			_items = new ConcurrentDictionary<Guid, HostedService>();
 
 			Tenant.GetService<IComponentService>().ConfigurationAdded += async (sender, args) => { await OnConfigurationAdded(sender, args); };
 			Tenant.GetService<IComponentService>().ConfigurationChanged += async (sender, args) => { await OnConfigurationChanged(sender, args); };
@@ -69,32 +70,97 @@ namespace TomPIT.Worker.HostedServices
 
 		private async Task InvalidateService(Guid microService, Guid component)
 		{
-			if (Items.TryGetValue(component, out IHostedServiceMiddleware existing))
-				await existing.Stop(CancellationToken.None);
+			/*
+			 * Invalidations of the same component are serialized, otherwise two concurrent ones (startup
+			 * plus a configuration event, or two quick saves) would both start an instance and one of them
+			 * would never be stopped.
+			 */
+			var sync = Locks.GetOrAdd(component, f => new SemaphoreSlim(1, 1));
 
-			if (Tenant.GetService<IComponentService>().SelectConfiguration(component) is not IHostedServiceConfiguration config)
-				return;
-
-			if (Tenant.GetService<IMicroServiceService>().Select(microService) is not IMicroService ms)
-				return;
-
-			if (Tenant.GetService<ICompilerService>().ResolveType(ms.Token, config, config.ComponentName(), false) is not Type type)
-				return;
-
-			using var ctx = new MicroServiceContext(ms);
+			await sync.WaitAsync();
 
 			try
 			{
-				if (Tenant.GetService<ICompilerService>().CreateInstance<IHostedServiceMiddleware>(ctx, type) is not IHostedServiceMiddleware middleware)
+				if (Items.TryRemove(component, out HostedService existing))
+				{
+					await existing.Middleware.Stop(CancellationToken.None);
+					/*
+					 * The context is disposed only after Stop, so the service's OnStop can still use it.
+					 */
+					existing.Context.Dispose();
+				}
+
+				if (Tenant.GetService<IComponentService>().SelectConfiguration(component) is not IHostedServiceConfiguration config)
 					return;
 
-				Items.TryAdd(component, middleware);
+				if (Tenant.GetService<IMicroServiceService>().Select(microService) is not IMicroService ms)
+					return;
 
-				await middleware.Start(_tokenSource.Token);
+				if (Tenant.GetService<ICompilerService>().ResolveType(ms.Token, config, config.ComponentName(), false) is not Type type)
+					return;
+
+				var ctx = new MicroServiceContext(ms);
+
+				try
+				{
+					if (Tenant.GetService<ICompilerService>().CreateInstance<IHostedServiceMiddleware>(ctx, type) is not IHostedServiceMiddleware middleware)
+					{
+						ctx.Dispose();
+						return;
+					}
+
+					Items[component] = new HostedService(middleware, ctx);
+					/*
+					 * Start runs for the lifetime of the service (recurring services never return), so it must
+					 * not be awaited here, otherwise Initialize blocks on the first recurring service and the
+					 * services after it never start.
+					 */
+					_ = Task.Run(() => Run(middleware));
+				}
+				catch
+				{
+					ctx.Dispose();
+					throw;
+				}
 			}
-			catch { }
+			catch (Exception ex)
+			{
+				Tenant.LogError(nameof(HostedServicesContainer), ex.Message);
+			}
+			finally
+			{
+				sync.Release();
+			}
 		}
 
-		private ConcurrentDictionary<Guid, IHostedServiceMiddleware> Items => _items;
+		private async Task Run(IHostedServiceMiddleware middleware)
+		{
+			try
+			{
+				await middleware.Start(_tokenSource.Token);
+			}
+			catch (OperationCanceledException)
+			{
+			}
+			catch (Exception ex)
+			{
+				Tenant.LogError(nameof(HostedServicesContainer), ex.Message);
+			}
+		}
+
+		private sealed class HostedService
+		{
+			public HostedService(IHostedServiceMiddleware middleware, MicroServiceContext context)
+			{
+				Middleware = middleware;
+				Context = context;
+			}
+
+			public IHostedServiceMiddleware Middleware { get; }
+			public MicroServiceContext Context { get; }
+		}
+
+		private ConcurrentDictionary<Guid, HostedService> Items => _items;
+		private ConcurrentDictionary<Guid, SemaphoreSlim> Locks { get; } = new();
 	}
 }

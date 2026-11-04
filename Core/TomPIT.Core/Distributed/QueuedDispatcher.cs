@@ -12,6 +12,7 @@ namespace TomPIT.Distributed
 
       public QueuedDispatcher(IDispatcher<T> owner, string queueName)
       {
+         Owner = owner;
          QueueName = queueName;
          Queue = new();
          Worker = owner.CreateWorker(this, Cancel.Token);

@@ -69,4 +69,7 @@
       <CustomToolNamespace>TomPIT</CustomToolNamespace>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="TomPIT.Core.Tests" />
+  </ItemGroup>
 </Project>
