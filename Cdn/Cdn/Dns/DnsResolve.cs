@@ -241,7 +241,7 @@ namespace TomPIT.Cdn.Dns
 
 			System.Net.IPEndPoint endPoint = new System.Net.IPEndPoint(System.Net.IPAddress.Parse(host), 53);
 
-			TimedUdpClient udpClient = new TimedUdpClient();
+			using TimedUdpClient udpClient = new TimedUdpClient();
 
 			udpClient.Connect(endPoint);
 			udpClient.Send(query, query.Length);

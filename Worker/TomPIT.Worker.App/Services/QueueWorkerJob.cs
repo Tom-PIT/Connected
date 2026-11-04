@@ -126,15 +126,30 @@ namespace TomPIT.Worker.Services
 
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
-			MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, nameof(QueueWorkerJob));
+			MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, item.Message.PadLeft(128).Trim());
 
 			var m = JsonConvert.DeserializeObject(item.Message) as JObject;
 
-			Instance.SysProxy.Management.Queue.Ping(item.PopReceipt, TimeSpan.FromSeconds(30));
+			try
+			{
+				Instance.SysProxy.Management.Queue.Ping(item.PopReceipt, GetRetryDelay(item.DequeueCount));
 
-			MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"{typeof(QueueWorkerJob).FullName.PadRight(64)}| Error processing entry: {Serializer.Serialize(item)} => {ex}");
+				MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"{typeof(QueueWorkerJob).FullName.PadRight(64)}| Error processing entry: {Serializer.Serialize(item)} => {ex}");
+			}
+			catch { }
 
 			_queueMonitoringService?.SignalError();
+		}
+
+		/*
+		 * Exponential backoff: 30s, 60s, 120s, 240s, 480s, then capped at 10 min.
+		 * Keeps a failing message from sorting to the front of the queue on every poll.
+		 */
+		private static TimeSpan GetRetryDelay(int dequeueCount)
+		{
+			var exponent = Math.Clamp(dequeueCount - 1, 0, 5);
+
+			return TimeSpan.FromSeconds(Math.Min(30 * Math.Pow(2, exponent), 600));
 		}
 	}
 }

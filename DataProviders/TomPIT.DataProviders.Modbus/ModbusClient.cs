@@ -639,7 +639,7 @@ namespace TomPIT.DataProviders.Modbus
 			{
 				if (udpFlag)
 				{
-					UdpClient udpClient = new UdpClient();
+					using UdpClient udpClient = new UdpClient();
 					IPEndPoint endPoint = new IPEndPoint(System.Net.IPAddress.Parse(ipAddress), port);
 					udpClient.Send(data, data.Length - 2, endPoint);
 					portOut = ((IPEndPoint)udpClient.Client.LocalEndPoint).Port;
@@ -767,7 +767,7 @@ namespace TomPIT.DataProviders.Modbus
 			{
 				if (udpFlag)
 				{
-					UdpClient udpClient = new UdpClient();
+					using UdpClient udpClient = new UdpClient();
 					IPEndPoint endPoint = new IPEndPoint(System.Net.IPAddress.Parse(ipAddress), port);
 					udpClient.Send(data, data.Length - 2, endPoint);
 					portOut = ((IPEndPoint)udpClient.Client.LocalEndPoint).Port;
@@ -891,7 +891,7 @@ namespace TomPIT.DataProviders.Modbus
 			{
 				if (udpFlag)
 				{
-					UdpClient udpClient = new UdpClient();
+					using UdpClient udpClient = new UdpClient();
 					IPEndPoint endPoint = new IPEndPoint(System.Net.IPAddress.Parse(ipAddress), port);
 					udpClient.Send(data, data.Length - 2, endPoint);
 					portOut = ((IPEndPoint)udpClient.Client.LocalEndPoint).Port;
@@ -1022,7 +1022,7 @@ namespace TomPIT.DataProviders.Modbus
 			{
 				if (udpFlag)
 				{
-					UdpClient udpClient = new UdpClient();
+					using UdpClient udpClient = new UdpClient();
 					IPEndPoint endPoint = new IPEndPoint(System.Net.IPAddress.Parse(ipAddress), port);
 					udpClient.Send(data, data.Length - 2, endPoint);
 					portOut = ((IPEndPoint)udpClient.Client.LocalEndPoint).Port;
@@ -1154,7 +1154,7 @@ namespace TomPIT.DataProviders.Modbus
 			{
 				if (udpFlag)
 				{
-					UdpClient udpClient = new UdpClient();
+					using UdpClient udpClient = new UdpClient();
 					IPEndPoint endPoint = new IPEndPoint(System.Net.IPAddress.Parse(ipAddress), port);
 					udpClient.Send(data, data.Length - 2, endPoint);
 					portOut = ((IPEndPoint)udpClient.Client.LocalEndPoint).Port;
@@ -1267,7 +1267,7 @@ namespace TomPIT.DataProviders.Modbus
 			{
 				if (udpFlag)
 				{
-					UdpClient udpClient = new UdpClient();
+					using UdpClient udpClient = new UdpClient();
 					IPEndPoint endPoint = new IPEndPoint(System.Net.IPAddress.Parse(ipAddress), port);
 					udpClient.Send(data, data.Length - 2, endPoint);
 					portOut = ((IPEndPoint)udpClient.Client.LocalEndPoint).Port;
@@ -1394,7 +1394,7 @@ namespace TomPIT.DataProviders.Modbus
 			{
 				if (udpFlag)
 				{
-					UdpClient udpClient = new UdpClient();
+					using UdpClient udpClient = new UdpClient();
 					IPEndPoint endPoint = new IPEndPoint(System.Net.IPAddress.Parse(ipAddress), port);
 					udpClient.Send(data, data.Length - 2, endPoint);
 					portOut = ((IPEndPoint)udpClient.Client.LocalEndPoint).Port;
@@ -1511,7 +1511,7 @@ namespace TomPIT.DataProviders.Modbus
 			{
 				if (udpFlag)
 				{
-					UdpClient udpClient = new UdpClient();
+					using UdpClient udpClient = new UdpClient();
 					IPEndPoint endPoint = new IPEndPoint(System.Net.IPAddress.Parse(ipAddress), port);
 					udpClient.Send(data, data.Length - 2, endPoint);
 					portOut = ((IPEndPoint)udpClient.Client.LocalEndPoint).Port;
@@ -1645,7 +1645,7 @@ namespace TomPIT.DataProviders.Modbus
 			{
 				if (udpFlag)
 				{
-					UdpClient udpClient = new UdpClient();
+					using UdpClient udpClient = new UdpClient();
 					IPEndPoint endPoint = new IPEndPoint(System.Net.IPAddress.Parse(ipAddress), port);
 					udpClient.Send(data, data.Length - 2, endPoint);
 					portOut = ((IPEndPoint)udpClient.Client.LocalEndPoint).Port;

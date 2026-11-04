@@ -161,12 +161,48 @@ namespace TomPIT.Sys.Model.Cdn
          if (!targets.Any())
             return ImmutableList<QueueMessage>.Empty;
 
-         var ordered = targets.OrderBy(f => f.NextVisible).ThenBy(f => f.Id);
+         var ordered = targets.OrderBy(f => f.NextVisible).ThenBy(f => f.Id).ToList();
 
-         if (ordered.Count() <= count)
+         if (ordered.Count <= count)
             return ordered.ToImmutableList();
 
-         return ordered.Take(count).ToImmutableList();
+         /*
+          * Fairness: no single worker may take more than half of a batch. Over-cap messages are
+          * deferred and only used to fill leftover slots, so throughput is unchanged when
+          * one worker is the only one with pending work.
+          */
+         var cap = Math.Max(1, count / 2);
+         var perWorker = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+         var selected = new List<QueueMessage>(count);
+         var deferred = new List<QueueMessage>();
+
+         foreach (var i in ordered)
+         {
+            if (selected.Count >= count)
+               break;
+
+            var worker = i.WorkerKey ?? string.Empty;
+            perWorker.TryGetValue(worker, out var taken);
+
+            if (taken >= cap)
+            {
+               deferred.Add(i);
+               continue;
+            }
+
+            perWorker[worker] = taken + 1;
+            selected.Add(i);
+         }
+
+         foreach (var i in deferred)
+         {
+            if (selected.Count >= count)
+               break;
+
+            selected.Add(i);
+         }
+
+         return selected.ToImmutableList();
       }
 
       public void Ping(Guid popReceipt, TimeSpan nextVisible)

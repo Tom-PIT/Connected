@@ -66,6 +66,9 @@ namespace TomPIT.Cdn.Dns
 		{
 			base.Dispose(disposing);
 
+			_mutexErrorOccurs?.Dispose();
+			_mutexReturnReceive?.Dispose();
+
 			_mutexErrorOccurs = null;
 			_mutexReturnReceive = null;
 		}

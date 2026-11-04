@@ -47,5 +47,43 @@ namespace TomPIT.Sys.Model.Cdn
 
 		public string BufferKey { get; set; }
 
+		private string _workerKey;
+		private bool _workerKeyParsed;
+
+		/* "{component}/{worker}" from the JSON message. Parsed once, not persisted. */
+		public string WorkerKey
+		{
+			get
+			{
+				if (!_workerKeyParsed)
+				{
+					_workerKey = ParseWorkerKey(Message);
+					_workerKeyParsed = true;
+				}
+
+				return _workerKey;
+			}
+		}
+
+		private static string ParseWorkerKey(string message)
+		{
+			if (string.IsNullOrWhiteSpace(message))
+				return null;
+
+			try
+			{
+				using var doc = System.Text.Json.JsonDocument.Parse(message);
+				var root = doc.RootElement;
+
+				var component = root.TryGetProperty("component", out var c) ? c.GetString() : null;
+				var worker = root.TryGetProperty("worker", out var w) ? w.GetString() : null;
+
+				return $"{component}/{worker}";
+			}
+			catch
+			{
+				return null;
+			}
+		}
 	}
 }
