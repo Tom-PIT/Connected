@@ -254,8 +254,6 @@ namespace TomPIT.Cdn.Dns
 			}
 			catch (Exception)
 			{
-				udpClient.Close();
-
 				throw new System.Exception("Can't connect to DNS server.");
 			}
 
