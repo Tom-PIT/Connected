@@ -1,7 +1,4 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
 using System.Threading;
@@ -26,6 +23,13 @@ namespace TomPIT.Worker.Services
 		 */
 		private static readonly ConcurrentDictionary<(string Message, DateTime Created), byte> InFlight = new();
 
+		/*
+		 * Poison threshold. With the OnError backoff (30s, 60s, 120s, 240s, 480s, then 600s)
+		 * the 9th dequeue happens ~35 minutes after the first, so a message that can never
+		 * succeed is dropped after that long instead of lingering for hours.
+		 */
+		private const int MaxDequeueCount = 8;
+
 		private readonly IQueueMonitoringService _queueMonitoringService;
 		private TimeoutTask _timeout = null;
 		public QueueWorkerJob(IDispatcher<IQueueMessage> owner, CancellationToken cancel) : base(owner, cancel)
@@ -43,9 +47,9 @@ namespace TomPIT.Worker.Services
 			if (item.NextVisible <= DateTime.UtcNow)
 				return;
 
-			if (item.DequeueCount > 30)
+			if (item.DequeueCount > MaxDequeueCount)
 			{
-				MiddlewareDescriptor.Current.Tenant.LogError($"StaleQueue", $"Queue message {item.Id} has been dequeued more than 30 times (15 minutes). Deleting message to prevent infinite processing loop.", nameof(QueueWorkerJob));
+				MiddlewareDescriptor.Current.Tenant.LogError($"StaleQueue", $"Queue message {item.Id} has been dequeued more than {MaxDequeueCount} times (about 35 minutes with backoff). Deleting message to prevent infinite processing loop.", nameof(QueueWorkerJob));
 				MiddlewareDescriptor.Current.Tenant.LogError($"StaleQueue", Serializer.Serialize(item), nameof(QueueWorkerJob));
 
 				Instance.SysProxy.Management.Queue.Complete(item.PopReceipt);
@@ -65,9 +69,22 @@ namespace TomPIT.Worker.Services
 			{
 				using var queue = new Queue(item);
 
+				/*
+				 * TimeoutTask.Stop only cancels the loop, it does not wait for a keepalive ping that is
+				 * already in flight. The gate lets the finally block below wait for such a ping and
+				 * guarantees no keepalive runs afterwards, so the final Complete or the backoff Ping in
+				 * OnError always has the last word on NextVisible.
+				 */
+				var keepAliveGate = new object();
+				var keepAliveStopped = false;
+
 				_timeout = new TimeoutTask(() =>
 				{
-					Instance.SysProxy.Management.Queue.Ping(item.PopReceipt, TimeSpan.FromSeconds(120));
+					lock (keepAliveGate)
+					{
+						if (!keepAliveStopped)
+							Instance.SysProxy.Management.Queue.Ping(item.PopReceipt, TimeSpan.FromSeconds(120));
+					}
 
 					return Task.CompletedTask;
 				}, TimeSpan.FromSeconds(90), Cancel);
@@ -84,6 +101,12 @@ namespace TomPIT.Worker.Services
 				finally
 				{
 					_timeout.Stop();
+
+					lock (keepAliveGate)
+					{
+						keepAliveStopped = true;
+					}
+
 					_timeout.Dispose();
 					_timeout = null;
 				}
@@ -92,7 +115,7 @@ namespace TomPIT.Worker.Services
 
 				_queueMonitoringService?.SignalProcessed();
 
-				MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"{typeof(QueueWorkerJob).FullName.PadRight(64)}| Completed queue entry: {Serializer.Serialize(item)}");
+				MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"{typeof(QueueWorkerJob).FullName,-64}| Completed queue entry: {Serializer.Serialize(item)}");
 			}
 			finally
 			{
@@ -126,30 +149,46 @@ namespace TomPIT.Worker.Services
 
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
-			MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, ex.Message, item.Message.PadLeft(128).Trim());
+			MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, $"{ex.Message} | {Truncate(item.Message, 256)}", nameof(QueueWorkerJob));
 
-			var m = JsonConvert.DeserializeObject(item.Message) as JObject;
+			MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"{typeof(QueueWorkerJob).FullName,-64}| Error processing entry: {Serializer.Serialize(item)} => {ex}");
 
 			try
 			{
-				Instance.SysProxy.Management.Queue.Ping(item.PopReceipt, GetRetryDelay(item.DequeueCount));
-
-				MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"{typeof(QueueWorkerJob).FullName.PadRight(64)}| Error processing entry: {Serializer.Serialize(item)} => {ex}");
+				Instance.SysProxy.Management.Queue.Ping(item.PopReceipt, GetRetryDelay(item));
 			}
-			catch { }
+			catch (Exception pingEx)
+			{
+				MiddlewareDescriptor.Current.Tenant.LogWarning(nameof(QueueWorkerJob), $"Retry delay was not applied for queue entry {item.Id} (PopReceipt: {item.PopReceipt}): {pingEx.Message}", nameof(QueueWorkerJob));
+			}
 
 			_queueMonitoringService?.SignalError();
+		}
+
+		private static string Truncate(string value, int maxLength)
+		{
+			if (string.IsNullOrEmpty(value))
+				return string.Empty;
+
+			return value.Length <= maxLength ? value : value[..maxLength] + "...";
 		}
 
 		/*
 		 * Exponential backoff: 30s, 60s, 120s, 240s, 480s, then capped at 10 min.
 		 * Keeps a failing message from sorting to the front of the queue on every poll.
+		 * The delay never extends past the message's Expire, so a short-lived message still
+		 * gets a final retry instead of being silently dropped while it waits.
 		 */
-		private static TimeSpan GetRetryDelay(int dequeueCount)
+		private static TimeSpan GetRetryDelay(IQueueMessage item)
 		{
-			var exponent = Math.Clamp(dequeueCount - 1, 0, 5);
+			var exponent = Math.Clamp(item.DequeueCount - 1, 0, 5);
+			var delay = TimeSpan.FromSeconds(Math.Min(30 * Math.Pow(2, exponent), 600));
+			var remaining = item.Expire - DateTime.UtcNow;
 
-			return TimeSpan.FromSeconds(Math.Min(30 * Math.Pow(2, exponent), 600));
+			if (remaining < delay)
+				delay = remaining;
+
+			return delay < TimeSpan.FromSeconds(1) ? TimeSpan.FromSeconds(1) : delay;
 		}
 	}
 }
