@@ -277,3 +277,4 @@ __pycache__/
 
 # Local AI cache files
 *.lscache
+/.vscode/settings.json
