@@ -121,8 +121,21 @@ namespace TomPIT.Worker.Services
 					_timeout = null;
 				}
 
-				Instance.SysProxy.Management.Queue.Complete(item.PopReceipt);
 				Failures.TryRemove(inFlightKey, out _);
+
+				/*
+				 * The handler has succeeded. A failing Complete is an infrastructure problem, not a handler
+				 * failure, so it must not reach OnError and count toward the poison limit.
+				 */
+				try
+				{
+					Instance.SysProxy.Management.Queue.Complete(item.PopReceipt);
+				}
+				catch (Exception completeEx)
+				{
+					MiddlewareDescriptor.Current.Tenant.LogWarning(nameof(QueueWorkerJob), $"Complete failed for queue entry {item.Id} (PopReceipt: {item.PopReceipt}): {completeEx.Message}", nameof(QueueWorkerJob));
+					return;
+				}
 
 				_queueMonitoringService?.SignalProcessed();
 
@@ -160,6 +173,13 @@ namespace TomPIT.Worker.Services
 
 		protected override void OnError(IQueueMessage item, Exception ex)
 		{
+			/*
+			 * Shutdown cancellation is not a handler failure: don't count it and don't push the message
+			 * back with a backoff, it should simply be picked up again after the restart.
+			 */
+			if (Cancel.IsCancellationRequested || ex is OperationCanceledException)
+				return;
+
 			MiddlewareDescriptor.Current.Tenant.LogError(ex.Source, $"{ex.Message} | {Truncate(item.Message, 256)}", nameof(QueueWorkerJob));
 
 			MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"{typeof(QueueWorkerJob).FullName,-64}| Error processing entry: {Serializer.Serialize(item)} => {ex}");
@@ -193,10 +213,11 @@ namespace TomPIT.Worker.Services
 		/* Failure entries of messages that vanished (expired, completed elsewhere) must not pile up. */
 		private static void PruneFailures()
 		{
-			if (Failures.Count < 1000)
+			if (Failures.Count < 100)
 				return;
 
-			var cutoff = DateTime.UtcNow.AddHours(-2);
+			/* A live message fails at least every ~10 min (backoff cap), so 1 h of silence means it is gone. */
+			var cutoff = DateTime.UtcNow.AddHours(-1);
 
 			foreach (var entry in Failures)
 			{
