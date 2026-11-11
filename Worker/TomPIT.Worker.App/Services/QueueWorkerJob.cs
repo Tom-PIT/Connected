@@ -24,11 +24,21 @@ namespace TomPIT.Worker.Services
 		private static readonly ConcurrentDictionary<(string Message, DateTime Created), byte> InFlight = new();
 
 		/*
-		 * Poison threshold. With the OnError backoff (30s, 60s, 120s, 240s, 480s, then 600s)
-		 * the 9th dequeue happens ~35 minutes after the first, so a message that can never
-		 * succeed is dropped after that long instead of lingering for hours.
+		 * Backstop on dequeues, unchanged. DequeueCount is raised on every dequeue, including
+		 * re-dequeues of healthy messages that merely waited (queued workers, restarts, skips),
+		 * so it must not be the poison criterion.
 		 */
-		private const int MaxDequeueCount = 8;
+		private const int MaxDequeueCount = 30;
+
+		/*
+		 * Poison criterion: handler failures observed by this process. With the OnError backoff
+		 * (30s, 60s, 120s, 240s, 480s, 600s, 600s) the 8th failure lands ~35 minutes after the
+		 * first and the message is dropped there. Held in memory like InFlight, so a restart
+		 * starts counting again, which errs on the side of keeping messages.
+		 */
+		private const int MaxFailures = 8;
+
+		private static readonly ConcurrentDictionary<(string Message, DateTime Created), (int Count, DateTime Last)> Failures = new();
 
 		private readonly IQueueMonitoringService _queueMonitoringService;
 		private TimeoutTask _timeout = null;
@@ -49,7 +59,7 @@ namespace TomPIT.Worker.Services
 
 			if (item.DequeueCount > MaxDequeueCount)
 			{
-				MiddlewareDescriptor.Current.Tenant.LogError($"StaleQueue", $"Queue message {item.Id} has been dequeued more than {MaxDequeueCount} times (about 35 minutes with backoff). Deleting message to prevent infinite processing loop.", nameof(QueueWorkerJob));
+				MiddlewareDescriptor.Current.Tenant.LogError($"StaleQueue", $"Queue message {item.Id} has been dequeued more than {MaxDequeueCount} times. Deleting message to prevent infinite processing loop.", nameof(QueueWorkerJob));
 				MiddlewareDescriptor.Current.Tenant.LogError($"StaleQueue", Serializer.Serialize(item), nameof(QueueWorkerJob));
 
 				Instance.SysProxy.Management.Queue.Complete(item.PopReceipt);
@@ -112,6 +122,7 @@ namespace TomPIT.Worker.Services
 				}
 
 				Instance.SysProxy.Management.Queue.Complete(item.PopReceipt);
+				Failures.TryRemove(inFlightKey, out _);
 
 				_queueMonitoringService?.SignalProcessed();
 
@@ -153,16 +164,45 @@ namespace TomPIT.Worker.Services
 
 			MiddlewareDescriptor.Current.Tenant.GetService<ILoggingService>().Dump($"{typeof(QueueWorkerJob).FullName,-64}| Error processing entry: {Serializer.Serialize(item)} => {ex}");
 
+			var failureKey = (item.Message, item.Created);
+			var failures = Failures.AddOrUpdate(failureKey, _ => (1, DateTime.UtcNow), (_, e) => (e.Count + 1, DateTime.UtcNow)).Count;
+
+			PruneFailures();
+
 			try
 			{
-				Instance.SysProxy.Management.Queue.Ping(item.PopReceipt, GetRetryDelay(item));
+				if (failures >= MaxFailures)
+				{
+					MiddlewareDescriptor.Current.Tenant.LogError($"StaleQueue", $"Queue message {item.Id} failed {failures} times. Deleting message to prevent infinite processing loop.", nameof(QueueWorkerJob));
+					MiddlewareDescriptor.Current.Tenant.LogError($"StaleQueue", Serializer.Serialize(item), nameof(QueueWorkerJob));
+
+					Instance.SysProxy.Management.Queue.Complete(item.PopReceipt);
+					Failures.TryRemove(failureKey, out _);
+				}
+				else
+					Instance.SysProxy.Management.Queue.Ping(item.PopReceipt, GetRetryDelay(item, failures));
 			}
 			catch (Exception pingEx)
 			{
-				MiddlewareDescriptor.Current.Tenant.LogWarning(nameof(QueueWorkerJob), $"Retry delay was not applied for queue entry {item.Id} (PopReceipt: {item.PopReceipt}): {pingEx.Message}", nameof(QueueWorkerJob));
+				MiddlewareDescriptor.Current.Tenant.LogWarning(nameof(QueueWorkerJob), $"Retry delay or poison removal was not applied for queue entry {item.Id} (PopReceipt: {item.PopReceipt}): {pingEx.Message}", nameof(QueueWorkerJob));
 			}
 
 			_queueMonitoringService?.SignalError();
+		}
+
+		/* Failure entries of messages that vanished (expired, completed elsewhere) must not pile up. */
+		private static void PruneFailures()
+		{
+			if (Failures.Count < 1000)
+				return;
+
+			var cutoff = DateTime.UtcNow.AddHours(-2);
+
+			foreach (var entry in Failures)
+			{
+				if (entry.Value.Last < cutoff)
+					Failures.TryRemove(entry.Key, out _);
+			}
 		}
 
 		private static string Truncate(string value, int maxLength)
@@ -179,9 +219,9 @@ namespace TomPIT.Worker.Services
 		 * The delay never extends past the message's Expire, so a short-lived message still
 		 * gets a final retry instead of being silently dropped while it waits.
 		 */
-		private static TimeSpan GetRetryDelay(IQueueMessage item)
+		private static TimeSpan GetRetryDelay(IQueueMessage item, int failures)
 		{
-			var exponent = Math.Clamp(item.DequeueCount - 1, 0, 5);
+			var exponent = Math.Clamp(failures - 1, 0, 5);
 			var delay = TimeSpan.FromSeconds(Math.Min(30 * Math.Pow(2, exponent), 600));
 			var remaining = item.Expire - DateTime.UtcNow;
 

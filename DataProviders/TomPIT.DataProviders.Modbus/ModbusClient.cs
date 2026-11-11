@@ -564,12 +564,6 @@ namespace TomPIT.DataProviders.Modbus
 		}
 
 
-		/// <summary>
-		/// Read Discrete Inputs from Master device (FC2).
-		/// </summary>
-		/// <param name="startingAddress">First discrete input to be read</param>
-		/// <param name="quantity">Number of discrete Inputs to be read</param>
-		/// <returns>Boolean Array which contains the discrete Inputs</returns>
 		/*
 		 * Single owner of the UDP send/receive exchange, so the client is always disposed.
 		 * Sends data minus the trailing two CRC bytes and returns the datagram received.
@@ -585,6 +579,12 @@ namespace TomPIT.DataProviders.Modbus
 			return udpClient.Receive(ref endPoint);
 		}
 
+		/// <summary>
+		/// Read Discrete Inputs from Master device (FC2).
+		/// </summary>
+		/// <param name="startingAddress">First discrete input to be read</param>
+		/// <param name="quantity">Number of discrete Inputs to be read</param>
+		/// <returns>Boolean Array which contains the discrete Inputs</returns>
 		public bool[] ReadDiscreteInputs(int startingAddress, int quantity)
 		{
 			transactionIdentifierInternal++;

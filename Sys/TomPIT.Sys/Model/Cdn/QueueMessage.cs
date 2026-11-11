@@ -1,4 +1,5 @@
 ﻿using System;
+using Newtonsoft.Json;
 using TomPIT.Data;
 using TomPIT.Storage;
 
@@ -73,6 +74,7 @@ namespace TomPIT.Sys.Model.Cdn
 		 * if Message or Queue is changed. Never null: anything that doesn't identify a worker is
 		 * string.Empty, so all such messages share one group.
 		 */
+		[JsonIgnore]
 		public string WorkerKey
 		{
 			get
