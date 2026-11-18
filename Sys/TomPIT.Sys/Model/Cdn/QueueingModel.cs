@@ -147,26 +147,122 @@ namespace TomPIT.Sys.Model.Cdn
          if (Count == 0)
             return ImmutableList<QueueMessage>.Empty;
 
-         var targets = new List<QueueMessage>();
+         /*
+          * Fair scheduling applies only to the queueworker queue, the only one whose payload
+          * carries component/worker. Every other queue keeps plain (NextVisible, Id) order.
+          */
+         var fair = string.Equals(queue, Queue, StringComparison.OrdinalIgnoreCase);
+         var load = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+         var targets = fair ? null : new List<QueueMessage>();
+         /*
+          * A worker can never receive more than count messages in one batch, so each worker
+          * keeps only its count oldest candidates (bounded max-heap). The scan stays O(n log count)
+          * and memory O(workers * count) however large one worker's backlog is.
+          */
+         var buckets = fair ? new Dictionary<string, PriorityQueue<QueueMessage, (DateTime NextVisible, long Id)>>(StringComparer.OrdinalIgnoreCase) : null;
+         var now = DateTime.UtcNow;
+
+         if (count <= 0)
+            return ImmutableList<QueueMessage>.Empty;
 
          foreach (var i in All())
          {
-            if (i.Scope != scope || i.NextVisible > DateTime.UtcNow || i.Expire <= DateTime.UtcNow)
+            if (i.Scope != scope || i.Expire <= now)
                continue;
 
-            if (string.Compare(i.Queue ?? string.Empty, queue ?? string.Empty, true) == 0)
+            if (string.Compare(i.Queue ?? string.Empty, queue ?? string.Empty, true) != 0)
+               continue;
+
+            if (i.NextVisible > now)
+            {
+               /*
+                * Invisible after at least one dequeue: either still being processed or backing
+                * off after a failure. Both count as load on that worker.
+                */
+               if (fair && i.DequeueCount > 0)
+               {
+                  var key = i.WorkerKey ?? string.Empty;
+
+                  load[key] = load.GetValueOrDefault(key) + 1;
+               }
+
+               continue;
+            }
+
+            if (!fair)
+            {
                targets.Add(i);
+               continue;
+            }
+
+            var worker = i.WorkerKey ?? string.Empty;
+
+            if (!buckets.TryGetValue(worker, out var heap))
+               buckets[worker] = heap = new PriorityQueue<QueueMessage, (DateTime NextVisible, long Id)>(NewestFirst);
+
+            heap.Enqueue(i, (i.NextVisible, i.Id));
+
+            if (heap.Count > count)
+               heap.Dequeue();
          }
 
-         if (!targets.Any())
+         if (!fair)
+         {
+            return targets.OrderBy(f => f.NextVisible).ThenBy(f => f.Id).Take(count).ToImmutableList();
+         }
+
+         if (buckets.Count == 0)
             return ImmutableList<QueueMessage>.Empty;
 
-         var ordered = targets.OrderBy(f => f.NextVisible).ThenBy(f => f.Id);
+         /*
+          * Each pick goes to the worker with the lowest load (in flight or backing off, plus
+          * picked in this batch), oldest message first within a worker. A worker with a pile of
+          * failing messages therefore yields to the others even when only one slot is free, and
+          * a worker that is alone with pending work still gets every slot.
+          */
+         var keys = buckets.Keys.ToList();
+         var groups = keys
+            .Select(k => buckets[k].UnorderedItems.Select(f => f.Element).OrderBy(f => f.NextVisible).ThenBy(f => f.Id).ToList())
+            .ToList();
+         var next = new int[groups.Count];
+         var selected = new List<QueueMessage>(count);
 
-         if (ordered.Count() <= count)
-            return ordered.ToImmutableList();
+         while (selected.Count < count)
+         {
+            var best = -1;
+            var bestLoad = 0;
 
-         return ordered.Take(count).ToImmutableList();
+            for (var g = 0; g < groups.Count; g++)
+            {
+               if (next[g] >= groups[g].Count)
+                  continue;
+
+               var current = load.GetValueOrDefault(keys[g]);
+
+               if (best < 0 || current < bestLoad || (current == bestLoad && Precedes(groups[g][next[g]], groups[best][next[best]])))
+               {
+                  best = g;
+                  bestLoad = current;
+               }
+            }
+
+            if (best < 0)
+               break;
+
+            selected.Add(groups[best][next[best]++]);
+            load[keys[best]] = bestLoad + 1;
+         }
+
+         return selected.OrderBy(f => f.NextVisible).ThenBy(f => f.Id).ToImmutableList();
+      }
+
+      /* Max-heap order: the newest (NextVisible, Id) is evicted first, so the oldest are kept. */
+      private static readonly IComparer<(DateTime NextVisible, long Id)> NewestFirst =
+         Comparer<(DateTime NextVisible, long Id)>.Create((a, b) => b.CompareTo(a));
+
+      private static bool Precedes(QueueMessage a, QueueMessage b)
+      {
+         return a.NextVisible < b.NextVisible || (a.NextVisible == b.NextVisible && a.Id < b.Id);
       }
 
       public void Ping(Guid popReceipt, TimeSpan nextVisible)
