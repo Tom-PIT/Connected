@@ -32,7 +32,12 @@ namespace TomPIT.Search
 
 		public IClientSearchResults Search(ISearchOptions options)
 		{
-			var results = (SearchResults)Tenant.GetService<ISearchNodeProxy>().Search(options);
+			/*
+			 * The proxy is either local (the Search node runs in this process and returns its own
+			 * ISearchResults implementation) or remote (results are deserialized into SearchResults).
+			 * Both are consumed through the interface; casting to a concrete type fails for the local one.
+			 */
+			var results = Tenant.GetService<ISearchNodeProxy>().Search(options);
 			var clientResults = new ClientSearchResults();
 			var handlers = new Dictionary<Guid, dynamic>();
 
