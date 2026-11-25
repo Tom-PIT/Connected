@@ -564,21 +564,6 @@ namespace TomPIT.DataProviders.Modbus
 		}
 
 
-		/*
-		 * Single owner of the UDP send/receive exchange, so the client is always disposed.
-		 * Sends data minus the trailing two CRC bytes and returns the datagram received.
-		 */
-		private byte[] SendReceiveUdp(byte[] data)
-		{
-			using UdpClient udpClient = new UdpClient();
-			IPEndPoint endPoint = new IPEndPoint(System.Net.IPAddress.Parse(ipAddress), port);
-			udpClient.Send(data, data.Length - 2, endPoint);
-			portOut = ((IPEndPoint)udpClient.Client.LocalEndPoint).Port;
-			udpClient.Client.ReceiveTimeout = 5000;
-			endPoint = new IPEndPoint(System.Net.IPAddress.Parse(ipAddress), portOut);
-			return udpClient.Receive(ref endPoint);
-		}
-
 		/// <summary>
 		/// Read Discrete Inputs from Master device (FC2).
 		/// </summary>
@@ -654,7 +639,13 @@ namespace TomPIT.DataProviders.Modbus
 			{
 				if (udpFlag)
 				{
-					data = SendReceiveUdp(data);
+					UdpClient udpClient = new UdpClient();
+					IPEndPoint endPoint = new IPEndPoint(System.Net.IPAddress.Parse(ipAddress), port);
+					udpClient.Send(data, data.Length - 2, endPoint);
+					portOut = ((IPEndPoint)udpClient.Client.LocalEndPoint).Port;
+					udpClient.Client.ReceiveTimeout = 5000;
+					endPoint = new IPEndPoint(System.Net.IPAddress.Parse(ipAddress), portOut);
+					data = udpClient.Receive(ref endPoint);
 				}
 				else
 				{
@@ -776,7 +767,13 @@ namespace TomPIT.DataProviders.Modbus
 			{
 				if (udpFlag)
 				{
-					data = SendReceiveUdp(data);
+					UdpClient udpClient = new UdpClient();
+					IPEndPoint endPoint = new IPEndPoint(System.Net.IPAddress.Parse(ipAddress), port);
+					udpClient.Send(data, data.Length - 2, endPoint);
+					portOut = ((IPEndPoint)udpClient.Client.LocalEndPoint).Port;
+					udpClient.Client.ReceiveTimeout = 5000;
+					endPoint = new IPEndPoint(System.Net.IPAddress.Parse(ipAddress), portOut);
+					data = udpClient.Receive(ref endPoint);
 				}
 				else
 				{
@@ -894,7 +891,13 @@ namespace TomPIT.DataProviders.Modbus
 			{
 				if (udpFlag)
 				{
-					data = SendReceiveUdp(data);
+					UdpClient udpClient = new UdpClient();
+					IPEndPoint endPoint = new IPEndPoint(System.Net.IPAddress.Parse(ipAddress), port);
+					udpClient.Send(data, data.Length - 2, endPoint);
+					portOut = ((IPEndPoint)udpClient.Client.LocalEndPoint).Port;
+					udpClient.Client.ReceiveTimeout = 5000;
+					endPoint = new IPEndPoint(System.Net.IPAddress.Parse(ipAddress), portOut);
+					data = udpClient.Receive(ref endPoint);
 				}
 				else
 				{
@@ -1019,7 +1022,13 @@ namespace TomPIT.DataProviders.Modbus
 			{
 				if (udpFlag)
 				{
-					data = SendReceiveUdp(data);
+					UdpClient udpClient = new UdpClient();
+					IPEndPoint endPoint = new IPEndPoint(System.Net.IPAddress.Parse(ipAddress), port);
+					udpClient.Send(data, data.Length - 2, endPoint);
+					portOut = ((IPEndPoint)udpClient.Client.LocalEndPoint).Port;
+					udpClient.Client.ReceiveTimeout = 5000;
+					endPoint = new IPEndPoint(System.Net.IPAddress.Parse(ipAddress), portOut);
+					data = udpClient.Receive(ref endPoint);
 				}
 				else
 				{
@@ -1145,7 +1154,13 @@ namespace TomPIT.DataProviders.Modbus
 			{
 				if (udpFlag)
 				{
-					data = SendReceiveUdp(data);
+					UdpClient udpClient = new UdpClient();
+					IPEndPoint endPoint = new IPEndPoint(System.Net.IPAddress.Parse(ipAddress), port);
+					udpClient.Send(data, data.Length - 2, endPoint);
+					portOut = ((IPEndPoint)udpClient.Client.LocalEndPoint).Port;
+					udpClient.Client.ReceiveTimeout = 5000;
+					endPoint = new IPEndPoint(System.Net.IPAddress.Parse(ipAddress), portOut);
+					data = udpClient.Receive(ref endPoint);
 				}
 				else
 				{
@@ -1252,7 +1267,13 @@ namespace TomPIT.DataProviders.Modbus
 			{
 				if (udpFlag)
 				{
-					data = SendReceiveUdp(data);
+					UdpClient udpClient = new UdpClient();
+					IPEndPoint endPoint = new IPEndPoint(System.Net.IPAddress.Parse(ipAddress), port);
+					udpClient.Send(data, data.Length - 2, endPoint);
+					portOut = ((IPEndPoint)udpClient.Client.LocalEndPoint).Port;
+					udpClient.Client.ReceiveTimeout = 5000;
+					endPoint = new IPEndPoint(System.Net.IPAddress.Parse(ipAddress), portOut);
+					data = udpClient.Receive(ref endPoint);
 				}
 				else
 				{
@@ -1373,7 +1394,13 @@ namespace TomPIT.DataProviders.Modbus
 			{
 				if (udpFlag)
 				{
-					data = SendReceiveUdp(data);
+					UdpClient udpClient = new UdpClient();
+					IPEndPoint endPoint = new IPEndPoint(System.Net.IPAddress.Parse(ipAddress), port);
+					udpClient.Send(data, data.Length - 2, endPoint);
+					portOut = ((IPEndPoint)udpClient.Client.LocalEndPoint).Port;
+					udpClient.Client.ReceiveTimeout = 5000;
+					endPoint = new IPEndPoint(System.Net.IPAddress.Parse(ipAddress), portOut);
+					data = udpClient.Receive(ref endPoint);
 				}
 				else
 				{
@@ -1484,7 +1511,13 @@ namespace TomPIT.DataProviders.Modbus
 			{
 				if (udpFlag)
 				{
-					data = SendReceiveUdp(data);
+					UdpClient udpClient = new UdpClient();
+					IPEndPoint endPoint = new IPEndPoint(System.Net.IPAddress.Parse(ipAddress), port);
+					udpClient.Send(data, data.Length - 2, endPoint);
+					portOut = ((IPEndPoint)udpClient.Client.LocalEndPoint).Port;
+					udpClient.Client.ReceiveTimeout = 5000;
+					endPoint = new IPEndPoint(System.Net.IPAddress.Parse(ipAddress), portOut);
+					data = udpClient.Receive(ref endPoint);
 				}
 				else
 				{
@@ -1612,7 +1645,13 @@ namespace TomPIT.DataProviders.Modbus
 			{
 				if (udpFlag)
 				{
-					data = SendReceiveUdp(data);
+					UdpClient udpClient = new UdpClient();
+					IPEndPoint endPoint = new IPEndPoint(System.Net.IPAddress.Parse(ipAddress), port);
+					udpClient.Send(data, data.Length - 2, endPoint);
+					portOut = ((IPEndPoint)udpClient.Client.LocalEndPoint).Port;
+					udpClient.Client.ReceiveTimeout = 5000;
+					endPoint = new IPEndPoint(System.Net.IPAddress.Parse(ipAddress), portOut);
+					data = udpClient.Receive(ref endPoint);
 				}
 				else
 				{

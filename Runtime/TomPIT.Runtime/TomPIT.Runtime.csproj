@@ -46,4 +46,7 @@
     <ProjectReference Include="..\..\TomPIT.Proxy.Remote\TomPIT.Proxy.Remote.csproj" />
     <ProjectReference Include="..\..\TomPIT.Startup\TomPIT.Startup.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="TomPIT.Core.Tests" />
+  </ItemGroup>
 </Project>
